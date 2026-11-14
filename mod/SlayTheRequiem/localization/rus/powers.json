@@ -1,0 +1,20 @@
+{
+  "SLAYTHEREQUIEM-BURNING_POWER.title": "Горение",
+  "SLAYTHEREQUIEM-BURNING_POWER.description": "В конце своего хода получает урон огнём, равный Горению; Блок плавится вдвое быстрее. Затем Горение уменьшается вдвое.",
+  "SLAYTHEREQUIEM-BURNING_POWER.smartDescription": "В конце своего хода получает [blue]{Amount}[/blue] урона огнём (Блок плавится вдвое быстрее). Затем Горение уменьшается вдвое.",
+  "SLAYTHEREQUIEM-CHILL_POWER.title": "Озноб",
+  "SLAYTHEREQUIEM-CHILL_POWER.description": "В начале своего хода теряет Выносливость, равную Ознобу. Затем Озноб уменьшается вдвое. Озябшие враги бьют слабее.",
+  "SLAYTHEREQUIEM-CHILL_POWER.smartDescription": "В начале своего хода теряет [blue]{Amount}[/blue] Выносливости. Затем Озноб уменьшается вдвое.",
+  "SLAYTHEREQUIEM-STATIC_POWER.title": "Статика",
+  "SLAYTHEREQUIEM-STATIC_POWER.description": "В начале своего хода теряет Ману, равную Статике; на нехватку получает урон разрядом. Затем Статика уменьшается на 1.",
+  "SLAYTHEREQUIEM-STATIC_POWER.smartDescription": "В начале своего хода теряет [blue]{Amount}[/blue] Маны; нехватка бьёт разрядом. Затем уменьшается на 1.",
+  "SLAYTHEREQUIEM-BLEED_POWER.title": "Кровотечение",
+  "SLAYTHEREQUIEM-BLEED_POWER.description": "Каждый раз, когда атакует, теряет ОЗ, равные Кровотечению. Затем Кровотечение уменьшается на 1.",
+  "SLAYTHEREQUIEM-BLEED_POWER.smartDescription": "Каждый раз, когда атакует, теряет [blue]{Amount}[/blue] ОЗ. Затем уменьшается на 1.",
+  "SLAYTHEREQUIEM-PLATING_POWER.title": "Латы",
+  "SLAYTHEREQUIEM-PLATING_POWER.description": "Каждый удар атакой по носителю слабее (не ниже 1).",
+  "SLAYTHEREQUIEM-PLATING_POWER.smartDescription": "Каждый удар атакой по носителю слабее на [blue]{Amount}[/blue] (не ниже 1).",
+  "SLAYTHEREQUIEM-SUNDER_POWER.title": "Раскол",
+  "SLAYTHEREQUIEM-SUNDER_POWER.description": "Снижает Латы. Ниже нуля каждый удар атакой сильнее. Уменьшается на 1 каждый ход.",
+  "SLAYTHEREQUIEM-SUNDER_POWER.smartDescription": "Латы снижены на [blue]{Amount}[/blue]. Ниже нуля удары атакой сильнее."
+}

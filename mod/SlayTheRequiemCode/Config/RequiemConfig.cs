@@ -1,0 +1,19 @@
+using BaseLib.Config;
+
+namespace SlayTheRequiem.SlayTheRequiemCode.Config;
+
+/// <summary>Настройки мода (меню модов BaseLib). Полный список режимов — docs/design/13, 15.</summary>
+[ConfigHoverTipsByDefault]
+internal class RequiemConfig : SimpleModConfig
+{
+    /// <summary>Главный выключатель: ◆/✦ и статусы Реквиема для Латоносца, Безмолвной и Регента.</summary>
+    [ConfigSection("CoreSection")]
+    public static bool EnableRequiemSystems { get; set; } = true;
+
+    /// <summary>Надрыв: атака без ◆ всё равно играется, но стоит ♥. Если выключено — карта просто бьёт вполсилы.</summary>
+    public static bool EnableOverstrain { get; set; } = true;
+
+    /// <summary>«Короткий забег»: акты 1 → 3 → 5 (docs/design/13 §1). Пока не используется кодом.</summary>
+    [ConfigSection("RunSection")]
+    public static bool ShortRun { get; set; } = false;
+}

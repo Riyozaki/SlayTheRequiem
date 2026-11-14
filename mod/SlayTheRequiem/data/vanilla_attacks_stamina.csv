@@ -1,0 +1,133 @@
+# Slay the Requiem: stamina markup of vanilla attacks. Card facts from sts2_database, game 0.107.1
+key,category,name_eng,energy,rarity,damage,hits,stamina,strike_class,damage_type,weapon,note
+Bolas,Colorless,Bolas,0,Rare,3,1,0,L,phys,N,"возвращается в руку каждый ход — 0, иначе налог"
+DramaticEntrance,Colorless,Dramatic Entrance,0,Uncommon,11,1,1,N,phys,N,
+Fisticuffs,Colorless,Fisticuffs,1,Uncommon,7,1,1,N,phys,N,кулаки
+FlashOfSteel,Colorless,Flash of Steel,0,Uncommon,5,1,0,L,phys,Y,кантрип
+GangUp,Colorless,Gang Up,1,Uncommon,,,1,N,phys,Y,
+GoldAxe,Colorless,Gold Axe,1,Rare,,,1,N,phys,Y,
+HandOfGreed,Colorless,Hand of Greed,2,Rare,20,1,2,N,phys,Y,
+Jackpot,Colorless,Jackpot,3,Rare,25,1,3,H,phys,N,
+Knockdown,Colorless,Knockdown,3,Rare,10,1,2,H,phys,N,
+MindBlast,Colorless,Mind Blast,1,Uncommon,,,1,N,magic,N,кандидат в Заклинания (Иллюзия)
+Omnislice,Colorless,Omnislice,0,Uncommon,8,1,1,N,phys,Y,
+Rend,Colorless,Rend,2,Rare,,,2,N,phys,Y,
+Salvo,Colorless,Salvo,1,Rare,12,1,1,N,phys,N,
+SeekerStrike,Colorless,Seeker Strike,1,Uncommon,9,1,1,N,phys,Y,
+TagTeam,Colorless,Tag Team,2,Uncommon,11,1,2,N,phys,Y,кооп
+ThrummingHatchet,Colorless,Thrumming Hatchet,1,Uncommon,11,1,1,N,phys,Y,возвращается в руку
+UltimateStrike,Colorless,Ultimate Strike,1,Uncommon,14,1,2,H,phys,Y,14 за 1⚡
+Volley,Colorless,Volley,X,Uncommon,10,1,X,N,phys,N,◆ = X
+ByrdSwoop,Event,Byrd Swoop,0,Event,14,1,1,N,phys,N,
+Clash,Event,Clash,0,Event,14,1,1,N,phys,Y,
+Exterminate,Event,Exterminate,1,Event,3,4,2,N,phys,N,4 удара по всем
+Maul,Event,Maul,1,Ancient,5,1,1,N,phys,N,
+NeowsFury,Event,Neow's Fury,1,Ancient,10,1,1,N,magic,N,
+Peck,Event,Peck,1,Event,2,3,1,L,phys,N,
+Rebound,Event,Rebound,1,Event,9,1,1,N,phys,Y,
+RipAndTear,Event,Rip and Tear,1,Event,7,1,1,N,phys,N,
+Squash,Event,Squash,1,Event,10,1,1,N,phys,N,
+Whistle,Event,Whistle,3,Ancient,33,1,4,H,phys,N,33 урона + Оглушение
+Anger,Ironclad,Anger,0,Common,6,1,1,L,phys,Y,копирует себя: ◆ ограничивает бесконечные Anger-комбо
+AshenStrike,Ironclad,Ashen Strike,1,Uncommon,,,1,N,fire,Y,огненная тематика
+Bash,Ironclad,Bash,2,Basic,8,1,2,H,phys,Y,базовый тяжёлый удар
+Bludgeon,Ironclad,Bludgeon,3,Uncommon,32,1,4,H,phys,Y,32 урона одним ударом — половина пула ◆ Латоносца
+BodySlam,Ironclad,Body Slam,1,Common,,,1,N,phys,N,"синергия с Блоком/Латами, не душим; урон не от оружия"
+Break,Ironclad,Break,1,Ancient,20,1,2,H,phys,Y,Древний: 20 урона за 1⚡
+Breakthrough,Ironclad,Breakthrough,1,Common,9,1,1,N,phys,Y,уже стоит ♥
+Bully,Ironclad,Bully,0,Uncommon,,,1,L,phys,Y,
+Cinder,Ironclad,Cinder,2,Common,18,1,2,N,fire,Y,
+Conflagration,Ironclad,Conflagration,1,Rare,2,4,2,N,fire,N,4 удара по всем
+Dismantle,Ironclad,Dismantle,1,Uncommon,8,1,1,N,phys,Y,
+Feed,Ironclad,Feed,1,Rare,10,1,1,N,phys,Y,
+FiendFire,Ironclad,Fiend Fire,2,Rare,7,1,3,H,fire,N,"финишер, сжигает руку"
+FightMe,Ironclad,Fight Me!,2,Uncommon,5,2,2,N,phys,Y,
+Grapple,Ironclad,Grapple,1,Uncommon,7,1,1,N,phys,N,захват — без оружия
+Headbutt,Ironclad,Headbutt,1,Common,9,1,1,N,phys,N,удар головой — без оружия
+Hemokinesis,Ironclad,Hemokinesis,1,Uncommon,15,1,1,N,magic,N,"магия крови, уже стоит ♥"
+HowlFromBeyond,Ironclad,Howl from Beyond,3,Uncommon,16,1,3,H,magic,N,"может разыгрываться автоматически: при нехватке ◆ — надрыв, не блок"
+IronWave,Ironclad,Iron Wave,1,Common,5,1,1,N,phys,Y,
+Mangle,Ironclad,Mangle,3,Rare,15,1,3,H,phys,Y,
+MoltenFist,Ironclad,Molten Fist,1,Common,10,1,1,N,fire,N,кулак — без оружия
+PactsEnd,Ironclad,Pact's End,0,Rare,17,1,1,N,magic,N,"условная карта, не дорожает"
+PerfectedStrike,Ironclad,Perfected Strike,2,Common,,,2,N,phys,Y,
+Pillage,Ironclad,Pillage,1,Uncommon,6,1,1,N,phys,Y,
+PommelStrike,Ironclad,Pommel Strike,1,Common,9,1,1,N,phys,Y,
+Rampage,Ironclad,Rampage,1,Uncommon,9,1,1,N,phys,Y,
+SetupStrike,Ironclad,Setup Strike,1,Common,7,1,1,N,phys,Y,
+Spite,Ironclad,Spite,0,Uncommon,5,2,1,L,phys,Y,
+Stomp,Ironclad,Stomp,3,Uncommon,12,1,3,H,phys,N,топот по всем
+StrikeIronclad,Ironclad,Strike,1,Basic,6,1,1,N,phys,Y,базовый удар
+SwordBoomerang,Ironclad,Sword Boomerang,1,Common,3,3,1,L,phys,Y,3 мелких удара
+TearAsunder,Ironclad,Tear Asunder,2,Rare,5,1,2,N,phys,Y,
+Thrash,Ironclad,Thrash,1,Rare,4,1,1,N,phys,Y,
+Thunderclap,Ironclad,Thunderclap,1,Common,4,1,1,N,shock,N,громовой хлопок
+TwinStrike,Ironclad,Twin Strike,1,Common,5,1,1,N,phys,Y,
+Unrelenting,Ironclad,Unrelenting,2,Uncommon,14,1,2,N,phys,Y,
+Uppercut,Ironclad,Uppercut,2,Uncommon,13,1,2,N,phys,N,апперкот — без оружия
+Whirlwind,Ironclad,Whirlwind,X,Uncommon,5,1,X,N,phys,Y,◆ = X
+AstralPulse,Regent,Astral Pulse,0,Common,6,1,1,N,light,N,
+BeatIntoShape,Regent,Beat into Shape,1,Rare,5,1,1,N,phys,Y,Ковка
+Bombardment,Regent,Bombardment,3,Rare,18,1,2,H,light,N,"авто-розыгрыш из сброса: дешевле по ◆, чтобы не надрываться"
+CelestialMight,Regent,Celestial Might,2,Common,6,3,2,N,light,N,
+CollisionCourse,Regent,Collision Course,0,Common,11,1,1,N,phys,N,
+Comet,Regent,Comet,0,Rare,33,1,1,H,light,N,основная цена — в ✦
+CrashLanding,Regent,Crash Landing,1,Rare,21,1,2,H,light,N,
+CrescentSpear,Regent,Crescent Spear,1,Common,,,1,N,phys,Y,
+CrushUnder,Regent,Crush Under,1,Common,7,1,1,N,phys,N,
+Devastate,Regent,Devastate,1,Uncommon,30,1,2,H,light,N,30 урона за 1⚡
+DyingStar,Regent,Dying Star,1,Rare,9,1,1,N,light,N,
+FallingStar,Regent,Falling Star,0,Basic,8,1,0,L,light,N,"базовая звёздная карта: платит ✦, не ◆"
+GammaBlast,Regent,Gamma Blast,0,Uncommon,13,1,1,N,light,N,
+GuidingStar,Regent,Guiding Star,1,Common,12,1,1,N,light,N,
+HeavenlyDrill,Regent,Heavenly Drill,X,Rare,8,1,X,N,light,N,◆ = X
+Hegemony,Regent,Hegemony,2,Uncommon,15,1,2,N,phys,Y,
+HeirloomHammer,Regent,Heirloom Hammer,2,Rare,20,1,2,H,phys,Y,
+KinglyKick,Regent,Kingly Kick,4,Uncommon,27,1,3,H,phys,N,"пинок; энергия дешевеет, ◆ — нет"
+KinglyPunch,Regent,Kingly Punch,1,Uncommon,8,1,1,N,phys,N,кулак
+KnockoutBlow,Regent,Knockout Blow,3,Uncommon,30,1,3,H,phys,N,
+LunarBlast,Regent,Lunar Blast,0,Uncommon,4,1,1,N,light,N,
+MakeItSo,Regent,Make It So,0,Rare,6,1,1,N,light,N,
+MeteorShower,Regent,Meteor Shower,0,Ancient,14,1,1,H,fire,N,Древний; основная цена — в ✦
+PhotonCut,Regent,Photon Cut,1,Common,10,1,1,N,light,Y,
+Radiate,Regent,Radiate,0,Uncommon,3,1,1,N,light,N,
+SevenStars,Regent,Seven Stars,2,Rare,7,7,3,H,light,N,7 ударов по всем
+ShiningStrike,Regent,Shining Strike,1,Uncommon,8,1,1,N,light,Y,
+SolarStrike,Regent,Solar Strike,1,Common,9,1,1,N,light,Y,
+Stardust,Regent,Stardust,0,Uncommon,5,1,1,N,light,N,
+StrikeRegent,Regent,Strike,1,Basic,6,1,1,N,phys,Y,базовый удар
+Supermassive,Regent,Supermassive,1,Uncommon,,,1,N,light,N,
+WroughtInWar,Regent,Wrought in War,1,Common,7,1,1,N,phys,Y,Ковка
+Assassinate,Silent,Assassinate,0,Rare,10,1,1,L,phys,Y,
+Backstab,Silent,Backstab,0,Uncommon,11,1,1,L,phys,Y,
+DaggerSpray,Silent,Dagger Spray,1,Common,4,1,1,L,phys,Y,
+DaggerThrow,Silent,Dagger Throw,1,Common,9,1,1,L,phys,Y,
+Dash,Silent,Dash,2,Uncommon,10,1,2,N,phys,Y,
+EchoingSlash,Silent,Echoing Slash,1,Rare,10,1,2,N,phys,Y,повторяется за каждое убийство
+Finisher,Silent,Finisher,1,Uncommon,6,1,2,N,phys,Y,много ударов
+Flechettes,Silent,Flechettes,1,Uncommon,5,1,1,L,phys,N,метательные
+FlickFlack,Silent,Flick-Flack,1,Common,6,1,1,N,phys,Y,Ловкость (Sly): при авто-розыгрыше ◆ не блокирует
+FollowThrough,Silent,Follow Through,1,Uncommon,6,1,1,N,phys,Y,
+GrandFinale,Silent,Grand Finale,0,Rare,60,1,3,H,phys,Y,60 урона
+LeadingStrike,Silent,Leading Strike,1,Common,3,1,1,N,phys,Y,
+MementoMori,Silent,Memento Mori,1,Uncommon,,,1,N,phys,Y,
+Murder,Silent,Murder,3,Rare,,,3,H,phys,Y,
+Neutralize,Silent,Neutralize,0,Basic,3,1,0,L,phys,Y,"базовый тычок, ядро класса"
+Pinpoint,Silent,Pinpoint,3,Uncommon,15,1,2,N,phys,Y,дешевеет по энергии — ◆ ставим средним
+PoisonedStab,Silent,Poisoned Stab,1,Common,6,1,1,N,phys,Y,
+Pounce,Silent,Pounce,2,Uncommon,14,1,2,N,phys,Y,
+PreciseCut,Silent,Precise Cut,0,Uncommon,,,1,L,phys,Y,
+Predator,Silent,Predator,2,Common,15,1,2,N,phys,Y,
+Ricochet,Silent,Ricochet,2,Common,3,4,2,N,phys,N,4 рикошета
+Skewer,Silent,Skewer,X,Uncommon,8,1,X,N,phys,Y,◆ = X
+Slice,Silent,Slice,0,Common,6,1,1,L,phys,Y,
+Strangle,Silent,Strangle,1,Uncommon,8,1,1,N,phys,N,удушение — без оружия
+StrikeSilent,Silent,Strike,1,Basic,6,1,1,N,phys,Y,базовый удар
+SuckerPunch,Silent,Sucker Punch,1,Common,8,1,1,N,phys,N,кулак
+Suppress,Silent,Suppress,0,Ancient,11,1,1,L,phys,Y,Древний
+TheHunt,Silent,The Hunt,1,Rare,10,1,1,N,phys,Y,
+GiantRock,Token,Giant Rock,1,Token,16,1,2,H,phys,N,16 урона
+MinionDiveBomb,Token,Minion Dive Bomb,0,Token,13,1,0,L,phys,N,"бьёт приспешник, не герой"
+MinionStrike,Token,Minion Strike,0,Token,6,1,0,L,phys,N,"бьёт приспешник, не герой"
+Shiv,Token,Shiv,0,Token,4,1,0,L,phys,N,ядро архетипа Шивов; ограничитель — энергия/генерация
+SovereignBlade,Token,Sovereign Blade,2,Token,10,1,1,N,light,Y,ядро Регента; дешёвый по ◆ — маг с малым пулом

@@ -1,0 +1,20 @@
+{
+  "SLAYTHEREQUIEM-BURNING_POWER.title": "Burning",
+  "SLAYTHEREQUIEM-BURNING_POWER.description": "At the end of its turn, takes damage equal to Burning; Block melts twice as fast. Then Burning is halved.",
+  "SLAYTHEREQUIEM-BURNING_POWER.smartDescription": "At the end of its turn, takes [blue]{Amount}[/blue] fire damage (Block melts twice as fast). Then Burning is halved.",
+  "SLAYTHEREQUIEM-CHILL_POWER.title": "Chill",
+  "SLAYTHEREQUIEM-CHILL_POWER.description": "At the start of its turn, loses Stamina equal to Chill. Then Chill is halved. Chilled enemies deal less attack damage.",
+  "SLAYTHEREQUIEM-CHILL_POWER.smartDescription": "At the start of its turn, loses [blue]{Amount}[/blue] Stamina. Then Chill is halved.",
+  "SLAYTHEREQUIEM-STATIC_POWER.title": "Static",
+  "SLAYTHEREQUIEM-STATIC_POWER.description": "At the start of its turn, loses Mana equal to Static; any shortfall is dealt as shock damage. Then Static decreases by 1.",
+  "SLAYTHEREQUIEM-STATIC_POWER.smartDescription": "At the start of its turn, loses [blue]{Amount}[/blue] Mana; shortfall is dealt as shock damage. Then decreases by 1.",
+  "SLAYTHEREQUIEM-BLEED_POWER.title": "Bleed",
+  "SLAYTHEREQUIEM-BLEED_POWER.description": "Whenever it attacks, loses HP equal to Bleed. Then Bleed decreases by 1.",
+  "SLAYTHEREQUIEM-BLEED_POWER.smartDescription": "Whenever it attacks, loses [blue]{Amount}[/blue] HP. Then decreases by 1.",
+  "SLAYTHEREQUIEM-PLATING_POWER.title": "Plating",
+  "SLAYTHEREQUIEM-PLATING_POWER.description": "Each attack hit against it deals less damage (minimum 1).",
+  "SLAYTHEREQUIEM-PLATING_POWER.smartDescription": "Each attack hit against it deals [blue]{Amount}[/blue] less damage (minimum 1).",
+  "SLAYTHEREQUIEM-SUNDER_POWER.title": "Sunder",
+  "SLAYTHEREQUIEM-SUNDER_POWER.description": "Reduces Plating. Below zero, each attack hit deals extra damage. Decreases by 1 each turn.",
+  "SLAYTHEREQUIEM-SUNDER_POWER.smartDescription": "Plating reduced by [blue]{Amount}[/blue]. Below zero, attack hits deal extra damage."
+}

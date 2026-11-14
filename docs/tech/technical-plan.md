@@ -15,33 +15,34 @@
 
 ## 2. Структура репозитория
 
+Раскладка повторяет шаблон Alchyr (ContentMod): код и ресурсы мода лежат рядом, `.csproj` в корне `mod/`.
+Ранний план `src/` + `data/` в корне отменён — ресурсы (включая таблицы) должны попадать в `.pck` по пути `res://SlayTheRequiem/…`.
+
 ```
 SlayTheRequiem/
-├─ docs/                     дизайн (этот набор)
-├─ src/SlayTheRequiem/       C#-проект
-│  ├─ SlayTheRequiem.csproj
-│  ├─ ModEntry.cs            [ModInitializer]: регистрация, Harmony.PatchAll, конфиг
-│  ├─ Core/
-│  │  ├─ Stats/              StaminaPool, ManaPool, Burden, Plating, Poise, Resistances
-│  │  ├─ Damage/             DamageType, DamagePipeline (хук на расчёт урона)
-│  │  ├─ Equipment/          EquipmentSlot, EquipmentItem (наследник BaseLib-реликвии), Loadout
-│  │  ├─ Progression/        Renown, Level, AttributeTiers, SkillTrees
-│  │  └─ Virtue/             VirtueState, VirtueEvents
-│  ├─ Content/
-│  │  ├─ Cards/{Platebearer,Silent,Regent,Spells,Alchemy,Cries}/
-│  │  ├─ Powers/             Burning, Chill, Frozen, Static, Blight, Bleed, Sunder, Ward, Cloaks...
-│  │  ├─ Relics/{Equipment,Jewelry,Backpack,Artifacts}/
-│  │  ├─ Potions/ Poisons/ Food/
-│  │  ├─ Omens/ Celestials/ Princes/ Paths/
-│  │  ├─ Monsters/ Encounters/ Affixes/
-│  │  └─ Events/
-│  ├─ Patches/               Harmony-патчи по системам (по файлу на систему)
-│  └─ UI/                    шкалы ◆/✦, экран снаряжения, лагерь, груз
-├─ assets/                   исходники PNG/шрифты (до упаковки)
-├─ pck/                      Godot-проект для сборки .pck
-├─ data/                     JSON/CSV-таблицы баланса (предметы, враги, аффиксы)
-├─ tools/                    генерация JSON-локализации из таблиц, валидаторы
-└─ tests/                    xUnit: чистая логика (урон, статусы, груз) без движка
+├─ docs/                          дизайн (этот набор)
+├─ mod/
+│  ├─ SlayTheRequiem.csproj        Godot.NET.Sdk 4.5.1, net9.0; ссылки на sts2.dll/0Harmony.dll из папки игры
+│  ├─ SlayTheRequiem.json          манифест (id, BaseLib ≥ 3.3.0, affects_gameplay)
+│  ├─ project.godot, export_presets.cfg, Sts2PathDiscovery.props   из шаблона
+│  ├─ SlayTheRequiemCode/          C#
+│  │  ├─ MainFile.cs               [ModInitializer]: конфиг, загрузка таблиц, Harmony.PatchAll
+│  │  ├─ Core/                     ЧИСТАЯ логика без ссылок на игру (тестируется отдельно):
+│  │  │                            StaminaRules, CombatMath, StatusMath, SpellAffinity, BurdenRules, HeroStats, StaminaTable
+│  │  ├─ Config/                   RequiemConfig (SimpleModConfig)
+│  │  ├─ Resources/                StaminaResource, ManaResource (BasicCustomResource)
+│  │  ├─ Rules/                    RequiemMode (кто в системе), StaminaCosts, RequiemCombatRules (CustomSingletonModel)
+│  │  ├─ Powers/                   Burning, Chill, Static, Bleed, Plating, Sunder (+ база RequiemPower)
+│  │  ├─ Cards/ Relics/ Extensions/   базы и хелперы шаблона
+│  │  └─ (дальше) Acts/ Shops/ Rollback/ Equipment/ Spells/ Monsters/ Events/ Patches/ UI/
+│  ├─ SlayTheRequiem/              ресурсы → res://SlayTheRequiem/
+│  │  ├─ data/vanilla_attacks_stamina.csv   ручная разметка ◆ (генерируется, не править руками)
+│  │  ├─ localization/{eng,rus}/*.json
+│  │  └─ images/{powers,relics,card_portraits,ui}/
+│  └─ SlayTheRequiem.Tests/        xUnit: компилирует только Core/*.cs, игра не нужна
+└─ tools/
+   ├─ markup/build_vanilla_attacks.py      словарь разметки ◆ → CSV (сверяется с базой карт sts2_database)
+   └─ sim/requiem_rules.py + тесты         Python-зеркало Core/ для баланса и проверки без .NET
 ```
 
 ## 3. Ключевые системы и точки интеграции
@@ -49,7 +50,7 @@ SlayTheRequiem/
 | Система | Как реализуем | Риск |
 |---|---|---|
 | **◆/✦ шкалы** | компонент на `Creature`/`Player` (через Harmony-постфикс конструктора или BaseLib-хук «combat start»); UI — дочерний узел к полоске ♥ | средний: UI игроков в коопе |
-| **Цена карт в ◆/✦** | атрибут/интерфейс `IResourceCost` на карте + патч `CanPlay` и `OnPlay`; ванильные атаки — правило по умолчанию из конфига | **высокий**: все ванильные карты, X-карты, авто-розыгрыш (Sly) |
+| **Цена карт в ◆/✦** | ◆: глобальный `CustomSingletonModel` — `BeforeCardPlayed` платит ◆ по CSV/`IStaminaCard`, множитель Устал/Изнурён в `ModifyDamageMultiplicative`, повторы (`!IsFirstInSeries`) не платят. ✦: `CustomResourceCost<ManaResource>` на картах-заклинаниях + цена по разрыву владения (`IModifyResourceCostInCombat`) | **высокий**: X-карты, авто-розыгрыш (Sly), звёзды Регента |
 | **Типы урона и сопротивления** | `DamagePipeline`: патч на расчёт итогового урона (после Силы/Слабости, до Блока) → тип, Латы, Пробитие, сопротивления | высокий: порядок модификаторов с ванильными Уязвимостью/Хрупкостью |
 | **Статусы** | наследники BaseLib Power; ключевые слова — CustomEnum | низкий |
 | **Ошеломление/Слом** | Power «Шаткость» + патч на выбор намерения врага (отмена текущего Move) | средний: AI-машины монстров |
@@ -60,9 +61,18 @@ SlayTheRequiem/
 | **Лагерь** | патч `RestSite`: свои `RestSiteOption`, очки лагеря | средний |
 | **Враги** | BaseLib-монстры + аффиксы как Power, накладываемые при спавне | низкий |
 | **Супербоссы** | дополнительный `Encounter` в узле после босса; объекты на поле — монстры-«пропсы» | средний |
+| **Звёзды Регента → ✦** | Harmony-патч трат/получения звёзд (`PlayerCombatState.Stars`, `ResourceInfo.StarsSpent`) на `ManaResource`; цена звёзд у ванильных карт = цена ✦ | высокий: много ванильного кода звёзд |
+| **5 актов** | новые акты — `CustomActModel(actNumber)` (BaseLib снимает проверку «≤4 актов» в `ModelDb.Acts`); патч сборки списка актов забега (`ActsByIndex` / создание `RunState`) на 5 слотов с развилками 2а/2б и 4а/4б; «Короткий забег» — 1→3→5 | **высокий**: экран финала, статистика, сейвы |
+| **Карта** | `ModifyGeneratedMap(Late)` для новых значков (подтипы точек поверх `MapPointType`) и ширины 9 в своих актах | средний |
+| **Лавки** | тип лавки хранится на точке карты; `ModifyMerchantCardPool/Rarity/CreationResults`, `ModifyMerchantPrice`, `AfterItemPurchased`; новые записи `MerchantInventory` (снаряжение, свитки) и вкладка «Продать» | средний: UI лавки |
+| **Камень Памяти** | `AfterActEntered` → копия `current_run(_mp).save` в `requiem_act_<n>.save` (через `RunSaveManager.GetRunSavePath`); при гибели (`ShouldDie`/экран поражения) — предложение отката, загрузка снимка, пересев карты, Шрам + −Свеча в extended-save BaseLib | **высокий**: кооп, античит сейва |
 | **Кооп** | все состояния — на уровне игрока, синхронизируются через существующие сетевые действия игры | **высокий**: проверять рано |
 
 ## 4. Данные
+
+- **Разметка ◆ ванильных атак** — `tools/markup/build_vanilla_attacks.py` (словарь `ключ → ◆, класс удара, тип урона, оружие, примечание`).
+  Скрипт сверяет словарь с базой карт игры (`vitechliu/sts2_database`) и падает, если атака не размечена или ключ лишний,
+  поэтому после патча EA новые атаки не пройдут незамеченными. Ключ = имя класса карты в игре (`StrikeIronclad`).
 
 - Баланс в `data/*.csv` (предметы, аффиксы, враги, рецепты) → генератор `tools/gen` создаёт C#-партиалы и JSON локализации.
   Геймдизайнер правит таблицы без перекомпиляции логики.
@@ -70,7 +80,7 @@ SlayTheRequiem/
 
 ## 5. Конфиг мода (BaseLib config UI)
 
-- Модули (вкл/выкл): Выносливость, Мана для не-Регента, Груз, Снаряжение, Реакции стихий, Усталость похода, Супербоссы, Метапрогресс лагеря.
+- Модули (вкл/выкл): Выносливость (надрыв), Груз, Снаряжение, Реакции стихий, Усталость похода, Супербоссы, Метапрогресс лагеря, Короткий забег, Камень Памяти (вкл. на Реквиеме 0–9).
 - Множитель ♥ врагов (0.8–1.5), уровень «Реквиема» по умолчанию.
 - Модульность — главное средство против риска: каждая система тестируется отдельно и выключается при поломке после патча EA.
 

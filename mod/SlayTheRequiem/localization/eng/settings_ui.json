@@ -1,0 +1,13 @@
+{
+  "SLAYTHEREQUIEM-CORE_SECTION.title": "Core systems",
+  "SLAYTHEREQUIEM-RUN_SECTION.title": "Run",
+  "SLAYTHEREQUIEM-ENABLE_REQUIEM_SYSTEMS.title": "Enable Requiem systems",
+  "SLAYTHEREQUIEM-ENABLE_REQUIEM_SYSTEMS.hover.title": "Requiem systems",
+  "SLAYTHEREQUIEM-ENABLE_REQUIEM_SYSTEMS.hover.desc": "Stamina, Mana and Requiem statuses for Ironclad, Silent and Regent.",
+  "SLAYTHEREQUIEM-ENABLE_OVERSTRAIN.title": "Overstrain",
+  "SLAYTHEREQUIEM-ENABLE_OVERSTRAIN.hover.title": "Overstrain",
+  "SLAYTHEREQUIEM-ENABLE_OVERSTRAIN.hover.desc": "Attacking without enough Stamina costs 2 HP per missing point.",
+  "SLAYTHEREQUIEM-SHORT_RUN.title": "Short run (acts 1-3-5)",
+  "SLAYTHEREQUIEM-SHORT_RUN.hover.title": "Short run",
+  "SLAYTHEREQUIEM-SHORT_RUN.hover.desc": "Not implemented yet."
+}
