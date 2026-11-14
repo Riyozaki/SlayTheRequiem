@@ -68,10 +68,14 @@ public abstract class SummonPower : RequiemPower
         foreach (var enemy in targets)
         {
             using (DamageTyping.As(AttackType))
-                await CreatureCmd.Damage(choiceContext, enemy, AttackDamage, ValueProp.Unpowered, Owner, null);
+                await CreatureCmd.Damage(choiceContext, enemy, AttackDamage + SummonBonusDamage, ValueProp.Unpowered, Owner, null);
             if (enemy.IsAlive) await OnHit(choiceContext, enemy);
         }
     }
+
+    /// <summary>Надбавка урона призывов («Призыватель» у Туманных).</summary>
+    public int SummonBonusDamage => Owner.Player?.Relics.OfType<Relics.SummonerBackground>().Any() == true
+        ? Relics.SummonerBackground.BonusDamage : 0;
 
     protected virtual Task OnHit(PlayerChoiceContext ctx, Creature enemy) => Task.CompletedTask;
     protected virtual Task OnStruck(PlayerChoiceContext ctx, Creature attacker) => Task.CompletedTask;
@@ -105,4 +109,15 @@ public sealed class StormAtronachPower : SummonPower
     public override int AttackDamage => 6;
     public override DamageType AttackType => DamageType.Shock;
     public override bool HitsAll => true;
+}
+
+/// <summary>
+/// Дух зверя («Зверобой-духовидец» Инеерождённых): волк → саблезуб → медведь по числу побеждённых элит.
+/// Урон задаёт предыстория при призыве.
+/// </summary>
+public sealed class BeastSpiritPower : SummonPower
+{
+    private int _damage = 3;
+    public override int AttackDamage => _damage;
+    public void SetDamage(int damage) => _damage = damage;
 }

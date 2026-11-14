@@ -12,8 +12,9 @@ using SlayTheRequiem.SlayTheRequiemCode.Rules;
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
 /// <summary>
-/// Уворот N (лёгкая броня): N раз за бой атака врага по владельцу гасится целиком ценой 2 ◆.
-/// Без ◆ — не срабатывает. Расчёт: ModifyHpLostBeforeOsty обнуляет потерю, списание — после удара.
+/// Уворот N (лёгкая броня, docs/design/02 §4.2): N раз за ход удар врага, который должен снять ♥, гасится целиком
+/// ценой 2 ◆. Заряды восстанавливаются в начале хода героя. Без ◆ — не срабатывает.
+/// Расчёт: ModifyHpLostBeforeOsty обнуляет потерю, списание и реакции (<see cref="IDodgeListener"/>) — после удара.
 /// </summary>
 public sealed class DodgePower : RequiemPower
 {
@@ -21,15 +22,18 @@ public sealed class DodgePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
+    private int _usedThisTurn;
     private bool _pending;
 
+    public int Remaining => Math.Max(0, Amount - _usedThisTurn);
+
     private bool CanDodge(Creature target, ValueProp props, Creature? dealer) =>
-        target == Owner && Amount > 0 && dealer != null && dealer != Owner && props.IsPoweredAttack()
+        Config.RequiemConfig.AutoDodge && target == Owner && Remaining > 0 && dealer != null && dealer != Owner && props.IsPoweredAttack()
         && (RequiemResource.Of<StaminaResource>(Owner.Player)?.Amount ?? 0) >= StaminaCost;
 
     public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (amount <= 0 || !CanDodge(target, props, dealer)) return amount;
+        if (amount <= 0 || _pending || !CanDodge(target, props, dealer)) return amount;
         _pending = true;
         return 0m;
     }
@@ -38,10 +42,27 @@ public sealed class DodgePower : RequiemPower
     {
         if (!_pending || target != Owner) return;
         _pending = false;
+        _usedThisTurn++;
         RequiemResource.Of<StaminaResource>(Owner.Player)?.ModifyAmount(-StaminaCost);
         Flash();
-        await PowerCmd.Decrement(this);
+        foreach (var listener in Owner.Powers.OfType<IDodgeListener>().ToList())
+            await listener.AfterDodged(choiceContext, dealer);
+        if (Owner.Player != null)
+            foreach (var listener in Owner.Player.Relics.OfType<IDodgeListener>().ToList())
+                await listener.AfterDodged(choiceContext, dealer);
     }
+
+    public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (participants.Contains(Owner)) _usedThisTurn = 0;
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Реакция на успешный Уворот (Контрудар, Кольчуга контрабандиста).</summary>
+public interface IDodgeListener
+{
+    Task AfterDodged(PlayerChoiceContext ctx, Creature? attacker);
 }
 
 /// <summary>

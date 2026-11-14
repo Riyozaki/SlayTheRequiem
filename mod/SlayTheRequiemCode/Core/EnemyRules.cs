@@ -91,4 +91,36 @@ public static class StaggerRules
             ? new Result(true, 0, EnemyRules.RaiseThreshold(threshold))
             : new Result(false, stagger, threshold);
     }
+
+    // ───── аффиксы (docs/design/11 §2) ─────
+
+    public const int AffixPlating = 2;
+    public const int AffixCloak = 3;
+    public const int AffixResistance = 2;
+    public const int AffixDrain = 2;
+    public const int VampiricPercent = 50;
+    public const int AffixPoison = 2;
+    /// <summary>Шанс аффикса у обычного врага с акта 2, в процентах.</summary>
+    public const int NormalAffixChance = 25;
+
+    /// <summary>Сколько аффиксов получает враг: элита — 1, обычный с акта 2 — 0/1 (бросок 0..99), босс — 0.</summary>
+    public static int AffixCount(EnemyRank rank, int actIndex, int roll) => rank switch
+    {
+        EnemyRank.Elite => 1,
+        EnemyRank.Normal when actIndex >= 1 && roll < NormalAffixChance => 1,
+        _ => 0,
+    };
+}
+
+/// <summary>Аффиксы, сделанные на этапах 1–3 (остальные — этап 7).</summary>
+public enum EnemyAffix
+{
+    Hardened,
+    Fiery,
+    Icy,
+    Stormy,
+    Draining,
+    ManaEater,
+    Vampiric,
+    PoisonedBlade,
 }

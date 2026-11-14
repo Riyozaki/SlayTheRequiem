@@ -21,7 +21,9 @@ public abstract class ResistancePower : RequiemPower
         DamageType.Fire => creature.GetPowerAmount<FireResistancePower>(),
         DamageType.Frost => creature.GetPowerAmount<FrostResistancePower>(),
         DamageType.Shock => creature.GetPowerAmount<ShockResistancePower>(),
-        DamageType.Poison or DamageType.Blight => creature.GetPowerAmount<PoisonResistancePower>(),
+        DamageType.Poison => creature.GetPowerAmount<PoisonResistancePower>(),
+        // Хворь режут и сопротивление ядам, и своё (Тинники, Сыны Чащи).
+        DamageType.Blight => creature.GetPowerAmount<PoisonResistancePower>() + creature.GetPowerAmount<BlightResistancePower>(),
         DamageType.Magic => creature.GetPowerAmount<MagicResistancePower>(),
         _ => 0,
     };
@@ -32,3 +34,4 @@ public sealed class FrostResistancePower : ResistancePower { public override Dam
 public sealed class ShockResistancePower : ResistancePower { public override DamageType Element => DamageType.Shock; }
 public sealed class PoisonResistancePower : ResistancePower { public override DamageType Element => DamageType.Poison; }
 public sealed class MagicResistancePower : ResistancePower { public override DamageType Element => DamageType.Magic; }
+public sealed class BlightResistancePower : ResistancePower { public override DamageType Element => DamageType.Blight; }

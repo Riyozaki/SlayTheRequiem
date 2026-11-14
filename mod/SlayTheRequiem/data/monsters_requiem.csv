@@ -20,6 +20,8 @@ CalcifiedCultist,cultist,2,0,0,0,0,0,1,phys,окаменевший
 CeremonialBeast,beast,1,0,-1,1,0,0,0,phys,босс
 Chomper,beast,0,0,-1,1,0,0,0,phys,
 CorpseSlug,undead,0,0,-1,2,0,4,0,poison,
+CrimsonBandit,humanoid,0,0,0,0,0,0,0,phys,шайка Атаманши
+CrimsonChieftain,humanoid,0,2,0,0,0,0,0,phys,элита «Атаманша Багряных Ножей» (Диджа)
 CrossbowRubyRaider,humanoid,0,0,0,0,0,0,0,phys,Багряные Ножи
 Crusher,construct,3,4,1,-1,-1,4,0,phys,
 CubexConstruct,construct,3,2,1,-1,-1,4,0,phys,

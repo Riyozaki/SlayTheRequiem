@@ -68,4 +68,12 @@ public static class StringExtensions
     {
         return Path.Join(MainFile.ResPath, "images", "charui", path);
     }
+
+    /// <summary>Картинка зелья мода; если её нет — ванильная из атласа (<paramref name="vanillaFallback"/>, напр. "blood_potion").</summary>
+    public static string PotionImagePath(this string path, string vanillaFallback, bool outline = false)
+    {
+        path = Path.Join(MainFile.ResPath, "images", "potions", outline ? "outline" : "", path);
+        if (ResourceLoader.Exists(path)) return path;
+        return $"res://images/atlases/{(outline ? "potion_outline_atlas" : "potion_atlas")}.sprites/{vanillaFallback}.tres";
+    }
 }

@@ -52,7 +52,7 @@ public sealed class EquipmentCombatRules() : CustomSingletonModel(CustomSingleto
     /// <summary>«Оружейная» атака: Удары (тег Strike), ванильные с флагом weapon в разметке, карты мода с IWeaponCard.</summary>
     public static bool IsWeaponAttack(CardModel card)
     {
-        if (card.Type != CardType.Attack) return false;
+        if (card.Type != CardType.Attack || card is Spells.SpellCard) return false;
         if (card is IWeaponCard) return true;
         if (card.Tags.Contains(CardTag.Strike)) return true;
         return RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var e) && e.Weapon;

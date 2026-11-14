@@ -68,6 +68,57 @@ public static class EnemySetup
                 case DamageType.Magic: await PowerCmd.Apply<MagicResistancePower>(ctx, creature, tier, null, null, silent: true); break;
             }
         }
+
+        var state = combatState ?? creature.CombatState;
+        if (state?.RunState is { } run)
+        {
+            var count = EnemyRules.AffixCount(rank, run.CurrentActIndex, run.Rng.Niche.NextInt(100));
+            var all = Enum.GetValues<EnemyAffix>();
+            for (var i = 0; i < count; i++)
+                await ApplyAffix(ctx, creature, all[run.Rng.Niche.NextInt(all.Length)]);
+        }
+    }
+
+    /// <summary>Выдать аффикс (docs/design/11 §2): маркер-сила и её числа.</summary>
+    public static async Task ApplyAffix(PlayerChoiceContext ctx, Creature creature, EnemyAffix affix)
+    {
+        switch (affix)
+        {
+            case EnemyAffix.Hardened:
+                await PowerCmd.Apply<HardenedAffixPower>(ctx, creature, 1, null, null, silent: true);
+                await PowerCmd.Apply<PlatingPower>(ctx, creature, EnemyRules.AffixPlating, null, null, silent: true);
+                break;
+            case EnemyAffix.Fiery:
+                await ApplyElemental<FireCloakPower, FireResistancePower>(ctx, creature);
+                break;
+            case EnemyAffix.Icy:
+                await ApplyElemental<FrostCloakPower, FrostResistancePower>(ctx, creature);
+                break;
+            case EnemyAffix.Stormy:
+                await ApplyElemental<ShockCloakPower, ShockResistancePower>(ctx, creature);
+                break;
+            case EnemyAffix.Draining:
+                await PowerCmd.Apply<DrainingAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.ManaEater:
+                await PowerCmd.Apply<ManaEaterAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.Vampiric:
+                await PowerCmd.Apply<VampiricAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.PoisonedBlade:
+                await PowerCmd.Apply<PoisonedBladeAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+        }
+    }
+
+    private static async Task ApplyElemental<TCloak, TResist>(PlayerChoiceContext ctx, Creature creature)
+        where TCloak : CloakPower where TResist : ResistancePower
+    {
+        await PowerCmd.Apply<ElementalAffixPower>(ctx, creature, 1, null, null, silent: true);
+        var cloak = await PowerCmd.Apply<TCloak>(ctx, creature, EnemyRules.AffixCloak, null, null, silent: true);
+        cloak?.MakePermanent();
+        await PowerCmd.Apply<TResist>(ctx, creature, EnemyRules.AffixResistance, null, null, silent: true);
     }
 
     /// <summary>Иммунитет к Кровотечению: нежить, конструкты, призраки (docs/design/03).</summary>

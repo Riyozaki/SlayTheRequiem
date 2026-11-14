@@ -51,7 +51,7 @@ public static class Loadout
     public static int CardWeight(CardModel card) =>
         BurdenRules.DefaultCardWeight(card.Rarity.ToString(), card.Type == CardType.Curse, card.Type == CardType.Status);
 
-    public static int Capacity(Player? player) => RequiemMode.StatsFor(player).BurdenCapacity;
+    public static int Capacity(Player? player) => HeroStatRules.BurdenCapacity(player);
 
     public static BurdenRules.Overload Overload(Player? player) => BurdenRules.Evaluate(TotalWeight(player), Capacity(player));
 }

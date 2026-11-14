@@ -30,6 +30,9 @@ public static class StaminaCosts
             cost = EquipmentRules.WeaponAttackCost(cost, Equipment.Loadout.Bonuses(card.Owner));
         var owner = card.Owner?.Creature;
         if (owner != null && owner.HasPower<GripPower>()) cost = 0;
+        if (card.Owner != null)
+            foreach (var modifier in card.Owner.Relics.OfType<IAttackStaminaModifier>())
+                cost = Math.Max(0, modifier.ModifyAttackStamina(card, cost));
         return cost;
     }
 
@@ -40,6 +43,12 @@ public static class StaminaCosts
             ? entry.DamageType
             : DamageType.Physical;
     }
+}
+
+/// <summary>Реликвия, меняющая цену атак в ◆ (предыстории, снаряжение).</summary>
+public interface IAttackStaminaModifier
+{
+    int ModifyAttackStamina(CardModel card, int cost);
 }
 
 /// <summary>Карта мода: своя цена ◆ и тип урона.</summary>

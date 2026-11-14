@@ -57,10 +57,35 @@ public static class Mana
 public interface IResourceSource
 {
     int StaminaPoolBonus => 0;
+    /// <summary>Прирост ◆ за ход (Отдохнувший, Бодрость, зелье Выносливости V).</summary>
+    int StaminaRegenBonus => 0;
     int ManaPoolBonus => 0;
     int ManaRegenBonus => 0;
     /// <summary>✦ сверх стартовой половины пула в начале боя.</summary>
     int ManaStartBonus => 0;
+    /// <summary>Стойкость героя (порог Оглушения).</summary>
+    int PoiseBonus => 0;
+    /// <summary>Вместимость Груза.</summary>
+    int BurdenBonus => 0;
+}
+
+/// <summary>Сводные статы героя поверх базовых: Стойкость и вместимость Груза из снаряжения, происхождений, зелий.</summary>
+public static class HeroStatRules
+{
+    public static int Poise(Player? player)
+    {
+        if (player == null) return 0;
+        var poise = RequiemMode.StatsFor(player).Poise + Loadout.Bonuses(player).PoiseBonus
+            + Mana.ManaSources(player).Sum(s => s.PoiseBonus)
+            + (player.Creature?.GetPowerAmount<Powers.GiantPower>() ?? 0);
+        return Math.Max(1, poise);
+    }
+
+    public static int BurdenCapacity(Player? player)
+    {
+        if (player == null) return 0;
+        return RequiemMode.StatsFor(player).BurdenCapacity + Mana.ManaSources(player).Sum(s => s.BurdenBonus);
+    }
 }
 
 /// <summary>Стартовое ✦ и прирост в начале каждого хода героя.</summary>

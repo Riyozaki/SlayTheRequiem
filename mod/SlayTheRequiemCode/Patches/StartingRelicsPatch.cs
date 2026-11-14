@@ -6,14 +6,28 @@ using SlayTheRequiem.SlayTheRequiemCode.Spells;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Patches;
 
-/// <summary>Герою в системе Реквиема к стартовым реликвиям добавляется Гримуар со стартовым владением школами.</summary>
+/// <summary>Герою в системе Реквиема к стартовым реликвиям добавляются Гримуар (владение школами), Сумка травника и Походный мешок.</summary>
 [HarmonyPatch(typeof(Player), "PopulateStartingRelics")]
 public static class StartingRelicsPatch
 {
     [HarmonyPostfix]
     public static void AddGrimoire(Player __instance)
     {
-        if (!RequiemMode.IsInSystem(__instance) || __instance.Relics.OfType<Grimoire>().Any()) return;
+        if (!RequiemMode.IsInSystem(__instance)) return;
+        // Сумка травника (реагенты) и Походный мешок (Груз, Сундук лагеря) — служебные, у всех героев системы.
+        if (!__instance.Relics.OfType<Alchemy.HerbalistPouch>().Any())
+        {
+            var pouch = ModelDb.Relic<Alchemy.HerbalistPouch>().ToMutable();
+            pouch.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(pouch, silent: true);
+        }
+        if (!__instance.Relics.OfType<Alchemy.TravelPack>().Any())
+        {
+            var pack = ModelDb.Relic<Alchemy.TravelPack>().ToMutable();
+            pack.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(pack, silent: true);
+        }
+        if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();
         grimoire.InitFor(__instance.Character.GetType().Name);
         grimoire.FloorAddedToDeck = 1;

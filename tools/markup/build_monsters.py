@@ -97,6 +97,8 @@ M = {
 # Враги мода (классы SlayTheRequiemCode/Monsters) — не сверяются со списком ванильных ключей.
 MOD = {
     "TombGuardian": ("undead", 1, 3, "magic", "элита «Хранитель Гробницы» (Морокей)"),
+    "CrimsonChieftain": ("humanoid", 0, 2, "phys", "элита «Атаманша Багряных Ножей» (Диджа)"),
+    "CrimsonBandit": ("humanoid", 0, 0, "phys", "шайка Атаманши"),
 }
 
 SKIP = {"BigDummy", "DeprecatedMonster", "MultiAttackMoveMonster", "SingleAttackMoveMonster", "OneHpMonster",

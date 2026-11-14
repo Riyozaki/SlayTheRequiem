@@ -56,7 +56,7 @@ public sealed class ChillPower : RequiemPower
 
         var (loss, next) = StatusMath.ChillTick(Amount);
         // Инеерождённые («Кровь стужи»): Озноб на них спадает целиком.
-        if (Owner.HasPower<FrostbloodPower>()) next = 0;
+        if (Owner.HasPower<FrostbloodPower>() || Owner.Player?.Relics.OfType<Relics.FrostbornOrigin>().Any() == true) next = 0;
 
         var stamina = RequiemResource.Of<StaminaResource>(Owner.Player);
         if (stamina != null) stamina.Amount = Math.Max(0, stamina.Amount - loss);

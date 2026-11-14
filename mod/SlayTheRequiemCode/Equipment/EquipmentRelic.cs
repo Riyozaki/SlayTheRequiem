@@ -10,6 +10,8 @@ using MegaCrit.Sts2.Core.Saves.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Relics;
 
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
+
 namespace SlayTheRequiem.SlayTheRequiemCode.Equipment;
 
 /// <summary>
@@ -103,7 +105,7 @@ public abstract class WeaponRelic : EquipmentRelic
         switch (PropertyKind)
         {
             // Подлый: ×1.5 по цели без атакующего намерения.
-            case WeaponKind.Dagger when target.Monster is { } m && !m.IntendsToAttack:
+            case WeaponKind.Dagger when SneakRules.IsSneak(Owner.Creature, target):
                 return SneakMultiplier;
             // Острый: каждая 3-я Оружейная атака за бой — крит ×1.5 (счётчик растёт после атаки).
             case WeaponKind.Sword when (_weaponAttacksThisCombat + 1) % 3 == 0:
@@ -113,7 +115,7 @@ public abstract class WeaponRelic : EquipmentRelic
         }
     }
 
-    protected virtual decimal SneakMultiplier => 1.5m;
+    protected virtual decimal SneakMultiplier => SneakRules.DaggerMultiplier;
 
     public override async Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
     {

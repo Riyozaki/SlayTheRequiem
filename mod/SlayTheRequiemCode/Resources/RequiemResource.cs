@@ -65,6 +65,7 @@ public sealed class StaminaResource() : RequiemResource(ResourceId)
     protected override int RegenBonus =>
         (Owner?.Creature.GetPowerAmount<TemperingPower>() ?? 0)
         + Loadout.Bonuses(Owner).StaminaRegenBonus
+        + (Owner == null ? 0 : Mana.ManaSources(Owner).Sum(s => s.StaminaRegenBonus))
         - BurdenPenalty.StaminaRegenPenalty(Owner);
     protected override int PoolBonus => Loadout.Bonuses(Owner).StaminaPoolBonus
         + (Owner == null ? 0 : Mana.ManaSources(Owner).Sum(s => s.StaminaPoolBonus));

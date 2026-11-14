@@ -93,7 +93,7 @@ public static class EnemyResponses
 
         if (target.IsPlayer)
         {
-            var poise = RequiemMode.StatsFor(target.Player).Poise;
+            var poise = HeroStatRules.Poise(target.Player);
             if (stagger.Amount < poise) return;
             await PowerCmd.Remove(stagger);
             await PowerCmd.Apply<ConcussedPower>(new ThrowingPlayerChoiceContext(), target, 1, null, null);

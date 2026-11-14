@@ -125,6 +125,10 @@ public abstract class CloakPower : RequiemPower
     protected abstract Task ApplyStatus(PlayerChoiceContext ctx, Creature attacker, int stacks);
 
     private int _turnsLeft = Duration;
+    private bool _permanent;
+
+    /// <summary>Плащ аффикса «Огненный/Ледяной/Грозовой» — не спадает.</summary>
+    public void MakePermanent() => _permanent = true;
 
     /// <summary>Повторное наложение продлевает плащ.</summary>
     public override Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
@@ -144,7 +148,7 @@ public abstract class CloakPower : RequiemPower
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
-        if (!participants.Contains(Owner)) return;
+        if (!participants.Contains(Owner) || _permanent) return;
         if (--_turnsLeft <= 0) await PowerCmd.Remove(this);
     }
 }

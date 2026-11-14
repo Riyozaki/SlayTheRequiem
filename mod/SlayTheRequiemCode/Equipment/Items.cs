@@ -33,7 +33,7 @@ public sealed class SmugglerDagger : WeaponRelic
     /// <summary>Подлый удар возвращает 1 ◆.</summary>
     protected override Task OnWeaponHit(PlayerChoiceContext ctx, Creature target, CardModel card)
     {
-        if (target.Monster is { } m && !m.IntendsToAttack)
+        if (Rules.SneakRules.IsSneak(Owner.Creature, target))
             RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount(1);
         return Task.CompletedTask;
     }
