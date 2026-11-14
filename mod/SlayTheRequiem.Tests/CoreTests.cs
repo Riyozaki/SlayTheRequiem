@@ -44,7 +44,7 @@ public class CombatMathTests
     [InlineData(-1, 1.5)]
     [InlineData(0, 1.0)]
     [InlineData(2, 0.5)]
-    [InlineData(5, 0.25)]  // кап III
+    [InlineData(3, 0.25)]  // III — максимум, 4+ — иммунитет
     public void Resistance(int tier, double expected) =>
         Assert.Equal((decimal)expected, CombatMath.ResistanceMultiplier(tier));
 
@@ -110,4 +110,134 @@ public class StaminaTableTests
     [Fact]
     public void QuotedCells() =>
         Assert.Equal(new[] { "a", "b,c", "d\"e" }, StaminaTable.SplitCsvLine("a,\"b,c\",\"d\"\"e\""));
+}
+
+public class EnemyRulesTests
+{
+    [Theory]
+    [InlineData(EnemyRank.Normal, 12, 3)]
+    [InlineData(EnemyRank.Normal, 44, 6)]   // 5.5 → 6
+    [InlineData(EnemyRank.Normal, 400, 20)]
+    [InlineData(EnemyRank.Elite, 80, 13)]
+    [InlineData(EnemyRank.Boss, 300, 0)]
+    public void Poise(EnemyRank rank, int hp, int expected) => Assert.Equal(expected, EnemyRules.Poise(rank, hp));
+
+    [Fact]
+    public void StaggerTriggersAndRaisesThreshold()
+    {
+        Assert.Equal(new StaggerRules.Result(false, 4, 6), StaggerRules.Accumulate(4, 6));
+        Assert.Equal(new StaggerRules.Result(true, 0, 9), StaggerRules.Accumulate(7, 6));
+    }
+
+    [Theory]
+    [InlineData(1, 6, 1)]
+    [InlineData(3, 15, 2)]
+    [InlineData(1, 24, 2)]
+    public void AttackCost(int hits, int total, int expected) => Assert.Equal(expected, EnemyRules.AttackCost(hits, total));
+
+    [Fact]
+    public void ImmunityAndVulnerableStacks()
+    {
+        Assert.Equal(0m, CombatMath.ResistanceMultiplier(4));
+        Assert.Equal(0, CombatMath.ResistStacks(5, 4));
+        Assert.Equal(8, CombatMath.ResistStacks(5, -1));
+    }
+}
+
+public class MonsterTableTests
+{
+    [Fact]
+    public void ParsesShippedCsv()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "monsters_requiem.csv");
+        var table = MonsterTable.Parse(File.ReadAllText(path));
+        Assert.True(table.Count > 100);
+        var knight = table.Get("MechaKnight");
+        Assert.Equal("construct", knight.Faction);
+        Assert.Equal(4, knight.Plating);
+        Assert.Equal(CombatMath.ImmuneTier, knight.Resistances[DamageType.Poison]);
+        Assert.Same(MonsterTable.Default, table.Get("NoSuchMonster"));
+    }
+}
+
+public class EquipmentRulesTests
+{
+    private static EquipItem Armor(EquipSlot slot, ArmorClass cls, int tier = 2) => new($"{slot}{cls}", slot, 2, tier, cls);
+
+    [Fact]
+    public void HeavySet_GivesPlatingPoiseAndManaPenalty()
+    {
+        var items = new[]
+        {
+            Armor(EquipSlot.Head, ArmorClass.Heavy), Armor(EquipSlot.Body, ArmorClass.Heavy),
+            Armor(EquipSlot.Hands, ArmorClass.Heavy), Armor(EquipSlot.Feet, ArmorClass.Heavy),
+        };
+        var b = EquipmentRules.Evaluate(items);
+        Assert.Equal(2, b.Plating);
+        Assert.Equal(4, b.PoiseBonus);
+        Assert.Equal(1, b.ManaRegenPenalty);
+        Assert.Equal(0, b.DodgeCharges);
+        Assert.True(b.Monk);
+    }
+
+    [Fact]
+    public void TierFourHeavy_AddsPlatingPerPiece()
+    {
+        var items = new[] { Armor(EquipSlot.Head, ArmorClass.Heavy, 4), Armor(EquipSlot.Body, ArmorClass.Heavy, 4) };
+        Assert.Equal(3, EquipmentRules.Evaluate(items).Plating);
+    }
+
+    [Fact]
+    public void LightArmor_DodgeDisabledByThreeHeavy()
+    {
+        var mixed = new[]
+        {
+            Armor(EquipSlot.Head, ArmorClass.Heavy), Armor(EquipSlot.Body, ArmorClass.Heavy),
+            Armor(EquipSlot.Hands, ArmorClass.Heavy), Armor(EquipSlot.Feet, ArmorClass.Light),
+        };
+        Assert.Equal(0, EquipmentRules.Evaluate(mixed).DodgeCharges);
+        var light = new[] { Armor(EquipSlot.Head, ArmorClass.Light), Armor(EquipSlot.Body, ArmorClass.Light) };
+        var b = EquipmentRules.Evaluate(light);
+        Assert.Equal(1, b.DodgeCharges);
+        Assert.Equal(1, b.StaminaPoolBonus);
+    }
+
+    [Fact]
+    public void TwoHanded_DisplacesOffHand_AndViceVersa()
+    {
+        var shield = new EquipItem("Shield", EquipSlot.OffHand, 3, Weapon: WeaponKind.Shield);
+        var sword = new EquipItem("Sword", EquipSlot.MainHand, 2, Weapon: WeaponKind.Sword);
+        var hammer = new EquipItem("Hammer", EquipSlot.MainHand, 5, Weapon: WeaponKind.TwoHanded);
+        var displaced = EquipmentRules.Displaced(new[] { sword, shield }, hammer);
+        Assert.Contains(sword, displaced);
+        Assert.Contains(shield, displaced);
+        Assert.Equal(new[] { hammer }, EquipmentRules.Displaced(new[] { hammer }, shield));
+    }
+
+    [Fact]
+    public void Rings_HaveTwoSlots()
+    {
+        var r1 = new EquipItem("R1", EquipSlot.Ring, 0);
+        var r2 = new EquipItem("R2", EquipSlot.Ring, 0);
+        var r3 = new EquipItem("R3", EquipSlot.Ring, 0);
+        Assert.Empty(EquipmentRules.Displaced(new[] { r1 }, r2));
+        Assert.Equal(new[] { r1 }, EquipmentRules.Displaced(new[] { r1, r2 }, r3));
+    }
+
+    [Theory]
+    [InlineData(WeaponKind.Dagger, 1, 0)]
+    [InlineData(WeaponKind.Sword, 5, 4)]
+    [InlineData(WeaponKind.TwoHanded, 2, 4)]
+    [InlineData(WeaponKind.Crossbow, 1, 4)]
+    public void WeaponDamage_ByTier(WeaponKind kind, int tier, int expected) =>
+        Assert.Equal(expected, EquipmentRules.WeaponDamage(kind, tier));
+
+    [Fact]
+    public void Duelist_WhenOffHandEmpty()
+    {
+        var b = EquipmentRules.Evaluate(new[] { new EquipItem("Dagger", EquipSlot.MainHand, 1, 1, Weapon: WeaponKind.Dagger) });
+        Assert.True(b.Duelist);
+        Assert.Equal(1, b.StaminaRegenBonus);
+        Assert.Equal(0, EquipmentRules.WeaponAttackCost(1, b));
+    }
 }

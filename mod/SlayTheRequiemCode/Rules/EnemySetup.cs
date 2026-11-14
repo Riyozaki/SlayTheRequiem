@@ -1,0 +1,74 @@
+using System.Runtime.CompilerServices;
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Rooms;
+using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Powers;
+
+namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
+
+/// <summary>
+/// Выдаёт врагам ресурсы и защиту Реквиема при первом появлении в бою (docs/design/11 §1):
+/// ◆, Стойкость или Непоколебимость, Латы и сопротивления из таблицы врагов, надбавка ♥.
+/// </summary>
+public static class EnemySetup
+{
+    private static readonly ConditionalWeakTable<Creature, object> Done = new();
+
+    public static EnemyRank RankOf(ICombatState? combatState) => combatState?.Encounter?.RoomType switch
+    {
+        RoomType.Boss => EnemyRank.Boss,
+        RoomType.Elite => EnemyRank.Elite,
+        _ => EnemyRank.Normal,
+    };
+
+    public static async Task EnsureAll(ICombatState combatState)
+    {
+        foreach (var enemy in combatState.Enemies.ToList()) await Ensure(enemy, combatState);
+    }
+
+    public static async Task Ensure(Creature creature, ICombatState? combatState)
+    {
+        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive) return;
+        if (Done.TryGetValue(creature, out _)) return;
+        Done.Add(creature, new object());
+
+        var ctx = new ThrowingPlayerChoiceContext();
+        var rank = RankOf(combatState ?? creature.CombatState);
+        var entry = RequiemData.MonsterEntry(creature.Monster.GetType().Name);
+
+        var hpMultiplier = (decimal)RequiemConfig.EnemyHpPercent / 100m;
+        if (hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)
+            await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(creature.MaxHp, hpMultiplier));
+
+        await PowerCmd.Apply<EnemyStaminaPower>(ctx, creature, EnemyRules.StaminaPool(rank), null, null, silent: true);
+
+        if (rank == EnemyRank.Boss)
+            await PowerCmd.Apply<UnshakeablePower>(ctx, creature, EnemyRules.BreakThreshold(creature.MaxHp), null, null, silent: true);
+        else
+            await PowerCmd.Apply<PoisePower>(ctx, creature, EnemyRules.Poise(rank, creature.MaxHp) + entry.PoiseBonus, null, null, silent: true);
+
+        if (entry.Plating > 0)
+            await PowerCmd.Apply<PlatingPower>(ctx, creature, entry.Plating, null, null, silent: true);
+
+        foreach (var (type, tier) in entry.Resistances)
+        {
+            if (tier == 0) continue;
+            switch (type)
+            {
+                case DamageType.Fire: await PowerCmd.Apply<FireResistancePower>(ctx, creature, tier, null, null, silent: true); break;
+                case DamageType.Frost: await PowerCmd.Apply<FrostResistancePower>(ctx, creature, tier, null, null, silent: true); break;
+                case DamageType.Shock: await PowerCmd.Apply<ShockResistancePower>(ctx, creature, tier, null, null, silent: true); break;
+                case DamageType.Poison: await PowerCmd.Apply<PoisonResistancePower>(ctx, creature, tier, null, null, silent: true); break;
+                case DamageType.Magic: await PowerCmd.Apply<MagicResistancePower>(ctx, creature, tier, null, null, silent: true); break;
+            }
+        }
+    }
+
+    /// <summary>Иммунитет к Кровотечению: нежить, конструкты, призраки (docs/design/03).</summary>
+    public static bool IsBleedImmune(Creature creature) =>
+        creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "construct" or "spirit";
+}

@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Resources;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
@@ -29,7 +30,10 @@ public sealed class BurningPower : RequiemPower
         var (blockLost, hpDamage) = StatusMath.BurningVsBlock(damage, Owner.Block);
         if (blockLost > 0) await CreatureCmd.LoseBlock(Owner, blockLost);
         if (hpDamage > 0)
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, hpDamage, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+        {
+            using (DamageTyping.As(DamageType.Fire))
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, hpDamage, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+        }
 
         if (!Owner.IsAlive) return;
         if (next <= 0) await PowerCmd.Remove(this);
@@ -38,13 +42,11 @@ public sealed class BurningPower : RequiemPower
 }
 
 /// <summary>
-/// Озноб: в начале хода носитель теряет N ◆, затем стаки /2.
-/// Этап 0: у врагов ещё нет ◆, поэтому на враге Озноб просто режет урон атак (Устал −25 %, при 6+ — Изнурён −50 %).
+/// Озноб: в начале хода носитель теряет N ◆, затем стаки /2. У врага ◆ = <see cref="EnemyStaminaPower"/>;
+/// если она падает до нуля — Обледенение (см. EnemyResponses).
 /// </summary>
 public sealed class ChillPower : RequiemPower
 {
-    public const int ExhaustedThreshold = 6;
-
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
@@ -53,17 +55,16 @@ public sealed class ChillPower : RequiemPower
         if (!participants.Contains(Owner) || Amount <= 0) return;
 
         var (loss, next) = StatusMath.ChillTick(Amount);
+        // Инеерождённые («Кровь стужи»): Озноб на них спадает целиком.
+        if (Owner.HasPower<FrostbloodPower>()) next = 0;
+
         var stamina = RequiemResource.Of<StaminaResource>(Owner.Player);
         if (stamina != null) stamina.Amount = Math.Max(0, stamina.Amount - loss);
+        else if (Owner.GetPower<EnemyStaminaPower>() is { } enemyStamina) await enemyStamina.Drain(loss);
 
+        if (!Owner.IsAlive) return;
         if (next <= 0) await PowerCmd.Remove(this);
         else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, next - Amount, null, null, silent: true);
-    }
-
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (dealer != Owner || Owner.IsPlayer || !props.IsPoweredAttack()) return 1m;
-        return StaminaRules.DamageMultiplier(Amount >= ExhaustedThreshold ? StaminaState.Exhausted : StaminaState.Tired);
     }
 }
 
@@ -81,7 +82,10 @@ public sealed class StaticPower : RequiemPower
         var (manaLoss, shock, next) = StatusMath.StaticTick(Amount, mana?.Amount ?? 0);
         if (mana != null && manaLoss > 0) mana.Amount -= manaLoss;
         if (shock > 0)
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, shock, ValueProp.Unpowered, null, null);
+        {
+            using (DamageTyping.As(DamageType.Shock))
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, shock, ValueProp.Unpowered, null, null);
+        }
 
         if (!Owner.IsAlive) return;
         if (next <= 0) await PowerCmd.Remove(this);
@@ -112,6 +116,7 @@ public sealed class BleedPower : RequiemPower
     {
         var (loss, next) = StatusMath.BleedOnAttack(Amount);
         if (loss <= 0) return;
+        using var _ = DamageTyping.As(DamageType.True);
         await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, loss, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
         if (!Owner.IsAlive) return;
         if (next <= 0) await PowerCmd.Remove(this);

@@ -21,26 +21,15 @@ public sealed class StaminaTable
     public static StaminaTable Parse(string csv)
     {
         var result = new Dictionary<string, Entry>(StringComparer.Ordinal);
-        string[]? header = null;
-        foreach (var raw in csv.Split('\n'))
+        foreach (var row in CsvRows.Read(csv))
         {
-            var line = raw.TrimEnd('\r');
-            if (line.Length == 0 || line.StartsWith('#')) continue;
-            var cells = SplitCsvLine(line);
-            if (header == null) { header = cells; continue; }
-
-            string Cell(string name)
-            {
-                var i = Array.IndexOf(header, name);
-                return i >= 0 && i < cells.Length ? cells[i] : "";
-            }
-
-            var key = Cell("key");
+            var key = row.Get("key");
             if (key.Length == 0) continue;
-            var staminaText = Cell("stamina");
+            var staminaText = row.Get("stamina");
             var isX = staminaText == "X";
             var stamina = isX ? 0 : int.Parse(staminaText);
-            result[key] = new Entry(key, stamina, isX, ParseClass(Cell("strike_class")), ParseType(Cell("damage_type")), Cell("weapon") == "Y");
+            result[key] = new Entry(key, stamina, isX, ParseClass(row.Get("strike_class")),
+                DamageTypes.Parse(row.Get("damage_type")), row.Get("weapon") == "Y");
         }
         return new StaminaTable(result);
     }
@@ -50,17 +39,6 @@ public sealed class StaminaTable
         "L" => StrikeClass.Light,
         "H" => StrikeClass.Heavy,
         _ => StrikeClass.Normal,
-    };
-
-    private static DamageType ParseType(string s) => s switch
-    {
-        "fire" => DamageType.Fire,
-        "frost" => DamageType.Frost,
-        "shock" => DamageType.Shock,
-        "magic" => DamageType.Magic,
-        "light" => DamageType.Light,
-        "poison" => DamageType.Poison,
-        _ => DamageType.Physical,
     };
 
     /// <summary>Минимальный CSV-разбор: запятые, поля в кавычках, удвоенные кавычки.</summary>

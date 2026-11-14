@@ -57,8 +57,11 @@ def apply_plating(damage: int, plating: int, pierce: int = 0, sunder: int = 0) -
     return damage - eff
 
 
+IMMUNE_TIER = 4
+
+
 def resistance_multiplier(tier: int, immune: bool = False) -> float:
-    if immune:
+    if immune or tier >= IMMUNE_TIER:
         return 0.0
     if tier < 0:
         return 1.5
@@ -66,9 +69,11 @@ def resistance_multiplier(tier: int, immune: bool = False) -> float:
 
 
 def resist_stacks(stacks: int, tier: int, immune: bool = False) -> int:
-    if immune or stacks <= 0:
+    if immune or stacks <= 0 or tier >= IMMUNE_TIER:
         return 0
-    return math.floor(stacks * resistance_multiplier(max(0, tier)))
+    if tier < 0:
+        return math.ceil(stacks * 1.5)
+    return math.floor(stacks * resistance_multiplier(tier))
 
 
 def burning_total(stacks: int) -> int:
@@ -118,3 +123,68 @@ def load_stamina_table(path: str) -> dict[str, dict[str, str]]:
     with open(path, encoding="utf-8") as f:
         rows = csv.DictReader(line for line in f if not line.startswith("#"))
         return {r["key"]: r for r in rows}
+
+
+# Враги (docs/design/11 §1, §4)
+def enemy_stamina_pool(rank: str) -> int:
+    return {"elite": 4, "boss": 5}.get(rank, 3)
+
+
+def enemy_attack_cost(hits: int, total: int) -> int:
+    return 2 if hits >= 3 or total >= 20 else 1
+
+
+def _round_half_up(x: float) -> int:
+    return int(math.floor(x + 0.5))
+
+
+def enemy_poise(rank: str, max_hp: int) -> int:
+    if rank == "boss":
+        return 0
+    base = max(3, min(20, _round_half_up(max_hp / 8)))
+    return base + 3 if rank == "elite" else base
+
+
+def raise_threshold(t: int) -> int:
+    return math.ceil(t * 1.5)
+
+
+def stagger(stagger_amount: int, threshold: int) -> tuple[bool, int, int]:
+    if threshold <= 0:
+        return (False, stagger_amount, threshold)
+    if stagger_amount >= threshold:
+        return (True, 0, raise_threshold(threshold))
+    return (False, stagger_amount, threshold)
+
+
+# ---------- снаряжение (Core/Equipment.cs) ----------
+WEAPON_DAMAGE = {
+    "dagger": [0, 1, 2, 2, 3], "sword": [1, 2, 3, 3, 4], "axe": [1, 2, 3, 3, 4], "mace": [1, 2, 3, 3, 4],
+    "spear": [1, 2, 3, 3, 4], "twohanded": [3, 4, 5, 7, 8], "bow": [2, 3, 4, 5, 6], "crossbow": [4, 5, 6, 7, 8],
+}
+ARMOR_SLOTS = {"head", "body", "hands", "feet"}
+
+
+def weapon_damage(kind: str, tier: int) -> int:
+    return WEAPON_DAMAGE.get(kind, [0] * 5)[max(1, min(5, tier)) - 1]
+
+
+def loadout(items: list[dict]) -> dict:
+    """items: {slot, armor, tier, weapon}."""
+    armor = [i for i in items if i["slot"] in ARMOR_SLOTS]
+    heavy = [i for i in armor if i.get("armor") == "heavy"]
+    light = sum(1 for i in armor if i.get("armor") == "light")
+    main = next((i for i in items if i["slot"] == "main"), None)
+    off = next((i for i in items if i["slot"] == "off"), None)
+    two = main is not None and main.get("weapon") in {"twohanded", "bow", "crossbow"}
+    duel = main is not None and not two and off is None
+    monk = main is None and off is None
+    return {
+        "plating": sum(1 for i in heavy if i["tier"] >= 2) // 2 + sum(1 for i in heavy if i["tier"] >= 4),
+        "poise": len(heavy),
+        "mana_penalty": 1 if len(heavy) >= 3 else 0,
+        "dodge": 0 if len(heavy) >= 3 else 2 if light >= 4 else 1 if light >= 2 else 0,
+        "stamina_pool": light // 2,
+        "stamina_regen": 1 if duel or monk else 0,
+        "weapon_damage": weapon_damage(main["weapon"], main["tier"]) if main else 0,
+    }

@@ -1,55 +1,50 @@
-using Godot;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Powers;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 /// <summary>Цена атак в ◆: ручная разметка ванильных атак + собственные карты мода.</summary>
 public static class StaminaCosts
 {
-    public const string CsvPath = MainFile.ResPath + "/data/vanilla_attacks_stamina.csv";
-
-    private static StaminaTable? _table;
-
-    public static int Count => _table?.Count ?? 0;
-
-    public static void Load()
-    {
-        try
-        {
-            using var file = Godot.FileAccess.Open(CsvPath, Godot.FileAccess.ModeFlags.Read);
-            if (file == null)
-            {
-                MainFile.Logger.Error($"Cannot open {CsvPath}: {Godot.FileAccess.GetOpenError()}");
-                return;
-            }
-            _table = StaminaTable.Parse(file.GetAsText());
-        }
-        catch (Exception e)
-        {
-            MainFile.Logger.Error($"Failed to load stamina table: {e}");
-        }
-    }
-
-    /// <summary>Своя цена ◆ у карты мода (см. IStaminaCard).</summary>
-    public interface IStaminaCard
-    {
-        int StaminaCost { get; }
-    }
+    public static int Count => RequiemData.Attacks?.Count ?? 0;
 
     /// <summary>
-    /// Цена атаки в ◆. X-атаки платят по 1 ◆ за каждую единицу X (= потраченная энергия).
-    /// Неразмеченные атаки (другие моды) — по классу удара «обычный» = 1 ◆.
+    /// Цена атаки в ◆ до модификаторов. X-атаки платят по 1 ◆ за каждую единицу X (= потраченная энергия).
+    /// Неразмеченные атаки (другие моды) — 1 ◆.
     /// </summary>
-    public static int CostFor(CardModel card, CardPlay? play = null)
+    public static int BaseCostFor(CardModel card, CardPlay? play = null)
     {
-        if (card is IStaminaCard custom) return Math.Max(0, custom.StaminaCost);
-        if (_table != null && _table.TryGet(card.GetType().Name, out var entry))
+        if (card is IRequiemCard custom) return Math.Max(0, custom.StaminaCost);
+        if (RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var entry))
             return entry.IsX ? Math.Max(0, play?.Resources.EnergyValue ?? 0) : entry.Stamina;
         return 1;
     }
 
-    public static DamageType DamageTypeFor(CardModel card) =>
-        _table != null && _table.TryGet(card.GetType().Name, out var entry) ? entry.DamageType : DamageType.Physical;
+    /// <summary>Итоговая цена с учётом сил владельца («Сменить хват» и т.п.).</summary>
+    public static int CostFor(CardModel card, CardPlay? play = null)
+    {
+        var cost = BaseCostFor(card, play);
+        if (Equipment.EquipmentCombatRules.IsWeaponAttack(card))
+            cost = EquipmentRules.WeaponAttackCost(cost, Equipment.Loadout.Bonuses(card.Owner));
+        var owner = card.Owner?.Creature;
+        if (owner != null && owner.HasPower<GripPower>()) cost = 0;
+        return cost;
+    }
+
+    public static DamageType DamageTypeFor(CardModel card)
+    {
+        if (card is IRequiemCard custom) return custom.DamageType;
+        return RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var entry)
+            ? entry.DamageType
+            : DamageType.Physical;
+    }
+}
+
+/// <summary>Карта мода: своя цена ◆ и тип урона.</summary>
+public interface IRequiemCard
+{
+    int StaminaCost { get; }
+    DamageType DamageType { get; }
 }

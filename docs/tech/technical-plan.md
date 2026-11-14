@@ -28,20 +28,30 @@ SlayTheRequiem/
 │  ├─ SlayTheRequiemCode/          C#
 │  │  ├─ MainFile.cs               [ModInitializer]: конфиг, загрузка таблиц, Harmony.PatchAll
 │  │  ├─ Core/                     ЧИСТАЯ логика без ссылок на игру (тестируется отдельно):
-│  │  │                            StaminaRules, CombatMath, StatusMath, SpellAffinity, BurdenRules, HeroStats, StaminaTable
-│  │  ├─ Config/                   RequiemConfig (SimpleModConfig)
-│  │  ├─ Resources/                StaminaResource, ManaResource (BasicCustomResource)
-│  │  ├─ Rules/                    RequiemMode (кто в системе), StaminaCosts, RequiemCombatRules (CustomSingletonModel)
-│  │  ├─ Powers/                   Burning, Chill, Static, Bleed, Plating, Sunder (+ база RequiemPower)
-│  │  ├─ Cards/ Relics/ Extensions/   базы и хелперы шаблона
-│  │  └─ (дальше) Acts/ Shops/ Rollback/ Equipment/ Spells/ Monsters/ Events/ Patches/ UI/
+│  │  │                            StaminaRules, CombatMath, StatusMath, SpellAffinity, BurdenRules, HeroStats,
+│  │  │                            StaminaTable, EnemyRules/StaggerRules, MonsterTable (+CsvRows), EquipmentRules
+│  │  ├─ Config/                   RequiemConfig (SimpleModConfig): выключатели, ♥ врагов %
+│  │  ├─ Resources/                StaminaResource, ManaResource (BasicCustomResource; бонусы снаряжения, Груз)
+│  │  ├─ Rules/                    RequiemMode, RequiemData (CSV из res://), StaminaCosts, DamageTyping,
+│  │  │                            RequiemCombatRules (◆, сопротивления, холод/разряд, стаки), EnemySetup
+│  │  ├─ Powers/                   статусы (Горение, Озноб, Статика, Кровотечение), Латы/Раскол, сопротивления,
+│  │  │                            враги (◆, Стойкость, Шаткость, Непоколебим, Сломлен, Оттаивание), Уворот/Покров,
+│  │  │                            силы героев; EnemyResponses (Обледенение, «Отдышаться», Ошеломление, Слом)
+│  │  ├─ Cards/                    RequiemCard (ConstructedCardModel + цена ◆), Platebearer/ — 20 карт
+│  │  ├─ Equipment/                EquipmentRelic/WeaponRelic/ArmorRelic, Loadout (слоты, рюкзак, вес),
+│  │  │                            EquipmentCombatRules (броня в начале боя, урон оружия), Items — 20 предметов
+│  │  ├─ Relics/ Extensions/       базы и хелперы шаблона
+│  │  └─ (дальше) Acts/ Shops/ Rollback/ Spells/ Monsters/ Events/ Patches/ UI/
 │  ├─ SlayTheRequiem/              ресурсы → res://SlayTheRequiem/
 │  │  ├─ data/vanilla_attacks_stamina.csv   ручная разметка ◆ (генерируется, не править руками)
+│  │  ├─ data/monsters_requiem.csv          Латы/сопротивления/тип атаки 113 врагов (генерируется)
 │  │  ├─ localization/{eng,rus}/*.json
 │  │  └─ images/{powers,relics,card_portraits,ui}/
 │  └─ SlayTheRequiem.Tests/        xUnit: компилирует только Core/*.cs, игра не нужна
 └─ tools/
    ├─ markup/build_vanilla_attacks.py      словарь разметки ◆ → CSV (сверяется с базой карт sts2_database)
+   ├─ markup/build_monsters.py             шаблоны фракций → monsters_requiem.csv
+   ├─ loc/build_loc.py                     тексты карт/сил/снаряжения → localization/{eng,rus}
    └─ sim/requiem_rules.py + тесты         Python-зеркало Core/ для баланса и проверки без .NET
 ```
 

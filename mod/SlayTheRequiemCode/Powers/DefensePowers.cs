@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
@@ -20,6 +21,7 @@ public sealed class PlatingPower : RequiemPower
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || !props.IsPoweredAttack()) return 1m;
+        if (DamageTyping.Resolve(props, dealer, cardSource) == DamageType.True) return 1m;
         var sunder = Owner.GetPowerAmount<SunderPower>();
         var reduced = CombatMath.ApplyPlating((int)amount, Amount, pierce: 0, sunder: sunder);
         return reduced / amount;

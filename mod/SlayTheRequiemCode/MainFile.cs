@@ -25,11 +25,11 @@ public partial class MainFile : Node
         var assembly = Assembly.GetExecutingAssembly();
 
         ModConfigRegistry.Register(ModId, new RequiemConfig());
-        StaminaCosts.Load();
+        RequiemData.Load();
 
         Harmony harmony = new(ModId);
         harmony.PatchAll(assembly);
 
-        Logger.Info($"Slay the Requiem loaded: {StaminaCosts.Count} vanilla attacks marked with stamina costs.");
+        Logger.Info("Slay the Requiem loaded.");
     }
 }

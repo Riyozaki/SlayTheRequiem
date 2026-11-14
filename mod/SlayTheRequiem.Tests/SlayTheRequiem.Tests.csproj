@@ -9,7 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="../SlayTheRequiemCode/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
-        <None Include="../SlayTheRequiem/data/vanilla_attacks_stamina.csv" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="../SlayTheRequiem/data/*.csv" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

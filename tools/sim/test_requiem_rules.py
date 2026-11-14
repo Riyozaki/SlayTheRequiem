@@ -27,7 +27,7 @@ class Combat(unittest.TestCase):
             self.assertEqual(r.apply_plating(*args), exp, args)
 
     def test_resist(self):
-        self.assertEqual([r.resistance_multiplier(t) for t in (-1, 0, 2, 5)], [1.5, 1.0, 0.5, 0.25])
+        self.assertEqual([r.resistance_multiplier(t) for t in (-1, 0, 2, 3)], [1.5, 1.0, 0.5, 0.25])
         self.assertEqual(r.resist_stacks(6, 1), 4)
 
 
@@ -54,6 +54,40 @@ class Spells(unittest.TestCase):
 
     def test_scroll(self):
         self.assertEqual(r.cast_cost(4, 5, 0, from_scroll=True)[:3], ("free", True, 0))
+
+
+class Enemies(unittest.TestCase):
+    def test_poise(self):
+        for rank, hp, exp in [("normal", 12, 3), ("normal", 44, 6), ("normal", 400, 20), ("elite", 80, 13), ("boss", 300, 0)]:
+            self.assertEqual(r.enemy_poise(rank, hp), exp, (rank, hp))
+
+    def test_stagger(self):
+        self.assertEqual(r.stagger(4, 6), (False, 4, 6))
+        self.assertEqual(r.stagger(7, 6), (True, 0, 9))
+
+    def test_attack_cost(self):
+        self.assertEqual([r.enemy_attack_cost(1, 6), r.enemy_attack_cost(3, 15), r.enemy_attack_cost(1, 24)], [1, 2, 2])
+
+    def test_immunity(self):
+        self.assertEqual(r.resistance_multiplier(4), 0.0)
+        self.assertEqual(r.resist_stacks(5, 4), 0)
+        self.assertEqual(r.resist_stacks(5, -1), 8)
+
+
+class Equipment(unittest.TestCase):
+    def test_heavy(self):
+        items = [{"slot": s, "armor": "heavy", "tier": 2} for s in ("head", "body", "hands", "feet")]
+        b = r.loadout(items)
+        self.assertEqual((b["plating"], b["poise"], b["mana_penalty"], b["dodge"]), (2, 4, 1, 0))
+
+    def test_light_and_duelist(self):
+        items = [{"slot": "head", "armor": "light", "tier": 1}, {"slot": "body", "armor": "light", "tier": 1},
+                 {"slot": "main", "weapon": "dagger", "tier": 1}]
+        b = r.loadout(items)
+        self.assertEqual((b["dodge"], b["stamina_pool"], b["stamina_regen"], b["weapon_damage"]), (1, 1, 1, 0))
+
+    def test_weapon_damage(self):
+        self.assertEqual([r.weapon_damage("sword", 5), r.weapon_damage("twohanded", 2), r.weapon_damage("crossbow", 1)], [4, 4, 4])
 
 
 class Table(unittest.TestCase):

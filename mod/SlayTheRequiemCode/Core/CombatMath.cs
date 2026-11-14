@@ -22,12 +22,15 @@ public static class CombatMath
         return damage - effective; // effective ≤ 0 → +|effective|
     }
 
+    /// <summary>Ступень, начиная с которой сопротивление считается иммунитетом.</summary>
+    public const int ImmuneTier = 4;
+
     /// <summary>
-    /// Ступень сопротивления: −1 уязвимость (×1.5), 0 нет, 1/2/3 → −25/−50/−75 % (кап).
+    /// Ступень сопротивления: −1 уязвимость (×1.5), 0 нет, 1/2/3 → −25/−50/−75 % (кап), 4+ — иммунитет.
     /// </summary>
     public static decimal ResistanceMultiplier(int tier, bool immune = false)
     {
-        if (immune) return 0m;
+        if (immune || tier >= ImmuneTier) return 0m;
         if (tier < 0) return 1.5m;
         return 1m - 0.25m * Math.Min(tier, 3);
     }
@@ -39,7 +42,8 @@ public static class CombatMath
     /// <summary>Сопротивление статусам уменьшает накладываемые стаки (а не урон тика).</summary>
     public static int ResistStacks(int stacks, int tier, bool immune = false)
     {
-        if (immune || stacks <= 0) return 0;
-        return (int)Math.Floor(stacks * ResistanceMultiplier(Math.Max(0, tier)));
+        if (immune || stacks <= 0 || tier >= ImmuneTier) return 0;
+        if (tier < 0) return (int)Math.Ceiling(stacks * 1.5m); // уязвимость: стаков больше
+        return (int)Math.Floor(stacks * ResistanceMultiplier(tier));
     }
 }
