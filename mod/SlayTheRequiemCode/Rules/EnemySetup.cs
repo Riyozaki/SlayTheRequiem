@@ -45,6 +45,8 @@ public static class EnemySetup
             await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(creature.MaxHp, hpMultiplier));
 
         await PowerCmd.Apply<EnemyStaminaPower>(ctx, creature, EnemyRules.StaminaPool(rank), null, null, silent: true);
+        if (EnemyRules.IsCaster(entry.AttackType))
+            await PowerCmd.Apply<EnemyManaPower>(ctx, creature, EnemyRules.CasterManaPool(rank), null, null, silent: true);
 
         if (rank == EnemyRank.Boss)
             await PowerCmd.Apply<UnshakeablePower>(ctx, creature, EnemyRules.BreakThreshold(creature.MaxHp), null, null, silent: true);
@@ -71,4 +73,12 @@ public static class EnemySetup
     /// <summary>Иммунитет к Кровотечению: нежить, конструкты, призраки (docs/design/03).</summary>
     public static bool IsBleedImmune(Creature creature) =>
         creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "construct" or "spirit";
+
+    /// <summary>Нежить и духи — цели «Изгнания нежити» и двойного урона светом.</summary>
+    public static bool IsUndead(Creature creature) =>
+        creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "spirit";
+
+    /// <summary>Иммунитет к Хвори: нежить, конструкты, Бездна (docs/design/03).</summary>
+    public static bool IsBlightImmune(Creature creature) =>
+        creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "construct" or "abyss";
 }

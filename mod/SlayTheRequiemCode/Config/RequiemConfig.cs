@@ -17,7 +17,23 @@ internal class RequiemConfig : SimpleModConfig
     [ConfigSlider(80, 150, 5)]
     public static int EnemyHpPercent { get; set; } = 110;
 
+    /// <summary>
+    /// Происхождение Регента (docs/design/04). Пока выбор происхождений в начале забега не сделан (этап 6, экран
+    /// выбора), берётся из настроек. «Случайно» — по сиду забега.
+    /// </summary>
+    [ConfigSection("HeroSection")]
+    public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Random;
+
     /// <summary>«Короткий забег»: акты 1 → 3 → 5 (docs/design/13 §1). Пока не используется кодом.</summary>
     [ConfigSection("RunSection")]
     public static bool ShortRun { get; set; } = false;
+}
+
+public enum RegentOriginChoice
+{
+    Random,
+    Highborn,
+    Mistborn,
+    Ashborn,
+    None,
 }

@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Resources;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
@@ -59,7 +60,7 @@ public sealed class WardPower : RequiemPower
     public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || props.HasFlag(ValueProp.Unblockable)) return amount;
-        var mana = RequiemResource.Of<ManaResource>(Owner.Player)?.Amount ?? 0;
+        var mana = Mana.Amount(Owner);
         var absorbed = Math.Min((int)amount, Math.Min(Remaining, mana - _pendingMana));
         if (absorbed <= 0) return amount;
         _pendingMana += absorbed;
@@ -67,13 +68,13 @@ public sealed class WardPower : RequiemPower
         return amount - absorbed;
     }
 
-    public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Owner || _pendingMana <= 0) return Task.CompletedTask;
-        RequiemResource.Of<ManaResource>(Owner.Player)?.ModifyAmount(-_pendingMana);
+        if (target != Owner || _pendingMana <= 0) return;
+        var pay = _pendingMana;
         _pendingMana = 0;
         Flash();
-        return Task.CompletedTask;
+        await Mana.Lose(Owner.Player, pay);
     }
 
     public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)

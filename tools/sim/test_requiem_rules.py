@@ -90,6 +90,42 @@ class Equipment(unittest.TestCase):
         self.assertEqual([r.weapon_damage("sword", 5), r.weapon_damage("twohanded", 2), r.weapon_damage("crossbow", 1)], [4, 4, 4])
 
 
+class Mana(unittest.TestCase):
+    def test_start_and_regen(self):
+        self.assertEqual([r.mana_start(10), r.mana_start(3)], [5, 1])
+        self.assertEqual([r.mana_regen_gain(0, 3, 1), r.mana_regen_gain(9, 10, 2), r.mana_regen_gain(14, 10, 2)], [1, 1, 0])
+
+    def test_mastery_and_share(self):
+        self.assertEqual(r.starting_mastery("Regent", "destruction"), 2)
+        self.assertEqual(r.starting_mastery("Ironclad", "destruction"), 0)
+        self.assertAlmostEqual(r.reward_share("Ironclad", 3), 0.15)
+
+    def test_platebearer_firebolt_example(self):
+        # 08 §8.2: Латоносец, владение 0, «Огненная стрела» (Новичок, 1 ✦) → 2 ✦
+        self.assertEqual(r.cast_cost(1, 1, 0)[2], 2)
+        # «Огненный шар» (Адепт, 3 ✦) при владении 2 → 5 ✦
+        self.assertEqual(r.cast_cost(3, 3, 2)[2], 5)
+
+
+class Casters(unittest.TestCase):
+    def test_numbers(self):
+        self.assertEqual([r.caster_mana_pool("normal"), r.caster_mana_pool("elite"), r.caster_mana_pool("boss")], [4, 6, 8])
+        self.assertEqual([r.enemy_spell_cost(1, 8), r.enemy_spell_cost(3, 9)], [2, 3])
+
+    def test_mage_never_casts_forever_with_heavy_spells(self):
+        # Тяжёлое заклинание (3 ✦) при приросте 2: обычный маг выдыхается за 2 хода, элита — за 4.
+        self.assertEqual(r.caster_turns_until_focus("normal", 3), 2)
+        self.assertEqual(r.caster_turns_until_focus("elite", 3), 4)
+        # Лёгкое (2 ✦) окупается приростом — давить ✦ нужно Статикой/разрядом.
+        self.assertEqual(r.caster_turns_until_focus("normal", 2), 50)
+
+    def test_highborn_discount_applies_after_affinity(self):
+        # Регент (владение 2) «Огненный шар» (Адепт) 3 ✦: надбавка +2 (×1.5 вверх), скидка Высокой крови −1 → 4 ✦.
+        self.assertEqual(r.spell_cost_with_discount(3, 3, 2, discount=1), 4)
+        # Латоносец (0) «Огненная стрела» 1 ✦ → 2 ✦; со скидкой → 1 ✦ (скидка не масштабируется ×1.5).
+        self.assertEqual(r.spell_cost_with_discount(1, 1, 0, discount=1), 1)
+
+
 class Table(unittest.TestCase):
     def test_csv(self):
         t = r.load_stamina_table(CSV)

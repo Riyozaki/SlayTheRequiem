@@ -1,3 +1,5 @@
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -33,6 +35,11 @@ public static class EnemyResponses
     public static async Task TryBreather(Creature enemy)
     {
         if (enemy.Monster == null || !enemy.IsAlive || enemy.IsStunned || enemy.HasPower<UnshakeablePower>()) return;
+        if (enemy.HasPower<EnemyManaPower>())
+        {
+            await TryFocus(enemy);
+            return;
+        }
         var stamina = enemy.GetPower<EnemyStaminaPower>();
         if (stamina == null || stamina.DisplayAmount > 0 || !enemy.Monster.IntendsToAttack) return;
 
@@ -42,6 +49,43 @@ public static class EnemyResponses
             enemy.GetPower<EnemyStaminaPower>()?.Set(int.MaxValue);
         });
     }
+
+    /// <summary>Враг-маг без ✦ на заклинание: «Сосредоточиться» — Оберег и полная ✦ вместо атаки.</summary>
+    public static async Task TryFocus(Creature enemy)
+    {
+        if (enemy.Monster == null || !enemy.IsAlive || enemy.IsStunned || enemy.HasPower<UnshakeablePower>()) return;
+        var mana = enemy.GetPower<EnemyManaPower>();
+        if (mana == null || mana.DisplayAmount >= EnemyRules.MinSpellMana || !enemy.Monster.IntendsToAttack) return;
+
+        await CreatureCmd.Stun(enemy, async _ =>
+        {
+            await PowerCmd.Apply<SpellShieldPower>(new ThrowingPlayerChoiceContext(), enemy, EnemyRules.FocusSpellShield, enemy, null);
+            enemy.GetPower<EnemyManaPower>()?.Set(int.MaxValue);
+        });
+    }
+
+    /// <summary>
+    /// Паралич (docs/design/03, 08 §7): враг с ♥ не выше потолка ступени пропускает следующее намерение.
+    /// Боссы и Непоколебимые не парализуются — вместо этого получают Шаткость 5. Возвращает true, если сработало.
+    /// </summary>
+    public static async Task<bool> TryParalyze(PlayerChoiceContext ctx, Creature enemy, SpellTier tier, Creature? source, CardModel? card)
+    {
+        if (enemy.Monster == null || !enemy.IsAlive) return false;
+        var rank = EnemySetup.RankOf(enemy.CombatState);
+        if (rank == EnemyRank.Boss || enemy.HasPower<UnshakeablePower>() || enemy.HasPower<ParalysisWardPower>())
+        {
+            await PowerCmd.Apply<StaggerPower>(ctx, enemy, BossParalysisStagger, source, card);
+            return false;
+        }
+        var cap = SpellAffinity.ControlHpCap(tier);
+        if (cap != null && enemy.CurrentHp > cap) return false;
+        if (enemy.IsStunned) return true;
+        await CreatureCmd.Stun(enemy);
+        return true;
+    }
+
+    /// <summary>Шаткость вместо Паралича для боссов.</summary>
+    public const int BossParalysisStagger = 5;
 
     public static async Task CheckStagger(Creature target, StaggerPower stagger)
     {

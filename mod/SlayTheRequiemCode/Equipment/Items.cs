@@ -225,10 +225,6 @@ public sealed class RingOfMagicka : EquipmentRelic
     public override EquipSlot Slot => EquipSlot.Ring;
     public override int Weight => 0;
 
-    public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
-    {
-        if (IsEquipped && side == CombatSide.Player && combatState.RoundNumber > 1)
-            RequiemResource.Of<ManaResource>(Owner)?.ModifyAmount(1);
-        return Task.CompletedTask;
-    }
+    public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState) =>
+        IsEquipped && side == CombatSide.Player && combatState.RoundNumber > 1 ? Rules.Mana.Gain(Owner, 1) : Task.CompletedTask;
 }

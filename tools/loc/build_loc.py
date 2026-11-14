@@ -7,6 +7,10 @@
 import json
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+from loc_magic import ENCOUNTERS, MAGIC_POWERS, MAGIC_RELICS, MONSTERS, SETTINGS, SPELL_CARDS  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "mod", "SlayTheRequiem", "localization")
 PREFIX = "SLAYTHEREQUIEM-"
@@ -163,11 +167,11 @@ def merge(lang: str, file: str, entries: dict) -> int:
 def main() -> None:
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
@@ -177,7 +181,21 @@ def main() -> None:
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li] + WEIGHT_NOTE[lang]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        n = merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
+        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS:
+            k = PREFIX + snake(cls)
+            relics[f"{k}.title"] = (et, rt)[li]
+            relics[f"{k}.description"] = (ed, rd)[li]
+            relics[f"{k}.flavor"] = (fe, fr)[li]
+        monsters = {}
+        for key, langs in MONSTERS.items():
+            data = langs[lang]
+            monsters[f"{PREFIX}{key}.name"] = data["name"]
+            for move, title in data["moves"].items():
+                monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
+        encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in ENCOUNTERS.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in SETTINGS[lang].items()}
+        n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
+        n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
         print(f"{lang}: {n} ключей")
 
 

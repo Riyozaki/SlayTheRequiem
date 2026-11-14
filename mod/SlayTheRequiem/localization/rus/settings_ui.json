@@ -9,5 +9,14 @@
   "SLAYTHEREQUIEM-ENABLE_OVERSTRAIN.hover.desc": "Атака без нужной выносливости стоит 2 ОЗ за каждую недостающую единицу.",
   "SLAYTHEREQUIEM-SHORT_RUN.title": "Короткий забег (акты 1-3-5)",
   "SLAYTHEREQUIEM-SHORT_RUN.hover.title": "Короткий забег",
-  "SLAYTHEREQUIEM-SHORT_RUN.hover.desc": "Пока не реализовано."
+  "SLAYTHEREQUIEM-SHORT_RUN.hover.desc": "Пока не реализовано.",
+  "SLAYTHEREQUIEM-HERO_SECTION.title": "Герои",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.title": "Происхождение Регента",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.hover.title": "Происхождение Регента",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.hover.desc": "Пока нет экрана выбора происхождения, оно берётся отсюда.",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.Random": "Случайно",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.Highborn": "Златокровные",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.Mistborn": "Туманные",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.Ashborn": "Пеплорождённые",
+  "SLAYTHEREQUIEM-REGENT_ORIGIN.None": "Без происхождения"
 }

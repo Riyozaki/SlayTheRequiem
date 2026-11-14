@@ -2,5 +2,7 @@
   "SLAYTHEREQUIEM-STAMINA.title": "Stamina",
   "SLAYTHEREQUIEM-STAMINA.description": "Spent by attacks. Below half: Tired (−25% attack damage). Not enough for the attack: Exhausted (−50%) and you lose 2 HP per missing point. Regenerates each turn.",
   "SLAYTHEREQUIEM-MANA.title": "Mana",
-  "SLAYTHEREQUIEM-MANA.description": "Spent by spells. Every hero has Mana; how much a spell costs depends on your mastery of its school. Regenerates each turn."
+  "SLAYTHEREQUIEM-MANA.description": "Spent by spells. Every hero has Mana; how much a spell costs depends on your mastery of its school. Regenerates each turn.",
+  "STAR_COUNT.title": "Mana ✦",
+  "STAR_COUNT.description": "Mana (shown as Stars). Spells cost ✦; every hero has Mana. Combat starts with half your pool; each turn you regain ✦ up to the pool, and unspent ✦ carries over."
 }

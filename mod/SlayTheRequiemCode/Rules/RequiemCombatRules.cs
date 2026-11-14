@@ -100,6 +100,9 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         if (target == null) return 1m;
         var type = DamageTyping.Resolve(props, dealer, cardSource);
         if (type is DamageType.Physical or DamageType.True) return 1m;
+        // Сияние (03): свет по нежити, духам и Бездне ×2.
+        if (type == DamageType.Light)
+            return EnemySetup.IsUndead(target) || (target.Monster != null && RequiemData.MonsterEntry(target.Monster.GetType().Name).Faction == "abyss") ? 2m : 1m;
         var tier = ResistancePower.TierOf(target, type);
         if (tier == 0) return 1m;
         // Уязвимость стихии и ванильная Уязвимость не складываются — берём одну.
@@ -121,8 +124,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
                     await enemyStamina.Drain(result.UnblockedDamage);
                 break;
             case DamageType.Shock:
-                if (RequiemResource.Of<ManaResource>(target.Player) is { } mana)
-                    mana.Amount = Math.Max(0, mana.Amount - result.UnblockedDamage);
+                if (target.IsPlayer) await Mana.Lose(target.Player, result.UnblockedDamage);
+                else if (target.GetPower<EnemyManaPower>() is { } enemyMana) await enemyMana.Drain(result.UnblockedDamage);
                 break;
         }
     }
@@ -134,7 +137,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         modifiedAmount = amount;
         if (!RequiemConfig.EnableRequiemSystems || amount <= 0) return false;
 
-        if (canonicalPower is BleedPower && EnemySetup.IsBleedImmune(target))
+        if ((canonicalPower is BleedPower && EnemySetup.IsBleedImmune(target))
+            || (canonicalPower is BlightPower && EnemySetup.IsBlightImmune(target)))
         {
             modifiedAmount = 0;
             return true;
@@ -146,6 +150,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
             BurningPower => DamageType.Fire,
             StaticPower => DamageType.Shock,
             PoisonPower => DamageType.Poison,
+            BlightPower => DamageType.Blight,
             _ => null,
         };
         if (element == null) return false;

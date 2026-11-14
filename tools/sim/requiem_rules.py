@@ -134,6 +134,34 @@ def enemy_attack_cost(hits: int, total: int) -> int:
     return 2 if hits >= 3 or total >= 20 else 1
 
 
+# Враги-маги: атаки стихией/магией — заклинания за ✦
+def caster_mana_pool(rank: str) -> int:
+    return {"elite": 6, "boss": 8}.get(rank, 4)
+
+
+CASTER_MANA_REGEN = 2
+
+
+def enemy_spell_cost(hits: int, total: int) -> int:
+    return enemy_attack_cost(hits, total) + 1
+
+
+def caster_turns_until_focus(rank: str, spell_cost: int) -> int:
+    """Сколько ходов подряд маг колдует, прежде чем ✦ упадёт ниже 2 и он «Сосредоточится»."""
+    mana, turns = caster_mana_pool(rank), 0
+    while mana >= max(2, spell_cost) and turns < 50:
+        mana = min(caster_mana_pool(rank), mana - spell_cost + CASTER_MANA_REGEN)
+        turns += 1
+    return turns
+
+
+def spell_cost_with_discount(base: int, tier: int, mastery: int, discount: int = 0) -> int:
+    """Цена с надбавкой предрасположенности (как SpellRules: дельта от базы) и скидкой (Высокая кровь)."""
+    _, castable, cost, _ = cast_cost(base, tier, mastery)
+    delta = cost - base if castable else 0
+    return max(0, base - discount + delta)
+
+
 def _round_half_up(x: float) -> int:
     return int(math.floor(x + 0.5))
 
@@ -188,3 +216,29 @@ def loadout(items: list[dict]) -> dict:
         "stamina_regen": 1 if duel or monk else 0,
         "weapon_damage": weapon_damage(main["weapon"], main["tier"]) if main else 0,
     }
+
+
+# ---------- мана и владение (Core/ManaRules.cs, SpellAffinity.cs) ----------
+def mana_start(pool: int) -> int:
+    return max(0, pool) // 2
+
+
+def mana_regen_gain(current: int, pool: int, regen: int) -> int:
+    new = max(0, min(current + regen, max(pool, current)))
+    return max(0, new - current)
+
+
+def starting_mastery(hero: str, school: str) -> int:
+    if hero == "Silent":
+        return 1 if school in {"restoration", "alteration", "illusion"} else 0
+    if hero == "Regent":
+        return 2 if school == "destruction" else 1
+    return 0
+
+
+def reward_share(hero: str, total_mastery: int) -> float:
+    if hero == "Regent":
+        return 0.45
+    if hero == "Silent":
+        return 0.20
+    return min(0.45, 0.10 + 0.05 * (max(0, total_mastery) // 2))

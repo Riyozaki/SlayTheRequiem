@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
@@ -22,6 +23,9 @@ public static class RequiemMode
         RequiemConfig.EnableRequiemSystems && player != null && Participants.Contains(player.Character.GetType().Name);
 
     public static bool IsInSystem(Creature? creature) => IsInSystem(creature?.Player);
+
+    public static bool IsInSystem(CharacterModel? character) =>
+        RequiemConfig.EnableRequiemSystems && character != null && Participants.Contains(character.GetType().Name);
 
     public static HeroStats StatsFor(Player? player) => HeroStats.ForCharacterTypeName(player?.Character.GetType().Name);
 }

@@ -12,11 +12,10 @@ using SlayTheRequiem.SlayTheRequiemCode.Core;
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
 /// <summary>
-/// ◆ врага (docs/design/11 §1). Amount = пул (чтобы сила не исчезала на нуле), текущее значение — <see cref="Current"/>,
-/// оно и показывается на иконке. Атака тратит ◆, конец хода врага даёт +1. Мало ◆ — враг бьёт слабее
-/// (Устал/Изнурён); ноль ◆ при атакующем намерении — «Отдышаться» вместо атаки.
+/// Ресурс врага (◆ или ✦). Amount = пул (чтобы сила не исчезала на нуле), текущее значение — <see cref="Current"/>,
+/// оно и показывается на иконке.
 /// </summary>
-public sealed class EnemyStaminaPower : RequiemPower
+public abstract class EnemyResourcePower : RequiemPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
@@ -25,7 +24,9 @@ public sealed class EnemyStaminaPower : RequiemPower
     public int Current { get; private set; } = -1;
     public override int DisplayAmount => Current < 0 ? Pool : Current;
 
-    private void EnsureInit()
+    protected abstract int Regen { get; }
+
+    protected void EnsureInit()
     {
         if (Current < 0) Current = Pool;
     }
@@ -39,44 +40,85 @@ public sealed class EnemyStaminaPower : RequiemPower
         InvokeDisplayAmountChanged();
     }
 
-    /// <summary>Отнять ◆ (Озноб, холод, «Выпивающий» эффекты). Возвращает true, если ◆ упала до нуля этим вызовом.</summary>
+    /// <summary>Отнять ресурс извне (Озноб/холод для ◆, Статика/разряд для ✦). true — если упал до нуля этим вызовом.</summary>
     public async Task<bool> Drain(int amount)
     {
         EnsureInit();
         if (amount <= 0 || Current == 0) return false;
         Set(Current - amount);
         if (Current > 0) return false;
-        await EnemyResponses.OnStaminaDepleted(Owner);
+        await OnDepleted();
         return true;
     }
 
-    public StaminaState State => DisplayAmount == 0 ? StaminaState.Exhausted
-        : DisplayAmount * 2 < Pool ? StaminaState.Tired
-        : StaminaState.Rested;
-
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (dealer != Owner || !props.IsPoweredAttack()) return 1m;
-        return StaminaRules.DamageMultiplier(State);
-    }
-
-    public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
-    {
-        if (command.Attacker != Owner) return Task.CompletedTask;
-        var results = command.Results.ToList();
-        var total = results.Sum(hit => hit.Sum(r => r.TotalDamage));
-        EnsureInit();
-        Set(Current - EnemyRules.AttackCost(results.Count, total));
-        return Task.CompletedTask;
-    }
+    protected abstract Task OnDepleted();
 
     public override Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
         if (participants.Contains(Owner))
         {
             EnsureInit();
-            Set(Current + EnemyRules.StaminaRegen);
+            Set(Current + Regen);
         }
+        return Task.CompletedTask;
+    }
+
+    protected static (int hits, int total) Measure(AttackCommand command)
+    {
+        var results = command.Results.ToList();
+        return (results.Count, results.Sum(hit => hit.Sum(r => r.TotalDamage)));
+    }
+}
+
+/// <summary>
+/// ◆ врага (docs/design/11 §1). Атака тратит ◆, конец хода врага даёт +1. Мало ◆ — враг бьёт слабее
+/// (Устал/Изнурён); ноль ◆ при атакующем намерении — «Отдышаться» вместо атаки. У врагов-магов атаки
+/// оплачиваются ✦ (<see cref="EnemyManaPower"/>), а ◆ тратится только на физические удары — то есть почти никогда.
+/// </summary>
+public sealed class EnemyStaminaPower : EnemyResourcePower
+{
+    protected override int Regen => EnemyRules.StaminaRegen;
+
+    protected override Task OnDepleted() => EnemyResponses.OnStaminaDepleted(Owner);
+
+    public StaminaState State => DisplayAmount == 0 ? StaminaState.Exhausted
+        : DisplayAmount * 2 < Pool ? StaminaState.Tired
+        : StaminaState.Rested;
+
+    private bool OwnerIsCaster => Owner.HasPower<EnemyManaPower>();
+
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    {
+        if (dealer != Owner || !props.IsPoweredAttack() || OwnerIsCaster) return 1m;
+        return StaminaRules.DamageMultiplier(State);
+    }
+
+    public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
+    {
+        if (command.Attacker != Owner || OwnerIsCaster) return Task.CompletedTask;
+        var (hits, total) = Measure(command);
+        EnsureInit();
+        Set(Current - EnemyRules.AttackCost(hits, total));
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// ✦ врага-мага (docs/design/11 §1, 02 §2). Заклинание (атака стихией/магией) стоит 2–3 ✦, прирост +2 за ход.
+/// Без ✦ — «Сосредоточиться» вместо атаки. Разряд и Статика выжигают ✦ — так срывается вражеская магия.
+/// </summary>
+public sealed class EnemyManaPower : EnemyResourcePower
+{
+    protected override int Regen => EnemyRules.CasterManaRegen;
+
+    protected override Task OnDepleted() => EnemyResponses.TryFocus(Owner);
+
+    public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
+    {
+        if (command.Attacker != Owner) return Task.CompletedTask;
+        var (hits, total) = Measure(command);
+        EnsureInit();
+        Set(Current - EnemyRules.SpellCost(hits, total));
         return Task.CompletedTask;
     }
 }

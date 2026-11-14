@@ -49,6 +49,31 @@ public static class EnemyRules
     /// <summary>После Обледенения — иммунитет к нему на 2 хода.</summary>
     public const int FrozenImmunityTurns = 2;
 
+    // ───── враги-маги (атака стихией/магией в таблице врагов) ─────
+
+    /// <summary>Пул ✦ врага-мага. Его атакующие намерения — заклинания: тратят ✦ вместо ◆.</summary>
+    public static int CasterManaPool(EnemyRank rank) => rank switch
+    {
+        EnemyRank.Elite => 6,
+        EnemyRank.Boss => 8,
+        _ => 4,
+    };
+
+    /// <summary>Прирост ✦ врага-мага в конце его хода.</summary>
+    public const int CasterManaRegen = 2;
+
+    /// <summary>Цена заклинания врага: на 1 дороже атаки (2 или 3).</summary>
+    public static int SpellCost(int hits, int totalDamage) => AttackCost(hits, totalDamage) + 1;
+
+    /// <summary>Минимальная ✦ для заклинания; меньше — враг «Сосредотачивается» (Оберег и полная ✦) вместо атаки.</summary>
+    public const int MinSpellMana = 2;
+
+    /// <summary>Оберег, который враг-маг получает при «Сосредоточиться».</summary>
+    public const int FocusSpellShield = 5;
+
+    /// <summary>Маг ли враг: атака не физическая и не «истинная».</summary>
+    public static bool IsCaster(DamageType attackType) => attackType is not (DamageType.Physical or DamageType.True or DamageType.Poison);
+
     /// <summary>Множитель ♥ ванильных врагов (компенсация новых источников урона), по умолчанию +10 %.</summary>
     public static int ScaledMaxHp(int maxHp, decimal multiplier) => Math.Max(1, (int)Math.Round(maxHp * multiplier, MidpointRounding.AwayFromZero));
 }

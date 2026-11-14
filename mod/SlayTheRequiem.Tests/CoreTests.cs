@@ -241,3 +241,82 @@ public class EquipmentRulesTests
         Assert.Equal(0, EquipmentRules.WeaponAttackCost(1, b));
     }
 }
+
+public class ManaAndMasteryTests
+{
+    [Theory]
+    [InlineData(10, 5)]
+    [InlineData(3, 1)]
+    [InlineData(5, 2)]
+    public void StartAmount_IsHalfPool(int pool, int expected) => Assert.Equal(expected, ManaRules.StartAmount(pool));
+
+    [Theory]
+    [InlineData(0, 3, 1, 1)]
+    [InlineData(3, 3, 1, 0)]
+    [InlineData(9, 10, 2, 1)]
+    [InlineData(14, 10, 2, 0)]
+    public void RegenGain_CapsAtPool_DoesNotCutOverflow(int current, int pool, int regen, int expected) =>
+        Assert.Equal(expected, ManaRules.RegenGain(current, pool, regen));
+
+    [Fact]
+    public void StartingMastery_PerHero()
+    {
+        Assert.Equal(0, SpellAffinity.StartingMastery("Ironclad", SpellSchool.Destruction));
+        Assert.Equal(1, SpellAffinity.StartingMastery("Silent", SpellSchool.Illusion));
+        Assert.Equal(0, SpellAffinity.StartingMastery("Silent", SpellSchool.Destruction));
+        Assert.Equal(2, SpellAffinity.StartingMastery("Regent", SpellSchool.Destruction));
+        Assert.Equal(1, SpellAffinity.StartingMastery("Regent", SpellSchool.Conjuration));
+    }
+
+    [Fact]
+    public void RewardShare_PlatebearerGrowsWithMastery()
+    {
+        Assert.Equal(0.10m, SpellAffinity.RewardShare("Ironclad", 0));
+        Assert.Equal(0.15m, SpellAffinity.RewardShare("Ironclad", 3));
+        Assert.Equal(0.45m, SpellAffinity.RewardShare("Regent", 0));
+    }
+
+    [Theory]
+    [InlineData(SpellTier.Novice, 0, false)]
+    [InlineData(SpellTier.Apprentice, 1, true)]
+    [InlineData(SpellTier.Adept, 1, false)]
+    public void AllowedInRewards_ByMastery(SpellTier tier, int mastery, bool expected) =>
+        Assert.Equal(expected, SpellAffinity.AllowedInRewards(tier, mastery));
+
+    [Theory]
+    [InlineData(4, 0.75, 3)]
+    [InlineData(1, 0.75, 1)]
+    [InlineData(6, 1.0, 6)]
+    public void ScaleEffect_Strained(int amount, double mult, int expected) =>
+        Assert.Equal(expected, SpellAffinity.ScaleEffect(amount, (decimal)mult));
+}
+
+public class EnemyCasterTests
+{
+    [Fact]
+    public void CasterNumbers()
+    {
+        Assert.Equal(4, EnemyRules.CasterManaPool(EnemyRank.Normal));
+        Assert.Equal(8, EnemyRules.CasterManaPool(EnemyRank.Boss));
+        Assert.Equal(2, EnemyRules.SpellCost(1, 8));
+        Assert.Equal(3, EnemyRules.SpellCost(3, 9));
+        Assert.True(EnemyRules.IsCaster(DamageType.Fire));
+        Assert.False(EnemyRules.IsCaster(DamageType.Physical));
+        Assert.False(EnemyRules.IsCaster(DamageType.Poison));
+    }
+}
+
+public class SpellCostDeltaTests
+{
+    // SpellRules добавляет к цене только надбавку предрасположенности от базовой цены (скидки не масштабируются).
+    [Theory]
+    [InlineData(3, SpellTier.Adept, 2, 2)]   // ×1.5 вверх: 5 − 3
+    [InlineData(1, SpellTier.Novice, 0, 1)]  // 2 − 1
+    [InlineData(6, SpellTier.Master, 5, 0)]
+    [InlineData(2, SpellTier.Novice, 3, -1)] // «легко»: −1
+    public void AffinityDelta(int baseCost, SpellTier tier, int mastery, int delta)
+    {
+        var cast = SpellAffinity.Evaluate(baseCost, tier, mastery);
+        Assert.Equal(delta, cast.ManaCost - baseCost);
+    }
+}

@@ -94,6 +94,11 @@ M = {
     "BattleFriendV3": ("construct", 3, 0, "phys", ""),
 }
 
+# Враги мода (классы SlayTheRequiemCode/Monsters) — не сверяются со списком ванильных ключей.
+MOD = {
+    "TombGuardian": ("undead", 1, 3, "magic", "элита «Хранитель Гробницы» (Морокей)"),
+}
+
 SKIP = {"BigDummy", "DeprecatedMonster", "MultiAttackMoveMonster", "SingleAttackMoveMonster", "OneHpMonster",
         "TenHpMonster", "FakeMerchantMonster", "Osty"}
 
@@ -117,12 +122,13 @@ def main() -> int:
         f.write("# Генерируется tools/markup/build_monsters.py — не править руками.\n")
         w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         w.writeheader()
-        for key in sorted(M):
-            fac, plating, poise, atk, note = M[key]
+        rows = {**M, **MOD}
+        for key in sorted(rows):
+            fac, plating, poise, atk, note = rows[key]
             r = FACTIONS[fac]
             w.writerow(dict(key=key, faction=fac, plating=plating, poise_bonus=poise, res_fire=r[0], res_frost=r[1],
                             res_shock=r[2], res_poison=r[3], res_magic=r[4], attack_type=atk, note=note))
-    print(f"OK: {len(M)} врагов → {out}")
+    print(f"OK: {len(M)} ванильных + {len(MOD)} мода → {out}")
     return 0
 
 

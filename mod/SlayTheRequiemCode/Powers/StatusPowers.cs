@@ -78,9 +78,15 @@ public sealed class StaticPower : RequiemPower
     {
         if (!participants.Contains(Owner) || Amount <= 0) return;
 
-        var mana = RequiemResource.Of<ManaResource>(Owner.Player);
-        var (manaLoss, shock, next) = StatusMath.StaticTick(Amount, mana?.Amount ?? 0);
-        if (mana != null && manaLoss > 0) mana.Amount -= manaLoss;
+        // ✦ героя — звёзды игры; у врагов-магов — EnemyManaPower.
+        var enemyMana = Owner.GetPower<EnemyManaPower>();
+        var current = Owner.IsPlayer ? Mana.Amount(Owner) : enemyMana?.DisplayAmount ?? 0;
+        var (manaLoss, shock, next) = StatusMath.StaticTick(Amount, current);
+        if (manaLoss > 0)
+        {
+            if (Owner.IsPlayer) await Mana.Lose(Owner.Player, manaLoss);
+            else if (enemyMana != null) await enemyMana.Drain(manaLoss);
+        }
         if (shock > 0)
         {
             using (DamageTyping.As(DamageType.Shock))

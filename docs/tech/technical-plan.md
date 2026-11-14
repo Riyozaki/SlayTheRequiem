@@ -29,19 +29,27 @@ SlayTheRequiem/
 │  │  ├─ MainFile.cs               [ModInitializer]: конфиг, загрузка таблиц, Harmony.PatchAll
 │  │  ├─ Core/                     ЧИСТАЯ логика без ссылок на игру (тестируется отдельно):
 │  │  │                            StaminaRules, CombatMath, StatusMath, SpellAffinity, BurdenRules, HeroStats,
-│  │  │                            StaminaTable, EnemyRules/StaggerRules, MonsterTable (+CsvRows), EquipmentRules
+│  │  │                            StaminaTable, EnemyRules/StaggerRules, MonsterTable (+CsvRows), EquipmentRules,
+│  │  │                            ManaRules (старт боя = пул/2, прирост до пула без срезания излишка)
 │  │  ├─ Config/                   RequiemConfig (SimpleModConfig): выключатели, ♥ врагов %
-│  │  ├─ Resources/                StaminaResource, ManaResource (BasicCustomResource; бонусы снаряжения, Груз)
+│  │  ├─ Resources/                StaminaResource (BasicCustomResource; бонусы снаряжения, Груз, происхождения)
 │  │  ├─ Rules/                    RequiemMode, RequiemData (CSV из res://), StaminaCosts, DamageTyping,
-│  │  │                            RequiemCombatRules (◆, сопротивления, холод/разряд, стаки), EnemySetup
+│  │  │                            RequiemCombatRules (◆, сопротивления, холод/разряд, стаки, свет ×2), EnemySetup,
+│  │  │                            Mana (✦ = звёзды игры; ManaCombatRules — старт и прирост; IResourceSource)
 │  │  ├─ Powers/                   статусы (Горение, Озноб, Статика, Кровотечение), Латы/Раскол, сопротивления,
 │  │  │                            враги (◆, Стойкость, Шаткость, Непоколебим, Сломлен, Оттаивание), Уворот/Покров,
 │  │  │                            силы героев; EnemyResponses (Обледенение, «Отдышаться», Ошеломление, Слом)
 │  │  ├─ Cards/                    RequiemCard (ConstructedCardModel + цена ◆), Platebearer/ — 20 карт
 │  │  ├─ Equipment/                EquipmentRelic/WeaponRelic/ArmorRelic, Loadout (слоты, рюкзак, вес),
 │  │  │                            EquipmentCombatRules (броня в начале боя, урон оружия), Items — 20 предметов
-│  │  ├─ Relics/ Extensions/       базы и хелперы шаблона
-│  │  └─ (дальше) Acts/ Shops/ Rollback/ Spells/ Monsters/ Events/ Patches/ UI/
+│  │  ├─ Spells/                   SpellCard (школа, ступень, CanonicalStarCost), SpellRules (TryModifyStarCost —
+│  │  │                            надбавка предрасположенности; «С трудом» ×0.75), SpellRewardRules (доля
+│  │  │                            заклинаний в наградах), SpellCardPool (общий пул), Mastery/Grimoire (владение
+│  │  │                            школами в сохраняемой реликвии), трактаты; 33 заклинания четырёх школ
+│  │  ├─ Monsters/                 TombGuardian + TombGuardianElite (CustomMonsterModel/CustomEncounterModel)
+│  │  ├─ Patches/                  Гримуар в стартовые реликвии, счётчик звёзд у всех, Хворь блокирует лечение
+│  │  ├─ Relics/ Extensions/       базы шаблона; Origins — происхождения (Регент: 3)
+│  │  └─ (дальше) Acts/ Shops/ Rollback/ Events/ UI/
 │  ├─ SlayTheRequiem/              ресурсы → res://SlayTheRequiem/
 │  │  ├─ data/vanilla_attacks_stamina.csv   ручная разметка ◆ (генерируется, не править руками)
 │  │  ├─ data/monsters_requiem.csv          Латы/сопротивления/тип атаки 113 врагов (генерируется)
@@ -60,7 +68,7 @@ SlayTheRequiem/
 | Система | Как реализуем | Риск |
 |---|---|---|
 | **◆/✦ шкалы** | компонент на `Creature`/`Player` (через Harmony-постфикс конструктора или BaseLib-хук «combat start»); UI — дочерний узел к полоске ♥ | средний: UI игроков в коопе |
-| **Цена карт в ◆/✦** | ◆: глобальный `CustomSingletonModel` — `BeforeCardPlayed` платит ◆ по CSV/`IStaminaCard`, множитель Устал/Изнурён в `ModifyDamageMultiplicative`, повторы (`!IsFirstInSeries`) не платят. ✦: `CustomResourceCost<ManaResource>` на картах-заклинаниях + цена по разрыву владения (`IModifyResourceCostInCombat`) | **высокий**: X-карты, авто-розыгрыш (Sly), звёзды Регента |
+| **Цена карт в ◆/✦** | ◆: глобальный `CustomSingletonModel` — `BeforeCardPlayed` платит ◆ по CSV/`IStaminaCard`, множитель Устал/Изнурён в `ModifyDamageMultiplicative`, повторы (`!IsFirstInSeries`) не платят. ✦: **звёзды игры** — заклинание объявляет `CanonicalStarCost`, игра сама рисует цену, проверяет «не хватает» и списывает; цена по разрыву владения — хук `TryModifyStarCost` (добавляется только надбавка от базовой цены, чтобы скидки не масштабировались); «Непостижимо» — `IsPlayable = false` | **высокий**: X-карты, авто-розыгрыш (Sly), звёзды Регента |
 | **Типы урона и сопротивления** | `DamagePipeline`: патч на расчёт итогового урона (после Силы/Слабости, до Блока) → тип, Латы, Пробитие, сопротивления | высокий: порядок модификаторов с ванильными Уязвимостью/Хрупкостью |
 | **Статусы** | наследники BaseLib Power; ключевые слова — CustomEnum | низкий |
 | **Ошеломление/Слом** | Power «Шаткость» + патч на выбор намерения врага (отмена текущего Move) | средний: AI-машины монстров |
@@ -71,7 +79,7 @@ SlayTheRequiem/
 | **Лагерь** | патч `RestSite`: свои `RestSiteOption`, очки лагеря | средний |
 | **Враги** | BaseLib-монстры + аффиксы как Power, накладываемые при спавне | низкий |
 | **Супербоссы** | дополнительный `Encounter` в узле после босса; объекты на поле — монстры-«пропсы» | средний |
-| **Звёзды Регента → ✦** | Harmony-патч трат/получения звёзд (`PlayerCombatState.Stars`, `ResourceInfo.StarsSpent`) на `ManaResource`; цена звёзд у ванильных карт = цена ✦ | высокий: много ванильного кода звёзд |
+| **Звёзды Регента → ✦** | Решено наоборот: ✦ **и есть** звёзды у всех героев в системе. Патч `CharacterModel.ShouldAlwaysShowStarCounter` показывает счётчик всем; `ManaCombatRules` в `AfterPlayerTurnStart` даёт пул/2 в 1-м раунде и прирост до пула (`PlayerCmd.GainStars`); ванильные звёздные карты Регента платят ✦ без единого патча | низкий: ванильный код звёзд не трогаем |
 | **5 актов** | новые акты — `CustomActModel(actNumber)` (BaseLib снимает проверку «≤4 актов» в `ModelDb.Acts`); патч сборки списка актов забега (`ActsByIndex` / создание `RunState`) на 5 слотов с развилками 2а/2б и 4а/4б; «Короткий забег» — 1→3→5 | **высокий**: экран финала, статистика, сейвы |
 | **Карта** | `ModifyGeneratedMap(Late)` для новых значков (подтипы точек поверх `MapPointType`) и ширины 9 в своих актах | средний |
 | **Лавки** | тип лавки хранится на точке карты; `ModifyMerchantCardPool/Rarity/CreationResults`, `ModifyMerchantPrice`, `AfterItemPurchased`; новые записи `MerchantInventory` (снаряжение, свитки) и вкладка «Продать» | средний: UI лавки |

@@ -66,20 +66,10 @@ public sealed class StaminaResource() : RequiemResource(ResourceId)
         (Owner?.Creature.GetPowerAmount<TemperingPower>() ?? 0)
         + Loadout.Bonuses(Owner).StaminaRegenBonus
         - BurdenPenalty.StaminaRegenPenalty(Owner);
-    protected override int PoolBonus => Loadout.Bonuses(Owner).StaminaPoolBonus;
+    protected override int PoolBonus => Loadout.Bonuses(Owner).StaminaPoolBonus
+        + (Owner == null ? 0 : Mana.ManaSources(Owner).Sum(s => s.StaminaPoolBonus));
     // Атаки не блокируются нехваткой ◆ — вместо этого надрыв (см. RequiemCombatRules).
     public override bool IsDefaultOptional => true;
 }
 
-/// <summary>
-/// ✦ Мана — топливо заклинаний, есть у всех героев (docs/design/02 §2).
-/// TODO(Этап 1): у Регента звёзды игры должны стать ✦ (перенаправление StarsSpent → ManaResource).
-/// </summary>
-public sealed class ManaResource() : RequiemResource(ResourceId)
-{
-    public const string ResourceId = "SLAYTHEREQUIEM-MANA";
-    protected override int BasePool(HeroStats stats) => stats.ManaPool;
-    protected override int BaseRegen(HeroStats stats) => stats.ManaRegen;
-    protected override string IconName => "mana";
-    protected override int RegenBonus => -Loadout.Bonuses(Owner).ManaRegenPenalty;
-}
+// ✦ Мана — не BasicCustomResource, а звёзды игры у всех героев: см. Rules/Mana.cs.

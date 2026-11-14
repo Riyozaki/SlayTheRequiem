@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.Models.Powers;
+using PlatingPower = SlayTheRequiem.SlayTheRequiemCode.Powers.PlatingPower;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Resources;
 
