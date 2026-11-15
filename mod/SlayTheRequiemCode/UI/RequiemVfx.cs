@@ -17,7 +17,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.UI;
 /// <summary>
 /// Боевые эффекты Реквиема (M7 п. 4, art spec §5): ванильные эффекты игры с перекраской. Что и каким цветом — решает
 /// <see cref="VfxRules"/>; здесь только узлы Godot. Любая ошибка эффекта гасится (одна строка в лог) — бой не ломается.
-/// Настройка «Боевые эффекты Реквиема» (<see cref="RequiemConfig.CombatVfx"/>) выключает всё разом.
+/// Настройка «Боевые эффекты Реквиема» (<see cref="RequiemConfig.CombatVfx"/>) выключает всё разом. Методы событий заодно
+/// играют звук (<see cref="RequiemSfx"/>, M7 п. 5) — по своей настройке, независимо от эффектов.
 /// </summary>
 public static class RequiemVfx
 {
@@ -119,77 +120,101 @@ public static class RequiemVfx
     // ───── события ─────
 
     /// <summary>Надрыв: кровавые шипы под героем и лёгкая тряска (шкала ◆ и ♥ вспыхивают сами — NRequiemResourceBars).</summary>
-    public static void Overstrain(Creature hero) => Safe("overstrain", () =>
+    public static void Overstrain(Creature hero)
     {
-        Add(hero, NSpikeSplashVfx.Create(hero, VfxColor.Red));
-        NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
-    });
+        RequiemSfx.Play(SfxEvents.Overstrain);
+        Safe("overstrain", () =>
+        {
+            Add(hero, NSpikeSplashVfx.Create(hero, VfxColor.Red));
+            NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+        });
+    }
 
     /// <summary>Слом: осколки брони, тряска, враг «проседает» и выпрямляется.</summary>
-    public static void Broken(Creature enemy) => Safe("broken", () =>
+    public static void Broken(Creature enemy)
     {
-        VfxCmd.PlayOnCreatureCenter(enemy, "vfx/vfx_rock_shatter");
-        Add(enemy, NSpikeSplashVfx.Create(enemy, VfxColor.Gold));
-        NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
-        if (enemy.GetCreatureNode()?.Visuals is not { } visuals) return;
-        var (pose, tween) = Animate(visuals);
-        visuals.Position = pose.Position;
-        var rest = pose.Scale;
-        tween.TweenProperty(visuals, "scale", new Vector2(rest.X * 1.04f, rest.Y * VfxRules.BrokenSag), VfxRules.BrokenSeconds * 0.3)
-            .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(visuals, "scale", rest, VfxRules.BrokenSeconds * 0.7).SetTrans(Tween.TransitionType.Elastic)
-            .SetEase(Tween.EaseType.Out);
-    });
+        RequiemSfx.Play(SfxEvents.Broken);
+        Safe("broken", () =>
+        {
+            VfxCmd.PlayOnCreatureCenter(enemy, "vfx/vfx_rock_shatter");
+            Add(enemy, NSpikeSplashVfx.Create(enemy, VfxColor.Gold));
+            NGame.Instance?.ScreenShake(ShakeStrength.Medium, ShakeDuration.Short);
+            if (enemy.GetCreatureNode()?.Visuals is not { } visuals) return;
+            var (pose, tween) = Animate(visuals);
+            visuals.Position = pose.Position;
+            var rest = pose.Scale;
+            tween.TweenProperty(visuals, "scale", new Vector2(rest.X * 1.04f, rest.Y * VfxRules.BrokenSag), VfxRules.BrokenSeconds * 0.3)
+                .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+            tween.TweenProperty(visuals, "scale", rest, VfxRules.BrokenSeconds * 0.7).SetTrans(Tween.TransitionType.Elastic)
+                .SetEase(Tween.EaseType.Out);
+        });
+    }
 
     /// <summary>Уворот: герой отскакивает от врагов и возвращается, над ним — «Уворот!».</summary>
-    public static void Dodge(Creature hero) => Safe("dodge", () =>
+    public static void Dodge(Creature hero)
     {
-        if (hero.GetCreatureNode() is not { } node) return;
-        var (pose, tween) = Animate(node.Visuals);
-        var visuals = node.Visuals;
-        visuals.Scale = pose.Scale;
-        var rest = pose.Position;
-        var away = new Vector2(hero.IsEnemy ? VfxRules.DodgeShift : -VfxRules.DodgeShift, 0f);
-        tween.TweenProperty(visuals, "position", rest + away, VfxRules.DodgeSeconds * 0.35).SetTrans(Tween.TransitionType.Quad)
-            .SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(visuals, "position", rest, VfxRules.DodgeSeconds * 0.65).SetTrans(Tween.TransitionType.Sine)
-            .SetEase(Tween.EaseType.InOut);
-        var text = NDamageBlockedVfx.Create(hero);
-        if (text == null) return;
-        DodgeText.Mark(text);
-        Add(hero, text);
-    });
+        RequiemSfx.Play(SfxEvents.Dodge);
+        Safe("dodge", () =>
+        {
+            if (hero.GetCreatureNode() is not { } node) return;
+            var (pose, tween) = Animate(node.Visuals);
+            var visuals = node.Visuals;
+            visuals.Scale = pose.Scale;
+            var rest = pose.Position;
+            var away = new Vector2(hero.IsEnemy ? VfxRules.DodgeShift : -VfxRules.DodgeShift, 0f);
+            tween.TweenProperty(visuals, "position", rest + away, VfxRules.DodgeSeconds * 0.35).SetTrans(Tween.TransitionType.Quad)
+                .SetEase(Tween.EaseType.Out);
+            tween.TweenProperty(visuals, "position", rest, VfxRules.DodgeSeconds * 0.65).SetTrans(Tween.TransitionType.Sine)
+                .SetEase(Tween.EaseType.InOut);
+            var text = NDamageBlockedVfx.Create(hero);
+            if (text == null) return;
+            DodgeText.Mark(text);
+            Add(hero, text);
+        });
+    }
 
     /// <summary>Клич: волна крика от героя в цвете варианта (атака — рыжая, навык — золотая, сила — голубая).</summary>
-    public static void Shout(Creature hero, ShoutFx variant) => Safe("shout", () =>
+    public static void Shout(Creature hero, ShoutFx variant)
     {
-        if (hero.GetCreatureNode() is not { } node) return;
-        Add(hero, Modulated(NScreamVfx.Create(node.VfxSpawnPosition), Tint(VfxRules.ShoutTint(variant))));
-    });
+        RequiemSfx.Shout(variant);
+        Safe("shout", () =>
+        {
+            if (hero.GetCreatureNode() is not { } node) return;
+            Add(hero, Modulated(NScreamVfx.Create(node.VfxSpawnPosition), Tint(VfxRules.ShoutTint(variant))));
+        });
+    }
 
     /// <summary>Призыв: круг спор и дымка цвета призыва там, где встало существо.</summary>
-    public static void Summon(Creature pet, SummonKind kind) => Safe("summon", () =>
+    public static void Summon(Creature pet, SummonKind kind)
     {
-        var tint = Tint(VfxRules.SummonTint(kind));
-        Add(pet, NSporeImpactVfx.Create(pet, tint));
-        Add(pet, NGaseousImpactVfx.Create(pet, tint with { A = 0.7f }));
-    });
+        RequiemSfx.Play(SfxEvents.Summon);
+        Safe("summon", () =>
+        {
+            var tint = Tint(VfxRules.SummonTint(kind));
+            Add(pet, NSporeImpactVfx.Create(pet, tint));
+            Add(pet, NGaseousImpactVfx.Create(pet, tint with { A = 0.7f }));
+        });
+    }
 
     /// <summary>Вход к супербоссу (Багровый портал): экран вспыхивает красным и гаснет, по краям — багровая дымка.</summary>
-    public static void PortalEnter(NCombatRoom room) => Safe("portal", () =>
+    public static void PortalEnter(NCombatRoom room)
     {
-        var crimson = Tint(VfxRules.PortalTint);
-        room.CombatVfxContainer.AddChildSafely(NSmokyVignetteVfx.Create(crimson with { A = 0.66f }, new Color(3f, 0f, 0f, 0.33f)));
-        var layer = new CanvasLayer { Layer = 40, Name = "RequiemPortalEnter" };
-        var veil = new ColorRect { Color = crimson with { A = VfxRules.PortalEnterAlpha }, MouseFilter = Control.MouseFilterEnum.Ignore };
-        veil.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        layer.AddChild(veil);
-        room.AddChildSafely(layer);
-        var tween = veil.CreateTween();
-        tween.TweenProperty(veil, "color:a", 0f, VfxRules.PortalEnterSeconds).SetTrans(Tween.TransitionType.Cubic)
-            .SetEase(Tween.EaseType.In);
-        tween.TweenCallback(Callable.From(layer.QueueFree));
-    });
+        RequiemSfx.Play(SfxEvents.PortalEnter);
+        Safe("portal", () =>
+        {
+            var crimson = Tint(VfxRules.PortalTint);
+            room.CombatVfxContainer.AddChildSafely(NSmokyVignetteVfx.Create(crimson with { A = 0.66f }, new Color(3f, 0f, 0f, 0.33f)));
+            var layer = new CanvasLayer { Layer = 40, Name = "RequiemPortalEnter" };
+            var veil = new ColorRect { Color = crimson with { A = VfxRules.PortalEnterAlpha }, MouseFilter = Control.MouseFilterEnum.Ignore };
+            veil.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+            layer.AddChild(veil);
+            room.AddChildSafely(layer);
+            var tween = veil.CreateTween();
+            tween.TweenProperty(veil, "color:a", 0f, VfxRules.PortalEnterSeconds).SetTrans(Tween.TransitionType.Cubic)
+                .SetEase(Tween.EaseType.In);
+            tween.TweenCallback(Callable.From(layer.QueueFree));
+        });
+    }
 
     /// <summary>Багровая пульсация за узлом супербосса на карте (ребёнок SpriteContainer — масштабируется при наведении вместе с ним).</summary>
     public static void PortalPulse(Node2D spriteContainer) => Safe("portal pulse", () =>
@@ -214,6 +239,7 @@ public static class RequiemVfx
     /// </summary>
     public static async Task Rewind(int seed)
     {
+        RequiemSfx.Play(SfxEvents.Rewind);
         if (!Enabled || NGame.Instance == null) return;
         SceneTreeTimer timer;
         try

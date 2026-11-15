@@ -59,6 +59,12 @@ internal class RequiemConfig : SimpleModConfig
     public static bool CombatVfx { get; set; } = true;
 
     /// <summary>
+    /// Звуки Реквиема (M7 п. 5, art spec §6): удары по типу урона, надрыв, Слом, Уворот, Кличи, призыв, откат, портал, Тайник —
+    /// ванильные звуки игры и свои (data/sfx.csv). Отдельно от боевых эффектов. Громкость — ползунок «Звуки» игры.
+    /// </summary>
+    public static bool RequiemSounds { get; set; } = true;
+
+    /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
     /// Меняется до начала забега; в коопе должна совпадать у всех.
     /// </summary>

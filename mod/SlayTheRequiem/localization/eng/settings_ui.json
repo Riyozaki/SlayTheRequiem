@@ -114,5 +114,8 @@
   "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.desc": "In combat the hero holds the equipped weapon and shield (or staff), coloured by material, and glows with an aura of the armour class and tier. Cosmetic only.",
   "SLAYTHEREQUIEM-COMBAT_VFX.title": "Requiem combat effects",
   "SLAYTHEREQUIEM-COMBAT_VFX.hover.title": "Combat effects",
-  "SLAYTHEREQUIEM-COMBAT_VFX.hover.desc": "Recoloured vanilla effects: an elemental burst on hits by damage type (frost, fire, shock, poison, blight, light, magic, true), Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind and the Crimson portal. Off — only the vanilla attack effects. Cosmetic only."
+  "SLAYTHEREQUIEM-COMBAT_VFX.hover.desc": "Recoloured vanilla effects: an elemental burst on hits by damage type (frost, fire, shock, poison, blight, light, magic, true), Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind and the Crimson portal. Off — only the vanilla attack effects. Cosmetic only.",
+  "SLAYTHEREQUIEM-REQUIEM_SOUNDS.title": "Requiem sounds",
+  "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.title": "Requiem sounds",
+  "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.desc": "Sounds for hits by damage type, Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind, the Crimson portal and Caches — vanilla sounds plus a few of our own. Volume follows the game's Sound slider. Independent of combat effects."
 }

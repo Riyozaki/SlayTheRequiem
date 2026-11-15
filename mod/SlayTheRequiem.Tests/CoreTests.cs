@@ -1709,3 +1709,67 @@ public class M7VfxLookTests
         Assert.Equal(-0.4714294, cracks[6][4].Y, 3);
     }
 }
+
+public class M7SfxRuleTests
+{
+    private static SfxTable Shipped() => SfxTable.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "sfx.csv")));
+
+    [Fact]
+    public void ShippedTableCoversEveryEvent()
+    {
+        var table = Shipped();
+        Assert.Equal(SfxEvents.All.Count, table.EventCount);
+        foreach (var ev in SfxEvents.All) Assert.NotEmpty(table.For(ev));
+        var sources = table.AllLayers.Select(l => l.Source).Distinct().ToList();
+        Assert.Contains(SfxSource.Fmod, sources);
+        Assert.Contains(SfxSource.Own, sources);
+        Assert.All(table.AllLayers.Where(l => l.Source == SfxSource.Fmod), l => Assert.StartsWith("event:/sfx/", l.Sound));
+        Assert.All(table.AllLayers.Where(l => l.Source == SfxSource.Own), l => Assert.EndsWith(".wav", l.Sound));
+    }
+
+    [Theory]
+    [InlineData("hit.physical,fmod,event:/sfx/heal,1,")]   // нет такого события
+    [InlineData("dodge,own,event:/sfx/heal,1,")]          // свой файл с путём FMOD
+    [InlineData("dodge,fmod,whoosh.wav,1,")]              // FMOD без event:/
+    [InlineData("dodge,own,whoosh.wav,3,")]               // громче 2
+    [InlineData("dodge,own,whoosh.wav,громко,")]
+    [InlineData("dodge,midi,whoosh.wav,1,")]
+    public void RejectsBadRows(string row) =>
+        Assert.Throws<FormatException>(() => SfxTable.Parse("event,source,sound,volume,note\n" + row));
+
+    [Fact]
+    public void LayersPlayTogetherAndMissingEventIsSilent()
+    {
+        var table = SfxTable.Parse("# x\nevent,source,sound,volume,note\nrewind,own,rewind.wav,1,a\nrewind,fmod,event:/sfx/heal,0.5,b\n");
+        Assert.Equal(2, table.For(SfxEvents.Rewind).Count);
+        Assert.Empty(table.For(SfxEvents.Dodge));
+        Assert.Equal("res://SlayTheRequiem/audio/sfx/rewind.wav", SfxRules.FilePath(table.For(SfxEvents.Rewind)[0], "res://SlayTheRequiem"));
+        Assert.Equal("event:/sfx/heal", SfxRules.FilePath(table.For(SfxEvents.Rewind)[1], "res://SlayTheRequiem"));
+        Assert.Equal("res://debug_audio/hiss.mp3", SfxRules.FilePath(new SfxLayer(SfxSource.Game, "hiss.mp3", 1f), "res://x"));
+        Assert.Equal(2f, SfxRules.LayerVolume(new SfxLayer(SfxSource.Own, "a.wav", 1.5f), 2f));
+    }
+
+    [Theory]
+    [InlineData(DamageType.Physical, true, 10, 0f)]
+    [InlineData(DamageType.Fire, true, 0, 1f)]     // атака в блок — звук есть
+    [InlineData(DamageType.Fire, false, 0, 0f)]    // тик в ноль — нет
+    [InlineData(DamageType.Poison, false, 3, 0.5f)]
+    [InlineData(DamageType.True, true, 7, 1f)]
+    public void HitVolumeFollowsTheFlash(DamageType type, bool powered, int damage, float volume)
+    {
+        Assert.Equal(volume, SfxRules.HitVolume(type, powered, damage));
+        Assert.Equal(volume > 0f, VfxRules.For(type, powered, damage) != null);
+    }
+
+    [Fact]
+    public void EveryElementHasItsOwnHitSoundAndShoutsDiffer()
+    {
+        var types = Enum.GetValues<DamageType>().Where(t => t != DamageType.Physical).ToList();
+        Assert.Equal(types.Count, types.Select(SfxRules.HitEvent).Distinct().Count());
+        Assert.Null(SfxRules.HitEvent(DamageType.Physical));
+        Assert.Equal(3, new[] { ShoutFx.War, ShoutFx.Guard, ShoutFx.Rally }.Select(SfxRules.ShoutEvent).Distinct().Count());
+        Assert.False(SfxRules.Throttled(0, 50));
+        Assert.True(SfxRules.Throttled(1000, 1119));
+        Assert.False(SfxRules.Throttled(1000, 1120));
+    }
+}

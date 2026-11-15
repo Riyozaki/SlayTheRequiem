@@ -201,6 +201,11 @@ UI_SETTINGS = {
         "COMBAT_VFX.hover.desc": "Recoloured vanilla effects: an elemental burst on hits by damage type (frost, fire, shock, poison, "
                                  "blight, light, magic, true), Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind and the Crimson portal. "
                                  "Off — only the vanilla attack effects. Cosmetic only.",
+        "REQUIEM_SOUNDS.title": "Requiem sounds",
+        "REQUIEM_SOUNDS.hover.title": "Requiem sounds",
+        "REQUIEM_SOUNDS.hover.desc": "Sounds for hits by damage type, Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind, "
+                                     "the Crimson portal and Caches — vanilla sounds plus a few of our own. Volume follows the game's Sound slider. "
+                                     "Independent of combat effects.",
     },
     "rus": {
         "SHOW_VANILLA_ONLY_HEROES.title": "Некробиндер и Дефект как герои",
@@ -221,5 +226,10 @@ UI_SETTINGS = {
         "COMBAT_VFX.hover.desc": "Ванильные эффекты в цветах Реквиема: вспышка стихии при ударе по типу урона (холод, огонь, "
                                  "разряд, яд, хворь, свет, магия, чистый), надрыв, Слом, Уворот, Кличи, призыв, откат Камня Памяти и Багровый портал. "
                                  "Выкл — только ванильные эффекты атак. Только оформление.",
+        "REQUIEM_SOUNDS.title": "Звуки Реквиема",
+        "REQUIEM_SOUNDS.hover.title": "Звуки Реквиема",
+        "REQUIEM_SOUNDS.hover.desc": "Звуки ударов по типу урона, надрыва, Слома, Уворота, Кличей, призыва, отката Камня Памяти, Багрового портала "
+                                     "и Тайников — ванильные звуки игры и несколько своих. Громкость — ползунок «Звуки» игры. "
+                                     "Не зависит от боевых эффектов.",
     },
 }

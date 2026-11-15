@@ -13,6 +13,7 @@ public static class RequiemData
     public static MonsterTable? Monsters { get; private set; }
     public static PoolTable? Pools { get; private set; }
     public static VanillaRelicTable? Relics { get; private set; }
+    public static SfxTable? Sfx { get; private set; }
 
     public static void Load()
     {
@@ -20,10 +21,12 @@ public static class RequiemData
         Monsters = Read("monsters_requiem.csv", MonsterTable.Parse);
         Pools = Read("requiem_pools.csv", PoolTable.Parse);
         Relics = Read("vanilla_relics.csv", VanillaRelicTable.Parse);
+        Sfx = Read("sfx.csv", SfxTable.Parse);
         MainFile.Logger.Info($"Requiem data: {Attacks?.Count ?? 0} attacks, {Monsters?.Count ?? 0} monsters, " +
                              $"pools: {Pools?.CutCount ?? 0} cut, {Pools?.GatedCount ?? 0} gated, " +
                              $"vanilla relics: {Relics?.Count ?? 0} ({Relics?.CountOf(RelicBucket.Jewelry) ?? 0} → jewelry, " +
-                             $"{Relics?.CountOf(RelicBucket.Rework) ?? 0} reworked).");
+                             $"{Relics?.CountOf(RelicBucket.Rework) ?? 0} reworked), " +
+                             $"sounds: {Sfx?.EventCount ?? 0} events / {Sfx?.LayerCount ?? 0} layers.");
     }
 
     private static T? Read<T>(string fileName, Func<string, T> parse) where T : class

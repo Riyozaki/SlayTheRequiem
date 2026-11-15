@@ -2682,3 +2682,62 @@ def vfx_rewind_cracks(seed: int, count: int = 7, segments: int = 4):
             pts.append((max(-1.0, min(1.0, radius * math.cos(a))), max(-1.0, min(1.0, radius * math.sin(a)))))
         cracks.append(pts)
     return cracks
+
+
+# ───── M7 п. 5: звуки Реквиема (Core/SfxRules.cs, data/sfx.csv; art spec §6) ─────
+
+SFX_EVENTS = ["hit.fire", "hit.frost", "hit.shock", "hit.poison", "hit.blight", "hit.light", "hit.magic", "hit.true",
+              "overstrain", "broken", "dodge", "shout.war", "shout.guard", "shout.rally", "summon", "rewind", "portal.enter",
+              "cache.open", "cache.trap"]
+SFX_HIT_EVENT = {"Fire": "hit.fire", "Frost": "hit.frost", "Shock": "hit.shock", "Poison": "hit.poison",
+                 "Blight": "hit.blight", "Light": "hit.light", "Magic": "hit.magic", "True": "hit.true"}
+SFX_HIT_THROTTLE_MS = 120
+SFX_TICK_VOLUME = 0.5
+SFX_MAX_VOLUME = 2.0
+SFX_SOURCES = ("fmod", "game", "own")
+
+
+def sfx_hit_event(damage_type: str):
+    """Звук удара по типу урона; физический — None (ванильный звук атаки)."""
+    return SFX_HIT_EVENT.get(damage_type)
+
+
+def sfx_hit_volume(damage_type: str, powered_attack: bool, total_damage: int) -> float:
+    """Как вспышка: атака звучит всегда, не-атака — если прошёл урон, и тише."""
+    if sfx_hit_event(damage_type) is None or (not powered_attack and total_damage <= 0):
+        return 0.0
+    return 1.0 if powered_attack else SFX_TICK_VOLUME
+
+
+def sfx_throttled(last_ms: int, now_ms: int) -> bool:
+    return last_ms != 0 and now_ms >= last_ms and now_ms - last_ms < SFX_HIT_THROTTLE_MS
+
+
+def sfx_shout_event(variant: str) -> str:
+    return {"War": "shout.war", "Rally": "shout.rally"}.get(variant, "shout.guard")
+
+
+def sfx_layer_volume(volume: float, scale: float) -> float:
+    return max(0.0, min(SFX_MAX_VOLUME, volume * scale))
+
+
+def sfx_parse(text: str) -> dict[str, list[tuple[str, str, float]]]:
+    """Зеркало SfxTable.Parse: событие → слои (источник, звук, громкость); ошибка — ValueError с номером строки."""
+    layers: dict[str, list[tuple[str, str, float]]] = {}
+    lines = [l for l in text.splitlines() if l.strip() and not l.startswith("#")]
+    for n, row in enumerate(csv.DictReader(lines), 2):
+        ev, src, sound = row.get("event", ""), row.get("source", ""), row.get("sound", "")
+        if ev not in SFX_EVENTS:
+            raise ValueError(f"неизвестное событие {ev!r} (строка {n})")
+        if src not in SFX_SOURCES:
+            raise ValueError(f"неизвестный источник {src!r} (строка {n})")
+        if not sound or (src == "fmod") != sound.startswith("event:/"):
+            raise ValueError(f"звук {sound!r} не подходит к источнику {src} (строка {n})")
+        try:
+            vol = float(row.get("volume", ""))
+        except ValueError:
+            raise ValueError(f"громкость {row.get('volume')!r} (строка {n})") from None
+        if not 0 <= vol <= SFX_MAX_VOLUME:
+            raise ValueError(f"громкость {vol} вне 0…{SFX_MAX_VOLUME} (строка {n})")
+        layers.setdefault(ev, []).append((src, sound, vol))
+    return layers

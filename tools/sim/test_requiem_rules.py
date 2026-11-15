@@ -1543,5 +1543,102 @@ class M7VfxLooks(unittest.TestCase):
             self.assertIn("SLAYTHEREQUIEM-COMBAT_VFX.title", open(path, encoding="utf-8").read())
 
 
+class M7SfxRules(unittest.TestCase):
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+    TABLE = os.path.join(ROOT, "mod", "SlayTheRequiem", "data", "sfx.csv")
+
+    def src(self, *parts):
+        return open(os.path.join(self.CODE, *parts), encoding="utf-8").read()
+
+    def test_hit_rules(self):
+        self.assertIsNone(r.sfx_hit_event("Physical"))
+        self.assertEqual(r.sfx_hit_volume("Physical", True, 10), 0.0)
+        self.assertEqual(r.sfx_hit_volume("Fire", True, 0), 1.0)  # атака в блок — звук есть
+        self.assertEqual(r.sfx_hit_volume("Fire", False, 0), 0.0)  # тик в ноль — нет
+        self.assertEqual(r.sfx_hit_volume("Poison", False, 3), r.SFX_TICK_VOLUME)
+        self.assertEqual(len(set(r.SFX_HIT_EVENT.values())), 8)
+        # звук удара есть ровно там, где есть вспышка (M7 п. 4)
+        for t in ["Physical"] + list(r.SFX_HIT_EVENT):
+            for powered, dmg in ((True, 0), (False, 0), (False, 4)):
+                self.assertEqual(r.sfx_hit_volume(t, powered, dmg) > 0, r.vfx_hit(t, powered, dmg) is not None, (t, powered, dmg))
+        self.assertFalse(r.sfx_throttled(0, 50))
+        self.assertTrue(r.sfx_throttled(1000, 1119))
+        self.assertFalse(r.sfx_throttled(1000, 1120))
+        self.assertEqual([r.sfx_shout_event(v) for v in ("War", "Guard", "Rally")], ["shout.war", "shout.guard", "shout.rally"])
+        self.assertEqual(r.sfx_layer_volume(1.5, 2.0), r.SFX_MAX_VOLUME)
+        self.assertEqual(r.sfx_layer_volume(0.8, 0.5), 0.4)
+
+    def test_table(self):
+        layers = r.sfx_parse(open(self.TABLE, encoding="utf-8").read())
+        self.assertEqual(set(layers), set(r.SFX_EVENTS))  # у каждого события есть звук
+        sources = {src for ls in layers.values() for src, _, _ in ls}
+        self.assertEqual(sources, set(r.SFX_SOURCES))  # и ванильные события, и файлы игры, и свои
+        own = {snd for ls in layers.values() for src, snd, _ in ls if src == "own"}
+        for name in own:
+            self.assertTrue(os.path.isfile(os.path.join(self.ROOT, "mod", "SlayTheRequiem", "audio", "sfx", name)), name)
+        with open(os.path.join(self.ROOT, "tools", "audio", "vanilla_fmod_events.txt"), encoding="utf-8") as f:
+            known = {l.strip() for l in f if l.strip() and not l.startswith("#")}
+        for ls in layers.values():
+            for src, snd, _ in ls:
+                if src == "fmod":
+                    self.assertIn(snd, known)
+        head = "event,source,sound,volume,note\n"
+        for bad in ("hit.physical,fmod,event:/sfx/heal,1,", "dodge,own,event:/sfx/heal,1,", "dodge,fmod,whoosh.wav,1,",
+                    "dodge,own,whoosh.wav,3,", "dodge,own,whoosh.wav,громко,", "dodge,midi,whoosh.wav,1,"):
+            with self.assertRaises(ValueError, msg=bad):
+                r.sfx_parse(head + bad)
+        self.assertEqual(r.sfx_parse("# комментарий\n" + head + "dodge,own,whoosh.wav,0.5,x"), {"dodge": [("own", "whoosh.wav", 0.5)]})
+
+    def test_matches_csharp(self):
+        import re
+        src = self.src("Core", "SfxRules.cs")
+        consts = dict(re.findall(r'public const string (\w+) = "([a-z.]+)";', src))
+        order = re.findall(r"\b([A-Z]\w+)\b", src.split("IReadOnlyList<string> All =")[1].split("];")[0])
+        self.assertEqual([consts[n] for n in order], r.SFX_EVENTS)
+        for t, ev in r.SFX_HIT_EVENT.items():
+            name = next(k for k, v in consts.items() if v == ev)
+            self.assertIn(f"DamageType.{t} => SfxEvents.{name}", src)
+        self.assertIn(f"HitThrottleMs = {r.SFX_HIT_THROTTLE_MS};", src)
+        self.assertIn(f"TickVolume = {r.SFX_TICK_VOLUME}f;", src)
+        self.assertIn(f"MaxVolume = {int(r.SFX_MAX_VOLUME)}f;", src)
+        for s in r.SFX_SOURCES:
+            self.assertIn(f'"{s}" => SfxSource.', src)
+
+    def test_wiring(self):
+        """Звуки подключены к тем же событиям, что и эффекты, у таблицы есть .import, настройка и подписи есть."""
+        vfx = self.src("UI", "RequiemVfx.cs")
+        for call in ("SfxEvents.Overstrain", "SfxEvents.Broken", "SfxEvents.Dodge", "RequiemSfx.Shout(variant)", "SfxEvents.Summon",
+                     "SfxEvents.PortalEnter", "SfxEvents.Rewind"):
+            self.assertIn(call, vfx)
+        # звук не прячется за настройкой эффектов: стоит до Safe(...) / до проверки Enabled
+        self.assertLess(vfx.index("RequiemSfx.Play(SfxEvents.Rewind)"), vfx.index("if (!Enabled || NGame.Instance == null)"))
+        self.assertIn("RequiemSfx.Hit(receiver, type, powered, total)", self.src("UI", "RequiemVfxPatches.cs"))
+        ledger = self.src("Acts", "ActLedger.cs")
+        self.assertIn("RequiemSfx.Play(SfxEvents.CacheTrap)", ledger)
+        self.assertIn("RequiemSfx.Play(SfxEvents.CacheOpen)", ledger)
+        self.assertIn('Sfx = Read("sfx.csv", SfxTable.Parse);', self.src("Rules", "RequiemData.cs"))
+        sfx = self.src("UI", "RequiemSfx.cs")
+        self.assertIn('new("SFX")', sfx)  # шина звуков игры — действует ползунок громкости
+        self.assertIn("RequiemConfig.RequiemSounds", sfx)
+        self.assertTrue(os.path.isfile(self.TABLE + ".import"))
+        self.assertIn('importer="keep"', open(self.TABLE + ".import", encoding="utf-8").read())
+        self.assertIn("public static bool RequiemSounds { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
+        import loc_ui
+        self.assertEqual(loc_ui.UI_SETTINGS["rus"]["REQUIEM_SOUNDS.title"], "Звуки Реквиема")
+        self.assertIn("REQUIEM_SOUNDS.hover.desc", loc_ui.UI_SETTINGS["eng"])
+
+    def test_own_sounds_match_synth(self):
+        sys.path.insert(0, os.path.join(self.ROOT, "tools", "audio"))
+        try:
+            import build_sfx
+        except ImportError as e:  # numpy нет — проверка синтеза идёт в CI (build_sfx.py --check)
+            self.skipTest(str(e))
+        self.assertEqual(build_sfx.check_table(build_sfx.read_table()), [])
+        self.assertEqual(set(build_sfx.SOUNDS), {snd for ls in r.sfx_parse(open(self.TABLE, encoding="utf-8").read()).values()
+                                                 for src, snd, _ in ls if src == "own"})
+
+
 if __name__ == "__main__":
     unittest.main()

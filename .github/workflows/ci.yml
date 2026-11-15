@@ -65,6 +65,8 @@ jobs:
           python tools/art/events/build_events.py --check
           python tools/art/acts/build_acts.py --check
           python tools/art/relics/draw_origins.py --check
+      - name: Requiem sounds (M7) — data/sfx.csv events and vanilla FMOD paths, own WAVs match the synth
+        run: python tools/audio/build_sfx.py --check
       - name: Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures
         run: python tools/ci/check_events.py
       - name: Every model has its own or a vanilla image

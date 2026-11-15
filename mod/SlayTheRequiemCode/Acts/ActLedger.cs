@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
 using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
@@ -19,6 +20,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Relics;
 using SlayTheRequiem.SlayTheRequiemCode.Rollback;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using SlayTheRequiem.SlayTheRequiemCode.Shops;
+using SlayTheRequiem.SlayTheRequiemCode.UI;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 
@@ -319,6 +321,7 @@ public sealed class ActLedger : RequiemRelic
         {
             OpenVault(code);
             Flash();
+            if (LocalContext.IsMe(Owner)) RequiemSfx.Play(SfxEvents.CacheTrap);
             await CreatureCmd.Damage(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), Owner.Creature,
                 NodeRules.CacheTrap(slot), MegaCrit.Sts2.Core.ValueProps.ValueProp.Unblockable | MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered,
                 null, null);
@@ -329,6 +332,7 @@ public sealed class ActLedger : RequiemRelic
         ClawKeys--;
         OpenVault(code);
         Flash();
+        if (LocalContext.IsMe(Owner)) RequiemSfx.Play(SfxEvents.CacheOpen);
         await PlayerCmd.GainGold(NodeRules.CacheGold(slot), Owner);
         await RewardsCmd.OfferCustom(Owner, [new PotionReward(Owner)]);
     }
