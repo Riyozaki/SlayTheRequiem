@@ -183,3 +183,55 @@ class Stage3(unittest.TestCase):
         self.assertEqual(r.affix_count("normal", 1, 25), 0)
         self.assertEqual(r.affix_count("boss", 3, 0), 0)
         self.assertEqual([r.control_hp_cap(t) for t in ("novice", "expert", "master")], [20, 120, None])
+
+
+class Stage35(unittest.TestCase):
+    def test_shop_types(self):
+        self.assertEqual(r.roll_shop_type(12345, 0, 0, None), "Wanderer")
+        self.assertNotIn("Arcanist", r.shop_act_pool(0))
+        self.assertIn("Arcanist", r.shop_act_pool(1))
+        for h in range(50):
+            t = r.roll_shop_type(h, 1, 2, "Armorer")
+            self.assertNotEqual(t, "Armorer")
+        # FNV-1a стабилен (значения совпадают с C#-реализацией по построению)
+        self.assertEqual(r.fnv1a("ABC", 0), r.fnv1a("ABC", 0))
+        self.assertNotEqual(r.fnv1a("ABC", 1), r.fnv1a("ABC", 2))
+
+    def test_prices_and_trust(self):
+        self.assertEqual([r.trust(x) for x in (0, 149, 150, 449, 450, 9999)], [0, 0, 1, 2, 3, 3])
+        self.assertEqual(r.apply_trust(100, 3), 85)
+        self.assertEqual(r.apply_trust(50, 1), 48)  # 47.5 → 48
+        self.assertEqual(r.sell_value(80, 0), 28)
+        self.assertEqual(r.sell_value(80, 3), 40)
+        self.assertEqual([r.equipment_price("Weapon", t) for t in range(1, 6)], [45, 80, 130, 190, 260])
+        self.assertEqual(r.equipment_price("Armor", 9), 220)
+        self.assertEqual([r.spell_price(t, True) for t in range(1, 6)], [41, 63, 99, 144, 207])
+        self.assertEqual(r.spell_price(3, False), 110)
+        self.assertEqual([r.brew_price(t, False) for t in (1, 3, 5)], [40, 75, 130])
+        self.assertEqual([r.brew_price(t, True) for t in (1, 3, 5)], [35, 70, 125])
+        self.assertEqual([r.treatise_price(n) for n in (0, 1, 2)], [120, 160, 200])
+        self.assertEqual(r.equipment_tiers("Wanderer", 2), (1, 2))
+        self.assertEqual([r.equipment_tiers("Armorer", a) for a in (0, 1, 2, 3)], [(1, 2), (2, 3), (3, 4), (4, 5)])
+        self.assertEqual([r.shop_brew_tier(a) for a in (0, 1, 2)], [1, 3, 5])
+
+    def test_combat_gold(self):
+        self.assertEqual([r.combat_gold(g) for g in (13, 20, 25, 35, 95, 105)], [17, 26, 33, 46, 124, 137])
+        self.assertTrue(r.spell_allowed_in_shop(2, 0))
+        self.assertFalse(r.spell_allowed_in_shop(3, 0))
+        self.assertTrue(r.spell_allowed_in_shop(4, 3))
+
+    def test_memory_stone(self):
+        self.assertEqual([r.candles_for(lv) for lv in (0, 1, 4, 5, 7, 8, 9, 10)], [r.INFINITE, 3, 3, 2, 2, 1, 1, 0])
+        self.assertEqual(r.candles_left(0, 99), r.INFINITE)
+        self.assertEqual(r.candles_left(3, 1), 2)
+        self.assertEqual(r.candles_left(3, 5), 0)
+        self.assertEqual(r.candles_left(9, 1, bonus=1), 1)
+        self.assertEqual(r.candles_left(0, 0, override=0), 0)
+        self.assertEqual(r.candles_left(10, 1, override=2), 1)
+        self.assertEqual([r.flesh_scar_max_hp(h) for h in (80, 70, 10, 2, 1)], [75, 65, 9, 1, 1])
+        self.assertEqual(r.purse_scar_gold(155), 93)
+        self.assertAlmostEqual(r.score_multiplier(2), 0.70)
+        self.assertEqual(r.score_multiplier(10), 0.0)
+        # повторный возврат к тому же Камню: прежний Шрам плоти + новый
+        self.assertEqual(r.scars_to_apply(1, True, 0), 2)
+        self.assertEqual(r.scars_to_apply(1, False, 1), 0)

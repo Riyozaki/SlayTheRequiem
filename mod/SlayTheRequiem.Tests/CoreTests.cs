@@ -384,3 +384,75 @@ public class Stage3Tests
     public void AffixCount(EnemyRank rank, int act, int roll, int hp, int expected) =>
         Assert.Equal(expected, EnemyRules.AffixCount(rank, act, roll, hp));
 }
+
+public class Stage35Tests
+{
+    [Fact]
+    public void ShopTypes()
+    {
+        Assert.Equal(ShopType.Wanderer, ShopRules.RollShopType(12345u, 0, 0, null));
+        Assert.DoesNotContain(ShopType.Arcanist, ShopRules.ActPool(0));
+        Assert.Contains(ShopType.Arcanist, ShopRules.ActPool(1));
+        for (var h = 0u; h < 50u; h++)
+            Assert.NotEqual(ShopType.Armorer, ShopRules.RollShopType(h, 1, 2, ShopType.Armorer));
+        Assert.Equal(ShopRules.Fnv1a("ABC"), ShopRules.Fnv1a("ABC"));
+        Assert.NotEqual(ShopRules.Fnv1a("ABC", 1), ShopRules.Fnv1a("ABC", 2));
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(149, 0)]
+    [InlineData(150, 1)]
+    [InlineData(449, 2)]
+    [InlineData(450, 3)]
+    [InlineData(9999, 3)]
+    public void Trust(int spent, int expected) => Assert.Equal(expected, ShopRules.Trust(spent));
+
+    [Fact]
+    public void Prices()
+    {
+        Assert.Equal(85, ShopRules.ApplyTrust(100, 3));
+        Assert.Equal(48, ShopRules.ApplyTrust(50, 1));
+        Assert.Equal(28, ShopRules.SellValue(80, 0));
+        Assert.Equal(40, ShopRules.SellValue(80, 3));
+        Assert.Equal(new[] { 45, 80, 130, 190, 260 }, Enumerable.Range(1, 5).Select(t => ShopRules.EquipmentPrice(EquipCategory.Weapon, t)));
+        Assert.Equal(220, ShopRules.EquipmentPrice(EquipCategory.Armor, 9));
+        Assert.Equal(new[] { 41, 63, 99, 144, 207 }, Enum.GetValues<SpellTier>().Select(t => ShopRules.SpellPrice(t, single: true)));
+        Assert.Equal(110, ShopRules.SpellPrice(SpellTier.Adept, single: false));
+        Assert.Equal(new[] { 40, 75, 130 }, new[] { 1, 3, 5 }.Select(t => ShopRules.BrewPrice(t, poison: false)));
+        Assert.Equal(new[] { 35, 70, 125 }, new[] { 1, 3, 5 }.Select(t => ShopRules.BrewPrice(t, poison: true)));
+        Assert.Equal(new[] { 120, 160, 200 }, new[] { 0, 1, 2 }.Select(ShopRules.TreatisePrice));
+        Assert.Equal((1, 2), ShopRules.EquipmentTiers(ShopType.Wanderer, 2));
+        Assert.Equal((3, 4), ShopRules.EquipmentTiers(ShopType.Armorer, 2));
+        Assert.Equal(new[] { 1, 3, 5 }, new[] { 0, 1, 2 }.Select(ShopRules.BrewTier));
+        Assert.Equal(ArmorClass.Robe, ShopRules.PreferredArmor("Regent"));
+    }
+
+    [Fact]
+    public void CombatGoldAndSpellShelf()
+    {
+        Assert.Equal(new[] { 17, 26, 33, 46, 124, 137 }, new[] { 13, 20, 25, 35, 95, 105 }.Select(ShopRules.CombatGold));
+        Assert.True(SpellAffinity.AllowedInShop(SpellTier.Apprentice, 0));
+        Assert.False(SpellAffinity.AllowedInShop(SpellTier.Adept, 0));
+        Assert.True(SpellAffinity.AllowedInShop(SpellTier.Expert, 3));
+    }
+
+    [Fact]
+    public void MemoryStone()
+    {
+        Assert.Equal(new[] { MemoryStoneRules.Infinite, 3, 3, 2, 2, 1, 1, 0 },
+            new[] { 0, 1, 4, 5, 7, 8, 9, 10 }.Select(MemoryStoneRules.CandlesFor));
+        Assert.Equal(MemoryStoneRules.Infinite, MemoryStoneRules.CandlesLeft(0, 99));
+        Assert.Equal(2, MemoryStoneRules.CandlesLeft(3, 1));
+        Assert.Equal(0, MemoryStoneRules.CandlesLeft(3, 5));
+        Assert.Equal(1, MemoryStoneRules.CandlesLeft(9, 1, bonus: 1));
+        Assert.Equal(0, MemoryStoneRules.CandlesLeft(0, 0, configOverride: 0));
+        Assert.Equal(new[] { 75, 65, 9, 1, 1 }, new[] { 80, 70, 10, 2, 1 }.Select(MemoryStoneRules.FleshScarMaxHp));
+        Assert.Equal(93, MemoryStoneRules.PurseScarGold(155));
+        Assert.Equal(0.70, MemoryStoneRules.ScoreMultiplier(2), 6);
+        Assert.Equal(2, MemoryStoneRules.ScarsToApply(1, true, 0));
+        Assert.Equal(0, MemoryStoneRules.ScarsToApply(1, false, 1));
+        Assert.True(MemoryStoneRules.IsSnapshotCompatible(7, 7));
+        Assert.False(MemoryStoneRules.IsSnapshotCompatible(6, 7));
+    }
+}

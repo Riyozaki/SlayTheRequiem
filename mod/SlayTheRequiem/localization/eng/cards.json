@@ -148,5 +148,13 @@
   "SLAYTHEREQUIEM-INVISIBILITY.title": "Invisibility",
   "SLAYTHEREQUIEM-INVISIBILITY.description": "Gain {InvisibilityPower:diff()} [gold]Invisibility[/gold].",
   "SLAYTHEREQUIEM-MADNESS.title": "Madness",
-  "SLAYTHEREQUIEM-MADNESS.description": "Two random non-boss enemies are [gold]Confused[/gold] for {ConfusionPower:diff()} turns and attack each other."
+  "SLAYTHEREQUIEM-MADNESS.description": "Two random non-boss enemies are [gold]Confused[/gold] for {ConfusionPower:diff()} turns and attack each other.",
+  "SLAYTHEREQUIEM-DEATH_ECHO.title": "Death Echo",
+  "SLAYTHEREQUIEM-DEATH_ECHO.description": "Unplayable. Weighs 2.",
+  "SLAYTHEREQUIEM-SCAR_OF_FLESH.title": "Scar of Flesh",
+  "SLAYTHEREQUIEM-SCAR_OF_FLESH.description": "Lose 6% Max HP for the rest of the run (stacks).",
+  "SLAYTHEREQUIEM-SCAR_OF_SOUL.title": "Scar of Soul",
+  "SLAYTHEREQUIEM-SCAR_OF_SOUL.description": "Add [gold]Death Echo[/gold] to your deck: an unplayable curse that weighs 2.",
+  "SLAYTHEREQUIEM-SCAR_OF_PURSE.title": "Scar of Purse",
+  "SLAYTHEREQUIEM-SCAR_OF_PURSE.description": "Lose 40% of the Imprint's gold."
 }

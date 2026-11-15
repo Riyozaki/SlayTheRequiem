@@ -82,6 +82,12 @@ public static class SpellAffinity
     /// <summary>Школа в наградах — при владении ≥ 1, ступень не выше владение + 1.</summary>
     public static bool AllowedInRewards(SpellTier tier, int mastery) => mastery >= 1 && (int)tier <= mastery + 1;
 
+    /// <summary>
+    /// Витрина Чародейской лавки (docs/design/14 §2.3): «любой школой торгует любая лавка» — без владения видны
+    /// Новичок и Ученик; с владением N — ступени до N+1 (выше — уже «Непостижимо», не продаётся).
+    /// </summary>
+    public static bool AllowedInShop(SpellTier tier, int mastery) => (int)tier <= Math.Max(1, mastery) + 1;
+
     /// <summary>Потолок ♥ цели для контроля (Иллюзия, Паралич — 08 §7). null = любые не-боссы.</summary>
     public static int? ControlHpCap(SpellTier tier) => tier switch
     {

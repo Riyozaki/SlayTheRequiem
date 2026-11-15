@@ -43,5 +43,15 @@
   "SLAYTHEREQUIEM-BACKGROUND.Second": "Вторая",
   "SLAYTHEREQUIEM-BACKGROUND.Third": "Третья",
   "SLAYTHEREQUIEM-BACKGROUND.Vagrant": "Бродяга",
-  "SLAYTHEREQUIEM-BACKGROUND.None": "Без предыстории"
+  "SLAYTHEREQUIEM-BACKGROUND.None": "Без предыстории",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.title": "Лавки Реквиема",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.hover.title": "Лавки Реквиема",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.hover.desc": "Каждая лавка — Странник, Оружейник, Чародейская или Травница со своей витриной; скидки доверия; продажа вещей из рюкзака; золото за бои ×1.3. Выкл — ванильные магазины.",
+  "SLAYTHEREQUIEM-DEATH_SECTION.title": "Смерть и Камень Памяти",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.title": "Камень Памяти",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.title": "Камень Памяти",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Отпечаток в начале каждого акта; после смерти можно вернуться к нему за Свечу и Шрам. Пока только в одиночной игре.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.title": "Свечи Реквиема",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.title": "Свечи Реквиема",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Возвратов за забег. −1 — по уровню (0: без ограничения, 1–4: 3, 5–7: 2, 8–9: 1, 10: ни одной). 0 — классический рогалик."
 }

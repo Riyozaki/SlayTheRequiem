@@ -101,11 +101,14 @@ public abstract class TreatiseRelic : RequiemRelic
 {
     public abstract SpellSchool School { get; }
     public override RelicRarity Rarity => RelicRarity.Shop;
-    public override int MerchantCost => 90;
+    /// <summary>Базовая цена (14 §2.3); в лавке Реквиема — 120 +40 за каждый купленный ранее (Книга торговца).</summary>
+    public override int MerchantCost => 120;
 
     public override async Task AfterObtained()
     {
         Mastery.GrimoireOf(Owner)?.Raise(School);
+        if (Owner.RunState.CurrentRoom is MegaCrit.Sts2.Core.Rooms.MerchantRoom)
+            Shops.MerchantLedger.Of(Owner)?.NoteTreatiseBought();
         await MegaCrit.Sts2.Core.Commands.RelicCmd.Remove(this);
     }
 }

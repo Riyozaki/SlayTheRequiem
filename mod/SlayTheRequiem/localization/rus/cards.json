@@ -148,5 +148,13 @@
   "SLAYTHEREQUIEM-INVISIBILITY.title": "Невидимость",
   "SLAYTHEREQUIEM-INVISIBILITY.description": "Получить {InvisibilityPower:diff()} [gold]Невидимости[/gold].",
   "SLAYTHEREQUIEM-MADNESS.title": "Безумие",
-  "SLAYTHEREQUIEM-MADNESS.description": "Два случайных врага (не боссы) в [gold]Смятении[/gold] {ConfusionPower:diff()} хода — бьют друг друга."
+  "SLAYTHEREQUIEM-MADNESS.description": "Два случайных врага (не боссы) в [gold]Смятении[/gold] {ConfusionPower:diff()} хода — бьют друг друга.",
+  "SLAYTHEREQUIEM-DEATH_ECHO.title": "Предсмертное эхо",
+  "SLAYTHEREQUIEM-DEATH_ECHO.description": "Неиграбельна. Весит 2.",
+  "SLAYTHEREQUIEM-SCAR_OF_FLESH.title": "Шрам плоти",
+  "SLAYTHEREQUIEM-SCAR_OF_FLESH.description": "−6% макс. ♥ до конца забега (складывается).",
+  "SLAYTHEREQUIEM-SCAR_OF_SOUL.title": "Шрам души",
+  "SLAYTHEREQUIEM-SCAR_OF_SOUL.description": "В колоду добавляется [gold]Предсмертное эхо[/gold] — неиграбельное проклятие весом 2.",
+  "SLAYTHEREQUIEM-SCAR_OF_PURSE.title": "Шрам кошелька",
+  "SLAYTHEREQUIEM-SCAR_OF_PURSE.description": "−40% золота Отпечатка."
 }

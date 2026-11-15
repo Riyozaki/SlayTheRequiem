@@ -43,5 +43,15 @@
   "SLAYTHEREQUIEM-BACKGROUND.Second": "Second",
   "SLAYTHEREQUIEM-BACKGROUND.Third": "Third",
   "SLAYTHEREQUIEM-BACKGROUND.Vagrant": "Vagrant",
-  "SLAYTHEREQUIEM-BACKGROUND.None": "None"
+  "SLAYTHEREQUIEM-BACKGROUND.None": "None",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.title": "Requiem shops",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.hover.title": "Requiem shops",
+  "SLAYTHEREQUIEM-SHOP_VARIETY.hover.desc": "Each shop is a Wanderer, Armorer, Arcanist or Herbalist with its own stock; trust discounts; selling backpack gear; combat gold ×1.3. Off — vanilla shops.",
+  "SLAYTHEREQUIEM-DEATH_SECTION.title": "Death and the Memory Stone",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.title": "Memory Stone",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.title": "Memory Stone",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Imprint at the start of every act; after death you may return to it for a Candle and a Scar. Single player only for now.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.title": "Requiem Candles",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.title": "Requiem Candles",
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Returns per run. −1 — by level (0: unlimited, 1–4: 3, 5–7: 2, 8–9: 1, 10: none). 0 — classic roguelike."
 }

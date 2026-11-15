@@ -407,3 +407,144 @@ def affix_count(rank: str, act_index: int, roll: int, max_hp: int = 10 ** 9) -> 
 
 def control_hp_cap(tier: str) -> int | None:
     return {"novice": 20, "apprentice": 40, "adept": 70, "expert": 120}.get(tier)
+
+
+# ───────────── Лавки (Core/ShopRules.cs) ─────────────
+
+import math as _math
+
+SHOP_TYPES = ("Wanderer", "Armorer", "Arcanist", "Herbalist")
+
+
+def _round_away(x: float) -> int:
+    """Math.Round(x, MidpointRounding.AwayFromZero) для x ≥ 0."""
+    return int(_math.floor(x + 0.5))
+
+
+def shop_act_pool(act_index: int) -> list[str]:
+    return ["Wanderer", "Armorer", "Herbalist"] if act_index <= 0 else ["Wanderer", "Armorer", "Herbalist", "Arcanist"]
+
+
+def roll_shop_type(hash_: int, act_index: int, shops_seen: int, previous: str | None) -> str:
+    if shops_seen <= 0:
+        return "Wanderer"
+    pool = [t for t in shop_act_pool(act_index) if t != previous]
+    return pool[hash_ % len(pool)]
+
+
+def fnv1a(text: str, salt: int = 0) -> int:
+    h = 2166136261
+    for ch in text:
+        h ^= ord(ch)
+        h = (h * 16777619) & 0xFFFFFFFF
+    h ^= salt & 0xFFFFFFFF
+    h = (h * 16777619) & 0xFFFFFFFF
+    h ^= h >> 15
+    return h
+
+
+def trust(gold_spent: int) -> int:
+    return max(0, min(3, gold_spent // 150))
+
+
+def apply_trust(price: int, trust_level: int) -> int:
+    if price <= 0:
+        return price
+    return max(1, _round_away(price * (1 - 0.05 * max(0, min(3, trust_level)))))
+
+
+def sell_value(price: int, trust_level: int) -> int:
+    if price <= 0:
+        return 0
+    return max(1, _math.floor(price * (0.50 if trust_level >= 3 else 0.35)))
+
+
+def _by_tier(tier: int, prices: tuple) -> int:
+    return prices[max(1, min(len(prices), tier)) - 1]
+
+
+EQUIP_PRICES = {
+    "Weapon": (45, 80, 130, 190, 260),
+    "Shield": (40, 70, 115, 170, 230),
+    "Armor": (35, 65, 110, 160, 220),
+    "Cloak": (35, 65, 110, 160, 220),
+    "Ring": (90, 140, 140, 200, 200),
+    "Amulet": (120, 180, 180, 250, 250),
+}
+
+
+def equipment_price(category: str, tier: int) -> int:
+    return _by_tier(tier, EQUIP_PRICES[category])
+
+
+def spell_price(tier: int, single: bool) -> int:
+    folio = _by_tier(tier, (45, 70, 110, 160, 230))
+    return _round_away(folio * 0.9) if single else folio
+
+
+def brew_price(tier: int, poison: bool) -> int:
+    return _by_tier(tier, (35, 50, 70, 95, 125) if poison else (40, 55, 75, 100, 130))
+
+
+def treatise_price(bought_before: int) -> int:
+    return 120 + 40 * max(0, bought_before)
+
+
+def equipment_tiers(shop: str, act_index: int) -> tuple[int, int]:
+    if shop == "Armorer":
+        return max(1, min(4, act_index + 1)), max(2, min(5, act_index + 2))
+    return 1, 2
+
+
+def shop_brew_tier(act_index: int) -> int:
+    return 1 if act_index <= 0 else 3 if act_index == 1 else 5
+
+
+def combat_gold(vanilla: int) -> int:
+    return vanilla if vanilla <= 0 else _round_away(vanilla * 1.3)
+
+
+def spell_allowed_in_shop(tier: int, mastery: int) -> bool:
+    return tier <= max(1, mastery) + 1
+
+
+# ───────────── Камень Памяти (Core/MemoryStoneRules.cs) ─────────────
+
+INFINITE = 2 ** 31 - 1
+
+
+def candles_for(level: int) -> int:
+    if level <= 0:
+        return INFINITE
+    if level <= 4:
+        return 3
+    if level <= 7:
+        return 2
+    if level <= 9:
+        return 1
+    return 0
+
+
+def candles_left(level: int, used: int, bonus: int = 0, override: int = -1) -> int:
+    total = override if override >= 0 else candles_for(level)
+    if total == INFINITE:
+        return INFINITE
+    return max(0, total + max(0, bonus) - max(0, used))
+
+
+def flesh_scar_max_hp(max_hp: int) -> int:
+    if max_hp <= 1:
+        return max_hp
+    return max(1, min(max_hp - 1, _math.floor(max_hp * 0.94)))
+
+
+def purse_scar_gold(gold: int) -> int:
+    return 0 if gold <= 0 else _math.floor(gold * 0.6)
+
+
+def score_multiplier(rollbacks: int) -> float:
+    return max(0.0, 1 - 0.15 * max(0, rollbacks))
+
+
+def scars_to_apply(in_dying_run: int, chosen_now: bool, in_imprint: int) -> int:
+    return max(0, in_dying_run + (1 if chosen_now else 0) - in_imprint)

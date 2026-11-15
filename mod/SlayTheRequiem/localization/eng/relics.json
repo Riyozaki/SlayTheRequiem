@@ -184,5 +184,19 @@
   "SLAYTHEREQUIEM-SMUGGLER_BOOTS.flavor": "Soles worn by a thousand back alleys.",
   "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.title": "Boots of Silence",
   "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.description": "Unique light armor (feet). Your attacks don't remove [gold]Invisibility[/gold].\nShown number — weight; 0 — stowed in the backpack.",
-  "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.flavor": "You hear nothing. Neither do they."
+  "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.flavor": "You hear nothing. Neither do they.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.title": "Merchant's Ledger",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.description": "Remembers every shop. Trust here: {Trust} (−{Discount}% prices). Spend 150 gold in shops of a kind for +1 trust (max 3). Combat gold ×1.3. Gear from your backpack can be sold to merchants.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.flavor": "Debts in red, favours in gold.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.title": "Requiem Candles",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.description": "At the start of each act the Memory Stone takes an Imprint of your run. On death you may return to it for a Candle and a Scar. Returns so far: {Rollbacks}.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.flavor": "The Spire sings a requiem for every fallen. The stone remembers your name.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellHeader": "Sell your backpack?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellBody": "The merchant offers [gold]{Gold}[/gold] gold ({Percent}%) for the {Count} unequipped item(s) in your backpack.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellYes": "Sell",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellNo": "Keep",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerHeader": "Return to the Memory Stone?",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerBody": "Go back to the start of act {Act} for one Candle (left: {Candles}; −1 means unlimited). You keep the boss, the map stays; choose a Scar as the price. Revenge: +10% damage to those who killed you.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerYes": "Return",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerNo": "Accept death"
 }

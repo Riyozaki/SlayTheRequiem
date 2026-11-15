@@ -184,5 +184,19 @@
   "SLAYTHEREQUIEM-SMUGGLER_BOOTS.flavor": "Подошвы стёрты тысячей подворотен.",
   "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.title": "Сапоги Безмолвия",
   "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.description": "Уникальная лёгкая броня (ноги). Ваши атаки не снимают [gold]Невидимость[/gold].\nЧисло на иконке — вес; 0 — снято (в рюкзаке).",
-  "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.flavor": "Вы ничего не слышите. Они — тоже."
+  "SLAYTHEREQUIEM-BOOTS_OF_SILENCE.flavor": "Вы ничего не слышите. Они — тоже.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.title": "Книга торговца",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.description": "Помнит каждую лавку. Доверие здесь: {Trust} (−{Discount}% цен). Каждые 150 золотых в лавках одного вида — +1 доверия (до 3). Золото за бои ×1.3. Снаряжение из рюкзака можно продать торговцу.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.flavor": "Долги — красным, услуги — золотом.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.title": "Свечи Реквиема",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.description": "В начале каждого акта Камень Памяти снимает Отпечаток забега. После смерти можно вернуться к нему за Свечу и Шрам. Возвратов: {Rollbacks}.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.flavor": "Шпиль поёт Реквием по каждому павшему. Камень помнит твоё имя.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellHeader": "Продать рюкзак?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellBody": "Торговец даёт [gold]{Gold}[/gold] золотых ({Percent}%) за снятые вещи из рюкзака: {Count} шт.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellYes": "Продать",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.sellNo": "Оставить",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerHeader": "Вернуться к Камню Памяти?",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerBody": "Вернуться к началу акта {Act} за одну Свечу (осталось: {Candles}; −1 — без ограничения). Босс тот же, карта та же; цена — Шрам на выбор. Месть: +10% урона тем, кто вас убил.",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerYes": "Вернуться",
+  "SLAYTHEREQUIEM-MEMORY_STONE_RELIC.offerNo": "Принять смерть"
 }

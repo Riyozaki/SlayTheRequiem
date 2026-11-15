@@ -6,7 +6,8 @@ using SlayTheRequiem.SlayTheRequiemCode.Spells;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Patches;
 
-/// <summary>Герою в системе Реквиема к стартовым реликвиям добавляются Гримуар (владение школами), Сумка травника и Походный мешок.</summary>
+/// <summary>Герою в системе Реквиема к стартовым реликвиям добавляются Гримуар (владение школами), Сумка травника, Походный мешок,
+/// Книга торговца и Свечи Реквиема.</summary>
 [HarmonyPatch(typeof(Player), "PopulateStartingRelics")]
 public static class StartingRelicsPatch
 {
@@ -26,6 +27,19 @@ public static class StartingRelicsPatch
             var pack = ModelDb.Relic<Alchemy.TravelPack>().ToMutable();
             pack.FloorAddedToDeck = 1;
             __instance.AddRelicInternal(pack, silent: true);
+        }
+        // Книга торговца (лавки, доверие — docs/design/14) и Свечи Реквиема (Камень Памяти — docs/design/15).
+        if (!__instance.Relics.OfType<Shops.MerchantLedger>().Any())
+        {
+            var ledger = ModelDb.Relic<Shops.MerchantLedger>().ToMutable();
+            ledger.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(ledger, silent: true);
+        }
+        if (!__instance.Relics.OfType<Rollback.MemoryStoneRelic>().Any())
+        {
+            var stone = ModelDb.Relic<Rollback.MemoryStoneRelic>().ToMutable();
+            stone.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(stone, silent: true);
         }
         if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();

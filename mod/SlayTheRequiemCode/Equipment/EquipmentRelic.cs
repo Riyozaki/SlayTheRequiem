@@ -56,7 +56,19 @@ public abstract class EquipmentRelic : RequiemRelic
         return Task.CompletedTask;
     }
 
-    public override int MerchantCost => base.MerchantCost + 15 * (Tier - 1);
+    /// <summary>Ценовая категория (docs/design/14 §2.2, §2.5).</summary>
+    public EquipCategory PriceCategory => Slot switch
+    {
+        EquipSlot.MainHand => EquipCategory.Weapon,
+        EquipSlot.OffHand => EquipCategory.Shield,
+        EquipSlot.Cloak => EquipCategory.Cloak,
+        EquipSlot.Ring => EquipCategory.Ring,
+        EquipSlot.Amulet => EquipCategory.Amulet,
+        _ => EquipCategory.Armor,
+    };
+
+    /// <summary>Цена по таблице лавок Реквиема (14 §2.2): категория × ступень, а не ванильная редкость.</summary>
+    public override int MerchantCost => ShopRules.EquipmentPrice(PriceCategory, Tier);
 }
 
 /// <summary>
