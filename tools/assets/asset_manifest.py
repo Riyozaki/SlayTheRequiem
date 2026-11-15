@@ -45,6 +45,7 @@ BASES = {
     "RequiemRelic": ("relic", "relics.json", "title"),
     "RequiemPotion": ("potion", "potions.json", "title"),
     "PantheonEvent": ("event", "events.json", "title"),
+    "RequiemEvent": ("act_event", "events.json", "title"),
     "RequiemCardEnchantment": ("enchantment", "enchantments.json", "title"),
     "CustomMonsterModel": ("monster", "monsters.json", "name"),
     "RequiemRestSiteOption": ("rest_option", None, None),
@@ -71,6 +72,9 @@ ASSETS = {
     ],
     "event": [
         ("image", "images/events/{id}.png", "размер как у ванильных событий; иначе — ванильный портрет по vanilla_art.csv"),
+    ],
+    "act_event": [
+        ("image", "images/events/{id}.jpg", "1720×807 JPG, своя сцена события акта (tools/art/scenes, M5 п. 3)"),
     ],
     "enchantment": [
         ("icon", "images/enchantments/{id}.png", "свой значок или ванильный по vanilla_art.csv (CustomIconPath)"),

@@ -62,6 +62,9 @@ jobs:
           git diff --exit-code -- art/monsters || (echo "::error::Run python3 tools/art/monsters/draw_monsters.py and commit the result" && exit 1)
           python tools/art/monsters/build_boss_icons.py --check
           python tools/art/scenes/build_scenes.py --check
+          python tools/art/events/build_events.py --check
+      - name: Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures
+        run: python tools/ci/check_events.py
       - name: Every model has its own or a vanilla image
         run: python tools/assets/asset_manifest.py --check
       - name: Card audit (card spec §7), design tables (docs/design 16/17/18/06) and card pools (19) match the code

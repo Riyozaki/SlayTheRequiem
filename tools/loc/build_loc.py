@@ -26,6 +26,7 @@ from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E40
 from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
 from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
+from loc_m5events import M5_EVENTS  # noqa: E402
 from loc_relics import RELICS_BACKPACK, RELICS_EQUIPMENT, RELICS_POTIONS, RELICS_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
@@ -244,7 +245,7 @@ def main() -> None:
         n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
         n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
         n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang]})
-        n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
+        n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang], **M5_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
         n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.

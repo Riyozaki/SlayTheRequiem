@@ -60,8 +60,8 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     public override IEnumerable<EncounterModel> GenerateAllEncounters() =>
         BorrowedEncounters.Concat(OwnElites).Concat(BossPool).ToList();
 
-    /// <summary>Свои события актов — этап 8; пока общие события игры и мода (BaseLib добавит события с Acts = [этот акт]).</summary>
-    public override IEnumerable<EventModel> AllEvents => [];
+    /// <summary>Свои события «?» акта (13 §5) — по 6 на акт, см. <see cref="global::SlayTheRequiem.SlayTheRequiemCode.Events.ActEvents"/>.</summary>
+    public override IEnumerable<EventModel> AllEvents => global::SlayTheRequiem.SlayTheRequiemCode.Events.ActEvents.For(Kind);
 
     public override MapPointTypeCounts GetMapPointTypes(Rng mapRng)
     {
