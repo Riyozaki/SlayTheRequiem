@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="800" height="600">
+  <title>Pelican riding a bicycle</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fd3ff"/>
+      <stop offset="1" stop-color="#e6f6ff"/>
+    </linearGradient>
+    <linearGradient id="pouch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb347"/>
+      <stop offset="1" stop-color="#f07b1e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="400" height="300" fill="url(#sky)"/>
+  <circle cx="340" cy="55" r="28" fill="#ffe066"/>
+  <g fill="#fff" opacity="0.9">
+    <ellipse cx="80" cy="50" rx="34" ry="12"/>
+    <ellipse cx="105" cy="42" rx="22" ry="12"/>
+    <ellipse cx="230" cy="70" rx="28" ry="9"/>
+  </g>
+  <rect y="272" width="400" height="28" fill="#7cc46a"/>
+  <rect y="272" width="400" height="4" fill="#5aa64a"/>
+
+  <!-- ===== bicycle ===== -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- wheels -->
+    <g stroke="#222" stroke-width="5">
+      <circle cx="110" cy="220" r="52"/>
+      <circle cx="290" cy="220" r="52"/>
+    </g>
+    <!-- spokes -->
+    <g stroke="#999" stroke-width="1.2">
+      <path d="M110 168V272M58 220H162M73 183L147 257M147 183L73 257"/>
+      <path d="M290 168V272M238 220H342M253 183L327 257M327 183L253 257"/>
+    </g>
+    <!-- frame -->
+    <g stroke="#d7263d" stroke-width="6">
+      <path d="M110 220L190 222L172 145Z"/>
+      <path d="M190 222L262 150L172 145"/>
+      <path d="M262 150L290 220"/>
+    </g>
+    <!-- seat post, seat -->
+    <path d="M172 145L168 128" stroke="#444" stroke-width="5"/>
+    <path d="M152 126H184" stroke="#222" stroke-width="7"/>
+    <!-- stem & handlebars -->
+    <path d="M262 150L258 122" stroke="#444" stroke-width="5"/>
+    <path d="M246 118Q262 112 274 126" stroke="#222" stroke-width="5"/>
+    <!-- chain ring & chain -->
+    <circle cx="190" cy="222" r="11" stroke="#555" stroke-width="3"/>
+    <path d="M110 214L190 211M110 226L190 233" stroke="#555" stroke-width="1.5"/>
+  </g>
+  <!-- hubs -->
+  <g fill="#333">
+    <circle cx="110" cy="220" r="5"/>
+    <circle cx="290" cy="220" r="5"/>
+  </g>
+
+  <!-- far leg & pedal -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M190 222L202 245" stroke="#444" stroke-width="4"/>
+    <path d="M168 118L188 180L204 244" stroke="#e8902a" stroke-width="5"/>
+    <path d="M196 246H212" stroke="#222" stroke-width="5"/>
+  </g>
+
+  <!-- ===== pelican ===== -->
+  <!-- tail -->
+  <path d="M128 112L100 104L106 118L98 128L132 124Z" fill="#e9eef2" stroke="#9aa5ad" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- body -->
+  <ellipse cx="170" cy="108" rx="48" ry="30" fill="#ffffff" stroke="#9aa5ad" stroke-width="2"/>
+  <!-- wing reaching to handlebars -->
+  <path d="M150 96Q200 80 250 116Q214 118 196 124Q166 126 146 112Z" fill="#e3e9ee" stroke="#9aa5ad" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M206 112Q226 112 246 118" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  <!-- neck -->
+  <path d="M196 92Q214 70 204 50Q200 38 212 32" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M188 84Q204 70 196 50" fill="none" stroke="#9aa5ad" stroke-width="1.5"/>
+  <!-- head -->
+  <ellipse cx="216" cy="34" rx="16" ry="13" fill="#ffffff" stroke="#9aa5ad" stroke-width="2"/>
+  <path d="M206 23Q214 14 226 22" fill="#fff4b0" stroke="#e0c96a" stroke-width="1.5"/>
+  <!-- beak & pouch -->
+  <path d="M226 32L300 46L228 40Z" fill="#f7c948" stroke="#c98a12" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M228 40L300 46Q280 76 246 70Q228 64 228 40Z" fill="url(#pouch)" stroke="#c0601a" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="299" cy="46" r="2.5" fill="#c0601a"/>
+  <!-- eye -->
+  <circle cx="220" cy="31" r="3.6" fill="#222"/>
+  <circle cx="221.2" cy="29.8" r="1.2" fill="#fff"/>
+
+  <!-- near leg & pedal -->
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M190 222L178 199" stroke="#444" stroke-width="4"/>
+    <path d="M176 122L200 168L178 199" stroke="#f0a030" stroke-width="5"/>
+    <path d="M168 199H188" stroke="#222" stroke-width="5"/>
+    <path d="M178 199L186 203M178 199L184 195" stroke="#f0a030" stroke-width="3"/>
+  </g>
+
+  <!-- motion lines -->
+  <g stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.85">
+    <path d="M20 190H44M14 210H40M24 230H46"/>
+  </g>
+</svg>
