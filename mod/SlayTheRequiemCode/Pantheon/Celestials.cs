@@ -8,6 +8,14 @@ using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
+using SlayTheRequiem.SlayTheRequiemCode.Cards;
+using SlayTheRequiem.SlayTheRequiemCode.Powers;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
+using SlayTheRequiem.SlayTheRequiemCode.Spells;
+using MegaCrit.Sts2.Core.Commands.Builders;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.ValueProps;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Pantheon;
 
@@ -40,8 +48,8 @@ public abstract class CelestialBlessing : BoonRelic
     }
 
     /// <summary>
-    /// Числовая часть Духа божества. Остальные эффекты Духа («повтор хода», копия заклинания, иллюзии без ✦…) —
-    /// вместе со ступенью «Небесный щит» на этапе 6: без неё Дух недостижим.
+    /// Числовая часть Духа божества. Нечисловые эффекты (копия заклинания, иллюзии без ✦, лечение +50 %, Сияние, Шок Кличей)
+    /// — переопределения в наследниках (этап 6); Дух открывает ступень Праведника «Небесный щит».
     /// </summary>
     protected virtual Boon SpiritBoon => Boon.None;
 
@@ -98,12 +106,59 @@ public sealed class BlessingOfAnvilFather : CelestialBlessing
 public sealed class BlessingOfScrollKeeper : CelestialBlessing
 {
     public override Celestial God => Celestial.ScrollKeeper;
+
+    private bool _copiedThisTurn;
+
+    protected override Task OnTurnStarted(PlayerChoiceContext ctx)
+    {
+        _copiedThisTurn = false;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Дух: первое заклинание хода разыгрывается дважды (+3 слота чар — Enchanting.SlotsFor).</summary>
+    public override int ModifyCardPlayCount(CardModel card, Creature? target, int playCount)
+    {
+        if (!Owned || _copiedThisTurn || !HasDivineSpirit || card is not SpellCard || card.Owner != Owner) return playCount;
+        _copiedThisTurn = true;
+        Flash();
+        return playCount + 1;
+    }
 }
 
 [Pool(typeof(SharedRelicPool))]
 public sealed class BlessingOfMirrorMaiden : CelestialBlessing
 {
     public override Celestial God => Celestial.MirrorMaiden;
+
+    private bool _freeUsed;
+
+    protected override Task OnTurnStarted(PlayerChoiceContext ctx)
+    {
+        _freeUsed = false;
+        return Task.CompletedTask;
+    }
+
+    private bool FreeIllusion(CardModel card) =>
+        Owned && !_freeUsed && HasDivineSpirit && card.Owner == Owner && card is SpellCard { School: SpellSchool.Illusion };
+
+    /// <summary>Дух: иллюзии и очарования раз за ход без ✦.</summary>
+    public override bool TryModifyStarCost(CardModel card, decimal originalCost, out decimal modifiedCost)
+    {
+        modifiedCost = originalCost;
+        if (originalCost <= 0 || !FreeIllusion(card)) return false;
+        modifiedCost = 0;
+        return true;
+    }
+
+    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        if (cardPlay.IsLastInSeries && FreeIllusion(cardPlay.Card))
+        {
+            _freeUsed = true;
+            Flash();
+        }
+        return Task.CompletedTask;
+    }
 }
 
 [Pool(typeof(SharedRelicPool))]
@@ -115,8 +170,14 @@ public sealed class BlessingOfWindMistress : CelestialBlessing
 
 /// <summary>Матерь Очага: Регенерация 2 в первые 3 хода боя; иммунитет к Параличу.</summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class BlessingOfHearthMother : CelestialBlessing
+public sealed class BlessingOfHearthMother : CelestialBlessing, Transformations.IHealModifier
 {
+    public const int SpiritHealPercent = 50;
+
+    /// <summary>Дух: любое лечение +50 %.</summary>
+    public int HealPercent(Transformations.HealSource source) => Owned && HasDivineSpirit ? SpiritHealPercent : 0;
+    public bool BlocksHealing(Transformations.HealSource source) => false;
+
     public const int OpeningRegen = 2;
     public const int OpeningTurns = 3;
 
@@ -142,13 +203,53 @@ public sealed class BlessingOfThresholdWarden : CelestialBlessing
 [Pool(typeof(SharedRelicPool))]
 public sealed class BlessingOfMercyShield : CelestialBlessing
 {
+    public const int SpiritRadiance = 3;
+
     public override Celestial God => Celestial.MercyShield;
+
+    private bool _radiantThisTurn;
+
+    protected override Task OnTurnStarted(PlayerChoiceContext ctx)
+    {
+        _radiantThisTurn = false;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Дух: первая атака хода по нежити/Бездне — Сияние (ещё 3 урона светом).</summary>
+    protected override async Task OnOwnAttack(PlayerChoiceContext ctx, AttackCommand command, CardModel card)
+    {
+        if (_radiantThisTurn || !HasDivineSpirit || card.Type != CardType.Attack) return;
+        var targets = command.Results.SelectMany(h => h).Select(r => r.Receiver).Distinct()
+            .Where(t => t != null && t.IsAlive && EnemySetup.IsUndeadOrAbyss(t)).ToList();
+        if (targets.Count == 0) return;
+        _radiantThisTurn = true;
+        Flash();
+        foreach (var target in targets)
+            using (DamageTyping.As(DamageType.Light))
+                await CreatureCmd.Damage(ctx, target!, SpiritRadiance, ValueProp.Unpowered, Owner.Creature, null);
+    }
 }
 
 [Pool(typeof(SharedRelicPool))]
 public sealed class BlessingOfThunderCrowned : CelestialBlessing
 {
+    public const int SpiritShockStagger = 2;
+
     public override Celestial God => Celestial.ThunderCrowned;
+
+    /// <summary>Дух: Кличи накладывают Шок — Ошеломление 2 цели (без цели — всем врагам).</summary>
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        if (!Owned || !HasDivineSpirit || cardPlay.Card is not IShoutCard || cardPlay.Card.Owner != Owner || !cardPlay.IsLastInSeries) return;
+        var combat = Owner.Creature.CombatState;
+        if (combat == null) return;
+        var targets = cardPlay.Target is { IsAlive: true, IsPlayer: false } t
+            ? [t]
+            : combat.HittableEnemies.Where(e => e.IsAlive).ToList();
+        Flash();
+        foreach (var enemy in targets)
+            await PowerCmd.Apply<StaggerPower>(choiceContext, enemy, SpiritShockStagger, Owner.Creature, null);
+    }
 }
 
 [Pool(typeof(SharedRelicPool))]

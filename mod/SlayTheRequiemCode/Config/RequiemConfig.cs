@@ -21,8 +21,8 @@ internal class RequiemConfig : SimpleModConfig
     public static bool AutoDodge { get; set; } = true;
 
     /// <summary>
-    /// Происхождение Регента (docs/design/04). Пока выбор происхождений в начале забега не сделан (этап 6, экран
-    /// выбора), берётся из настроек. «Случайно» — по сиду забега.
+    /// Происхождение Регента (docs/design/04): из настроек, «Случайно» — по сиду забега, «На выбор» — экран выбора
+    /// реликвии при входе в первую комнату (этап 6).
     /// </summary>
     [ConfigSection("HeroSection")]
     public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Random;
@@ -80,6 +80,8 @@ public enum SilentOriginChoice
     Thicketborn,
     Marshborn,
     None,
+    /// <summary>Выбор на экране в начале забега (этап 6).</summary>
+    Choose,
 }
 
 public enum BackgroundChoice
@@ -90,6 +92,8 @@ public enum BackgroundChoice
     Third,
     Vagrant,
     None,
+    /// <summary>Выбор на экране в начале забега (этап 6).</summary>
+    Choose,
 }
 
 public enum RegentOriginChoice
@@ -99,4 +103,6 @@ public enum RegentOriginChoice
     Mistborn,
     Ashborn,
     None,
+    /// <summary>Выбор на экране в начале забега (этап 6).</summary>
+    Choose,
 }

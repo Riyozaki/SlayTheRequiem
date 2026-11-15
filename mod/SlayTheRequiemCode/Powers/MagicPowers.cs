@@ -50,8 +50,11 @@ public sealed class SpellShieldPower : RequiemPower
         var used = _pending;
         _pending = 0;
         Flash();
+        var owner = Owner;
         if (used >= Amount) await PowerCmd.Remove(this);
         else await PowerCmd.ModifyAmount(choiceContext, this, -used, null, null, silent: true);
+        // Путь Отражателя (этап 6): половина поглощённого — обратно в заклинателя.
+        await Transformations.ReflectorEssence.OnWardAbsorbed(choiceContext, owner, dealer, used);
     }
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)

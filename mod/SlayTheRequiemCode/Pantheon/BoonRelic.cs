@@ -181,7 +181,8 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         if (regen > 0 && Owner.Creature.CurrentHp < Owner.Creature.MaxHp)
         {
             Flash();
-            await CreatureCmd.Heal(Owner.Creature, regen);
+            using (Transformations.Healing.As(Transformations.HealSource.Regeneration))
+                await CreatureCmd.Heal(Owner.Creature, regen);
         }
         await OnTurnStarted(choiceContext);
     }

@@ -229,5 +229,20 @@
   "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "Следующая атака не наносит урона.",
   "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.title": "Кличи на полке",
   "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.description": "Кличей на перезарядке: {Amount}; вернутся в руку в начале хода.",
-  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "Кличей на перезарядке: {Amount}; вернутся в руку в начале хода."
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "Кличей на перезарядке: {Amount}; вернутся в руку в начале хода.",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.title": "Кровавый лорд",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.description": "Ваши атаки накладывают 1 [gold]Хвори[/gold] и лечат 25 % непогашенного урона.",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.smartDescription": "Ваши атаки накладывают 1 [gold]Хвори[/gold] и лечат 25 % непогашенного урона.",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.title": "Форма зверя",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.description": "Осталось ходов: {Amount}. Только звериные карты; атаки +4. Каждые 3 удара по врагам — +1 ход формы.",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.smartDescription": "Осталось ходов: {Amount}. Только звериные карты; атаки +4. Каждые 3 удара по врагам — +1 ход формы.",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.title": "Сфера пара",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.description": "Сфер: {Amount}; в конце хода каждая — 3 [gold]Горения[/gold] случайному врагу.",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.smartDescription": "Сфер: {Amount}; в конце хода каждая — 3 [gold]Горения[/gold] случайному врагу.",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.title": "Сфера искры",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.description": "Сфер: {Amount}; в конце хода каждая — 1 [gold]Статики[/gold] и 3 урона разрядом случайному врагу.",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.smartDescription": "Сфер: {Amount}; в конце хода каждая — 1 [gold]Статики[/gold] и 3 урона разрядом случайному врагу.",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.title": "Сфера инея",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.description": "Сфер: {Amount}; в конце хода каждая — 2 [gold]Озноба[/gold] случайному врагу.",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.smartDescription": "Сфер: {Amount}; в конце хода каждая — 2 [gold]Озноба[/gold] случайному врагу."
 }

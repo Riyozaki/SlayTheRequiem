@@ -77,6 +77,25 @@ public sealed class FaithSigil : RequiemRelic, IWeightless
         }
     }
 
+    private int _seenFormEvents;
+
+    /// <summary>Встреченные события трансформаций (бит 1 &lt;&lt; FormKind) — каждое один раз за забег (этап 6).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int SeenFormEvents
+    {
+        get => _seenFormEvents;
+        set
+        {
+            AssertMutable();
+            _seenFormEvents = value;
+        }
+    }
+
+    public void MarkFormEventSeen(FormKind kind)
+    {
+        if (IsMutable) SeenFormEvents = _seenFormEvents | (1 << (int)kind);
+    }
+
     /// <summary>Сколько раз герой согрешил (для истории и событий).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int Sins
@@ -121,17 +140,24 @@ public sealed class FaithSigil : RequiemRelic, IWeightless
     public override EventModel ModifyNextEvent(EventModel currentEvent)
     {
         if (!RequiemConfig.EnablePantheon || !IsMutable || Owner == null || !RequiemMode.IsInSystem(Owner)) return currentEvent;
-        if (currentEvent is ShrineEvent or DarkShrineEvent or EbbStonesEvent) return currentEvent;
+        if (currentEvent is ShrineEvent or DarkShrineEvent or EbbStonesEvent or Transformations.FormEvent) return currentEvent;
         var run = Owner.RunState;
         if (run.Players.FirstOrDefault() != Owner) return currentEvent;
         var roll = (int)(ShopRules.Fnv1a((run.Rng.StringSeed ?? string.Empty) + "|pantheon", run.TotalFloor * 17 + run.CurrentActIndex) % 100u);
-        return PantheonRules.UnknownRoomRoll(run.CurrentActIndex, roll) switch
+        EventModel? pantheon = PantheonRules.UnknownRoomRoll(run.CurrentActIndex, roll) switch
         {
             1 => ModelDb.Event<ShrineEvent>(),
             2 => ModelDb.Event<DarkShrineEvent>(),
             3 => ModelDb.Event<EbbStonesEvent>(),
-            _ => currentEvent,
+            _ => null,
         };
+        if (pantheon != null) return pantheon;
+        // События трансформаций (этап 6): свой бросок, каждое — один раз за забег.
+        var seed = (run.Rng.StringSeed ?? string.Empty) + "|forms";
+        var formRoll = (int)(ShopRules.Fnv1a(seed, run.TotalFloor * 31 + run.CurrentActIndex) % 100u);
+        var pick = (int)(ShopRules.Fnv1a(seed + "|pick", run.TotalFloor) % 1000u);
+        var form = TransformationRules.UnknownRoomEvent(run.CurrentActIndex, run.Acts.Count, formRoll, pick, _seenFormEvents);
+        return Transformations.FormEvent.For(form) ?? currentEvent;
     }
 }
 

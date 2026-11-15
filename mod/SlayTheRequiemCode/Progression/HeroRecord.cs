@@ -36,7 +36,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Progression;
 /// Счётчик на иконке — уровень.
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoisonChargeSource
+public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoisonChargeSource
 {
     public override RelicRarity Rarity => RelicRarity.Starter;
     public override bool ShowCounter => true;
@@ -413,6 +413,7 @@ public sealed class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoisonCharg
         }
         var start = Food.StartStamina;
         if (start > 0) RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount(start);
+        NoteCombatStart(combatState);
     }
 
     protected override async Task OnTurnStarted(PlayerChoiceContext ctx)
@@ -601,6 +602,7 @@ public sealed class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoisonCharg
         if (_mushroomFights > 0) MushroomFights--;
         if (_vigorFights > 0) VigorFights--;
         Meditation = 0;
+        await AfterVictoryPaths(room);
         await SyncMaxHp();
         Refresh();
     }

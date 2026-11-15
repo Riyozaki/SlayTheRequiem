@@ -454,3 +454,100 @@ class ShoutAndRevelTests(unittest.TestCase):
         self.assertEqual(r.revel_second_property("Clarity", 5, False), ("Heal", 6))
         self.assertEqual(r.revel_second_property("Giant", 3, False), ("Block", 6))
         self.assertEqual(r.revel_second_property("SnakeBite", 5, True), ("None", 0))
+
+
+class Stage6(unittest.TestCase):
+    def test_compatibility(self):
+        self.assertTrue(r.can_take_worldview("None", "Vampire", False, False, False))
+        self.assertFalse(r.can_take_worldview("Vampire", "Werewolf", False, False, False))
+        self.assertFalse(r.can_take_worldview("None", "Righteous", False, False, False))
+        self.assertTrue(r.can_take_worldview("None", "Righteous", True, False, False))
+        self.assertTrue(r.can_take_worldview("DarkPact", "Herald", False, False, False))
+        self.assertFalse(r.can_take_worldview("None", "Lich", False, False, False))
+        self.assertFalse(r.can_take_worldview("None", "Vampire", False, False, True))
+        self.assertTrue(r.can_take_clockwork("Righteous", False))
+        self.assertFalse(r.can_take_clockwork("Vampire", False))
+
+    def test_righteous(self):
+        self.assertTrue(r.halo_triggers(39, 80, False))
+        self.assertFalse(r.halo_triggers(40, 80, False))
+        self.assertFalse(r.halo_triggers(10, 80, True))
+        self.assertEqual(r.righteous_step_after_act(1, True), 2)
+        self.assertEqual(r.righteous_step_after_act(2, True), 2)
+        self.assertEqual(r.righteous_step_after_act(1, False), 1)
+
+    def test_thirst(self):
+        self.assertEqual(r.thirst_row(0)[:2], (1, -1))
+        self.assertEqual(r.thirst_row(3)[3], 1.5)
+        self.assertTrue(r.thirst_row(9)[6])
+        self.assertEqual(r.thirst_after_combat(4, False), 4)
+        self.assertEqual(r.thirst_after_combat(3, True), 0)
+        self.assertEqual(r.lifesteal(9, 25), 2)
+
+    def test_beast(self):
+        self.assertEqual([r.moon_call_duration(n) for n in range(4)], [3, 4, 4, 5])
+        self.assertEqual(r.hits_per_extension(2), 2)
+        self.assertEqual(r.extension_turns(2, 7, 3), 2)
+        self.assertEqual([r.beast_attack_bonus(n) for n in range(4)], [4, 6, 6, 8])
+        self.assertEqual([r.alpha_wolf_hp(n) for n in range(4)], [0, 8, 12, 16])
+        self.assertEqual(r.beast_nodes_earned(5), 2)
+        self.assertEqual(r.beast_nodes_earned(40), 9)
+
+    def test_pact(self):
+        self.assertEqual([r.next_stance(s) for s in range(3)], [1, 2, 0])
+        self.assertEqual(r.lich_max_hp_loss(75), 22)
+        self.assertEqual(r.lich_max_hp_loss(1), 0)
+        self.assertTrue(r.can_become_lich("Herald", 10))
+        self.assertFalse(r.can_become_lich("DarkPact", 99))
+        self.assertEqual(r.phylactery_revive_hp(70), 21)
+
+    def test_heal(self):
+        self.assertEqual(r.heal_percent([-50, -100]), -100)
+        self.assertEqual(r.apply_heal(10, 50, False), 15)
+        self.assertEqual(r.apply_heal(7, -50, False), 3)
+        self.assertEqual(r.apply_heal(10, 0, True), 0)
+
+    def test_events(self):
+        self.assertEqual(r.event_forms_for(0, 3), ["Werewolf", "DarkPact"])
+        self.assertIn("Lich", r.event_forms_for(3, 5))
+        self.assertNotIn("Lich", r.event_forms_for(2, 5))
+        self.assertIn("Lich", r.event_forms_for(2, 3))
+        self.assertEqual(r.unknown_room_event(0, 3, 12, 0, 0), "None")
+        self.assertEqual(r.unknown_room_event(0, 3, 0, 1, 0), "DarkPact")
+        seen = 1 << r.FORMS.index("Werewolf") | 1 << r.FORMS.index("DarkPact")
+        self.assertEqual(r.unknown_room_event(0, 3, 0, 0, seen), "None")
+
+    def test_paths(self):
+        self.assertEqual(r.path_offer_act_index(5), 2)
+        self.assertEqual(r.path_offer_act_index(3), 1)
+        self.assertTrue(r.path_offer_due(8, 2, 5, False))
+        self.assertFalse(r.path_offer_due(7, 2, 5, False))
+        self.assertFalse(r.path_offer_due(9, 1, 5, False))
+        self.assertFalse(r.path_allowed("Paladin", "Vampire", True, False))
+        self.assertTrue(r.path_allowed("BlackKnight", "Vampire", True, False))
+        offer = r.offer_paths("Ironclad", "None", False, False, lambda n: 0)
+        self.assertEqual(offer[:2], ["Champion", "Barbarian"])
+        self.assertEqual(len(offer), 3)
+        self.assertNotIn(offer[2], ("Champion", "Barbarian", "Battlemage", "Paladin", "BlackKnight", "Monk"))
+        self.assertEqual(r.monk_unarmed_damage(8), 8)
+        self.assertTrue(r.fear_turn(4))
+        self.assertFalse(r.fear_turn(3))
+        self.assertEqual(r.reflected(9), 4)
+        self.assertEqual(r.champion_unshakeable_stagger(3), 2)
+
+    def test_card_enchants(self):
+        self.assertTrue(r.can_enchant_card("Lightened", False, False))
+        self.assertFalse(r.can_enchant_card("Flaming", False, True))
+        self.assertFalse(r.can_enchant_card("Double", True, False))
+        for a in r.CARD_ENCHANTS[:5]:
+            for b in r.CARD_ENCHANTS[:5]:
+                if r.valid_double(a, b):
+                    self.assertEqual(r.decode_double(r.encode_double(a, b)), (a, b))
+        self.assertFalse(r.valid_double("Storm", "Storm"))
+        self.assertEqual(r.card_weight_after(0, True), 0)
+        self.assertEqual(r.stamina_after(2, True), 1)
+
+    def test_score(self):
+        self.assertEqual(r.run_score(1000, 0), 1000)
+        self.assertEqual(r.run_score(1000, 2), 700)
+        self.assertEqual(r.run_score(1000, 9), 0)

@@ -105,6 +105,18 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
         _ => [],
     };
 
+    /// <summary>Предыстория: экран выбора при настройке «На выбор» (готовые предыстории происхождения + Бродяга).</summary>
+    public static async Task<BackgroundRelic?> Pick(Player player, OriginRelic? origin)
+    {
+        if (RequiemConfig.Background == BackgroundChoice.Choose)
+        {
+            var options = Options(origin).Where(t => t != null).Append(typeof(VagrantBackground)).Distinct()
+                .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable()).ToList();
+            if (await RelicSelectCmd.FromChooseARelicScreen(player, options) is BackgroundRelic chosen) return chosen;
+        }
+        return For(player, origin);
+    }
+
     public static BackgroundRelic? For(Player player, OriginRelic? origin)
     {
         var choice = RequiemConfig.Background;

@@ -809,3 +809,116 @@ public class Stage5Tests
         Assert.Equal((PantheonRules.DrinkBonus.None, 0), PantheonRules.RevelSecondProperty(Brew.SnakeBite, 1));
     }
 }
+
+public class Stage6Tests
+{
+    [Fact]
+    public void Compatibility()
+    {
+        Assert.True(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Vampire, false, false, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.Vampire, FormKind.Werewolf, false, false, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Righteous, false, false, false));
+        Assert.True(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Righteous, true, false, false));
+        Assert.True(TransformationRules.CanTakeWorldview(FormKind.DarkPact, FormKind.Herald, false, false, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Lich, false, false, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Vampire, false, false, true));
+        Assert.True(TransformationRules.CanTakeClockwork(FormKind.Righteous, false));
+        Assert.False(TransformationRules.CanTakeClockwork(FormKind.Vampire, false));
+        Assert.True(TransformationRules.IsApostateForm(FormKind.Lich));
+        Assert.False(TransformationRules.IsWorldview(FormKind.Clockwork));
+    }
+
+    [Fact]
+    public void RighteousAndVampire()
+    {
+        Assert.True(TransformationRules.HaloTriggers(39, 80, false));
+        Assert.False(TransformationRules.HaloTriggers(40, 80, false));
+        Assert.Equal(2, TransformationRules.RighteousStepAfterAct(2, true));
+        Assert.Equal(1, TransformationRules.RighteousStepAfterAct(1, false));
+        Assert.Equal(-1, TransformationRules.Thirst(0).FireResistance);
+        Assert.Equal(1.5m, TransformationRules.Thirst(3).FireLightTakenMultiplier);
+        Assert.True(TransformationRules.Thirst(9).HealingOnlyByFeeding);
+        Assert.Equal(4, TransformationRules.ThirstAfterCombat(4, false));
+        Assert.Equal(0, TransformationRules.ThirstAfterCombat(3, true));
+        Assert.Equal(2, TransformationRules.Lifesteal(9, 25));
+        Assert.True(TransformationRules.BecomesBloodLord(3));
+    }
+
+    [Fact]
+    public void BeastAndPact()
+    {
+        Assert.Equal(5, TransformationRules.MoonCallDuration(3));
+        Assert.Equal(2, TransformationRules.HitsPerExtensionFor(2));
+        Assert.Equal(2, TransformationRules.ExtensionTurns(2, 7, 3));
+        Assert.Equal(8, TransformationRules.BeastAttackBonusFor(3));
+        Assert.Equal(12, TransformationRules.AlphaWolfHp(2));
+        Assert.Equal(9, TransformationRules.BeastNodesEarned(40));
+        Assert.Equal(HeraldStance.Plague, TransformationRules.NextStance(HeraldStance.Decay));
+        Assert.Equal(22, TransformationRules.LichMaxHpLoss(75));
+        Assert.Equal(0, TransformationRules.LichMaxHpLoss(1));
+        Assert.True(TransformationRules.CanBecomeLich(FormKind.Herald, 10));
+        Assert.False(TransformationRules.CanBecomeLich(FormKind.DarkPact, 99));
+        Assert.Equal(21, TransformationRules.PhylacteryReviveHp(70));
+    }
+
+    [Fact]
+    public void Healing()
+    {
+        Assert.Equal(-100, TransformationRules.HealPercent(new[] { -50, -100 }));
+        Assert.Equal(15m, TransformationRules.ApplyHeal(10, 50, false));
+        Assert.Equal(3m, TransformationRules.ApplyHeal(7, -50, false));
+        Assert.Equal(0m, TransformationRules.ApplyHeal(10, 0, true));
+    }
+
+    [Fact]
+    public void FormEvents()
+    {
+        Assert.Equal(new[] { FormKind.Werewolf, FormKind.DarkPact }, TransformationRules.EventFormsFor(0, 3));
+        Assert.Contains(FormKind.Lich, TransformationRules.EventFormsFor(3, 5));
+        Assert.DoesNotContain(FormKind.Lich, TransformationRules.EventFormsFor(2, 5));
+        Assert.Equal(FormKind.None, TransformationRules.UnknownRoomEvent(0, 3, 12, 0, 0));
+        Assert.Equal(FormKind.DarkPact, TransformationRules.UnknownRoomEvent(0, 3, 0, 1, 0));
+        var seen = (1 << (int)FormKind.Werewolf) | (1 << (int)FormKind.DarkPact);
+        Assert.Equal(FormKind.None, TransformationRules.UnknownRoomEvent(0, 3, 0, 0, seen));
+    }
+
+    [Fact]
+    public void Paths()
+    {
+        Assert.Equal(2, TransformationRules.PathOfferActIndex(5));
+        Assert.True(TransformationRules.PathOfferDue(8, 2, 5, false));
+        Assert.False(TransformationRules.PathOfferDue(7, 2, 5, false));
+        Assert.False(TransformationRules.PathAllowed(HeroPath.Paladin, FormKind.Vampire, true, false));
+        Assert.True(TransformationRules.PathAllowed(HeroPath.BlackKnight, FormKind.Vampire, true, false));
+        var offer = TransformationRules.OfferPaths("Ironclad", FormKind.None, false, false, _ => 0);
+        Assert.Equal(3, offer.Count);
+        Assert.Equal(HeroPath.Champion, offer[0]);
+        Assert.Equal(HeroPath.Barbarian, offer[1]);
+        Assert.Equal(8, TransformationRules.MonkUnarmedDamage(8));
+        Assert.True(TransformationRules.FearTurn(4));
+        Assert.Equal(4, TransformationRules.Reflected(9));
+        Assert.Equal(2, TransformationRules.ChampionUnshakeableStagger(3));
+    }
+
+    [Fact]
+    public void CardEnchants()
+    {
+        Assert.True(TransformationRules.CanEnchantCard(CardEnchant.Lightened, false, false));
+        Assert.False(TransformationRules.CanEnchantCard(CardEnchant.Flaming, false, true));
+        Assert.False(TransformationRules.CanEnchantCard(CardEnchant.Double, true, false));
+        foreach (var a in new[] { CardEnchant.Flaming, CardEnchant.Frost, CardEnchant.Storm, CardEnchant.Lightened, CardEnchant.Breathing })
+        foreach (var b in new[] { CardEnchant.Flaming, CardEnchant.Frost, CardEnchant.Storm, CardEnchant.Lightened, CardEnchant.Breathing })
+            if (TransformationRules.ValidDouble(a, b))
+                Assert.Equal((a, b), TransformationRules.DecodeDouble(TransformationRules.EncodeDouble(a, b)));
+        Assert.Equal(0, TransformationRules.CardWeightAfter(0, true));
+        Assert.Equal(1, TransformationRules.StaminaAfter(2, true));
+    }
+
+    [Fact]
+    public void ScoreMultiplier()
+    {
+        Assert.Equal(1.0, MemoryStoneRules.ScoreMultiplier(0), 3);
+        Assert.Equal(0.7, MemoryStoneRules.ScoreMultiplier(2), 3);
+        Assert.Equal(0.0, MemoryStoneRules.ScoreMultiplier(9), 3);
+    }
+}

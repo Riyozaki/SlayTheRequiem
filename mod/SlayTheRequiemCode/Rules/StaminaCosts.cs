@@ -26,6 +26,8 @@ public static class StaminaCosts
     public static int CostFor(CardModel card, CardPlay? play = null)
     {
         var cost = BaseCostFor(card, play);
+        // Чары «Дыхательная» (07 §6.2): −1 ◆.
+        cost = TransformationRules.StaminaAfter(cost, Progression.RequiemCardEnchantment.Has(card, CardEnchant.Breathing));
         if (Equipment.EquipmentCombatRules.IsWeaponAttack(card))
             cost = EquipmentRules.WeaponAttackCost(cost, Equipment.Loadout.Bonuses(card.Owner));
         var owner = card.Owner?.Creature;

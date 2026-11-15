@@ -34,5 +34,15 @@
   "SLAYTHEREQUIEM_PRAY_PROMPT": "Выберите молитву",
   "SLAYTHEREQUIEM_TRAIN_PROMPT": "Потратьте очко (закройте, чтобы закончить)",
   "SLAYTHEREQUIEM_SCHOOL_PROMPT": "Выберите школу",
-  "OPTION_SLAYTHEREQUIEM_CHEST.descriptionDisabled": "Нечего убрать или забрать."
+  "OPTION_SLAYTHEREQUIEM_CHEST.descriptionDisabled": "Нечего убрать или забрать.",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.name": "Зов крови",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.description": "Выбрать узел ветки зверя (ждут: {Pending}). Бесплатно.",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.descriptionDisabled": "Нет ожидающих узлов.",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.name": "Зачаровать карту",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.description": "Камень душ (осталось {Stones}) — чара на карту колоды. Цена: {Cost} очк. лагеря, есть {Points}.",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.descriptionDisabled": "Нет камней душ.",
+  "SLAYTHEREQUIEM_BEAST_PROMPT": "Выберите узел ветки",
+  "SLAYTHEREQUIEM_PATH_PROMPT": "Выберите Путь",
+  "SLAYTHEREQUIEM_ELEMENT_PROMPT": "Выберите стихию",
+  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Выберите чары"
 }

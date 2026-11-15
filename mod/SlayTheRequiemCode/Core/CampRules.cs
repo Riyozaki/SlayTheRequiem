@@ -258,8 +258,9 @@ public static class EnchantRules
     /// <summary>Заряды оружейных чар: 8/12/16.</summary>
     public static int Charges(int power) => 4 + 4 * Math.Clamp(power, 1, 3);
 
-    /// <summary>Чар на предмет: 1, «Ремесло: Зачарование» — 2 (Хранитель Свитков-Дух — 3, этап 6).</summary>
-    public static int SlotsPerItem(bool craftEnchanting) => craftEnchanting ? 2 : 1;
+    /// <summary>Чар на предмет: 1, «Ремесло: Зачарование» — 2, Дух божества Хранителя Свитков — 3 (07 §6.1).</summary>
+    public static int SlotsPerItem(bool craftEnchanting, bool scrollKeeperSpirit = false) =>
+        scrollKeeperSpirit ? 3 : craftEnchanting ? 2 : 1;
 
     /// <summary>
     /// Наложить чары: такие же чары заменяются (заряды обновляются); свободный слот — добавить; иначе вытесняется первая.

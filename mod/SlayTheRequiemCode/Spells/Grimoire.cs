@@ -77,10 +77,11 @@ public sealed class Grimoire : RequiemRelic
     {
         if (Owner.Relics.OfType<OriginRelic>().Any() || OriginGranted) return;
         OriginGranted = true;
-        var origin = OriginRelic.ForHero(Owner);
+        // «На выбор» — экран выбора реликвии (этап 6), иначе по настройке.
+        var origin = await OriginRelic.Pick(Owner);
         if (origin != null) await MegaCrit.Sts2.Core.Commands.RelicCmd.Obtain(origin, Owner);
         // Предыстория — сразу за происхождением (её набор зависит от происхождения).
-        if (!Owner.Relics.OfType<BackgroundRelic>().Any() && BackgroundRelic.For(Owner, origin) is { } background)
+        if (!Owner.Relics.OfType<BackgroundRelic>().Any() && await BackgroundRelic.Pick(Owner, origin) is { } background)
             await MegaCrit.Sts2.Core.Commands.RelicCmd.Obtain(background, Owner);
     }
 

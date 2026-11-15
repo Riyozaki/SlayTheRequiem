@@ -34,5 +34,15 @@
   "SLAYTHEREQUIEM_PRAY_PROMPT": "Choose a prayer",
   "SLAYTHEREQUIEM_TRAIN_PROMPT": "Spend a point (close to finish)",
   "SLAYTHEREQUIEM_SCHOOL_PROMPT": "Choose a school",
-  "OPTION_SLAYTHEREQUIEM_CHEST.descriptionDisabled": "Nothing to store or take."
+  "OPTION_SLAYTHEREQUIEM_CHEST.descriptionDisabled": "Nothing to store or take.",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.name": "Call of Blood",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.description": "Choose a beast branch node ({Pending} pending). Free.",
+  "OPTION_SLAYTHEREQUIEM_BEAST_RITES.descriptionDisabled": "No pending nodes.",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.name": "Enchant Card",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.description": "Spend a soul stone ({Stones} left) to enchant a card in your deck. Costs {Cost} camp point(s), you have {Points}.",
+  "OPTION_SLAYTHEREQUIEM_CARD_ENCHANT.descriptionDisabled": "No soul stones.",
+  "SLAYTHEREQUIEM_BEAST_PROMPT": "Choose a branch node",
+  "SLAYTHEREQUIEM_PATH_PROMPT": "Choose your Path",
+  "SLAYTHEREQUIEM_ELEMENT_PROMPT": "Choose your element",
+  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Choose an enchantment"
 }

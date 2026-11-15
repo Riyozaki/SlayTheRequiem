@@ -145,7 +145,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         if (!RequiemConfig.EnableRequiemSystems || amount <= 0) return false;
 
         if ((canonicalPower is BleedPower && EnemySetup.IsBleedImmune(target))
-            || (canonicalPower is BlightPower && EnemySetup.IsBlightImmune(target)))
+            || (canonicalPower is BlightPower && EnemySetup.IsBlightImmune(target))
+            || Transformations.Healing.IsImmune(target, canonicalPower))
         {
             modifiedAmount = 0;
             return true;

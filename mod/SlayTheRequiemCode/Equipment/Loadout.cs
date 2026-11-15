@@ -42,6 +42,7 @@ public static class Loadout
         var relics = player.Relics.Sum(r => r switch
         {
             EquipmentRelic e => e.Weight,
+            IWeighted w => w.Weight,
             IWeightless => 0,
             _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
             _ => 1,
@@ -50,7 +51,9 @@ public static class Loadout
     }
 
     public static int CardWeight(CardModel card) =>
-        BurdenRules.DefaultCardWeight(card.Rarity.ToString(), card.Type == CardType.Curse, card.Type == CardType.Status);
+        TransformationRules.CardWeightAfter(
+            BurdenRules.DefaultCardWeight(card.Rarity.ToString(), card.Type == CardType.Curse, card.Type == CardType.Status),
+            Progression.RequiemCardEnchantment.Has(card, CardEnchant.Lightened));
 
     public static int Capacity(Player? player) => HeroStatRules.BurdenCapacity(player);
 
@@ -59,6 +62,12 @@ public static class Loadout
 
 /// <summary>Реликвия без веса Груза: дары и благословения (не вещи).</summary>
 public interface IWeightless { }
+
+/// <summary>Не-снаряжение со своим весом Груза (Филактерия — 3).</summary>
+public interface IWeighted
+{
+    int Weight { get; }
+}
 
 /// <summary>Штрафы Груза для ресурсов и руки.</summary>
 public static class BurdenPenalty

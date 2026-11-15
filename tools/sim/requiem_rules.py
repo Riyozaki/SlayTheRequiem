@@ -1009,3 +1009,248 @@ def revel_second_property(brew: str, tier: int, is_poison: bool) -> tuple:
     if is_poison:
         return ("None", 0)
     return ("Block", 3 * step)
+
+
+# ═════════════ Этап 6: трансформации и Пути (docs/design/06; Core/TransformationRules.cs) ═════════════
+
+FORMS = ["None", "Righteous", "Vampire", "Werewolf", "DarkPact", "Herald", "Lich", "Clockwork"]
+PATHS = ["None", "Paladin", "BlackKnight", "Champion", "Barbarian", "Monk", "Assassin", "Blightbringer",
+         "MysticArcher", "ElementLord", "Battlemage", "Reflector", "Medium", "Reborn"]
+CARD_ENCHANTS = ["Flaming", "Frost", "Storm", "Lightened", "Breathing", "Double"]
+
+
+def is_worldview(kind: str) -> bool:
+    return kind not in ("None", "Clockwork")
+
+
+def is_apostate_form(kind: str) -> bool:
+    return kind in ("Vampire", "Werewolf", "DarkPact", "Herald", "Lich")
+
+
+def is_chain_step(frm: str, to: str) -> bool:
+    return (frm, to) in (("DarkPact", "Herald"), ("Herald", "Lich"))
+
+
+def can_take_worldview(current: str, nxt: str, righteous_piety: bool, ordinator: bool, clockwork: bool) -> bool:
+    if not is_worldview(nxt):
+        return False
+    if (ordinator or clockwork) and nxt != "Righteous":
+        return False
+    if nxt in ("Herald", "Lich"):
+        return is_chain_step(current, nxt)
+    if current != "None":
+        return False
+    return nxt != "Righteous" or righteous_piety
+
+
+def can_take_clockwork(worldview: str, has_clockwork: bool) -> bool:
+    return not has_clockwork and worldview in ("None", "Righteous")
+
+
+# Праведник
+def halo_triggers(hp: int, max_hp: int, used: bool) -> bool:
+    return not used and max_hp > 0 and hp > 0 and hp * 100 < max_hp * 50
+
+
+def righteous_step_after_act(step: int, vow_kept: bool) -> int:
+    return min(2, step + 1) if vow_kept else step
+
+
+# Дитя Ночи: (Regen, FireRes, AttackBonus, FireLightMult, HealPercent, Lifesteal, OnlyFeeding)
+def thirst_row(thirst: int) -> tuple:
+    t = max(0, min(4, thirst))
+    if t == 0:
+        return (1, -1, 0, 1.0, 0, 0, False)
+    if t == 1:
+        return (0, -1, 0, 1.0, 0, 0, False)
+    if t in (2, 3):
+        return (0, 0, 2, 1.5, -50, 0, False)
+    return (0, 0, 4, 2.0, -100, 25, True)
+
+
+def thirst_after_combat(thirst: int, fed: bool) -> int:
+    return 0 if fed else min(4, max(0, thirst) + 1)
+
+
+def lifesteal(dealt: int, percent: int) -> int:
+    return max(0, dealt) * max(0, percent) // 100
+
+
+# Носитель Зверя
+def moon_call_duration(stalker: int) -> int:
+    return 3 + (1 if stalker >= 1 else 0) + (1 if stalker >= 3 else 0)
+
+
+def hits_per_extension(stalker: int) -> int:
+    return 2 if stalker >= 2 else 3
+
+
+def extension_turns(before: int, after: int, per: int) -> int:
+    return 0 if per <= 0 else max(0, after // per - before // per)
+
+
+def beast_attack_bonus(hunter: int) -> int:
+    return 4 + (2 if hunter >= 1 else 0) + (2 if hunter >= 3 else 0)
+
+
+def alpha_wolf_hp(alpha: int) -> int:
+    return 0 if alpha <= 0 else {1: 8, 2: 12}.get(alpha, 16)
+
+
+def beast_nodes_earned(transformations: int) -> int:
+    return min(9, max(0, transformations) // 2)
+
+
+# Договор → Вестник → Лич
+def next_stance(stance: int) -> int:
+    return (stance + 1) % 3
+
+
+def lich_max_hp_loss(max_hp: int) -> int:
+    return max(0, min(max_hp * 30 // 100, max(0, max_hp - 1)))
+
+
+def can_become_lich(current: str, herald_wins: int) -> bool:
+    return current == "Herald" and herald_wins >= 10
+
+
+def phylactery_revive_hp(max_hp: int) -> int:
+    return max(1, max_hp * 30 // 100)
+
+
+# Лечение
+def heal_percent(mods) -> int:
+    return max(-100, sum(mods))
+
+
+def apply_heal(amount: float, percent: int, blocked: bool) -> int:
+    if blocked or amount <= 0:
+        return 0
+    return max(0, math.floor(amount * (100 + max(-100, percent)) / 100))
+
+
+# События трансформаций
+def is_late_act(act: int, total: int) -> bool:
+    return act >= (3 if total >= 5 else max(1, total - 1))
+
+
+def event_forms_for(act: int, total: int) -> list:
+    out = []
+    if act <= 1:
+        out += ["Werewolf", "DarkPact"]
+    if act in (1, 2):
+        out += ["Righteous", "Clockwork"]
+    if 1 <= act <= 3:
+        out.append("Vampire")
+    if is_late_act(act, total):
+        out.append("Lich")
+    return out
+
+
+def unknown_room_event(act: int, total: int, roll: int, pick: int, seen_mask: int) -> str:
+    if roll < 0 or roll >= 12:
+        return "None"
+    opts = [k for k in event_forms_for(act, total) if not seen_mask & (1 << FORMS.index(k))]
+    return opts[abs(pick) % len(opts)] if opts else "None"
+
+
+# Путь Героя
+def path_offer_act_index(total: int) -> int:
+    return 2 if total >= 5 else max(0, total - 2)
+
+
+def path_offer_due(level: int, boss_act: int, total: int, has_path: bool) -> bool:
+    return not has_path and level >= 8 and boss_act >= path_offer_act_index(total)
+
+
+def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool) -> bool:
+    if path == "None":
+        return False
+    if path == "Paladin":
+        return worldview == "Righteous"
+    if path == "BlackKnight":
+        return apostate and worldview != "Righteous"
+    if path == "Monk":
+        return unarmed
+    return True
+
+
+def native_paths(hero, worldview: str, apostate: bool, unarmed: bool) -> list:
+    out = []
+    if worldview == "Righteous":
+        out.append("Paladin")
+    if apostate and worldview != "Righteous":
+        out.append("BlackKnight")
+    out += {"Ironclad": ["Champion", "Barbarian", "Battlemage"],
+            "Silent": ["Assassin", "Blightbringer", "MysticArcher"],
+            "Regent": ["ElementLord", "Battlemage", "Reflector", "Medium", "MysticArcher"]}.get(hero, [])
+    if unarmed:
+        out.append("Monk")
+    return list(dict.fromkeys(out))
+
+
+def offer_paths(hero, worldview, apostate, unarmed, nxt) -> list:
+    native = native_paths(hero, worldview, apostate, unarmed)
+    foreign = [p for p in PATHS[1:] if p not in native and path_allowed(p, worldview, apostate, unarmed)]
+    res = []
+    for _ in range(2):
+        if not native:
+            break
+        res.append(native.pop(nxt(len(native))))
+    while len(res) < 3 and (foreign or native):
+        pool = foreign if foreign else native
+        res.append(pool.pop(nxt(len(pool))))
+    return res
+
+
+def monk_unarmed_damage(level: int) -> int:
+    return 4 + max(1, level) // 2
+
+
+def barbarian_rage(hp: int, max_hp: int) -> bool:
+    return max_hp > 0 and hp * 100 < max_hp * 50
+
+
+def fear_turn(rnd: int) -> bool:
+    return rnd > 0 and rnd % 2 == 0
+
+
+def reflected(absorbed: int) -> int:
+    return max(0, absorbed) * 50 // 100
+
+
+def champion_unshakeable_stagger(stagger: int) -> int:
+    return (max(0, stagger) + 1) // 2
+
+
+# Чары карт (07 §6.2)
+def can_enchant_card(enchant: str, is_attack: bool, double_perk: bool) -> bool:
+    if enchant == "Lightened":
+        return True
+    if enchant == "Double":
+        return double_perk and is_attack
+    return is_attack
+
+
+def encode_double(a: str, b: str) -> int:
+    return CARD_ENCHANTS.index(a) * 10 + CARD_ENCHANTS.index(b)
+
+
+def decode_double(code: int) -> tuple:
+    return CARD_ENCHANTS[max(0, min(4, code // 10))], CARD_ENCHANTS[max(0, min(4, code % 10))]
+
+
+def valid_double(a: str, b: str) -> bool:
+    return a != b and "Double" not in (a, b)
+
+
+def card_weight_after(weight: int, lightened: bool) -> int:
+    return max(0, weight - 1) if lightened else weight
+
+
+def stamina_after(cost: int, breathing: bool) -> int:
+    return max(0, cost - 1) if breathing else cost
+
+
+def run_score(score: int, rollbacks: int) -> int:
+    return score if rollbacks <= 0 else math.floor(score * score_multiplier(rollbacks))

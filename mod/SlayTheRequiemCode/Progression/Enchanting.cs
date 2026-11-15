@@ -51,7 +51,8 @@ public static class Enchanting
         EnchantRules.All.Where(e => EnchantRules.Allowed(e, item.Slot)).ToList();
 
     public static int SlotsFor(Player player) =>
-        EnchantRules.SlotsPerItem(HeroRecord.Of(player)?.Has(Skill.CraftEnchanting) == true);
+        EnchantRules.SlotsPerItem(HeroRecord.Of(player)?.Has(Skill.CraftEnchanting) == true,
+            Pantheon.CelestialBlessing.Of(player) is Pantheon.BlessingOfScrollKeeper { HasDivineSpirit: true });
 
     public static void Apply(Player player, EquipmentRelic item, Enchant enchant, int power)
     {

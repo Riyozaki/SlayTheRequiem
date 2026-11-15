@@ -63,6 +63,29 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
         _ => null,
     };
 
+    /// <summary>Варианты для экрана выбора (настройка «На выбор»); null — выбора нет, берётся <see cref="ForHero"/>.</summary>
+    public static List<RelicModel>? Choices(Player player)
+    {
+        Type[]? types = player.Character.GetType().Name switch
+        {
+            "Silent" when RequiemConfig.SilentOrigin == SilentOriginChoice.Choose =>
+                [typeof(MoonbornOrigin), typeof(ThicketbornOrigin), typeof(MarshbornOrigin)],
+            "Regent" when RequiemConfig.RegentOrigin == RegentOriginChoice.Choose =>
+                [typeof(HighbornOrigin), typeof(MistbornOrigin), typeof(AshbornOrigin)],
+            _ => null,
+        };
+        return types?.Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t)).ToMutable()).ToList();
+    }
+
+    /// <summary>Происхождение: экран выбора (MP-синхронный) или по настройке.</summary>
+    public static async Task<OriginRelic?> Pick(Player player)
+    {
+        if (Choices(player) is { Count: > 0 } options
+            && await RelicSelectCmd.FromChooseARelicScreen(player, options) is OriginRelic chosen)
+            return chosen;
+        return ForHero(player);
+    }
+
     public static OriginRelic? ForPlatebearer() => RequiemConfig.PlatebearerOrigin switch
     {
         PlatebearerOriginChoice.Frostborn => (OriginRelic)ModelDb.Relic<FrostbornOrigin>().ToMutable(),
@@ -72,7 +95,7 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     public static OriginRelic? ForSilent(Player player)
     {
         var choice = RequiemConfig.SilentOrigin;
-        if (choice == SilentOriginChoice.Random)
+        if (choice is SilentOriginChoice.Random or SilentOriginChoice.Choose)
             choice = (SilentOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(3));
         RelicModel? canonical = choice switch
         {
@@ -87,7 +110,7 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     public static OriginRelic? ForRegent(Player player)
     {
         var choice = RequiemConfig.RegentOrigin;
-        if (choice == RegentOriginChoice.Random)
+        if (choice is RegentOriginChoice.Random or RegentOriginChoice.Choose)
             choice = (RegentOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(3));
         RelicModel? canonical = choice switch
         {

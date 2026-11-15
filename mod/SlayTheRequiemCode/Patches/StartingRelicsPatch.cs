@@ -76,14 +76,22 @@ public static class StarCounterPatch
     }
 }
 
-/// <summary>Хворь запрещает лечение (docs/design/03): CreatureCmd.Heal не срабатывает на носителе.</summary>
+/// <summary>
+/// Лечение Реквиема (docs/design/03, 06): Хворь запрещает его целиком; формы и Дух божества меняют проценты
+/// (вампир −50 %/голод, оборотень, Заводное сердце −50 %, Матерь Очага-Дух +50 %), Лич и голодный вампир лечатся только
+/// кормлением (см. <see cref="Transformations.Healing"/>).
+/// </summary>
 [HarmonyPatch(typeof(MegaCrit.Sts2.Core.Commands.CreatureCmd), nameof(MegaCrit.Sts2.Core.Commands.CreatureCmd.Heal))]
 public static class BlightHealPatch
 {
     [HarmonyPrefix]
-    public static bool BlockHealing(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, ref Task __result)
+    public static bool BlockHealing(MegaCrit.Sts2.Core.Entities.Creatures.Creature creature, ref decimal amount, ref Task __result)
     {
-        if (!creature.HasPower<Powers.BlightPower>()) return true;
+        if (!creature.HasPower<Powers.BlightPower>())
+        {
+            amount = Transformations.Healing.Modify(creature, amount);
+            if (amount > 0) return true;
+        }
         __result = Task.CompletedTask;
         return false;
     }

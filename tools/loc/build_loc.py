@@ -17,6 +17,8 @@ from loc_stage35 import STAGE35_CARDS, STAGE35_RELIC_EXTRA, STAGE35_RELICS, STAG
 from loc_stage36 import STAGE36_CARDS, STAGE36_REST_SITE, STAGE36_RELIC_EXTRA, STAGE36_SETTINGS  # noqa: E402
 from loc_stage4 import STAGE4_ANCIENTS, STAGE4_EVENTS, STAGE4_RELICS, STAGE4_SETTINGS  # noqa: E402
 from loc_stage5 import STAGE5_CARDS, STAGE5_POWERS, STAGE5_REST_SITE, STAGE5_RELICS  # noqa: E402
+from loc_stage6 import (STAGE6_BADGES, STAGE6_CARDS, STAGE6_ENCHANTMENTS, STAGE6_EVENTS, STAGE6_POWERS,  # noqa: E402
+                        STAGE6_EQUIPMENT, STAGE6_RELICS, STAGE6_REST_SITE, STAGE6_SETTINGS)
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "mod", "SlayTheRequiem", "localization")
 PREFIX = "SLAYTHEREQUIEM-"
@@ -173,21 +175,21 @@ def merge(lang: str, file: str, entries: dict) -> int:
 def main() -> None:
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
             powers[f"{k}.smartDescription"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT:
+        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li] + WEIGHT_NOTE[lang]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS:
+        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li]
@@ -200,7 +202,7 @@ def main() -> None:
             for move, title in data["moves"].items():
                 monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
         encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS}.items()}
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang]}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang]}.items()}
         potions = {}
         for cls, et, ed, rt, rd in STAGE3_POTIONS:
             k = PREFIX + snake(cls)
@@ -208,8 +210,9 @@ def main() -> None:
             potions[f"{k}.description"] = (ed, rd)[li]
         n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
         n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
-        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang]})
-        n += merge(lang, "events.json", STAGE4_EVENTS[lang]) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
+        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang]})
+        n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
+        n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         print(f"{lang}: {n} ключей")
 
 

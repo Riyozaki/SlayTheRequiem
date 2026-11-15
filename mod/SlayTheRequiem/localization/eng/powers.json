@@ -229,5 +229,20 @@
   "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "The next attack deals no damage.",
   "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.title": "Shouts Recharging",
   "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.description": "{Amount} Shout(s) recharging; they return to your hand at the start of a turn.",
-  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "{Amount} Shout(s) recharging; they return to your hand at the start of a turn."
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "{Amount} Shout(s) recharging; they return to your hand at the start of a turn.",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.title": "Blood Lord",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.description": "Your attacks apply 1 [gold]Blight[/gold] and heal 25% of unblocked damage.",
+  "SLAYTHEREQUIEM-BLOOD_LORD_STANCE_POWER.smartDescription": "Your attacks apply 1 [gold]Blight[/gold] and heal 25% of unblocked damage.",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.title": "Beast Form",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.description": "{Amount} turn(s) left. Only beast cards; attacks +4. Every 3 hits on enemies extend the form by 1 turn.",
+  "SLAYTHEREQUIEM-BEAST_FORM_POWER.smartDescription": "{Amount} turn(s) left. Only beast cards; attacks +4. Every 3 hits on enemies extend the form by 1 turn.",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.title": "Steam Sphere",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.description": "{Amount} sphere(s): at the end of your turn each applies 3 [gold]Burning[/gold] to a random enemy.",
+  "SLAYTHEREQUIEM-STEAM_ORB_POWER.smartDescription": "{Amount} sphere(s): at the end of your turn each applies 3 [gold]Burning[/gold] to a random enemy.",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.title": "Spark Sphere",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.description": "{Amount} sphere(s): at the end of your turn each applies 1 [gold]Static[/gold] and deals 3 shock damage to a random enemy.",
+  "SLAYTHEREQUIEM-SPARK_ORB_POWER.smartDescription": "{Amount} sphere(s): at the end of your turn each applies 1 [gold]Static[/gold] and deals 3 shock damage to a random enemy.",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.title": "Rime Sphere",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.description": "{Amount} sphere(s): at the end of your turn each applies 2 [gold]Chill[/gold] to a random enemy.",
+  "SLAYTHEREQUIEM-RIME_ORB_POWER.smartDescription": "{Amount} sphere(s): at the end of your turn each applies 2 [gold]Chill[/gold] to a random enemy."
 }

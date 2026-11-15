@@ -129,11 +129,17 @@ public static class Camp
             options.Add(new CookingRestSiteOption(player));
         options.Add(new ForgeRestSiteOption(player));
         if (hero != null && hero.TotalStones > 0 && HasEnchantingTable(player))
+        {
             options.Add(new EnchantRestSiteOption(player));
+            options.Add(new CardEnchantRestSiteOption(player));
+        }
         if (hero != null) options.Add(new MeditateRestSiteOption(player));
         if (RequiemConfig.EnablePantheon && HasAltar(player)) options.Add(new PrayRestSiteOption(player));
         options.Add(new ChestRestSiteOption(player));
         if (hero != null && hero.HasUnspentPoints) options.Add(new TrainRestSiteOption(player));
+        // Оборотень (этап 6): узлы веток за Обращения.
+        if (Transformations.Forms.Of<Transformations.WerewolfForm>(player) is { PendingNodes: > 0 })
+            options.Add(new Transformations.BeastRitesRestSiteOption(player));
     }
 }
 
