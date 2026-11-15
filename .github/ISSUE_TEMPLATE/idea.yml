@@ -1,6 +1,6 @@
 name: 💡 Идея или баланс
 description: Предложение механики, контента или правки чисел
-labels: ["idea"]
+labels: ["enhancement"]
 body:
   - type: textarea
     id: idea
