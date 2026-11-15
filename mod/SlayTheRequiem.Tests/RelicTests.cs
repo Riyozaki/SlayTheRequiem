@@ -130,3 +130,37 @@ public class BackpackRulesTests
         Assert.Equal(8, BackpackRules.FeatherBurden);
     }
 }
+
+/// <summary>Отложенные чары 07 §6.1 (M4 п. 6).</summary>
+public class DeferredEnchantTests
+{
+    [Fact]
+    public void SlotsValuesAndCharges()
+    {
+        Assert.True(EnchantRules.Allowed(Enchant.CraftIllusion, EquipSlot.Amulet));
+        Assert.True(EnchantRules.Allowed(Enchant.CraftDestruction, EquipSlot.Head));
+        Assert.False(EnchantRules.Allowed(Enchant.CraftDestruction, EquipSlot.Ring));
+        Assert.True(EnchantRules.Allowed(Enchant.Paralysis, EquipSlot.MainHand));
+        Assert.True(EnchantRules.IsWeaponBrand(Enchant.AbsorbMagic));
+        Assert.False(EnchantRules.IsWeaponBrand(Enchant.CraftAlteration));
+        Assert.Equal(3, EnchantRules.Value(Enchant.CraftConjuration, 3));
+        Assert.Equal(1, EnchantRules.Value(Enchant.Banish, 3));
+        Assert.Equal(SpellSchool.Illusion, EnchantRules.SchoolOf(Enchant.CraftIllusion));
+        Assert.Null(EnchantRules.SchoolOf(Enchant.Health));
+        Assert.True(EnchantRules.ChargesOnTrigger(Enchant.Paralysis));
+        Assert.False(EnchantRules.ChargesOnTrigger(Enchant.AbsorbHealth));
+        var slots = EnchantRules.Apply(new List<EnchantSlot>(), Enchant.Banish, 2, 1);
+        Assert.Equal(12, slots[0].Charges);
+        Assert.Equal(slots, EnchantRules.Parse(EnchantRules.Serialize(slots)));
+    }
+
+    [Fact]
+    public void CraftAndParalysis()
+    {
+        Assert.Equal(1, EnchantRules.CraftDiscount(2, 1));
+        Assert.Equal(0, EnchantRules.CraftDiscount(2, 2));
+        Assert.Equal(0, EnchantRules.CraftDiscount(0, 0));
+        Assert.Equal(SpellTier.Apprentice, EnchantRules.ParalysisTier(1));
+        Assert.Equal(SpellTier.Expert, EnchantRules.ParalysisTier(3));
+    }
+}

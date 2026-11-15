@@ -226,6 +226,9 @@ public enum Enchant
     Health, Stamina, Magic, FireResistance, FrostResistance, ShockResistance, WeaponMight, Burden,
     // Оружейные чары (с зарядами)
     FireBrand, FrostBrand, ShockBrand,
+    // Отложенные чары 07 §6.1 (M4 п. 6). Ремесло школы — по чарам на школу (школа хранится видом чар).
+    CraftDestruction, CraftRestoration, CraftAlteration, CraftConjuration, CraftIllusion,
+    AbsorbHealth, AbsorbStamina, AbsorbMagic, Banish, Paralysis,
 }
 
 /// <summary>Чары на предмете: вид, сила 1–3, заряды (только оружейные).</summary>
@@ -235,7 +238,33 @@ public static class EnchantRules
 {
     public static readonly Enchant[] All = Enum.GetValues<Enchant>();
 
-    public static bool IsWeaponBrand(Enchant e) => e is Enchant.FireBrand or Enchant.FrostBrand or Enchant.ShockBrand;
+    public static bool IsWeaponBrand(Enchant e) => e is Enchant.FireBrand or Enchant.FrostBrand or Enchant.ShockBrand
+        or Enchant.AbsorbHealth or Enchant.AbsorbStamina or Enchant.AbsorbMagic or Enchant.Banish or Enchant.Paralysis;
+
+    /// <summary>Оружейные чары, которые тратят заряд только при срабатывании (Изгнание — по призванным, Паралич — раз в бой).</summary>
+    public static bool ChargesOnTrigger(Enchant e) => e is Enchant.Banish or Enchant.Paralysis;
+
+    /// <summary>Школа «Ремесла школы» (null — это не Ремесло).</summary>
+    public static SpellSchool? SchoolOf(Enchant e) => e switch
+    {
+        Enchant.CraftDestruction => SpellSchool.Destruction,
+        Enchant.CraftRestoration => SpellSchool.Restoration,
+        Enchant.CraftAlteration => SpellSchool.Alteration,
+        Enchant.CraftConjuration => SpellSchool.Conjuration,
+        Enchant.CraftIllusion => SpellSchool.Illusion,
+        _ => null,
+    };
+
+    /// <summary>Ремесло школы: −1 ✦ первым N заклинаниям этой школы за ход (N = сумма чар на надетых вещах).</summary>
+    public static int CraftDiscount(int perTurn, int castThisTurn) => castThisTurn < perTurn ? 1 : 0;
+
+    /// <summary>Ступень контроля Паралича по силе чар 1/2/3: Ученик / Адепт / Эксперт (порог ♥ цели — <see cref="SpellAffinity.ControlHpCap"/>).</summary>
+    public static SpellTier ParalysisTier(int power) => Math.Clamp(power, 1, 3) switch
+    {
+        1 => SpellTier.Apprentice,
+        2 => SpellTier.Adept,
+        _ => SpellTier.Expert,
+    };
 
     public static bool IsResistance(Enchant e) => e is Enchant.FireResistance or Enchant.FrostResistance or Enchant.ShockResistance;
 
@@ -248,6 +277,8 @@ public static class EnchantRules
             slot is EquipSlot.OffHand or EquipSlot.Ring or EquipSlot.Feet,
         Enchant.WeaponMight => slot is EquipSlot.Hands or EquipSlot.Ring,
         Enchant.Burden => slot is EquipSlot.Hands or EquipSlot.Feet,
+        Enchant.CraftDestruction or Enchant.CraftRestoration or Enchant.CraftAlteration or Enchant.CraftConjuration
+            or Enchant.CraftIllusion => slot is EquipSlot.Head or EquipSlot.Amulet,
         _ => slot == EquipSlot.MainHand,
     };
 
@@ -265,7 +296,8 @@ public static class EnchantRules
             Enchant.Burden => 4 * p,
             Enchant.FireBrand => 2 * p,   // Горение
             Enchant.FrostBrand => p,      // Озноб
-            _ => p,                       // Разряд: выжечь ✦
+            Enchant.Banish => 1,          // мгновенная смерть призванного
+            _ => p,                       // Разряд: выжечь ✦; Ремесло: заклинаний за ход; Поглощение ♥/◆/✦; Паралич: ступень
         };
     }
 

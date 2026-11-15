@@ -670,6 +670,22 @@ class VanillaRelics(unittest.TestCase):
         self.assertTrue(all(0 <= int(row["weight"]) <= 3 for row in rows))
 
 
+class DeferredEnchants(unittest.TestCase):
+    def test_slots_and_values(self):
+        self.assertTrue(r.enchant_allowed("CraftIllusion", "Amulet"))
+        self.assertFalse(r.enchant_allowed("CraftIllusion", "Ring"))
+        self.assertTrue(r.enchant_allowed("Paralysis", "MainHand"))
+        self.assertEqual(r.enchant_value("CraftDestruction", 3), 3)
+        self.assertEqual(r.enchant_value("AbsorbHealth", 2), 2)
+        self.assertEqual(r.enchant_value("Banish", 3), 1)
+        self.assertEqual(r.enchant_value("FrostResistance", 3), 2)
+        self.assertEqual(r.apply_enchant([], "Banish", 2, 1), [("Banish", 2, 12)])
+        self.assertEqual(r.craft_discount(2, 1), 1)
+        self.assertEqual(r.craft_discount(2, 2), 0)
+        self.assertEqual(r.paralysis_tier(1), 2)
+        self.assertEqual(r.paralysis_tier(3), 4)
+
+
 class Jewelry(unittest.TestCase):
     def test_numbers(self):
         self.assertEqual(r.drunkard_potency(2), 3)

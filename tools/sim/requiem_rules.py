@@ -1069,7 +1069,20 @@ ENCHANT_SLOTS = {
     "FireResistance": ("OffHand", "Ring", "Feet"), "FrostResistance": ("OffHand", "Ring", "Feet"),
     "ShockResistance": ("OffHand", "Ring", "Feet"), "WeaponMight": ("Hands", "Ring"), "Burden": ("Hands", "Feet"),
     "FireBrand": ("MainHand",), "FrostBrand": ("MainHand",), "ShockBrand": ("MainHand",),
+    **{f"Craft{school}": ("Head", "Amulet") for school in ("Destruction", "Restoration", "Alteration", "Conjuration", "Illusion")},
+    "AbsorbHealth": ("MainHand",), "AbsorbStamina": ("MainHand",), "AbsorbMagic": ("MainHand",),
+    "Banish": ("MainHand",), "Paralysis": ("MainHand",),
 }
+WEAPON_BRANDS = ("FireBrand", "FrostBrand", "ShockBrand", "AbsorbHealth", "AbsorbStamina", "AbsorbMagic", "Banish", "Paralysis")
+
+
+def craft_discount(per_turn: int, cast_this_turn: int) -> int:
+    return 1 if cast_this_turn < per_turn else 0
+
+
+def paralysis_tier(power: int) -> int:
+    """SpellTier: 2 Ученик, 3 Адепт, 4 Эксперт."""
+    return {1: 2, 2: 3}.get(max(1, min(3, power)), 4)
 
 
 def enchant_allowed(e: str, slot: str) -> bool:
@@ -1079,7 +1092,8 @@ def enchant_allowed(e: str, slot: str) -> bool:
 def enchant_value(e: str, power: int) -> int:
     p = max(1, min(3, power))
     return {"Health": 4 * p, "Stamina": p, "Magic": 2 * p, "WeaponMight": p, "Burden": 4 * p,
-            "FireBrand": 2 * p, "FrostBrand": p, "ShockBrand": p}.get(e, 2 if p >= 3 else 1)
+            "FireBrand": 2 * p, "FrostBrand": p, "ShockBrand": p, "Banish": 1}.get(
+        e, p if e in ENCHANT_SLOTS and not e.endswith("Resistance") else 2 if p >= 3 else 1)
 
 
 def enchant_charges(power: int) -> int:
@@ -1088,7 +1102,7 @@ def enchant_charges(power: int) -> int:
 
 def apply_enchant(current: list, e: str, power: int, slots: int) -> list:
     lst = list(current)
-    brand = e in ("FireBrand", "FrostBrand", "ShockBrand")
+    brand = e in WEAPON_BRANDS
     slot = (e, max(1, min(3, power)), enchant_charges(power) if brand else 0)
     for i, s in enumerate(lst):
         if s[0] == e:

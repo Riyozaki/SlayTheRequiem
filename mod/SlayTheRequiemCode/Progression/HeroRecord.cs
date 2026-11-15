@@ -396,12 +396,15 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _attacksThisTurn, _spellsThisTurn, _illusionsThisTurn, _twoHandedThisTurn, _rangedThisTurn;
     private int _weaponAttacksThisCombat;
     private bool _bashThisTurn, _secondBreathUsed, _againstAllOddsUsed;
+    // Заклинаний каждой школы за ход — для «Ремесла школы» (07 §6.1). Создаётся в бою: каноническая модель его не делит.
+    private int[]? _schoolSpellsThisTurn;
 
     public override Task BeforeCombatStart()
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
         _weaponAttacksThisCombat = 0;
         _bashThisTurn = _secondBreathUsed = _againstAllOddsUsed = false;
+        _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
         return base.BeforeCombatStart();
     }
 
@@ -426,6 +429,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
         _bashThisTurn = false;
+        _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
         var hero = Owner.Creature;
         var round = hero.CombatState?.RoundNumber ?? 1;
 
@@ -460,6 +464,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         {
             _spellsThisTurn++;
             if (spell.School == SpellSchool.Illusion) _illusionsThisTurn++;
+            if (_schoolSpellsThisTurn != null) _schoolSpellsThisTurn[(int)spell.School]++;
             return;
         }
         if (card.Type != CardType.Attack) return;
@@ -495,6 +500,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         var discount = 0;
         if (_spellsThisTurn == 0) discount += Tiers.FirstSpellDiscount;
         if (Has(Skill.Phantasm) && spell.School == SpellSchool.Illusion && _illusionsThisTurn == 0) discount++;
+        // Ремесло школы (чары головы/амулета, 07 §6.1): −1 ✦ первым N заклинаниям школы за ход.
+        discount += EnchantRules.CraftDiscount(Enchanting.CraftPerTurn(Owner, spell.School), _schoolSpellsThisTurn?[(int)spell.School] ?? 0);
         if (discount == 0) return false;
         modifiedCost = Math.Max(0, originalCost - discount);
         return true;

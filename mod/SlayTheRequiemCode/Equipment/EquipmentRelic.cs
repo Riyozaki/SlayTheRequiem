@@ -81,6 +81,9 @@ public abstract class EquipmentRelic : RequiemRelic
 
     public List<EnchantSlot> EnchantSlots => EnchantRules.Parse(_enchants);
 
+    /// <summary>Чары «Паралич» уже сработали в этом бою (07 §6.1: раз в бой). Не сохраняется — сбрасывается в начале боя.</summary>
+    public bool ParalysisSpent { get; set; }
+
     public void SetEnchants(IEnumerable<EnchantSlot> slots)
     {
         Enchants = EnchantRules.Serialize(slots);
@@ -147,6 +150,7 @@ public abstract class WeaponRelic : EquipmentRelic
     public override Task BeforeCombatStart()
     {
         _weaponAttacksThisCombat = 0;
+        ParalysisSpent = false;
         return Task.CompletedTask;
     }
 
