@@ -37,5 +37,21 @@
   "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.description": "Кольца Скорого Дыхания и Ярого Удара: атаки за 0 ◆ наносят на 2 урона больше.",
   "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.title": "Сочетание: Ясный приказ",
   "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.description": "Кольца Ясного Ума и Наместника: повтор Наместника срабатывает дважды за бой.",
-  "SLAYTHEREQUIEM-BARROW_MAP.title": "Ближайшие элиты"
+  "SLAYTHEREQUIEM-BARROW_MAP.title": "Ближайшие элиты",
+  "SLAYTHEREQUIEM-DOORS.subtitle": "Акт {Act}: куда ведёт путь?",
+  "SLAYTHEREQUIEM-DOORS.fate": "Довериться судьбе",
+  "SLAYTHEREQUIEM-DOORS.fateHint": "Не голосовать: решат спутники или останется вариант, выпавший при создании забега.",
+  "SLAYTHEREQUIEM-DOORS.rolledHint": "Судьба уже склоняется сюда: если никто не выберет, откроется эта дверь.",
+  "SLAYTHEREQUIEM-DOORS.waiting": "Ждём остальных: {Voted} из {Total}",
+  "SLAYTHEREQUIEM-DOORS.decided": "Путь выбран",
+  "SLAYTHEREQUIEM-DOORS.you": "ваш голос",
+  "SLAYTHEREQUIEM-DOORS.FROZEN_BARROWS.foes": "Курганные мертвецы",
+  "SLAYTHEREQUIEM-DOORS.FROZEN_BARROWS.rules": "Стужа: каждый бой начинается с Озноба {Chill}. «Отогреться» у костра — {Warmth} боя без Стужи; сопротивление холоду или иммунитет к заморозке защищают. Элиты роняют Когтистые ключи (до {Keys} за акт); ключ открывает запертый склеп: +{Gold} золота.",
+  "SLAYTHEREQUIEM-DOORS.CLOCKWORK_DEPTHS.foes": "Заводные стражи и береговые грабители",
+  "SLAYTHEREQUIEM-DOORS.CLOCKWORK_DEPTHS.rules": "Пар: каждый {Period}-й раунд выброс накладывает на героев Горение {Burning}. Перекрытый на карте вентиль снимает выбросы на {Relief} следующих боя.",
+  "SLAYTHEREQUIEM-DOORS.BLOOD_COURT.foes": "Кровавый двор",
+  "SLAYTHEREQUIEM-DOORS.BLOOD_COURT.rules": "День и ночь: ряды карты чередуются блоками по {Block}. Ночью у врагов +{Hp} % ♥, а каждый бой приносит +{Gold} золота.",
+  "SLAYTHEREQUIEM-DOORS.STAR_TOWER.foes": "Отступники Звёздной Башни",
+  "SLAYTHEREQUIEM-DOORS.STAR_TOWER.rules": "Лей-линии: часть боёв на карте лежит на лей-линии — там каждый герой начинает бой с +{Mana} ✦.",
+  "SLAYTHEREQUIEM-DOORS.heading": "Две двери"
 }

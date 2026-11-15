@@ -37,5 +37,21 @@
   "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.description": "With the Ring of Quick Breath and the Ring of Fury Strike: attacks that cost 0 ◆ deal 2 more damage.",
   "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.title": "Combo: Clear Command",
   "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.description": "With the Ring of Clear Mind and the Viceroy's Ring: the Viceroy's replay works twice per combat.",
-  "SLAYTHEREQUIEM-BARROW_MAP.title": "Next elites"
+  "SLAYTHEREQUIEM-BARROW_MAP.title": "Next elites",
+  "SLAYTHEREQUIEM-DOORS.subtitle": "Act {Act}: where does the road lead?",
+  "SLAYTHEREQUIEM-DOORS.fate": "Trust fate",
+  "SLAYTHEREQUIEM-DOORS.fateHint": "Do not vote: your companions decide, or the variant rolled when the run began stays.",
+  "SLAYTHEREQUIEM-DOORS.rolledHint": "Fate already leans this way: if nobody chooses, this door opens.",
+  "SLAYTHEREQUIEM-DOORS.waiting": "Waiting for the others: {Voted} of {Total}",
+  "SLAYTHEREQUIEM-DOORS.decided": "The road is chosen",
+  "SLAYTHEREQUIEM-DOORS.you": "your vote",
+  "SLAYTHEREQUIEM-DOORS.FROZEN_BARROWS.foes": "Barrow dead",
+  "SLAYTHEREQUIEM-DOORS.FROZEN_BARROWS.rules": "Bitter cold: every fight starts with Chill {Chill}. Warm up at a campfire to skip it for {Warmth} fights; frost resistance or freeze immunity protects you. Elites drop Claw Keys (up to {Keys} per act); a key opens a locked vault for {Gold} gold.",
+  "SLAYTHEREQUIEM-DOORS.CLOCKWORK_DEPTHS.foes": "Clockwork guardians and coast raiders",
+  "SLAYTHEREQUIEM-DOORS.CLOCKWORK_DEPTHS.rules": "Steam: every {Period}th round a vent burst inflicts Burning {Burning} on the heroes. Turn a valve on the map to stop the bursts for the next {Relief} fights.",
+  "SLAYTHEREQUIEM-DOORS.BLOOD_COURT.foes": "The Blood Court",
+  "SLAYTHEREQUIEM-DOORS.BLOOD_COURT.rules": "Day and night: map rows alternate in blocks of {Block}. At night enemies have +{Hp}% HP, and every fight pays +{Gold} gold.",
+  "SLAYTHEREQUIEM-DOORS.STAR_TOWER.foes": "Renegades of the Star Tower",
+  "SLAYTHEREQUIEM-DOORS.STAR_TOWER.rules": "Ley lines: some fights on the map lie on a ley line — there every hero starts the fight with +{Mana} ✦.",
+  "SLAYTHEREQUIEM-DOORS.heading": "Two Doors"
 }

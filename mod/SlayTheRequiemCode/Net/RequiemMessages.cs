@@ -2,6 +2,7 @@ using BaseLib.Abstracts;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Multiplayer.Serialization;
 using MegaCrit.Sts2.Core.Runs;
+using SlayTheRequiem.SlayTheRequiemCode.Acts;
 using SlayTheRequiem.SlayTheRequiemCode.Rollback;
 using SlayTheRequiem.SlayTheRequiemCode.Shops;
 
@@ -95,4 +96,42 @@ public sealed class MemoryStoneMessage : ICustomMessage
     }
 
     public void HandleMessage(ulong senderId) => CoopMemoryStone.OnMessage((StonePhase)phase, round, value, extra, senderId);
+}
+
+/// <summary>Фаза голосования «двух дверей» (docs/design/13 §2).</summary>
+public enum DoorPhase
+{
+    /// <summary>Игрок → все (через хост): голос (value = дверь 0/1, −1 — «судьба»).</summary>
+    Vote = 1,
+    /// <summary>Хост → все: итог (value = дверь).</summary>
+    Decision = 2,
+}
+
+/// <summary>
+/// Голос и итог «двух дверей». Без привязки к месту: экран открыт на награде за босса, а итог нужен до перехода в акт.
+/// Хост пересылает голоса клиентов остальным (<see cref="ShouldBroadcast"/>), чтобы у всех были видны отметки.
+/// </summary>
+public sealed class ActDoorMessage : ICustomMessage
+{
+    public int phase;
+    public int act;
+    public int value;
+
+    public bool ShouldBroadcast => true;
+
+    public void Serialize(PacketWriter writer)
+    {
+        writer.WriteInt(phase, 8);
+        writer.WriteInt(act, 8);
+        writer.WriteInt(value);
+    }
+
+    public void Deserialize(PacketReader reader)
+    {
+        phase = reader.ReadInt(8);
+        act = reader.ReadInt(8);
+        value = reader.ReadInt();
+    }
+
+    public void HandleMessage(ulong senderId) => ActDoors.OnMessage((DoorPhase)phase, act, value, senderId);
 }

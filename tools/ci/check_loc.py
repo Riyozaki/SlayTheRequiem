@@ -106,6 +106,7 @@ def check_models(errors: list) -> int:
 
 
 KEYWORD = re.compile(r"\[CustomEnum[^\]]*\](?:\s*\[[^\]]*\])*\s*public\s+static\s+CardKeyword\s+(\w+)\s*;")
+FLAT_TIP = re.compile(r'(?:TipLoc|TipText)\(\$?"((?:[A-Z][A-Z_]*|\{[^}"]*\})(?:\.(?:[A-Za-z_]+|\{[^}"]*\}))*\.(?!title"|description")[a-z][A-Za-z]*)"')
 UI_TIP = re.compile(r'(?:MakeTip|TipLoc|TipText)\(\$?"([A-Z][A-Z_]*)[.{"]|(?:=>|return)\s+"([A-Z][A-Z_]+)"')
 
 
@@ -121,6 +122,14 @@ def check_ui_keys(errors: list) -> int:
         src = open(path, encoding="utf-8-sig").read()
         wanted = [("card_keywords.json", name.upper()) for name in KEYWORD.findall(src)]
         if os.sep + "UI" + os.sep in path:
+            # Плоские ключи экранов («DOORS.title», «DOORS.{Key(kind)}.foes»): строка целиком, без полей title/description.
+            for literal in FLAT_TIP.findall(src):
+                checked += 1
+                pattern = re.compile("^" + re.escape(PREFIX) + re.sub(r"\\\{[^}]*\\\}", "[A-Z_]+", re.escape(literal)) + "$")
+                for lang in ("eng", "rus"):
+                    if not any(pattern.match(k) for k in tables[(lang, "static_hover_tips.json")]):
+                        errors.append(f"{os.path.relpath(path, ROOT)}: нет {lang}/static_hover_tips.json → {PREFIX}{literal}")
+            src = FLAT_TIP.sub("", src)
             wanted += [("static_hover_tips.json", a or b) for a, b in UI_TIP.findall(src)]
         for file, key in wanted:
             checked += 1

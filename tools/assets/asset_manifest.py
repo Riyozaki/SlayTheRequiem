@@ -127,6 +127,10 @@ UI_ASSETS = [
     ("images/map/icons/memory_stone.png", "значок карты ◇"),
     ("images/map/icons/ebb_stones.png", "значок карты ≈"),
     ("images/map/icons/ambush.png", "значок карты !"),
+    ("images/ui/doors/frozen_barrows.jpg", "«две двери»: вид на Ледяные Курганы (tools/art/scenes)"),
+    ("images/ui/doors/clockwork_depths.jpg", "«две двери»: вид на Заводные Глубины (tools/art/scenes)"),
+    ("images/ui/doors/blood_court.jpg", "«две двери»: вид на Кровавый Двор (tools/art/scenes)"),
+    ("images/ui/doors/star_tower.jpg", "«две двери»: вид на Звёздную Башню (tools/art/scenes)"),
 ]
 
 

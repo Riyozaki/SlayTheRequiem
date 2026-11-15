@@ -59,6 +59,12 @@ internal class RequiemConfig : SimpleModConfig
     /// <summary>«Короткий забег»: акты 1 → 3 → 5 — Подножие, Улей, Слава с оверлеями мода (docs/design/13 §2).</summary>
     public static bool ShortRun { get; set; } = false;
 
+    /// <summary>
+    /// Вариант актов 2 и 4 (docs/design/13 §2): «Две двери» — после босса актов 1 и 3 экран выбора (в коопе — голосование),
+    /// «Случайно» — вариант выпадает при создании забега, экрана нет (в коопе такой игрок воздерживается).
+    /// </summary>
+    public static ActVariantMode ActVariant { get; set; } = ActVariantMode.Doors;
+
     /// <summary>Уровень «Реквием» (docs/design/11 §7): −1 — по Возвышению (Возвышение N → уровень N + 1), 0–10 — свой.</summary>
     [ConfigSlider(-1, 10, 1)]
     public static int RequiemLevelSetting { get; set; } = -1;
@@ -94,6 +100,12 @@ internal class RequiemConfig : SimpleModConfig
     /// <summary>Свечи Реквиема за забег: −1 — по уровню «Реквием», 0 — классический рогалик.</summary>
     [ConfigSlider(-1, 9, 1)]
     public static int MemoryStoneCandles { get; set; } = -1;
+}
+
+public enum ActVariantMode
+{
+    Doors,
+    Random,
 }
 
 public enum SuperbossMode

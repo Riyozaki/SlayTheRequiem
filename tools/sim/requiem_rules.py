@@ -1675,3 +1675,31 @@ def stance_multiplier(night: bool, damage_type: str) -> float:
     if night:
         return MOON_STANCE_LIGHT_MULTIPLIER if damage_type == "Light" else 1.0
     return 1.0 if damage_type == "Light" else (100 - SUN_STANCE_REDUCTION_PERCENT) / 100
+
+
+# ───────────── M5: «две двери» (Core/ActDoorRules.cs) ─────────────
+DOOR_ABSTAIN = -1
+DOOR_OPTIONS = {1: ["FrozenBarrows", "ClockworkDepths"], 3: ["BloodCourt", "StarTower"]}
+
+
+def has_doors(act_index: int, act_count: int) -> bool:
+    return act_count >= 5 and act_index in (1, 3)
+
+
+def door_resolve(votes, current: int, tie_break: int) -> int:
+    """Большинство; ничья — жребий; все воздержались — вариант, выпавший при создании забега."""
+    counts = [sum(1 for v in votes if v == d) for d in (0, 1)]
+    if counts == [0, 0]:
+        return max(0, min(1, current))
+    if counts[0] == counts[1]:
+        return abs(tie_break) % 2
+    return 0 if counts[0] > counts[1] else 1
+
+
+def door_tie_break(seed: str, act_index: int) -> int:
+    """FNV-1a от «{seed}/doors/{act}» — как ActDoorRules.TieBreak."""
+    h = 2166136261
+    for ch in f"{seed}/doors/{act_index}":
+        h ^= ord(ch)
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h % 2

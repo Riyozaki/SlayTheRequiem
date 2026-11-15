@@ -99,5 +99,10 @@
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Forgeblood": "Forgeblood",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Duneblade": "Duneblades",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Citadel": "Citadel-born",
-  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Choose": "Choose"
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Choose": "Choose",
+  "SLAYTHEREQUIEM-ACT_VARIANT.title": "Acts 2 and 4",
+  "SLAYTHEREQUIEM-ACT_VARIANT.hover.title": "Two Doors",
+  "SLAYTHEREQUIEM-ACT_VARIANT.hover.desc": "Two doors — after the boss of acts 1 and 3 you choose the next act (in co-op — by vote: majority wins, a tie is settled by the run seed). Random — the variant is rolled when the run begins, no screen (in co-op such a player abstains). Five acts only.",
+  "SLAYTHEREQUIEM-ACT_VARIANT.Doors": "Two doors",
+  "SLAYTHEREQUIEM-ACT_VARIANT.Random": "Random"
 }

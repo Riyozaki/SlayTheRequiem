@@ -732,5 +732,22 @@ class BossPowers(unittest.TestCase):
         self.assertEqual(float(re.search(r"MoonStanceLightMultiplier = ([\d.]+)m", src).group(1)), r.MOON_STANCE_LIGHT_MULTIPLIER)
 
 
+class ActDoors(unittest.TestCase):
+    def test_has_doors(self):
+        self.assertTrue(r.has_doors(1, 5))
+        self.assertTrue(r.has_doors(3, 6))
+        self.assertFalse(r.has_doors(2, 5))
+        self.assertFalse(r.has_doors(1, 3))
+
+    def test_resolve(self):
+        for votes, cur, tie, exp in [([0, 0, 1], 1, 1, 0), ([1], 0, 0, 1), ([-1, -1], 1, 0, 1), ([], 0, 1, 0),
+                                     ([0, 1], 0, 1, 1), ([0, 1, -1, -1], 1, 0, 0), ([1, -1], 0, 0, 1)]:
+            self.assertEqual(r.door_resolve(votes, cur, tie), exp, (votes, cur, tie))
+
+    def test_tie_break_matches_csharp(self):
+        self.assertEqual(r.door_tie_break("ABC123", 1), 1)
+        self.assertEqual(r.door_tie_break("SEED", 3), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
