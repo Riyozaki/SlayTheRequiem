@@ -38,7 +38,7 @@
 | A | [plan/art-ui-animation-spec.md](plan/art-ui-animation-spec.md) | Арт-дирекция, размеры ассетов, UI-компоненты, анимации, VFX, звук, пайплайн |
 | C | [plan/card-rework-spec.md](plan/card-rework-spec.md) | Переработка карт: ванильные правила и их видимость, карты героев, жетоны, чек-лист карты |
 | — | [plan/card-catalog.md](plan/card-catalog.md) | Каталог всех карт мода (генерируется `tools/cards/card_catalog.py`) |
-| — | [plan/asset-manifest.csv](plan/asset-manifest.csv) | Все 1468 ожидаемых кодом ассетов и чем каждый закрыт (свой / ванильный) (генерируется `tools/assets/asset_manifest.py`) |
+| — | [plan/asset-manifest.csv](plan/asset-manifest.csv) | Все 1843 ожидаемых кодом ассетов и чем каждый закрыт (свой / ванильный) (генерируется `tools/assets/asset_manifest.py`) |
 
 ## Статус
 

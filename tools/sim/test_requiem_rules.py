@@ -189,6 +189,48 @@ class Stage3(unittest.TestCase):
         self.assertEqual([r.control_hp_cap(t) for t in ("novice", "expert", "master")], [20, 120, None])
 
 
+class M5Shops(unittest.TestCase):
+    def test_placement(self):
+        self.assertEqual(r.guaranteed_shop("BloodCourt", 0), "Fence")
+        self.assertEqual(r.guaranteed_shop("StarTower", 1), "Arcanist")
+        self.assertEqual(r.guaranteed_shop("Glory", 0), "Temple")
+        self.assertEqual(r.guaranteed_shop("Foothills", 0), "Wanderer")
+        self.assertIsNone(r.guaranteed_shop("StarTower", 2))
+        self.assertNotIn("Caravan", r.shop_act_pool_kind("Hive"))
+        for h in range(200):
+            self.assertNotEqual(r.roll_shop_type_kind(h, "FrozenBarrows", 1, 2, None, caravan_seen=True), "Caravan")
+            self.assertNotEqual(r.roll_shop_type_kind(h, "Foothills", 0, 1, None), "Fence")
+        self.assertTrue(any(r.roll_shop_type_kind(h, "Foothills", 0, 1, None, outlaw=True) == "Fence" for h in range(200)))
+        self.assertEqual(r.equipment_tiers("Fence", 0), (4, 5))
+        self.assertEqual(r.equipment_tiers("Jeweler", 2), (3, 4))
+
+    def test_prices(self):
+        self.assertEqual([r.scroll_price(t) for t in (1, 2, 3)], [25, 45, 70])
+        self.assertEqual([r.staff_price(t) for t in range(1, 6)], [70, 120, 180, 240, 320])
+        self.assertEqual([r.staff_tiers(a) for a in (0, 1, 2)], [(1, 1), (2, 3), (4, 5)])
+        self.assertEqual(r.enchant_service_price(2, True), 110)
+        self.assertEqual(r.enchant_service_price(3, False), 210)
+        self.assertEqual([r.soul_stone_price(p) for p in (1, 2, 3)], [40, 80, 140])
+        self.assertEqual(r.cleanse_price(True), 35)
+        self.assertEqual(r.fence_sell_value(80), 48)
+        self.assertFalse(r.can_pay_curse_removal(6))
+        self.assertEqual(r.trade_tiers(1), (1, 1))
+        self.assertEqual(r.trade_tiers(4), (3, 4))
+        self.assertEqual([r.mentor_skill_price(b, True) for b in range(4)], [100, 150, 200, None])
+        self.assertEqual(r.mentor_skill_price(1, False), 225)
+
+    def test_clear_name_and_lessons(self):
+        spent = [450, 0, 300, 10, 150, 150, 0, 150]
+        self.assertEqual(r.clear_name_target(spent), 1)
+        self.assertEqual(r.clear_name_target([150] * 6 + [0, 150]), -1)
+        mask = r.with_lesson(0, "TwoHanded")
+        self.assertTrue(r.is_clumsy("Regent", "TwoHanded", False, False))
+        self.assertFalse(r.is_clumsy_with_lessons("Regent", "TwoHanded", False, False, mask))
+        self.assertTrue(r.is_clumsy_with_lessons("Regent", "Crossbow", False, False, mask))
+        self.assertTrue(r.is_clumsy_with_lessons("Regent", "Sword", True, False, mask))
+        self.assertFalse(r.is_clumsy_with_lessons("Regent", "Sword", True, False, r.with_lesson(mask, "Shield")))
+
+
 class Stage35(unittest.TestCase):
     def test_shop_types(self):
         self.assertEqual(r.roll_shop_type(12345, 0, 0, None), "Wanderer")

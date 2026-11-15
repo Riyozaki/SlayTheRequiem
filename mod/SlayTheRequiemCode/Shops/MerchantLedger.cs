@@ -61,6 +61,8 @@ public sealed class MerchantLedger : RequiemRelic
     private int _refillsUsed;
     private int _theftFloor;     // этаж последней попытки кражи + 1
     private int _theftTries;     // попыток на этом этаже (Кольцо Безликого Вора даёт вторую)
+    private int _caravanAct;     // акт, где уже был Караван, + 1 (14 §2.8: не больше одного за акт)
+    private int _tradeFloor;     // этаж, где уже был Обмен Каравана, + 1 (раз за визит)
 
     /// <summary>Золото, потраченное в лавках каждого вида (индекс = <see cref="ShopType"/>).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -118,6 +120,20 @@ public sealed class MerchantLedger : RequiemRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int TheftTries { get => _theftTries; set { AssertMutable(); _theftTries = value; } }
 
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int CaravanAct { get => _caravanAct; set { AssertMutable(); _caravanAct = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int TradeFloor { get => _tradeFloor; set { AssertMutable(); _tradeFloor = value; } }
+
+    public bool TradedHere(IRunState runState) => _tradeFloor == runState.TotalFloor + 1;
+
+    public void MarkTrade(IRunState runState)
+    {
+        AssertMutable();
+        _tradeFloor = runState.TotalFloor + 1;
+    }
+
     public ShopType CurrentShop => (ShopType)Math.Clamp(_currentShop, 0, ShopRules.ShopTypeCount - 1);
     public int TrustOf(ShopType shop) => ShopRules.Trust(_spent[(int)shop]);
 
@@ -146,7 +162,11 @@ public sealed class MerchantLedger : RequiemRelic
         }
         var hash = ShopRules.Fnv1a(runState.Rng.StringSeed ?? string.Empty, floor * 31 + runState.CurrentActIndex);
         ShopType? previous = _previousShop >= 0 ? (ShopType)_previousShop : null;
-        var shop = DebugNextShop ?? ShopRules.RollShopType(hash, Acts.ActKinds.Tier(runState), _shopsThisAct, previous);
+        var kind = Acts.ActKinds.Current(runState);
+        var caravanSeen = _caravanAct == runState.CurrentActIndex + 1;
+        var shop = DebugNextShop ?? ShopRules.RollShopType(hash, kind, Acts.ActKinds.Tier(runState), _shopsThisAct, previous,
+            outlaw: IsOutlaw(Owner), caravanSeen: caravanSeen);
+        if (shop == ShopType.Caravan) _caravanAct = runState.CurrentActIndex + 1;
         DebugNextShop = null;
         _currentFloor = floor;
         _refillsUsed = 0;
@@ -161,6 +181,16 @@ public sealed class MerchantLedger : RequiemRelic
         CurrentShopIndex = (int)shop;
         return shop;
     }
+
+    /// <summary>
+    /// «Вне закона» (14 §2.7): Запятнанный/Отступник или под Знамением Ловкача — Скупщик краденого встречается в любом акте.
+    /// </summary>
+    public static bool IsOutlaw(Player player) =>
+        Pantheon.Faith.Effective(player) != Piety.Righteous || player.Relics.OfType<Pantheon.OmenOfTheTrickster>().Any();
+
+    /// <summary>Бог Храмовой лавки на этом этаже (по зерну и этажу — одинаков у всех игроков).</summary>
+    public static Celestial TempleGod(IRunState runState) =>
+        (Celestial)(int)(ShopRules.Fnv1a($"{runState.Rng.StringSeed}|temple", runState.TotalFloor) % (uint)Pantheon.CelestialBlessing.Blessings.Length);
 
     // ───── доверие, Заказ, кража ─────
 
@@ -179,6 +209,14 @@ public sealed class MerchantLedger : RequiemRelic
     {
         AssertMutable();
         _spent[(int)shop] = 0;
+        SyncVars();
+    }
+
+    /// <summary>«Отмыть имя» у Скупщика (14 §2.7): доверие лавки — не ниже 1.</summary>
+    public void ClearName(ShopType shop)
+    {
+        AssertMutable();
+        _spent[(int)shop] = Math.Max(_spent[(int)shop], ShopRules.ClearNameSpent);
         SyncVars();
     }
 
@@ -218,6 +256,9 @@ public sealed class MerchantLedger : RequiemRelic
         MerchantRelicEntry { Model: TreatiseRelic } => ShopRules.TreatisePrice(_treatisesBought),
         MerchantPotionEntry { Model: RequiemPotion potion } =>
             ShopRules.BrewPrice(potion.Tier, AlchemyRules.IsPoison(potion.Kind)),
+        MerchantPotionEntry { Model: RequiemScroll scroll } => ShopRules.ScrollPrice(scroll.Tier),
+        MerchantRelicEntry { Model: Pantheon.CelestialAmulet } when CurrentShop == ShopType.Temple => ShopRules.TempleAmuletPrice,
+        MerchantRelicEntry { Model: Pantheon.CelestialRobe } when CurrentShop == ShopType.Temple => ShopRules.TempleRobePrice,
         _ => null,
     };
 

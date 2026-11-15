@@ -2,6 +2,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Gold;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.RestSite;
 using MegaCrit.Sts2.Core.Hooks;
@@ -112,6 +113,9 @@ public static class Camp
     public static bool HasEnchantingTable(Player player) =>
         player.Relics.OfType<EnchanterBackground>().Any() || Hash(player, "table") % 2 == 0;
 
+    /// <summary>Таверна с Наставником (14 §2.9): в каждом третьем лагере по зерну.</summary>
+    public static bool HasTavern(Player player) => Hash(player, "tavern") % 3 == 0;
+
     /// <summary>Алтарь: в половине лагерей.</summary>
     public static bool HasAltar(Player player) => Hash(player, "altar") % 2 == 0;
 
@@ -138,6 +142,7 @@ public static class Camp
         options.Add(new ChestRestSiteOption(player));
         if (Acts.WarmRestSiteOption.Offered(player)) options.Add(new Acts.WarmRestSiteOption(player));
         if (hero != null && hero.HasUnspentPoints) options.Add(new TrainRestSiteOption(player));
+        if (hero != null && HasTavern(player)) options.Add(new TavernRestSiteOption(player));
         // Оборотень (этап 6): узлы веток за Обращения.
         if (Transformations.Forms.Of<Transformations.WerewolfForm>(player) is { PendingNodes: > 0 })
             options.Add(new Transformations.BeastRitesRestSiteOption(player));
@@ -447,21 +452,31 @@ public sealed class EnchantRestSiteOption(Player owner) : RequiemRestSiteOption(
             power = chosen;
         }
 
-        var items = Enchanting.Enchantable(Owner);
+        return await EnchantFlow(Owner, power, null, () => Task.FromResult(hero.SpendStone(power)));
+    }
+
+    /// <summary>
+    /// Зачаровать надетый предмет (лагерь, Чародей, Гравировка Ювелира): выбрать предмет (синхронно в коопе), выбрать чары
+    /// силы <paramref name="power"/>, оплатить (<paramref name="commit"/> — камень или золото; false — отмена) и наложить.
+    /// </summary>
+    public static async Task<bool> EnchantFlow(Player owner, int power, Func<EquipmentRelic, bool>? filter, Func<Task<bool>> commit)
+    {
+        var items = Enchanting.Enchantable(owner).Where(i => filter?.Invoke(i) ?? true).ToList();
         if (items.Count == 0) return false;
-        var picked = items.Count == 1 ? items[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, items.Cast<RelicModel>().ToList());
+        var picked = items.Count == 1 ? items[0] : await RelicSelectCmd.FromChooseARelicScreen(owner, items.Cast<RelicModel>().ToList());
         if (picked is not EquipmentRelic item) return false;
 
         var choices = Enchanting.AllowedFor(item)
             .Select(e => new CampMenu.Choice(CampMenu.EnchantCard(e), EnchantRules.Value(e, power),
                 EnchantRules.IsWeaponBrand(e) ? EnchantRules.Charges(power) : 0, e))
             .ToList();
-        if (await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_ENCHANT_PROMPT") is not Enchant enchant) return false;
-        if (!hero.SpendStone(power)) return false;
-        Enchanting.Apply(Owner, item, enchant, power);
-        await hero.SyncMaxHp();
-        TravelPack.Of(Owner)?.Refresh();
-        hero.Refresh();
+        if (await CampMenu.Pick(owner, choices, "SLAYTHEREQUIEM_ENCHANT_PROMPT") is not Enchant enchant) return false;
+        if (!await commit()) return false;
+        Enchanting.Apply(owner, item, enchant, power);
+        var hero = HeroRecord.Of(owner);
+        if (hero != null) await hero.SyncMaxHp();
+        TravelPack.Of(owner)?.Refresh();
+        hero?.Refresh();
         return true;
     }
 }
@@ -690,6 +705,92 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             else break;
         } while (unlimited);
 
+        return changed;
+    }
+}
+
+/// <summary>
+/// Таверна (14 §2.9, M5): в части лагерей по зерну живёт Наставник. За золото — очко навыка (100 / 150 / 200, не больше 3
+/// за забег; узел чужой школы — +50 %) сразу на выбранный узел дерева или урок владения оружием (90): снимает
+/// «Неумелый хват» для одного класса. Очков лагеря не тратит. Свой значок — в M6.
+/// </summary>
+public sealed class TavernRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_TAVERN";
+    public override string FallbackIcon => "LIFT";
+    public override CampAction Action => CampAction.Tavern;
+
+    private int? SkillPrice(bool native) =>
+        HeroRecord.Of(Owner) is { } hero ? ShopRules.MentorSkillPrice(hero.MentorPoints, native) : null;
+
+    private bool CanBuySkill(HeroRecord hero) =>
+        hero.MentorLearnable().Any(n => SkillPrice(hero.IsNativeNode(n)) is { } price && price <= Owner.Gold);
+
+    private bool CanBuyLesson(HeroRecord hero) =>
+        hero.LessonsAvailable().Count > 0 && ShopRules.WeaponLessonPrice <= Owner.Gold;
+
+    protected override bool Available => HeroRecord.Of(Owner) is { } hero && (CanBuySkill(hero) || CanBuyLesson(hero));
+
+    protected override void Fill(LocString loc)
+    {
+        loc.Add("SkillPrice", SkillPrice(true) ?? 0);
+        loc.Add("LessonPrice", ShopRules.WeaponLessonPrice);
+        loc.Add("Bought", HeroRecord.Of(Owner)?.MentorPoints ?? 0);
+    }
+
+    private static Type LessonCard(WeaponKind kind) => kind switch
+    {
+        WeaponKind.Crossbow => typeof(PickLessonCrossbow),
+        WeaponKind.Shield => typeof(PickLessonShield),
+        _ => typeof(PickLessonTwoHanded),
+    };
+
+    protected override async Task<bool> Perform()
+    {
+        var hero = HeroRecord.Of(Owner);
+        if (hero == null) return false;
+        var changed = false;
+        for (var guard = 0; guard < 8; guard++)
+        {
+            var choices = new List<CampMenu.Choice>();
+            if (CanBuySkill(hero))
+                choices.Add(new CampMenu.Choice(typeof(PickMentorSkill), SkillPrice(true) ?? 0, SkillPrice(false) ?? 0, "skill"));
+            if (CanBuyLesson(hero))
+                foreach (var kind in hero.LessonsAvailable())
+                    choices.Add(new CampMenu.Choice(LessonCard(kind), ShopRules.WeaponLessonPrice, 0, kind));
+            if (choices.Count == 0) break;
+
+            switch (await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_TAVERN_PROMPT"))
+            {
+                case "skill":
+                {
+                    var nodes = hero.MentorLearnable()
+                        .Where(n => SkillPrice(hero.IsNativeNode(n)) is { } p && p <= Owner.Gold)
+                        .Select(n => new CampMenu.Choice(CampMenu.NodeCard(n.Skill), n.Rank, hero.CostOf(n), n))
+                        .ToList();
+                    if (await CampMenu.Pick(Owner, nodes, "SLAYTHEREQUIEM_MENTOR_PROMPT") is not SkillNode node) break;
+                    if (SkillPrice(hero.IsNativeNode(node)) is not { } price || price > Owner.Gold) break;
+                    hero.MentorPoints += 1;
+                    if (!await hero.Learn(node.Skill))
+                    {
+                        hero.MentorPoints -= 1;
+                        break;
+                    }
+                    await PlayerCmd.LoseGold(price, Owner, GoldLossType.Spent);
+                    changed = true;
+                    break;
+                }
+                case WeaponKind kind:
+                    await PlayerCmd.LoseGold(ShopRules.WeaponLessonPrice, Owner, GoldLossType.Spent);
+                    hero.WeaponLessons = ProgressionRules.WithLesson(hero.WeaponLessons, kind);
+                    hero.Refresh();
+                    hero.Flash();
+                    changed = true;
+                    break;
+                default:
+                    return changed;
+            }
+        }
         return changed;
     }
 }

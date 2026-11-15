@@ -20,8 +20,12 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 // |------------|---------------------|----------------|---------------------------------------|------------------------|
 // | Странник   | ваниль              | ваниль         | 2 ванильные + 1 снаряжение I–II       | ваниль                 |
 // | Оружейник  | ваниль              | ваниль         | оружие + броня (класс героя) + щит/любое | ваниль              |
-// | Чародейская| 5 заклинаний        | ваниль         | Трактат + 2 ванильные                 | ваниль                 |
+// | Чародейская| 5 заклинаний        | ваниль         | Трактат + посох + ванильная           | 3 свитка               |
 // | Травница   | ваниль              | ваниль         | ваниль                                | 2 зелья + 1 яд Реквиема|
+// | Ювелир     | ваниль              | ваниль         | амулет (бога — гарантия) + кольцо + кольцо/амулет | ваниль     |
+// | Храм       | ваниль              | ваниль         | Амулет + Облачение бога Святилища + ванильная | ваниль         |
+// | Скупщик    | ваниль              | ваниль         | Бездонное + «краденое» IV–V + ванильная | 2 яда V + зелье V    |
+// | Караван    | ваниль              | ваниль         | снаряжение + кольцо/амулет + экзотика (ступенью выше) | зелье + яд + свиток |
 
 /// <summary>Перед генерацией витрины — выбрать вид лавки для узла (Книга торговца).</summary>
 [HarmonyPatch(typeof(MerchantInventory), nameof(MerchantInventory.CreateForNormalMerchant))]
@@ -116,6 +120,8 @@ public static class ShopRelicsPatch
         var player = __instance.Player;
         var shop = ShopTypePatch.ShopFor(player);
         if (shop is null or ShopType.Herbalist) return true;
+        static bool IsRing(EquipmentRelic e) => e.Slot == EquipSlot.Ring;
+        static bool IsAmulet(EquipmentRelic e) => e.Slot == EquipSlot.Amulet;
 
         var list = Relics(__instance);
         try
@@ -152,11 +158,65 @@ public static class ShopRelicsPatch
                 }
 
                 case ShopType.Arcanist:
+                {
                     if (ShopStock.PickTreatise(player) is { } treatise) __instance.AddRelicEntry(ShopStock.RelicEntry(treatise, player));
                     else AddVanilla(__instance, RelicRarity.Shop);
-                    AddVanilla(__instance, RelicFactory.RollRarity(player));
+                    var (stLo, stHi) = ShopRules.StaffTiers(act);
+                    if (ShopStock.PickStaff(player, stLo, stHi, taken) is { } staff) __instance.AddRelicEntry(ShopStock.RelicEntry(staff, player));
+                    else AddVanilla(__instance, RelicFactory.RollRarity(player));
                     AddVanilla(__instance, RelicFactory.RollRarity(player));
                     break;
+                }
+                case ShopType.Jeweler:
+                {
+                    // Амулет бога вашего благословения — гарантированно, если он есть и ещё не куплен (§2.5).
+                    var (lo, hi) = Tiers(OrderCategory.Equipment);
+                    var god = Pantheon.CelestialBlessing.Of(player)?.God;
+                    if (god != null && ShopStock.GodAmulet(player, god.Value) is { } godAmulet)
+                        __instance.AddRelicEntry(ShopStock.RelicEntry(godAmulet, player));
+                    else
+                        AddEquipment(__instance, 1, 5, IsAmulet, taken, fallback: RelicRarity.Shop);
+                    AddEquipment(__instance, lo, Math.Max(hi, 2), IsRing, taken, fallback: RelicRarity.Common);
+                    AddEquipment(__instance, 1, 5, e => IsRing(e) || IsAmulet(e), taken, fallback: RelicRarity.Uncommon);
+                    break;
+                }
+                case ShopType.Temple:
+                {
+                    var god = MerchantLedger.TempleGod(player.RunState);
+                    if (ShopStock.GodAmulet(player, god) is { } amulet) __instance.AddRelicEntry(ShopStock.RelicEntry(amulet, player));
+                    else AddVanilla(__instance, RelicRarity.Shop);
+                    if (ShopStock.GodRobe(player, god) is { } robe) __instance.AddRelicEntry(ShopStock.RelicEntry(robe, player));
+                    else AddVanilla(__instance, RelicRarity.Shop);
+                    AddVanilla(__instance, RelicFactory.RollRarity(player));
+                    break;
+                }
+                case ShopType.Fence:
+                {
+                    // Бездонное ищем и среди запрещённого в лавках: краденое продаёт только Скупщик.
+                    var abyssal = ModelDb.AllRelics.OfType<EquipmentRelic>()
+                        .Where(e => e is IAbyssalItem && !player.Relics.Any(r => r.GetType() == e.GetType()) && !taken.Contains(e.GetType()))
+                        .OrderBy(e => e.Id.Entry, StringComparer.Ordinal).ToList();
+                    if (player.PlayerRng.Shops.NextItem(abyssal) is { } dark)
+                    {
+                        taken.Add(dark.GetType());
+                        __instance.AddRelicEntry(ShopStock.RelicEntry(dark, player));
+                    }
+                    else AddEquipment(__instance, 4, 5, null, taken, fallback: RelicRarity.Rare);
+                    AddEquipment(__instance, 4, 5, null, taken, fallback: RelicRarity.Rare);
+                    AddVanilla(__instance, RelicRarity.Shop);
+                    break;
+                }
+                case ShopType.Caravan:
+                {
+                    var (lo, hi) = Tiers(OrderCategory.Equipment);
+                    var (eLo, eHi) = ShopRules.EquipmentTiers(ShopType.Armorer, act);
+                    AddEquipment(__instance, Math.Max(lo, eLo), Math.Max(hi, eHi), e => e is WeaponRelic || e is ArmorRelic, taken, fallback: RelicRarity.Common);
+                    AddEquipment(__instance, 1, 5, e => IsRing(e) || IsAmulet(e), taken, fallback: RelicRarity.Uncommon);
+                    // «Экзотика из другого акта» (§2.8): ступенью выше витрины Оружейника.
+                    var exotic = Math.Min(5, eHi + 1);
+                    AddEquipment(__instance, exotic, exotic, null, taken, fallback: RelicRarity.Rare);
+                    break;
+                }
             }
             if (list.Count == Slots) return false;
         }
@@ -179,7 +239,10 @@ public static class ShopRelicsPatch
     }
 }
 
-/// <summary>Травница: 3 слота зелий — 2 зелья и 1 яд Реквиема ступени по акту.</summary>
+/// <summary>
+/// Слоты зелий: Травница — 2 зелья и 1 яд Реквиема ступени по акту; Чародейская — 3 свитка; Скупщик — 2 яда V и зелье V;
+/// Караван — зелье, яд и свиток.
+/// </summary>
 [HarmonyPatch(typeof(MerchantInventory), "PopulatePotionEntries")]
 public static class HerbalistPotionsPatch
 {
@@ -192,27 +255,40 @@ public static class HerbalistPotionsPatch
     public static bool StockBrews(MerchantInventory __instance)
     {
         var player = __instance.Player;
-        if (ShopTypePatch.ShopFor(player) != ShopType.Herbalist) return true;
+        var shop = ShopTypePatch.ShopFor(player);
+        if (shop is not (ShopType.Herbalist or ShopType.Arcanist or ShopType.Fence or ShopType.Caravan)) return true;
 
         var list = Potions(__instance);
         try
         {
-            var tier = ShopRules.BrewTier(Acts.ActKinds.Tier(player.RunState));
+            var act = Acts.ActKinds.Tier(player.RunState);
+            var tier = ShopRules.BrewTier(act);
             var order = ShopTypePatch.OrderFor(player);
-            var orderedPotion = order == OrderCategory.Potion;
-            var orderedPoison = order == OrderCategory.Poison;
-            foreach (var (poison, top) in new[] { (false, orderedPotion), (false, false), (true, orderedPoison) })
+            var scrolls = new HashSet<Type>();
+            var scrollTier = ShopRules.ScrollTier(act);
+            // (вид, ступень): 0 — зелье, 1 — яд, 2 — свиток.
+            (int Kind, int Tier)[] plan = shop.Value switch
             {
                 // Заказ: зелье/яд высшей ступени (V).
-                var brew = ShopStock.PickBrew(player, poison, top ? 5 : tier);
-                if (brew == null) break;
-                list.Add(new MerchantPotionEntry(brew, player));
+                ShopType.Herbalist => new[] { (0, order == OrderCategory.Potion ? 5 : tier), (0, tier), (1, order == OrderCategory.Poison ? 5 : tier) },
+                ShopType.Arcanist => new[] { (2, scrollTier), (2, scrollTier), (2, scrollTier) },
+                ShopType.Fence => new[] { (1, 5), (1, 5), (0, 5) },
+                _ => new[] { (0, tier), (1, tier), (2, scrollTier) },
+            };
+            for (var i = 0; i < plan.Length; i++)
+            {
+                var (kind, t) = plan[i];
+                var model = kind == 2
+                    ? ShopStock.PickScroll(player, t, exactTier: i == 0, scrolls)
+                    : ShopStock.PickBrew(player, kind == 1, t);
+                if (model == null) break;
+                list.Add(new MerchantPotionEntry(model, player));
             }
             if (list.Count == Slots) return false;
         }
         catch (Exception e)
         {
-            MainFile.Logger.Warn($"[SlayTheRequiem] Травница: зелья не собрались ({e.Message}) — ванильные зелья.");
+            MainFile.Logger.Warn($"[SlayTheRequiem] Лавка {shop}: зелья не собрались ({e.Message}) — ванильные зелья.");
         }
         list.Clear();
         return true;
@@ -245,7 +321,14 @@ public static class EquipmentRestockPatch
             foreach (var entry in inventory?.RelicEntries ?? [])
                 if (entry.Model != null) taken.Add(entry.Model.GetType());
             var category = bought.PriceCategory;
-            var pick = ShopStock.PickEquipment(player, min, max, e => e.PriceCategory == category, taken);
+            EquipmentRelic? pick;
+            if (bought is Pantheon.ICelestialGarment) return true;
+            if (bought is MageStaff)
+            {
+                var (sLo, sHi) = ShopRules.StaffTiers(Acts.ActKinds.Tier(player.RunState));
+                pick = ShopStock.PickStaff(player, sLo, sHi, taken);
+            }
+            else pick = ShopStock.PickEquipment(player, min, max, e => e.PriceCategory == category, taken);
             if (pick == null) return true;
             SetModel.Invoke(__instance, [pick.ToMutable()]);
             return false;

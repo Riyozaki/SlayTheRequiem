@@ -25,8 +25,24 @@ public abstract class SpellCard(int energyCost, int manaCost, SpellSchool school
 
     public override int CanonicalStarCost => manaCost;
 
-    /// <summary>Сыграно со свитка — владение игнорируется (свитки, этап 3).</summary>
-    public virtual bool FromScroll => false;
+    private bool _fromScroll;
+
+    /// <summary>
+    /// Сотворено свитком или посохом (14 §2.3, 07 §3.4): владение игнорируется, цена ✦ — 0. Флаг экземпляра (карта создаётся
+    /// в бою и в колоду не попадает), поэтому не сохраняется.
+    /// </summary>
+    public virtual bool FromScroll => _fromScroll;
+
+    /// <summary>
+    /// Сделать карту «со свитка»: 0 ✦ без проверки владения, Истощение; <paramref name="energy"/> — цена ⚡ на этот бой
+    /// (свиток — 1, посох — без изменения при null).
+    /// </summary>
+    public void MakeFreeCast(int? energy)
+    {
+        _fromScroll = true;
+        AddKeyword(CardKeyword.Exhaust);
+        if (energy is { } e) EnergyCost.SetThisCombat(e);
+    }
 
     public static CardRarity RarityFor(SpellTier tier) => tier switch
     {

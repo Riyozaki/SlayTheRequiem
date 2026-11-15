@@ -15,14 +15,16 @@ public static class SellService
 {
     public static IReadOnlyList<EquipmentRelic> Sellable(Player player) => Loadout.All(player).Where(r => r.IsStowed).ToList();
 
-    public static int Value(EquipmentRelic item, int trust) => ShopRules.SellValue(item.MerchantCost, trust);
+    /// <summary>Выручка за предмет: обычная лавка — 35 / 50 %, Скупщик краденого — 60 % (14 §2.7).</summary>
+    public static int Value(EquipmentRelic item, int trust, bool fence = false) =>
+        fence ? ShopRules.FenceSellValue(item.MerchantCost) : ShopRules.SellValue(item.MerchantCost, trust);
 
-    public static Task Sell(Player player, IReadOnlyList<EquipmentRelic> items, int trust)
+    public static Task Sell(Player player, IReadOnlyList<EquipmentRelic> items, int trust, bool fence = false)
     {
         // Состав рюкзака мог измениться, пока экран был открыт.
         var still = Sellable(player).Where(i => items.Contains(i)).ToList();
         if (still.Count == 0) return Task.CompletedTask;
-        var gold = still.Sum(i => Value(i, trust));
+        var gold = still.Sum(i => Value(i, trust, fence));
         var ids = string.Join(",", still.Select(i => i.Id.Entry));
         return ShopActions.Perform(player, ShopAction.Sell, gold, 0, ids);
     }

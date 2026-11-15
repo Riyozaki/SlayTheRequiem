@@ -66,6 +66,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _stoneSmall, _stoneLarge, _stoneBlack;
     private int _campPoints;
     private bool _artisanUsed;
+    private int _mentorPoints;
+    private int _weaponLessons;
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int Renown { get => _renown; set { AssertMutable(); _renown = Math.Max(0, value); } }
@@ -134,6 +136,29 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public bool ArtisanUsed { get => _artisanUsed; set { AssertMutable(); _artisanUsed = value; } }
 
+    /// <summary>Очки навыков, купленные у Наставника (14 §2.9, не больше 3 за забег).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int MentorPoints { get => _mentorPoints; set { AssertMutable(); _mentorPoints = Math.Clamp(value, 0, ShopRules.MentorMaxSkillPoints); } }
+
+    /// <summary>Уроки владения оружием у Наставника — бит на <see cref="WeaponKind"/> (<see cref="ProgressionRules.HasLesson"/>).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int WeaponLessons { get => _weaponLessons; set { AssertMutable(); _weaponLessons = value; } }
+
+    public bool HasLesson(WeaponKind kind) => ProgressionRules.HasLesson(_weaponLessons, kind);
+
+    /// <summary>Уроки, которые Наставник может дать этому герою: класс с «Неумелым хватом», ещё не изученный.</summary>
+    public List<WeaponKind> LessonsAvailable() => Has(Skill.WeaponTraining)
+        ? []
+        : ProgressionRules.LessonKinds(HeroName).Where(k => !HasLesson(k)).ToList();
+
+    /// <summary>Узлы, которые Наставник может преподать: доступные с одним дополнительным очком навыка.</summary>
+    public List<SkillNode> MentorLearnable() => _mentorPoints >= ShopRules.MentorMaxSkillPoints
+        ? []
+        : SkillTree.Learnable(HeroName, Learned.ToList(), UnspentSkillPoints + 1, IsNative);
+
+    /// <summary>Узел «родной» для цены Наставника: не школа магии или родная школа героя.</summary>
+    public bool IsNativeNode(SkillNode node) => SkillTree.SchoolOf(node.Branch) is not { } school || IsNative(school);
+
     // ═════════════ уровень и очки ═════════════
 
     public int Level => ProgressionRules.LevelFor(_renown);
@@ -143,7 +168,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     /// <summary>«Выучка» Цитадельцев (04): +1 очко характеристик за каждые 3 уровня.</summary>
     public int BonusStatPoints => IsMutable && Owner?.Relics.OfType<CitadelOrigin>().Any() == true
         ? OriginRules.TrainingBonusPoints(Level) : 0;
-    public int UnspentSkillPoints => Math.Max(0, ProgressionRules.SkillPointsFor(Level) - _skillPointsSpent);
+    public int UnspentSkillPoints => Math.Max(0, ProgressionRules.SkillPointsFor(Level) + _mentorPoints - _skillPointsSpent);
     public bool HasUnspentPoints => UnspentStatPoints > 0 || UnspentSkillPoints > 0;
 
     private string HeroName => Owner.Character.GetType().Name;
@@ -386,7 +411,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     /// <summary>Неумелый хват (08 §8.5): +1 ◆ и −25 % урона «Оружейных» атак.</summary>
     public bool Clumsy => Owned && RequiemMode.IsInSystem(Owner)
-                          && ProgressionRules.IsClumsy(HeroName, MainHand, HeavyShield, Has(Skill.WeaponTraining));
+                          && ProgressionRules.IsClumsy(HeroName, MainHand, HeavyShield, Has(Skill.WeaponTraining), _weaponLessons);
 
     private bool IsMyWeaponAttack(CardModel? card) =>
         card != null && card.Owner == Owner && EquipmentCombatRules.IsWeaponAttack(card);

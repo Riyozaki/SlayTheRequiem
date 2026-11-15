@@ -271,6 +271,11 @@ public static class CampMenu
 [Pool(typeof(TokenCardPool))] public sealed class PickMeditateMana : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickPrayRedeem : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickPraySwitch : PickCard { }
+// Таверна: Наставник (14 §2.9).
+[Pool(typeof(TokenCardPool))] public sealed class PickMentorSkill : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonTwoHanded : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonCrossbow : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonShield : PickCard { }
 
 // ───── узлы деревьев навыков (Value = ранг/ярус, Cost = цена в очках навыка) ─────
 [Pool(typeof(TokenCardPool))] public sealed class NodeCraftAlchemy : PickCard { }

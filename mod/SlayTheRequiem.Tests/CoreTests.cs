@@ -395,6 +395,55 @@ public class Stage3Tests
         Assert.Equal(expected, EnemyRules.AffixCount(rank, act, roll, hp));
 }
 
+public class M5ShopTests
+{
+    [Fact]
+    public void Placement()
+    {
+        Assert.Equal(ShopType.Fence, ShopRules.GuaranteedShop(ActKind.BloodCourt, 0));
+        Assert.Equal(ShopType.Arcanist, ShopRules.GuaranteedShop(ActKind.StarTower, 1));
+        Assert.Equal(ShopType.Temple, ShopRules.GuaranteedShop(ActKind.Glory, 0));
+        Assert.Null(ShopRules.GuaranteedShop(ActKind.StarTower, 2));
+        Assert.DoesNotContain(ShopType.Caravan, ShopRules.ActPool(ActKind.Hive));
+        for (var h = 0u; h < 200u; h++)
+        {
+            Assert.NotEqual(ShopType.Caravan, ShopRules.RollShopType(h, ActKind.FrozenBarrows, 1, 2, null, caravanSeen: true));
+            Assert.NotEqual(ShopType.Fence, ShopRules.RollShopType(h, ActKind.Foothills, 0, 1, null));
+        }
+        Assert.Contains(Enumerable.Range(0, 200), h => ShopRules.RollShopType((uint)h, ActKind.Foothills, 0, 1, null, outlaw: true) == ShopType.Fence);
+        Assert.Equal((4, 5), ShopRules.EquipmentTiers(ShopType.Fence, 0));
+        Assert.Equal((3, 4), ShopRules.EquipmentTiers(ShopType.Jeweler, 2));
+    }
+
+    [Fact]
+    public void Prices()
+    {
+        Assert.Equal(new[] { 25, 45, 70 }, new[] { 1, 2, 3 }.Select(ShopRules.ScrollPrice));
+        Assert.Equal(new[] { 70, 120, 180, 240, 320 }, Enumerable.Range(1, 5).Select(ShopRules.StaffPrice));
+        Assert.Equal((2, 3), ShopRules.StaffTiers(1));
+        Assert.Equal(110, ShopRules.EnchantServicePrice(2, ownStone: true));
+        Assert.Equal(210, ShopRules.EnchantServicePrice(3, ownStone: false));
+        Assert.Equal(35, ShopRules.CleansePrice(true));
+        Assert.Equal(48, ShopRules.FenceSellValue(80));
+        Assert.False(ShopRules.CanPayCurseRemoval(6));
+        Assert.Equal((3, 4), ShopRules.TradeTiers(4));
+        Assert.Equal(new int?[] { 100, 150, 200, null }, Enumerable.Range(0, 4).Select(b => ShopRules.MentorSkillPrice(b, true)));
+        Assert.Equal(225, ShopRules.MentorSkillPrice(1, false));
+    }
+
+    [Fact]
+    public void ClearNameAndLessons()
+    {
+        Assert.Equal(1, ShopRules.ClearNameTarget(new[] { 450, 0, 300, 10, 150, 150, 0, 150 }));
+        Assert.Equal(-1, ShopRules.ClearNameTarget(new[] { 150, 150, 150, 150, 150, 150, 0, 150 }));
+        var mask = ProgressionRules.WithLesson(0, WeaponKind.TwoHanded);
+        Assert.False(ProgressionRules.IsClumsy("Regent", WeaponKind.TwoHanded, false, false, mask));
+        Assert.True(ProgressionRules.IsClumsy("Regent", WeaponKind.Crossbow, false, false, mask));
+        Assert.True(ProgressionRules.IsClumsy("Regent", WeaponKind.Sword, true, false, mask));
+        Assert.False(ProgressionRules.IsClumsy("Regent", WeaponKind.Sword, true, false, ProgressionRules.WithLesson(mask, WeaponKind.Shield)));
+    }
+}
+
 public class Stage35Tests
 {
     [Fact]

@@ -630,5 +630,15 @@
   "SLAYTHEREQUIEM-MIRROR_SHARD.name": "Зеркальный осколок",
   "SLAYTHEREQUIEM-MIRROR_SHARD.moves.SHARD_BOLT.title": "Осколочный разряд",
   "SLAYTHEREQUIEM-MIRROR_SHARD.moves.SHARD_BOLT_2.title": "Осколочный разряд",
-  "SLAYTHEREQUIEM-MIRROR_SHARD.moves.SHARD_BOLT_3.title": "Осколочный разряд"
+  "SLAYTHEREQUIEM-MIRROR_SHARD.moves.SHARD_BOLT_3.title": "Осколочный разряд",
+  "SLAYTHEREQUIEM-SHOP_GUARD.name": "Стража лавки",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALT.title": "Стоять!",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALT_2.title": "Стоять!",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALT_3.title": "Стоять!",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALBERD.title": "Алебарда",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALBERD_2.title": "Алебарда",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_HALBERD_3.title": "Алебарда",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_BASH.title": "Удар щитом",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_BASH_2.title": "Удар щитом",
+  "SLAYTHEREQUIEM-SHOP_GUARD.moves.GUARD_BASH_3.title": "Удар щитом"
 }

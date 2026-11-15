@@ -480,7 +480,8 @@ def control_hp_cap(tier: str) -> int | None:
 
 import math as _math
 
-SHOP_TYPES = ("Wanderer", "Armorer", "Arcanist", "Herbalist")
+SHOP_TYPES = ("Wanderer", "Armorer", "Arcanist", "Herbalist", "Jeweler", "Temple", "Fence", "Caravan")
+CARAVAN_CHANCE_PERCENT = 35
 
 
 def _round_away(x: float) -> int:
@@ -489,14 +490,54 @@ def _round_away(x: float) -> int:
 
 
 def shop_act_pool(act_index: int) -> list[str]:
-    return ["Wanderer", "Armorer", "Herbalist"] if act_index <= 0 else ["Wanderer", "Armorer", "Herbalist", "Arcanist"]
+    if act_index <= 0:
+        return ["Wanderer", "Armorer", "Herbalist"]
+    return ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"]
+
+
+_KIND_POOLS = {
+    "Foothills": ["Wanderer", "Armorer", "Herbalist"],
+    "FrozenBarrows": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Caravan"],
+    "ClockworkDepths": ["Wanderer", "Armorer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Caravan"],
+    "Hive": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+    "BloodCourt": ["Armorer", "Herbalist", "Arcanist", "Jeweler", "Fence"],
+    "StarTower": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+    "Glory": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Temple", "Caravan"],
+    "NamelessLimit": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+}
+
+
+def shop_act_pool_kind(kind: str, tier: int = 0) -> list[str]:
+    return list(_KIND_POOLS[kind]) if kind in _KIND_POOLS else shop_act_pool(tier)
+
+
+def guaranteed_shop(kind: str, shops_seen: int) -> str | None:
+    if kind == "BloodCourt" and shops_seen <= 0:
+        return "Fence"
+    if kind == "StarTower" and shops_seen <= 1:
+        return "Arcanist"
+    if kind == "Glory" and shops_seen <= 0:
+        return "Temple"
+    return "Wanderer" if shops_seen <= 0 else None
+
+
+def roll_shop_type_kind(hash_: int, kind: str, tier: int, shops_seen: int, previous: str | None,
+                        outlaw: bool = False, caravan_seen: bool = False) -> str:
+    g = guaranteed_shop(kind, shops_seen)
+    if g is not None:
+        return g
+    pool = shop_act_pool_kind(kind, tier)
+    if outlaw and "Fence" not in pool:
+        pool.append("Fence")
+    caravan_ok = not caravan_seen and (hash_ >> 16) % 100 < CARAVAN_CHANCE_PERCENT
+    pool = [t for t in pool if (previous is None or t != previous) and (t != "Caravan" or caravan_ok)]
+    if not pool:
+        return "Wanderer"
+    return pool[hash_ % len(pool)]
 
 
 def roll_shop_type(hash_: int, act_index: int, shops_seen: int, previous: str | None) -> str:
-    if shops_seen <= 0:
-        return "Wanderer"
-    pool = [t for t in shop_act_pool(act_index) if t != previous]
-    return pool[hash_ % len(pool)]
+    return roll_shop_type_kind(hash_, "Other", act_index, shops_seen, previous)
 
 
 def fnv1a(text: str, salt: int = 0) -> int:
@@ -558,8 +599,10 @@ def treatise_price(bought_before: int) -> int:
 
 
 def equipment_tiers(shop: str, act_index: int) -> tuple[int, int]:
-    if shop == "Armorer":
+    if shop in ("Armorer", "Jeweler", "Caravan"):
         return max(1, min(4, act_index + 1)), max(2, min(5, act_index + 2))
+    if shop == "Fence":
+        return 4, 5
     return 1, 2
 
 
@@ -641,6 +684,86 @@ def removal_price(removals_used: int) -> int:
 
 def death_echo_surcharge(removal: int, gold_left: int) -> int:
     return max(0, min(removal, max(0, gold_left)))
+
+
+# ───── лавки M5 (14 §2.3–2.9) ─────
+
+def scroll_price(tier: int) -> int:
+    return _by_tier(tier, (25, 45, 70))
+
+
+def staff_price(tier: int) -> int:
+    return _by_tier(tier, (70, 120, 180, 240, 320))
+
+
+def scroll_tier(act_index: int) -> int:
+    return max(1, min(3, act_index + 1))
+
+
+def staff_tiers(act_index: int) -> tuple[int, int]:
+    return (1, 1) if act_index <= 0 else (2, 3) if act_index == 1 else (4, 5)
+
+
+def soul_stone_price(power: int) -> int:
+    return _by_tier(power, (40, 80, 140))
+
+
+def soul_stone_power(act_index: int) -> int:
+    return max(1, min(3, act_index + 1))
+
+
+def enchant_service_price(power: int, own_stone: bool) -> int:
+    return _by_tier(power, (75, 110, 150)) + (0 if own_stone else 60)
+
+
+REWRITE_SCROLL_PRICE = 40
+CARD_ENCHANT_PRICE = 80
+ENGRAVE_PRICE = 70
+FACET_PRICE = 50
+TEMPLE_AMULET_PRICE = 150
+TEMPLE_ROBE_PRICE = 200
+BLESSING_CHANGE_PRICE = 60
+TEMPLE_HEAL_PERCENT = 30
+TEMPLE_HEAL_PRICE = 40
+ATONEMENT_PRICE = 100
+CURSE_REMOVAL_MAX_HP = 6
+CLEAR_NAME_PRICE = 80
+CLEAR_NAME_SPENT = 150
+MENTOR_MAX_SKILL_POINTS = 3
+WEAPON_LESSON_PRICE = 90
+
+
+def cleanse_price(righteous: bool) -> int:
+    return 35 if righteous else 50
+
+
+def fence_sell_value(price: int) -> int:
+    return 0 if price <= 0 else max(1, _math.floor(price * 0.60))
+
+
+def can_pay_curse_removal(max_hp: int) -> bool:
+    return max_hp > CURSE_REMOVAL_MAX_HP
+
+
+def clear_name_target(spent: list[int]) -> int:
+    best = -1
+    for i in range(min(len(spent), len(SHOP_TYPES))):
+        if i == SHOP_TYPES.index("Fence") or trust(spent[i]) >= 1:
+            continue
+        if best < 0 or spent[i] < spent[best]:
+            best = i
+    return best
+
+
+def trade_tiers(given_tier: int) -> tuple[int, int]:
+    return max(1, given_tier - 1), max(1, given_tier)
+
+
+def mentor_skill_price(bought: int, native_branch: bool) -> int | None:
+    if bought < 0 or bought >= MENTOR_MAX_SKILL_POINTS:
+        return None
+    price = 100 + 50 * bought
+    return price if native_branch else _round_away(price * 1.5)
 
 
 # ───────────── Камень Памяти (Core/MemoryStoneRules.cs) ─────────────
@@ -894,6 +1017,26 @@ def tiers(hp: int, st: int, mana: int) -> dict:
         poison_res=1 if hp >= 1 else 0, burden=6 if hp >= 2 else 0, plating=1 if hp >= 3 else 0,
         stamina_regen=1 if st >= 1 else 0, attack_damage=1 if st >= 2 else 0, free_first_attack=st >= 3,
         mana_regen=1 if mana >= 1 else 0, first_spell_discount=1 if mana >= 2 else 0, ward=3 if mana >= 3 else 0)
+
+
+WEAPON_KINDS = ("None", "Dagger", "Sword", "Axe", "Mace", "Spear", "TwoHanded", "Bow", "Crossbow", "Staff", "Shield")
+
+
+def lesson_kinds(hero: str) -> list[str]:
+    return {"Regent": ["TwoHanded", "Crossbow", "Shield"], "Silent": ["TwoHanded"]}.get(hero, [])
+
+
+def has_lesson(mask: int, kind: str) -> bool:
+    return kind != "None" and (mask & (1 << WEAPON_KINDS.index(kind))) != 0
+
+
+def with_lesson(mask: int, kind: str) -> int:
+    return mask if kind == "None" else mask | (1 << WEAPON_KINDS.index(kind))
+
+
+def is_clumsy_with_lessons(hero: str, main_hand: str, heavy_shield: bool, trained: bool, mask: int) -> bool:
+    return is_clumsy(hero, "None" if has_lesson(mask, main_hand) else main_hand,
+                     heavy_shield and not has_lesson(mask, "Shield"), trained)
 
 
 def is_clumsy(hero: str, main_hand: str, heavy_shield: bool, trained: bool) -> bool:

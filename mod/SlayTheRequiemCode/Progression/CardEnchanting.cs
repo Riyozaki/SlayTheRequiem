@@ -127,10 +127,20 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
         if (hero == null) return false;
         var power = new[] { 1, 2, 3 }.FirstOrDefault(p => hero.Stones(p) > 0);
         if (power == 0) return false;
+        if (!await EnchantFlow(Owner, () => Task.FromResult(hero.SpendStone(power)))) return false;
+        hero.Refresh();
+        return true;
+    }
 
-        var perk = hero.Has(Skill.CraftEnchanting);
+    /// <summary>
+    /// Зачаровать карту колоды (лагерь — за камень, Чародей — за золото): вид чар, карта (синхронно в коопе), оплата
+    /// (<paramref name="commit"/>; false — отмена), наложение.
+    /// </summary>
+    public static async Task<bool> EnchantFlow(Player owner, Func<Task<bool>> commit)
+    {
+        var perk = HeroRecord.Of(owner)?.Has(Skill.CraftEnchanting) == true;
         var kinds = Enum.GetValues<CardEnchant>().Where(k => k != CardEnchant.Double || perk).ToList();
-        if (await CampMenu.Pick(Owner, kinds.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
+        if (await CampMenu.Pick(owner, kinds.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
                 "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant kind) return false;
 
         var amount = 1;
@@ -138,10 +148,10 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
         if (kind == CardEnchant.Double)
         {
             var singles = Enum.GetValues<CardEnchant>().Where(k => k != CardEnchant.Double).ToList();
-            if (await CampMenu.Pick(Owner, singles.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
+            if (await CampMenu.Pick(owner, singles.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
                     "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant first) return false;
             var rest = singles.Where(k => TransformationRules.ValidDouble(first, k)).ToList();
-            if (await CampMenu.Pick(Owner, rest.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
+            if (await CampMenu.Pick(owner, rest.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
                     "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant second) return false;
             amount = TransformationRules.EncodeDouble(first, second);
             attacksOnly = first != CardEnchant.Lightened || second != CardEnchant.Lightened;
@@ -149,11 +159,10 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
 
         var canonical = ModelDb.GetById<EnchantmentModel>(ModelDb.GetId(RequiemCardEnchantment.TypeFor(kind)));
         var prefs = new CardSelectorPrefs(CardSelectorPrefs.EnchantSelectionPrompt, 1) { Cancelable = true };
-        var picked = (await CardSelectCmd.FromDeckForEnchantment(Owner, canonical, amount,
+        var picked = (await CardSelectCmd.FromDeckForEnchantment(owner, canonical, amount,
             c => c != null && (!attacksOnly || c.Type == CardType.Attack), prefs)).FirstOrDefault();
-        if (picked == null || !hero.SpendStone(power)) return false;
+        if (picked == null || !await commit()) return false;
         CardCmd.Enchant(canonical.ToMutable(), picked, amount);
-        hero.Refresh();
         return true;
     }
 }

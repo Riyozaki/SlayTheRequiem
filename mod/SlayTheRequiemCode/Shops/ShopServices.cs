@@ -18,6 +18,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 
@@ -72,6 +73,21 @@ public abstract class CounterCard : RequiemCard
 [Pool(typeof(TokenCardPool))] public sealed class CounterPanacea : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterOrder : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterMore : CounterCard { }
+// M5: Чародей, Ювелир, Храм, Скупщик, Караван (14 §2.3–2.8).
+[Pool(typeof(TokenCardPool))] public sealed class CounterEnchantOwnStone : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterEnchantShopStone : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterRewriteScroll : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterEnchantCard : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterSoulStone : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterEngrave : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterFacet : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterCleanse : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterTempleHeal : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterAtonement : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterChangeBlessing : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterRemoveCurse : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterClearName : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterTrade : CounterCard { }
 
 /// <summary>Вариант Заказа (14 §1).</summary>
 public abstract class OrderCard : CounterCard
@@ -146,6 +162,43 @@ public static class ShopServices
         return kit;
     }
 
+    /// <summary>Огранка: чары <paramref name="from"/>, которые подходят слоту <paramref name="to"/>, поверх чар цели. null — переносить нечего.</summary>
+    public static List<EnchantSlot>? FacetResult(Player player, EquipmentRelic from, EquipmentRelic to)
+    {
+        var moving = from.EnchantSlots.Where(slot => EnchantRules.Allowed(slot.Enchant, to.Slot)).ToList();
+        if (moving.Count == 0) return null;
+        var slots = Progression.Enchanting.SlotsFor(player);
+        var result = to.EnchantSlots;
+        foreach (var slot in moving) result = EnchantRules.Apply(result, slot.Enchant, slot.Power, slots);
+        return result;
+    }
+
+    public static bool CanFacet(Player player)
+    {
+        var gear = Loadout.Equipped(player);
+        return gear.Any(from => from.EnchantSlots.Count > 0 && gear.Any(to => to != from && FacetResult(player, from, to) != null));
+    }
+
+    /// <summary>Что можно отдать Каравану: снятое снаряжение из рюкзака.</summary>
+    public static List<EquipmentRelic> Tradeable(Player player) => SellService.Sellable(player).ToList();
+
+    /// <summary>
+    /// Обмен Каравана (14 §2.8): предмет той же ступени или на одну ниже, которого у героя нет, — по зерну, этажу и отданному
+    /// предмету (одинаково у всех игроков). null — подходящего нет.
+    /// </summary>
+    public static EquipmentRelic? TradeResult(Player player, EquipmentRelic given)
+    {
+        var (min, max) = ShopRules.TradeTiers(given.Tier);
+        var owned = player.Relics.Select(r => r.GetType()).ToHashSet();
+        var options = ModelDb.AllRelics.OfType<EquipmentRelic>()
+            .Where(e => e.IsAllowedInShops && e is not MageStaff && e.Tier >= min && e.Tier <= max && !owned.Contains(e.GetType()))
+            .OrderBy(e => e.Id.Entry, StringComparer.Ordinal)
+            .ToList();
+        if (options.Count == 0) return null;
+        var hash = ShopRules.Fnv1a($"{player.RunState.Rng.StringSeed}|trade|{given.Id.Entry}", player.RunState.TotalFloor);
+        return options[(int)(hash % (uint)options.Count)];
+    }
+
     private static List<Option> Options(Player player)
     {
         var list = new List<Option>();
@@ -161,12 +214,22 @@ public static class ShopServices
             if (price <= gold) list.Add(new Option((s, p) => s.CreateCard<T>(p), price, amount, run));
         }
 
+        // Камень душ (Чародей, Ювелир): сила по акту.
+        void AddStone(int actIndex)
+        {
+            if (Progression.HeroRecord.Of(player) == null) return;
+            var power = ShopRules.SoulStonePower(actIndex);
+            var price = Price(ShopRules.SoulStonePrice(power));
+            Paid<CounterSoulStone>(price, power, () => ShopActions.Perform(player, ShopAction.BuyStone, price, power));
+        }
+
         // Продажа — в любой лавке.
         var sellable = SellService.Sellable(player);
+        var fence = ledger.CurrentShop == ShopType.Fence;
         if (sellable.Count > 0)
         {
-            var total = sellable.Sum(i => SellService.Value(i, trust));
-            list.Add(new Option((s, p) => s.CreateCard<CounterSell>(p), total, sellable.Count, () => SellService.Sell(player, sellable, trust)));
+            var total = sellable.Sum(i => SellService.Value(i, trust, fence));
+            list.Add(new Option((s, p) => s.CreateCard<CounterSell>(p), total, sellable.Count, () => SellService.Sell(player, sellable, trust, fence)));
         }
 
         switch (ledger.CurrentShop)
@@ -224,9 +287,98 @@ public static class ShopServices
                 }
                 break;
             }
+            case ShopType.Arcanist:
+            {
+                var hero = Progression.HeroRecord.Of(player);
+                if (hero != null && Progression.Enchanting.Enchantable(player).Count > 0)
+                {
+                    var own = new[] { 3, 2, 1 }.FirstOrDefault(p => hero.Stones(p) > 0);
+                    if (own > 0)
+                    {
+                        var price = Price(ShopRules.EnchantServicePrice(own, ownStone: true));
+                        Paid<CounterEnchantOwnStone>(price, own, () => ShopActions.Perform(player, ShopAction.EnchantItem, price, own, "own"));
+                    }
+                    var shopStone = ShopRules.SoulStonePower(act);
+                    var shopPrice = Price(ShopRules.EnchantServicePrice(shopStone, ownStone: false));
+                    Paid<CounterEnchantShopStone>(shopPrice, shopStone, () => ShopActions.Perform(player, ShopAction.EnchantItem, shopPrice, shopStone, "shop"));
+                }
+                if (player.PotionSlots.OfType<RequiemScroll>().FirstOrDefault() is { } scroll)
+                {
+                    var price = Price(ShopRules.RewriteScrollPrice);
+                    Paid<CounterRewriteScroll>(price, scroll.Tier, () => ShopActions.Perform(player, ShopAction.RewriteScroll, price, 0, scroll.Id.Entry));
+                }
+                {
+                    var price = Price(ShopRules.CardEnchantPrice);
+                    Paid<CounterEnchantCard>(price, 1, () => ShopActions.Perform(player, ShopAction.EnchantCard, price, 0));
+                }
+                AddStone(act);
+                break;
+            }
+            case ShopType.Jeweler:
+            {
+                if (Progression.Enchanting.Enchantable(player).Any(i => i.Slot is EquipSlot.Ring or EquipSlot.Amulet))
+                {
+                    var price = Price(ShopRules.EngravePrice);
+                    Paid<CounterEngrave>(price, 1, () => ShopActions.Perform(player, ShopAction.Engrave, price, 0));
+                }
+                if (CanFacet(player))
+                {
+                    var price = Price(ShopRules.FacetPrice);
+                    Paid<CounterFacet>(price, 0, () => ShopActions.Perform(player, ShopAction.Facet, price, 0));
+                }
+                AddStone(act);
+                break;
+            }
+            case ShopType.Temple:
+            {
+                var god = MerchantLedger.TempleGod(player.RunState);
+                if (RequiemConfig.EnablePantheon && Pantheon.CelestialBlessing.Of(player)?.God != god)
+                {
+                    var price = Price(ShopRules.BlessingChangePrice);
+                    Paid<CounterChangeBlessing>(price, (int)god, () => ShopActions.Perform(player, ShopAction.ChangeBlessing, price, (int)god));
+                }
+                if (player.Deck.Cards.Any(c => c.IsRemovable))
+                {
+                    var price = Price(ShopRules.CleansePrice(Pantheon.Faith.Effective(player) == Piety.Righteous));
+                    Paid<CounterCleanse>(price, 1, () => ShopActions.Perform(player, ShopAction.Cleanse, price, 0));
+                }
+                var creature = player.Creature;
+                if (creature.CurrentHp < creature.MaxHp)
+                {
+                    var price = Price(ShopRules.TempleHealPrice);
+                    var heal = (int)CampRules.HealAmount(creature.MaxHp, ShopRules.TempleHealPercent);
+                    Paid<CounterTempleHeal>(price, heal, () => ShopActions.Perform(player, ShopAction.TempleHeal, price, heal));
+                }
+                if (Pantheon.Faith.CanRedeem(player))
+                {
+                    var price = Price(ShopRules.AtonementPrice);
+                    Paid<CounterAtonement>(price, 1, () => ShopActions.Perform(player, ShopAction.Atonement, price, 0));
+                }
+                break;
+            }
+            case ShopType.Fence:
+            {
+                var curses = player.Deck.Cards.Count(c => c.Type == CardType.Curse && c.IsRemovable);
+                if (curses > 0 && ShopRules.CanPayCurseRemoval(player.Creature.MaxHp))
+                    list.Add(new Option((s, p) => s.CreateCard<CounterRemoveCurse>(p), 0, ShopRules.CurseRemovalMaxHp,
+                        () => ShopActions.Perform(player, ShopAction.RemoveCurse, 0, ShopRules.CurseRemovalMaxHp)));
+                var target = ShopRules.ClearNameTarget(ledger.Spent);
+                if (target >= 0)
+                {
+                    var price = Price(ShopRules.ClearNamePrice);
+                    Paid<CounterClearName>(price, target, () => ShopActions.Perform(player, ShopAction.ClearName, price, target));
+                }
+                break;
+            }
+            case ShopType.Caravan:
+            {
+                if (!ledger.TradedHere(player.RunState) && Tradeable(player).Any(i => TradeResult(player, i) != null))
+                    list.Add(new Option((s, p) => s.CreateCard<CounterTrade>(p), 0, 1, () => ShopActions.Perform(player, ShopAction.Trade)));
+                break;
+            }
         }
 
-        if (ShopRules.CanOrder(trust) && !ledger.HasOrder)
+        if (ShopRules.CanOrder(trust) && !ledger.HasOrder && ShopRules.OrderOptions(ledger.CurrentShop).Count > 0)
             list.Add(new Option((s, p) => s.CreateCard<CounterOrder>(p), 0, 0, () => OrderMenu(player, ledger)));
         return list;
     }
@@ -373,8 +525,57 @@ public static class ShopServices
             finally { StealingNow = false; }
         }
 
-        await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop, ShopRules.TheftFailDamage(player.Creature.MaxHp));
+        // Пойманного вора выставляет Стража: в одиночной игре — бой с облегчённой элитой (лавка закрывается),
+        // в коопе (бой общий, а лавка у каждого своя) — по-прежнему потеря 20 % макс. ♥.
+        var fight = !RequiemNet.IsMultiplayer;
+        await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop,
+            fight ? 0 : ShopRules.TheftFailDamage(player.Creature.MaxHp));
+        if (fight) StartGuardFight(player);
         return false;
+    }
+
+    /// <summary>Бой со Стражей лавки (<see cref="Monsters.ShopGuardElite"/>) поверх лавки; после боя — карта.</summary>
+    private static void StartGuardFight(Player player)
+    {
+        try
+        {
+            var encounter = ModelDb.Encounter<Monsters.ShopGuardElite>().ToMutable();
+            var room = new CombatRoom(encounter, player.RunState) { ShouldResumeParentEventAfterCombat = false };
+            TaskHelper.RunSafely(RunManager.Instance.EnterRoomWithoutExitingCurrentRoom(room, true));
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Warn($"[SlayTheRequiem] Стража лавки: бой не начался ({e.Message}) — только потеря доверия.");
+        }
+    }
+
+    // ───── предупреждение о владении школой (08 §8, 14 §2.3) ─────
+
+    /// <summary>Подтверждение уже получено — повторный вызов покупки идёт без окна.</summary>
+    internal static bool MasteryConfirmed { get; set; }
+
+    /// <summary>Разрыв ступени и владения у заклинания с витрины (0 — колдуется свободно).</summary>
+    public static int MasteryGap(Player player, MerchantEntry entry) =>
+        entry is MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell } && RequiemMode.IsInSystem(player)
+            ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.Of(player, spell.School)))
+            : 0;
+
+    public static async Task<bool> ConfirmMasteryAndBuy(MerchantEntry entry, MerchantInventory? inventory, Player player)
+    {
+        if (entry is not MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell }) return false;
+        var mastery = Spells.Mastery.Of(player, spell.School);
+        var gap = MasteryGap(player, entry);
+        if (!await RequiemNet.Confirm("SLAYTHEREQUIEM-MERCHANT_LEDGER", "mastery", body =>
+            {
+                body.Add("School", (int)spell.School);
+                body.Add("Mastery", mastery);
+                body.Add("Tier", (int)spell.Tier);
+                body.Add("Gap", gap);
+            }))
+            return false;
+        MasteryConfirmed = true;
+        try { return await entry.OnTryPurchaseWrapper(inventory); }
+        finally { MasteryConfirmed = false; }
     }
 }
 
@@ -409,6 +610,82 @@ public static class MerchantTheftPatch
         __result = ShopServices.TryTheft(__instance, inventory, player);
         return false;
     }
+}
+
+/// <summary>
+/// Предупреждение о владении школой: заклинание выше владения (колдуется «С трудом» — ✦ ×1.5, или «С напряжением» — ✦ ×2
+/// и эффект ×0.75) покупается только после подтверждения.
+/// </summary>
+[HarmonyPatch(typeof(MerchantEntry), nameof(MerchantEntry.OnTryPurchaseWrapper))]
+public static class SpellMasteryWarningPatch
+{
+    private static readonly AccessTools.FieldRef<MerchantEntry, Player> PlayerRef =
+        AccessTools.FieldRefAccess<MerchantEntry, Player>("_player");
+
+    [HarmonyPrefix]
+    public static bool WarnAboutMastery(MerchantEntry __instance, MerchantInventory? inventory, bool ignoreCost, ref Task<bool> __result)
+    {
+        if (ignoreCost || ShopServices.MasteryConfirmed || !__instance.IsStocked || !__instance.EnoughGold) return true;
+        var player = PlayerRef(__instance);
+        if (player == null || !LocalContext.IsMe(player) || !MerchantLedger.Active(player) || ShopServices.MasteryGap(player, __instance) <= 0)
+            return true;
+        __result = ShopServices.ConfirmMasteryAndBuy(__instance, inventory, player);
+        return false;
+    }
+}
+
+/// <summary>
+/// Ценник товара, который можно украсть (<see cref="ShopServices.CanSteal"/>): вместо красной цены — «цена ✋шанс %»
+/// фиолетовым, чтобы было видно, что клик не «не хватает золота», а попытка кражи. Патчим UpdateVisual каждого слота
+/// (наследники NMerchantSlot пишут ценник сами после вызова базового метода).
+/// </summary>
+public static class TheftPriceTag
+{
+    private static readonly AccessTools.FieldRef<NMerchantSlot, MegaCrit.Sts2.addons.mega_text.MegaLabel> CostLabel =
+        AccessTools.FieldRefAccess<NMerchantSlot, MegaCrit.Sts2.addons.mega_text.MegaLabel>("_costLabel");
+
+    private static readonly Godot.Color TheftColor = new(0.78f, 0.55f, 1f);
+
+    public static void Apply(NMerchantSlot slot)
+    {
+        try
+        {
+            var entry = slot.Entry;
+            if (entry == null || !entry.IsStocked || entry.EnoughGold) return;
+            var state = RequiemNet.State;
+            var me = state == null ? null : LocalContext.GetMe(state);
+            if (me == null || !ShopServices.CanSteal(me, entry)) return;
+            var label = CostLabel(slot);
+            if (label == null) return;
+            label.SetTextAutoSize($"{entry.Cost} ✋{ShopRules.TheftChancePercent(entry.Cost)}%");
+            label.Modulate = TheftColor;
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Warn($"[SlayTheRequiem] Ценник кражи: {e.Message}");
+        }
+    }
+}
+
+[HarmonyPatch(typeof(NMerchantCard), "UpdateVisual")]
+public static class TheftPriceTagCardPatch
+{
+    [HarmonyPostfix]
+    public static void Tag(NMerchantCard __instance) => TheftPriceTag.Apply(__instance);
+}
+
+[HarmonyPatch(typeof(NMerchantRelic), "UpdateVisual")]
+public static class TheftPriceTagRelicPatch
+{
+    [HarmonyPostfix]
+    public static void Tag(NMerchantRelic __instance) => TheftPriceTag.Apply(__instance);
+}
+
+[HarmonyPatch(typeof(NMerchantPotion), "UpdateVisual")]
+public static class TheftPriceTagPotionPatch
+{
+    [HarmonyPostfix]
+    public static void Tag(NMerchantPotion __instance) => TheftPriceTag.Apply(__instance);
 }
 
 /// <summary>

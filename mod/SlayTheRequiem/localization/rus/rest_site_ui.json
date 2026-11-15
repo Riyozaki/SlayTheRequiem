@@ -47,5 +47,10 @@
   "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Выберите чары",
   "OPTION_SLAYTHEREQUIEM_WARM.name": "Отогреться",
   "OPTION_SLAYTHEREQUIEM_WARM.description": "Следующие {Fights} боя Стужа не накладывает [gold]Озноб[/gold]. Бесплатно.",
-  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "Вы уже согрелись."
+  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "Вы уже согрелись.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.name": "Таверна",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.description": "Здесь пьёт Наставник. Узел навыка — [gold]{SkillPrice}[/gold] золотых (куплено {Bought}/3), урок владения оружием — [gold]{LessonPrice}[/gold]. Очков лагеря не тратит.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.descriptionDisabled": "Наставнику нечего вам предложить по карману.",
+  "SLAYTHEREQUIEM_TAVERN_PROMPT": "Чему научит Наставник? (закройте, чтобы уйти)",
+  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Выберите узел навыка"
 }

@@ -178,6 +178,8 @@ card,PickPray*,regent/Venerate,
 card,PickStat*,colorless/Prowess,
 card,PickStone*,necrobinder/CaptureSpirit,
 card,Counter*,colorless/Production,
+card,PickMentorSkill,colorless/MasterOfStrategy,Таверна: Наставник (M5)
+card,PickLesson*,colorless/FlashOfSteel,Таверна: урок владения оружием (M5)
 card,Order*,colorless/Scrawl,
 #
 # ── Силы ──
@@ -413,6 +415,11 @@ relic,LichForm,BoundPhylactery,
 relic,Phylactery,PhylacteryUnbound,
 relic,*Essence,PrismaticGem,
 relic,ElementStaff,TuningFork,
+relic,OakStaff,BurningSticks,посох Чародейской лавки (M5)
+relic,SilverStaff,TungstenRod,посох Чародейской лавки (M5)
+relic,ObsidianStaff,LavaLamp,посох Чародейской лавки (M5)
+relic,EverfrostStaff,IceCream,посох Чародейской лавки (M5)
+relic,AbyssalStaff,BlackBlood,посох Чародейской лавки (M5)
 relic,FacelessMask,FuneraryMask,
 relic,HornedHelm,IntimidatingHelmet,
 relic,MirrorShield,DollysMirror,

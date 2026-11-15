@@ -47,5 +47,10 @@
   "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Choose an enchantment",
   "OPTION_SLAYTHEREQUIEM_WARM.name": "Warm Up",
   "OPTION_SLAYTHEREQUIEM_WARM.description": "No [gold]Chill[/gold] from the Frost for the next {Fights} fights. Free.",
-  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "You are already warm."
+  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "You are already warm.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.name": "Tavern",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.description": "A mentor drinks here. Skill node for [gold]{SkillPrice}[/gold] gold (bought {Bought}/3), weapon lesson for [gold]{LessonPrice}[/gold]. Costs no camp points.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.descriptionDisabled": "The mentor has nothing you can afford.",
+  "SLAYTHEREQUIEM_TAVERN_PROMPT": "What will the mentor teach? (close to leave)",
+  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Choose the skill node"
 }
