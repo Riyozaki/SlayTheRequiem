@@ -29,6 +29,17 @@
 | T | [tech/technical-plan.md](tech/technical-plan.md) | Архитектура мода, хуки, данные, риски |
 | R | [ROADMAP.md](ROADMAP.md) | Этапы, вертикальный срез, открытые вопросы |
 
+### Ревью и план доделки (ноябрь 2026)
+
+| # | Документ | О чём |
+|---|----------|-------|
+| CR | [review/code-review.md](review/code-review.md) | Ревью кода и проекта: проверка против игры v0.107.1, найденные баги, замечания P0–P2, сверка с дизайном |
+| P | [plan/completion-plan.md](plan/completion-plan.md) | План доделки до полного мода: вехи M0–M9, критерии приёмки, чек-листы smoke-прогонов |
+| A | [plan/art-ui-animation-spec.md](plan/art-ui-animation-spec.md) | Арт-дирекция, размеры ассетов, UI-компоненты, анимации, VFX, звук, пайплайн |
+| C | [plan/card-rework-spec.md](plan/card-rework-spec.md) | Переработка карт: ванильные правила и их видимость, карты героев, жетоны, чек-лист карты |
+| — | [plan/card-catalog.md](plan/card-catalog.md) | Каталог всех карт мода (генерируется `tools/cards/card_catalog.py`) |
+| — | [plan/asset-manifest.csv](plan/asset-manifest.csv) | Все 1466 ожидаемых кодом ассетов (генерируется `tools/assets/asset_manifest.py`) |
+
 ## Статус
 
 **Этапы 0–7 написаны** (код без сборки в игре): все системы из документов 01–15 — от выносливости и снаряжения
