@@ -37,6 +37,10 @@ public static class ShopTypePatch
     /// <summary>Вид лавки для витрины игрока (null — ванильная витрина).</summary>
     public static ShopType? ShopFor(Player player) =>
         MerchantLedger.Active(player) && MerchantLedger.Of(player) is { } ledger ? ledger.CurrentShop : null;
+
+    /// <summary>Заказ (14 §1), который выполняется на этой витрине.</summary>
+    public static OrderCategory? OrderFor(Player player) =>
+        MerchantLedger.Active(player) && MerchantLedger.Of(player) is { } ledger ? ledger.ActiveOrder(player.RunState) : null;
 }
 
 /// <summary>Чародейская лавка: 5 слотов карт героя — заклинания, доступные по владению.</summary>
@@ -61,7 +65,19 @@ public static class SpellShopCardsPatch
         {
             var rng = player.PlayerRng.Shops;
             var saleIndex = rng.NextInt(Slots);
-            for (var i = 0; i < Slots; i++)
+            // Заказ «заклинание»: первый слот — заклинание высшей доступной ступени.
+            if (ShopTypePatch.OrderFor(player) == OrderCategory.Spell)
+            {
+                var top = pool.OfType<SlayTheRequiem.SlayTheRequiemCode.Spells.SpellCard>().OrderByDescending(c => (int)c.Tier)
+                    .ThenBy(c => c.Id.Entry, StringComparer.Ordinal).FirstOrDefault();
+                if (top != null)
+                {
+                    var ordered = new MerchantCardEntry(player, __instance, new List<CardModel> { top }, top.Rarity);
+                    list.Add(ordered);
+                    ordered.Populate();
+                }
+            }
+            for (var i = list.Count; i < Slots; i++)
             {
                 // Редкость берём у случайного ещё не выставленного заклинания — так CreateForMerchant(rarity)
                 // гарантированно найдёт карту (ванильный вариант по редкости не умеет откатываться).
@@ -107,20 +123,33 @@ public static class ShopRelicsPatch
             var act = player.RunState.CurrentActIndex;
             var (min, max) = ShopRules.EquipmentTiers(shop.Value, act);
             var taken = new HashSet<Type>();
+            var order = ShopTypePatch.OrderFor(player);
+            var orderTier = ShopRules.OrderTier(shop.Value, act);
+            (int, int) Tiers(OrderCategory category) => order == category ? (orderTier, orderTier) : (min, max);
             switch (shop.Value)
             {
                 case ShopType.Wanderer:
+                {
                     AddVanilla(__instance, RelicFactory.RollRarity(player));
                     AddVanilla(__instance, RelicFactory.RollRarity(player));
-                    AddEquipment(__instance, min, max, null, taken, fallback: RelicRarity.Shop);
+                    var (lo, hi) = Tiers(OrderCategory.Equipment);
+                    AddEquipment(__instance, lo, hi, null, taken, fallback: RelicRarity.Shop);
                     break;
-
+                }
                 case ShopType.Armorer:
+                {
                     var armor = ShopRules.PreferredArmor(player.Character.GetType().Name);
-                    AddEquipment(__instance, min, max, e => e is WeaponRelic, taken, fallback: RelicRarity.Common);
-                    AddEquipment(__instance, min, max, e => e is ArmorRelic a && (armor == ArmorClass.None || a.Armor == armor), taken, fallback: RelicRarity.Common);
-                    AddEquipment(__instance, min, max, e => e.Slot == EquipSlot.OffHand || e is ArmorRelic, taken, fallback: RelicRarity.Shop);
+                    var (wLo, wHi) = Tiers(OrderCategory.Weapon);
+                    var (aLo, aHi) = Tiers(OrderCategory.Armor);
+                    var (sLo, sHi) = Tiers(OrderCategory.Shield);
+                    AddEquipment(__instance, wLo, wHi, e => e is WeaponRelic, taken, fallback: RelicRarity.Common);
+                    AddEquipment(__instance, aLo, aHi, e => e is ArmorRelic a && (armor == ArmorClass.None || a.Armor == armor), taken, fallback: RelicRarity.Common);
+                    if (order == OrderCategory.Shield)
+                        AddEquipment(__instance, sLo, sHi, e => e.Slot == EquipSlot.OffHand, taken, fallback: RelicRarity.Shop);
+                    else
+                        AddEquipment(__instance, min, max, e => e.Slot == EquipSlot.OffHand || e is ArmorRelic, taken, fallback: RelicRarity.Shop);
                     break;
+                }
 
                 case ShopType.Arcanist:
                     if (ShopStock.PickTreatise(player) is { } treatise) __instance.AddRelicEntry(ShopStock.RelicEntry(treatise, player));
@@ -169,9 +198,13 @@ public static class HerbalistPotionsPatch
         try
         {
             var tier = ShopRules.BrewTier(player.RunState.CurrentActIndex);
-            foreach (var poison in new[] { false, false, true })
+            var order = ShopTypePatch.OrderFor(player);
+            var orderedPotion = order == OrderCategory.Potion;
+            var orderedPoison = order == OrderCategory.Poison;
+            foreach (var (poison, top) in new[] { (false, orderedPotion), (false, false), (true, orderedPoison) })
             {
-                var brew = ShopStock.PickBrew(player, poison, tier);
+                // Заказ: зелье/яд высшей ступени (V).
+                var brew = ShopStock.PickBrew(player, poison, top ? 5 : tier);
                 if (brew == null) break;
                 list.Add(new MerchantPotionEntry(brew, player));
             }
@@ -183,5 +216,44 @@ public static class HerbalistPotionsPatch
         }
         list.Clear();
         return true;
+    }
+}
+
+/// <summary>
+/// Пополнение витрины за доверие (<see cref="MerchantLedger.ShouldRefillMerchantEntry"/>): ванильная запись реликвии
+/// пополняется ванильной реликвией, а купленное снаряжение должно смениться снаряжением той же категории.
+/// </summary>
+[HarmonyPatch(typeof(MerchantRelicEntry), "RestockAfterPurchase")]
+public static class EquipmentRestockPatch
+{
+    private static readonly AccessTools.FieldRef<MerchantEntry, Player> PlayerRef =
+        AccessTools.FieldRefAccess<MerchantEntry, Player>("_player");
+
+    private static readonly System.Reflection.MethodInfo? SetModel = AccessTools.Method(typeof(MerchantRelicEntry), "SetModel");
+
+    [HarmonyPrefix]
+    public static bool RestockEquipment(MerchantRelicEntry __instance, MerchantInventory? inventory)
+    {
+        if (__instance.Model is not EquipmentRelic bought || SetModel == null) return true;
+        var player = PlayerRef(__instance);
+        var shop = player == null ? null : ShopTypePatch.ShopFor(player);
+        if (player == null || shop == null) return true;
+        try
+        {
+            var (min, max) = ShopRules.EquipmentTiers(shop.Value, player.RunState.CurrentActIndex);
+            var taken = new HashSet<Type> { bought.GetType() };
+            foreach (var entry in inventory?.RelicEntries ?? [])
+                if (entry.Model != null) taken.Add(entry.Model.GetType());
+            var category = bought.PriceCategory;
+            var pick = ShopStock.PickEquipment(player, min, max, e => e.PriceCategory == category, taken);
+            if (pick == null) return true;
+            SetModel.Invoke(__instance, [pick.ToMutable()]);
+            return false;
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Warn($"[SlayTheRequiem] Пополнение витрины: {e.Message}");
+            return true;
+        }
     }
 }

@@ -44,11 +44,30 @@ public abstract class EquipmentRelic : RequiemRelic
 
     public bool IsEquipped => !IsStowed;
 
+    private int _upgrades;
+
+    /// <summary>Улучшения предмета (+1/+2: Заточка Оружейника, Кузня лагеря — этап 5), docs/design/07 §2.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int Upgrades
+    {
+        get => _upgrades;
+        set
+        {
+            AssertMutable();
+            _upgrades = Math.Clamp(value, 0, ShopRules.MaxUpgrade);
+        }
+    }
+
+    public bool CanUpgrade => _upgrades < ShopRules.MaxUpgrade;
+
+    /// <summary>Ступень с учётом улучшений — для порогов свойств (IV+ и т. п.). Цена считается по базовой ступени.</summary>
+    public int EffectiveTier => Tier + _upgrades;
+
     public override bool ShowCounter => true;
     /// <summary>На иконке показывается вес; 0 — снято (в рюкзаке).</summary>
     public override int DisplayAmount => IsStowed ? 0 : Weight;
 
-    public EquipItem Describe() => new(GetType().Name, Slot, Weight, Tier, Armor, Weapon, Set, Ward);
+    public EquipItem Describe() => new(GetType().Name, Slot, Weight, Tier, Armor, Weapon, Set, Ward, _upgrades);
 
     public override Task AfterObtained()
     {
@@ -107,7 +126,7 @@ public abstract class WeaponRelic : EquipmentRelic
         if (target == null || !IsMyWeaponAttack(dealer, props, cardSource)) return 0m;
         // Рубящий: +2 (+4 на IV+) по цели с ♥ < 50 %.
         if (PropertyKind == WeaponKind.Axe && target.CurrentHp * 2 < target.MaxHp)
-            return (Tier >= 4 ? 4 : 2) * PropertyScale;
+            return (EffectiveTier >= 4 ? 4 : 2) * PropertyScale;
         return 0m;
     }
 
@@ -144,7 +163,7 @@ public abstract class WeaponRelic : EquipmentRelic
                     await PowerCmd.Apply<BleedPower>(choiceContext, target, 1, Owner.Creature, card);
                     break;
                 case WeaponKind.Mace:
-                    await PowerCmd.Apply<SunderPower>(choiceContext, target, (Tier >= 4 ? 2 : 1) * PropertyScale, Owner.Creature, card);
+                    await PowerCmd.Apply<SunderPower>(choiceContext, target, (EffectiveTier >= 4 ? 2 : 1) * PropertyScale, Owner.Creature, card);
                     break;
             }
             if (Weapon == WeaponKind.TwoHanded)

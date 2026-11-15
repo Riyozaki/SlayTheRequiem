@@ -50,8 +50,11 @@
   "SLAYTHEREQUIEM-DEATH_SECTION.title": "Смерть и Камень Памяти",
   "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.title": "Камень Памяти",
   "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.title": "Камень Памяти",
-  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Отпечаток в начале каждого акта; после смерти можно вернуться к нему за Свечу и Шрам. Пока только в одиночной игре.",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Отпечаток в начале каждого акта; после смерти можно вернуться к нему за Свечу и Шрам. Карта акта — новая, босс — прежний. В коопе хост предлагает, отряд голосует, Свечи общие.",
   "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.title": "Свечи Реквиема",
   "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.title": "Свечи Реквиема",
-  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Возвратов за забег. −1 — по уровню (0: без ограничения, 1–4: 3, 5–7: 2, 8–9: 1, 10: ни одной). 0 — классический рогалик."
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Возвратов за забег. −1 — по уровню (0: без ограничения, 1–4: 3, 5–7: 2, 8–9: 1, 10: ни одной). 0 — классический рогалик.",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.title": "Кража в лавках",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.title": "Кража в лавках",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.desc": "Щелчок по товару, на который не хватает золота, — попытка кражи (80% −10% за каждые 50 золотых, раз за лавку). Позже кражу дадут реликвии и происхождения; переключатель разрешает её без них. В коопе должен совпадать."
 }

@@ -5,5 +5,8 @@
   "OPTION_SLAYTHEREQUIEM_CHEST.name": "Сундук",
   "OPTION_SLAYTHEREQUIEM_CHEST.description": "Убрать карты и снаряжение (перестают весить) или забрать обратно. Груз {Weight}/{Capacity}, в сундуке: {Stored}. Привал не заканчивается.",
   "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Выберите карты, которые убрать в сундук",
-  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Выберите карты, которые забрать из сундука"
+  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Выберите карты, которые забрать из сундука",
+  "OPTION_SLAYTHEREQUIEM_FORGE.name": "Кузня",
+  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (не выше +2). Привал заканчивается.",
+  "OPTION_SLAYTHEREQUIEM_FORGE.descriptionDisabled": "Ни одну надетую вещь нельзя улучшить дальше."
 }

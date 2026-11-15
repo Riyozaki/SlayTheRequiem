@@ -194,7 +194,9 @@ ARMOR_SLOTS = {"head", "body", "hands", "feet"}
 
 
 def weapon_damage(kind: str, tier: int) -> int:
-    return WEAPON_DAMAGE.get(kind, [0] * 5)[max(1, min(5, tier)) - 1]
+    """tier — эффективная ступень (база + улучшения); сверх V: +1 урона за уровень, двуручное +2."""
+    beyond = max(0, tier - 5) * (2 if kind == "twohanded" else 1) if kind in WEAPON_DAMAGE else 0
+    return beyond + WEAPON_DAMAGE.get(kind, [0] * 5)[max(1, min(5, tier)) - 1]
 
 
 def loadout(items: list[dict]) -> dict:
@@ -508,6 +510,74 @@ def spell_allowed_in_shop(tier: int, mastery: int) -> bool:
     return tier <= max(1, mastery) + 1
 
 
+# доверие: витрина и Заказ
+def refills_per_visit(trust_level: int) -> int:
+    return max(0, min(3, trust_level))
+
+
+def can_order(trust_level: int) -> bool:
+    return trust_level >= 3
+
+
+def order_price(item_price: int) -> int:
+    return 0 if item_price <= 0 else _math.ceil(item_price * 0.5)
+
+
+def order_tier(act_index: int) -> int:
+    return max(2, equipment_tiers("Armorer", act_index)[1])
+
+
+def order_item_price(category: str, act_index: int) -> int:
+    tier = order_tier(act_index)
+    return {
+        "Weapon": equipment_price("Weapon", tier), "Equipment": equipment_price("Weapon", tier),
+        "Armor": equipment_price("Armor", tier), "Shield": equipment_price("Shield", tier),
+        "Spell": spell_price(max(1, min(5, tier)), True),
+        "Potion": brew_price(5, False), "Poison": brew_price(5, True),
+    }.get(category, 100)
+
+
+# кража
+def theft_chance(price: int) -> int:
+    return max(0, min(80, 80 - 10 * (max(0, price) // 50)))
+
+
+def theft_succeeds(hash_: int, price: int) -> bool:
+    return (hash_ % 100) < theft_chance(price)
+
+
+def theft_fail_damage(max_hp: int) -> int:
+    return max(1, _math.ceil(max(0, max_hp) * 0.2))
+
+
+# услуги
+MAX_UPGRADE = 2
+REFORGE_PRICE = 50
+BREW_SERVICE_PRICE = 25
+PANACEA_PRICE = 60
+REAGENT_KIT_SIZE = 3
+
+
+def sharpen_price(tier: int) -> int:
+    return 60 if tier <= 2 else 90 if tier == 3 else 130
+
+
+def reagent_kit_price(act_index: int) -> int:
+    return max(20, min(35, 20 + 5 * max(0, act_index)))
+
+
+def reagent_sell_value(count: int) -> int:
+    return max(0, count) * 3
+
+
+def removal_price(removals_used: int) -> int:
+    return 75 + 25 * max(0, removals_used)
+
+
+def death_echo_surcharge(removal: int, gold_left: int) -> int:
+    return max(0, min(removal, max(0, gold_left)))
+
+
 # ───────────── Камень Памяти (Core/MemoryStoneRules.cs) ─────────────
 
 INFINITE = 2 ** 31 - 1
@@ -548,3 +618,22 @@ def score_multiplier(rollbacks: int) -> float:
 
 def scars_to_apply(in_dying_run: int, chosen_now: bool, in_imprint: int) -> int:
     return max(0, in_dying_run + (1 if chosen_now else 0) - in_imprint)
+
+
+def vote_approved(yes_including_host: int, no: int) -> bool:
+    return yes_including_host >= no
+
+
+def shared_candles_left(per_player: list[int]) -> int:
+    return min(per_player) if per_player else 0
+
+
+def shared_candles_used(per_player: list[int]) -> int:
+    return max(per_player) if per_player else 0
+
+
+DEFAULT_SCAR = "Purse"
+
+
+def map_rng_name(act_index: int, rollbacks: int) -> str:
+    return f"act_{act_index + 1}_map_requiem_{rollbacks}"

@@ -67,4 +67,32 @@ public static class MemoryStoneRules
 
     /// <summary>Удаление «Предсмертного эха» стоит вдвое дороже.</summary>
     public const int DeathEchoRemovalFactor = 2;
+
+    // ───── кооп (§5) ─────
+
+    /// <summary>
+    /// Голосование отряда: хост предложил возврат (его голос — «за»), остальные голосуют; кто не ответил — воздержался.
+    /// Большинство; при равенстве решает хост — то есть «за».
+    /// </summary>
+    public static bool VoteApproved(int yesIncludingHost, int no) => yesIncludingHost >= no;
+
+    /// <summary>Свечи общие для отряда: остаток — наименьший среди Камней игроков (∞ только если у всех ∞).</summary>
+    public static int SharedCandlesLeft(IEnumerable<int> perPlayer)
+    {
+        var any = false;
+        var min = Infinite;
+        foreach (var c in perPlayer) { any = true; min = Math.Min(min, c); }
+        return any ? min : 0;
+    }
+
+    /// <summary>Сколько потрачено Свечей у отряда: наибольший счётчик (у всех растёт одновременно).</summary>
+    public static int SharedCandlesUsed(IEnumerable<int> perPlayer) => perPlayer.DefaultIfEmpty(0).Max();
+
+    /// <summary>Шрам по умолчанию, если игрок не выбрал (вышел/истёк таймер): самый мягкий — кошелёк.</summary>
+    public const Scar DefaultScar = Scar.Purse;
+
+    // ───── новая карта акта (§1.3) ─────
+
+    /// <summary>Имя потока ГСЧ новой карты акта после возврата: своё для каждого отката.</summary>
+    public static string MapRngName(int actIndex, int rollbacks) => $"act_{actIndex + 1}_map_requiem_{rollbacks}";
 }

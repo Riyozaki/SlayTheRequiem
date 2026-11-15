@@ -235,3 +235,45 @@ class Stage35(unittest.TestCase):
         # повторный возврат к тому же Камню: прежний Шрам плоти + новый
         self.assertEqual(r.scars_to_apply(1, True, 0), 2)
         self.assertEqual(r.scars_to_apply(1, False, 1), 0)
+
+
+class Stage36(unittest.TestCase):
+    def test_trust_orders(self):
+        self.assertEqual([r.refills_per_visit(t) for t in (0, 1, 2, 3, 5)], [0, 1, 2, 3, 3])
+        self.assertFalse(r.can_order(2))
+        self.assertTrue(r.can_order(3))
+        self.assertEqual(r.order_price(131), 66)
+        self.assertEqual(r.order_tier(0), 2)
+        self.assertEqual(r.order_tier(3), 5)
+        self.assertEqual(r.order_item_price("Weapon", 0), 80)
+        self.assertEqual(r.order_item_price("Potion", 0), 130)
+
+    def test_theft(self):
+        self.assertEqual([r.theft_chance(p) for p in (0, 49, 50, 149, 400, 1000)], [80, 80, 70, 60, 0, 0])
+        self.assertTrue(r.theft_succeeds(79, 40))
+        self.assertFalse(r.theft_succeeds(80, 40))
+        self.assertFalse(r.theft_succeeds(0, 400))
+        self.assertEqual(r.theft_fail_damage(80), 16)
+        self.assertEqual(r.theft_fail_damage(71), 15)
+        self.assertEqual(r.theft_fail_damage(0), 1)
+
+    def test_services(self):
+        self.assertEqual([r.sharpen_price(t) for t in (1, 2, 3, 4, 5)], [60, 60, 90, 130, 130])
+        self.assertEqual([r.reagent_kit_price(a) for a in (0, 1, 2, 3, 4)], [20, 25, 30, 35, 35])
+        self.assertEqual(r.reagent_sell_value(5), 15)
+        self.assertEqual(r.removal_price(2), 125)
+        self.assertEqual(r.death_echo_surcharge(100, 40), 40)
+        self.assertEqual(r.death_echo_surcharge(100, 500), 100)
+
+    def test_upgrades_beyond_v(self):
+        self.assertEqual(r.weapon_damage("sword", 5), 4)
+        self.assertEqual(r.weapon_damage("sword", 7), 6)
+        self.assertEqual(r.weapon_damage("twohanded", 6), 10)
+
+    def test_coop_stone(self):
+        self.assertTrue(r.vote_approved(1, 1))   # ничья — решает хост (его голос «за»)
+        self.assertFalse(r.vote_approved(1, 2))
+        self.assertEqual(r.shared_candles_left([3, 1, 2]), 1)
+        self.assertEqual(r.shared_candles_left([]), 0)
+        self.assertEqual(r.shared_candles_used([0, 2, 1]), 2)
+        self.assertEqual(r.map_rng_name(0, 1), "act_1_map_requiem_1")

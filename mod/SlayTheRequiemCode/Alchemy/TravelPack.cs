@@ -146,6 +146,7 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
         if (player != Owner || !RequiemMode.IsInSystem(Owner)) return false;
         options.Add(new BrewRestSiteOption(player));
         options.Add(new ChestRestSiteOption(player));
+        options.Add(new ForgeRestSiteOption(player));
         return true;
     }
 

@@ -46,6 +46,12 @@ internal class RequiemConfig : SimpleModConfig
     /// <summary>Лавки Реквиема (docs/design/14): вид лавки на узле, свои витрины, доверие, продажа, золото ×1.3.</summary>
     public static bool ShopVariety { get; set; } = true;
 
+    /// <summary>
+    /// Кража в лавках (docs/design/14 §1) без источника. Источники — Знамение Ловкача, Кольцо Безликого Вора, Лунная
+    /// порода-Плут — появятся на этапах 4–6; до тех пор кражу можно включить здесь. В коопе должна совпадать у всех.
+    /// </summary>
+    public static bool AllowTheft { get; set; } = false;
+
     /// <summary>Камень Памяти (docs/design/15): Отпечаток в начале акта и возврат с экрана поражения.</summary>
     [ConfigSection("DeathSection")]
     public static bool EnableMemoryStone { get; set; } = true;

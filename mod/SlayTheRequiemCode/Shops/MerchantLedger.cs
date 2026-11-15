@@ -1,8 +1,12 @@
 using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Gold;
 using MegaCrit.Sts2.Core.Entities.Merchant;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
@@ -12,6 +16,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Potions;
 using SlayTheRequiem.SlayTheRequiemCode.Relics;
+using SlayTheRequiem.SlayTheRequiemCode.Rollback;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using SlayTheRequiem.SlayTheRequiemCode.Spells;
 
@@ -50,6 +55,11 @@ public sealed class MerchantLedger : RequiemRelic
     private int _shopsThisAct;
     private int _previousShop = -1;
     private int _treatisesBought;
+    private int _orderShop;      // вид лавки заказа + 1; 0 — заказа нет
+    private int _orderCategory;
+    private int _orderFloor;     // этаж, где заказ выполняется, + 1; 0 — нигде
+    private int _refillsUsed;
+    private int _theftFloor;     // этаж последней попытки кражи + 1
 
     /// <summary>Золото, потраченное в лавках каждого вида (индекс = <see cref="ShopType"/>).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -84,6 +94,26 @@ public sealed class MerchantLedger : RequiemRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int TreatisesBought { get => _treatisesBought; set { AssertMutable(); _treatisesBought = value; } }
 
+    /// <summary>Заказ (14 §1): вид лавки + 1 (0 — нет заказа).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int OrderShop { get => _orderShop; set { AssertMutable(); _orderShop = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int OrderCategoryIndex { get => _orderCategory; set { AssertMutable(); _orderCategory = value; } }
+
+    /// <summary>Этаж выполнения заказа + 1 — чтобы перезагрузка в той же лавке не теряла заказанный товар.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int OrderFloor { get => _orderFloor; set { AssertMutable(); _orderFloor = value; } }
+
+    /// <summary>
+    /// Пополнений витрины за этот визит. Не сохраняется: хук пополнения срабатывает только на машине покупателя,
+    /// и сохранённое значение расходилось бы между игроками коопа.
+    /// </summary>
+    public int RefillsUsed => _refillsUsed;
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int TheftFloor { get => _theftFloor; set { AssertMutable(); _theftFloor = value; } }
+
     public ShopType CurrentShop => (ShopType)Math.Clamp(_currentShop, 0, ShopRules.ShopTypeCount - 1);
     public int TrustOf(ShopType shop) => ShopRules.Trust(_spent[(int)shop]);
 
@@ -111,10 +141,60 @@ public sealed class MerchantLedger : RequiemRelic
         ShopType? previous = _previousShop >= 0 ? (ShopType)_previousShop : null;
         var shop = ShopRules.RollShopType(hash, runState.CurrentActIndex, _shopsThisAct, previous);
         _currentFloor = floor;
+        _refillsUsed = 0;
+        // Заказ выполняется в первой следующей лавке того же вида.
+        if (_orderShop == (int)shop + 1)
+        {
+            _orderShop = 0;
+            _orderFloor = floor + 1;
+        }
         _shopsThisAct++;
         _previousShop = (int)shop;
         CurrentShopIndex = (int)shop;
         return shop;
+    }
+
+    // ───── доверие, Заказ, кража ─────
+
+    public int CurrentTrust => TrustOf(CurrentShop);
+
+    public void AddSpent(ShopType shop, int gold)
+    {
+        if (gold <= 0) return;
+        AssertMutable();
+        _spent[(int)shop] += gold;
+        SyncVars();
+    }
+
+    /// <summary>Провал кражи: доверие этого вида лавок → 0.</summary>
+    public void ResetTrust(ShopType shop)
+    {
+        AssertMutable();
+        _spent[(int)shop] = 0;
+        SyncVars();
+    }
+
+    public bool HasOrder => _orderShop > 0;
+    public ShopType? OrderedShop => _orderShop > 0 ? (ShopType)(_orderShop - 1) : null;
+    public OrderCategory OrderedCategory => (OrderCategory)_orderCategory;
+
+    public void PlaceOrder(ShopType shop, OrderCategory category)
+    {
+        AssertMutable();
+        _orderShop = (int)shop + 1;
+        _orderCategory = (int)category;
+    }
+
+    /// <summary>Заказ, который выполняется на витрине текущего этажа (null — нет).</summary>
+    public OrderCategory? ActiveOrder(IRunState runState) =>
+        _orderFloor > 0 && _orderFloor - 1 == runState.TotalFloor ? (OrderCategory)_orderCategory : null;
+
+    public bool TheftTriedHere(IRunState runState) => _theftFloor == runState.TotalFloor + 1;
+
+    public void MarkTheftAttempt(IRunState runState)
+    {
+        AssertMutable();
+        _theftFloor = runState.TotalFloor + 1;
     }
 
     // ───── цены ─────
@@ -136,16 +216,41 @@ public sealed class MerchantLedger : RequiemRelic
         return ShopRules.ApplyTrust(price, TrustOf(CurrentShop));
     }
 
-    public override Task AfterItemPurchased(Player player, MerchantEntry itemPurchased, int goldSpent)
+    /// <summary>
+    /// Покупка у ванильного прилавка выполняется только на машине покупателя (остальным приходят лишь «получил
+    /// предмет / потерял золото»), поэтому рост доверия рассылается отдельным действием.
+    /// </summary>
+    public override async Task AfterItemPurchased(Player player, MerchantEntry itemPurchased, int goldSpent)
     {
-        if (player != Owner || !Active(Owner)) return Task.CompletedTask;
+        if (player != Owner || !Active(Owner) || goldSpent <= 0 || !LocalContext.IsMe(Owner)) return;
+        await ShopActions.Perform(Owner, ShopAction.TrustSpent, (int)CurrentShop, goldSpent);
+    }
+
+    /// <summary>
+    /// «+1 товар на витрине за уровень доверия» (14 §1): слоты сцены фиксированы, поэтому купленный товар
+    /// замещается новым — до «доверие» раз за визит. Удаление карты не пополняется.
+    /// </summary>
+    public override bool ShouldRefillMerchantEntry(MerchantEntry entry, Player player)
+    {
+        if (player != Owner || !Active(Owner) || entry is MerchantCardRemovalEntry) return false;
+        if (_refillsUsed >= ShopRules.RefillsPerVisit(CurrentTrust)) return false;
         AssertMutable();
-        if (goldSpent > 0)
-        {
-            _spent[(int)CurrentShop] += goldSpent;
-            SyncVars();
-        }
-        return Task.CompletedTask;
+        _refillsUsed++;
+        return true;
+    }
+
+    /// <summary>
+    /// Удаление «Предсмертного эха» у торговца стоит вдвое (15 §3): после оплаты удаления списывается ещё одна его цена
+    /// (сколько есть). Удаление выполняется у всех игроков коопа, значит и доплата — у всех одинаково.
+    /// </summary>
+    public override async Task BeforeCardRemoved(CardModel card)
+    {
+        if (card is not DeathEcho || card.Owner != Owner || Owner.RunState.CurrentRoom is not MerchantRoom) return;
+        var price = Active(Owner)
+            ? ShopRules.ApplyTrust(ShopRules.RemovalPrice(Owner.ExtraFields.CardShopRemovalsUsed), CurrentTrust)
+            : ShopRules.RemovalPrice(Owner.ExtraFields.CardShopRemovalsUsed);
+        var surcharge = ShopRules.DeathEchoSurcharge(price, Owner.Gold);
+        if (surcharge > 0) await PlayerCmd.LoseGold(surcharge, Owner, GoldLossType.Spent);
     }
 
     /// <summary>
@@ -165,14 +270,6 @@ public sealed class MerchantLedger : RequiemRelic
         if (player != Owner || !RequiemMode.IsInSystem(Owner) || amount <= 0) return amount;
         if (Owner.RunState.CurrentRoom is not CombatRoom) return amount;
         return ShopRules.CombatGold((int)amount);
-    }
-
-    // ───── продажа ─────
-
-    public override async Task AfterRoomEntered(AbstractRoom room)
-    {
-        if (room is not MerchantRoom || !Active(Owner)) return;
-        await SellService.OfferBackpackSale(Owner, this);
     }
 
     private void SyncVars()

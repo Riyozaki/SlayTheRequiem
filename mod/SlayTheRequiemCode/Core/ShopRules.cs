@@ -12,6 +12,9 @@ public enum ShopType
 /// <summary>Ценовая категория снаряжения (docs/design/14 §2.2, §2.5).</summary>
 public enum EquipCategory { Weapon, Shield, Armor, Cloak, Ring, Amulet }
 
+/// <summary>Что можно заказать (docs/design/14 §1, «Заказ» при доверии 3).</summary>
+public enum OrderCategory { Weapon, Armor, Shield, Equipment, Spell, Potion, Poison }
+
 /// <summary>
 /// Лавки: вид лавки на узле, цены, доверие, продажа, золото за бои (docs/design/14). Чистые функции — зеркало в tools/sim.
 /// </summary>
@@ -133,4 +136,87 @@ public static class ShopRules
     /// <summary>Золото за бои ×1.3 (§1): 13–20 → 17–26, элита 25–35 → 33–45, босс 95–105 → 124–137.</summary>
     public static int CombatGold(int vanilla) =>
         vanilla <= 0 ? vanilla : (int)Math.Round(vanilla * CombatGoldMultiplier, MidpointRounding.AwayFromZero);
+
+    // ───── доверие: витрина и Заказ ─────
+
+    /// <summary>«+1 товар за уровень доверия» (§1): сколько раз за визит опустевший слот витрины пополняется.</summary>
+    public static int RefillsPerVisit(int trust) => Math.Clamp(trust, 0, MaxTrust);
+
+    /// <summary>Заказ (§1) доступен при доверии 3 и стоит 50 % цены заказанного предмета.</summary>
+    public static bool CanOrder(int trust) => trust >= MaxTrust;
+
+    public static int OrderPrice(int itemPrice) => itemPrice <= 0 ? 0 : (int)Math.Ceiling(itemPrice * 0.5);
+
+    /// <summary>Ступень заказанного предмета — верхняя ступень витрины Оружейника в текущем акте (минимум II) для любой лавки.</summary>
+    public static int OrderTier(ShopType shop, int actIndex) => Math.Max(2, EquipmentTiers(ShopType.Armorer, actIndex).Max);
+
+    /// <summary>Варианты Заказа по виду лавки.</summary>
+    public static IReadOnlyList<OrderCategory> OrderOptions(ShopType shop) => shop switch
+    {
+        ShopType.Armorer => [OrderCategory.Weapon, OrderCategory.Armor, OrderCategory.Shield],
+        ShopType.Arcanist => [OrderCategory.Spell],
+        ShopType.Herbalist => [OrderCategory.Potion, OrderCategory.Poison],
+        _ => [OrderCategory.Equipment],
+    };
+
+    /// <summary>Полная цена заказанного предмета (Заказ стоит половину): верхняя ступень витрины акта.</summary>
+    public static int OrderItemPrice(OrderCategory category, int actIndex)
+    {
+        var tier = OrderTier(ShopType.Armorer, actIndex);
+        return category switch
+        {
+            OrderCategory.Weapon or OrderCategory.Equipment => EquipmentPrice(EquipCategory.Weapon, tier),
+            OrderCategory.Armor => EquipmentPrice(EquipCategory.Armor, tier),
+            OrderCategory.Shield => EquipmentPrice(EquipCategory.Shield, tier),
+            OrderCategory.Spell => SpellPrice((SpellTier)Math.Clamp(tier, 1, 5), single: true),
+            OrderCategory.Potion => BrewPrice(5, poison: false),
+            OrderCategory.Poison => BrewPrice(5, poison: true),
+            _ => 100,
+        };
+    }
+
+    // ───── кража ─────
+
+    /// <summary>Кража (§1): 80 % − 10 % за каждые полные 50 золотых цены, не ниже 0.</summary>
+    public static int TheftChancePercent(int price) => Math.Clamp(80 - 10 * (Math.Max(0, price) / 50), 0, 80);
+
+    /// <summary>Бросок кражи по детерминированному хешу (одинаков у всех игроков коопа).</summary>
+    public static bool TheftSucceeds(uint hash, int price) => (int)(hash % 100) < TheftChancePercent(price);
+
+    /// <summary>
+    /// Провал кражи: Стража выставляет вора — потеря 20 % макс. ♥ (не ниже 1 ♥ остатка), доверие вида → 0.
+    /// Бой со Стражей (облегчённая элита) — когда появятся элиты Реквиема (этап 7).
+    /// </summary>
+    public static int TheftFailDamage(int maxHp) => Math.Max(1, (int)Math.Ceiling(Math.Max(0, maxHp) * 0.2));
+
+    // ───── услуги ─────
+
+    /// <summary>Максимум улучшений предмета (07 §2: +2; «Легендарный» +3 — перк «Ремесло III», этап 5).</summary>
+    public const int MaxUpgrade = 2;
+
+    /// <summary>Заточка Оружейника (§2.2): 60 (I–II), 90 (III), 130 (IV–V).</summary>
+    public static int SharpenPrice(int tier) => tier <= 2 ? 60 : tier == 3 ? 90 : 130;
+
+    /// <summary>Перековка (§2.2): 50.</summary>
+    public const int ReforgePrice = 50;
+
+    /// <summary>Варка у Травницы (§2.4): 25, без очков лагеря.</summary>
+    public const int BrewServicePrice = 25;
+
+    /// <summary>Панацея (§2.4): снять Хворь/Болезнь — 60.</summary>
+    public const int PanaceaPrice = 60;
+
+    /// <summary>Набор из 3 реагентов (§2.4): 20 в 1-м акте, +5 за акт, не дороже 35.</summary>
+    public static int ReagentKitPrice(int actIndex) => Math.Clamp(20 + 5 * Math.Max(0, actIndex), 20, 35);
+
+    public const int ReagentKitSize = 3;
+
+    /// <summary>Скупка реагентов (§2.4): 50 % цены реагента (цена реагента — треть набора 1-го акта), минимум 1.</summary>
+    public static int ReagentSellValue(int count) => Math.Max(0, count) * 3;
+
+    /// <summary>Удаление «Предсмертного эха» (15 §3) стоит вдвое: доплата = цена удаления, но не больше остатка золота.</summary>
+    public static int DeathEchoSurcharge(int removalPrice, int goldLeft) => Math.Clamp(removalPrice, 0, Math.Max(0, goldLeft));
+
+    /// <summary>Цена удаления карты у торговца (ваниль: 75, +25 за каждое следующее) — для доплаты за «эхо».</summary>
+    public static int RemovalPrice(int removalsUsed) => 75 + 25 * Math.Max(0, removalsUsed);
 }

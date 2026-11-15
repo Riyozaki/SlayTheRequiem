@@ -4,10 +4,10 @@
 STAGE35_RELICS = [
     ("MerchantLedger", "Merchant's Ledger",
      "Remembers every shop. Trust here: {Trust} (−{Discount}% prices). Spend 150 gold in shops of a kind for +1 trust (max 3). "
-     "Combat gold ×1.3. Gear from your backpack can be sold to merchants.",
+     "Combat gold ×1.3. Close the shelf to open the counter: selling backpack gear, services, orders at trust 3.",
      "Книга торговца",
      "Помнит каждую лавку. Доверие здесь: {Trust} (−{Discount}% цен). Каждые 150 золотых в лавках одного вида — +1 доверия (до 3). "
-     "Золото за бои ×1.3. Снаряжение из рюкзака можно продать торговцу.",
+     "Золото за бои ×1.3. Закройте витрину — откроется прилавок: продажа вещей из рюкзака, услуги, Заказ при доверии 3.",
      "Debts in red, favours in gold.", "Долги — красным, услуги — золотом."),
     ("MemoryStoneRelic", "Requiem Candles",
      "At the start of each act the Memory Stone takes an Imprint of your run. On death you may return to it for a Candle and a Scar. "
@@ -28,7 +28,7 @@ STAGE35_RELIC_EXTRA = {
         "MERCHANT_LEDGER.sellNo": "Keep",
         "MEMORY_STONE_RELIC.offerHeader": "Return to the Memory Stone?",
         "MEMORY_STONE_RELIC.offerBody": "Go back to the start of act {Act} for one Candle (left: {Candles}; −1 means unlimited). "
-                                        "You keep the boss, the map stays; choose a Scar as the price. Revenge: +10% damage to those who killed you.",
+                                        "A new map, the same boss; choose a Scar as the price. Revenge: +10% damage to those who killed you.",
         "MEMORY_STONE_RELIC.offerYes": "Return",
         "MEMORY_STONE_RELIC.offerNo": "Accept death",
     },
@@ -39,7 +39,7 @@ STAGE35_RELIC_EXTRA = {
         "MERCHANT_LEDGER.sellNo": "Оставить",
         "MEMORY_STONE_RELIC.offerHeader": "Вернуться к Камню Памяти?",
         "MEMORY_STONE_RELIC.offerBody": "Вернуться к началу акта {Act} за одну Свечу (осталось: {Candles}; −1 — без ограничения). "
-                                        "Босс тот же, карта та же; цена — Шрам на выбор. Месть: +10% урона тем, кто вас убил.",
+                                        "Карта новая, босс тот же; цена — Шрам на выбор. Месть: +10% урона тем, кто вас убил.",
         "MEMORY_STONE_RELIC.offerYes": "Вернуться",
         "MEMORY_STONE_RELIC.offerNo": "Принять смерть",
     },

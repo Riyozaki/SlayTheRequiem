@@ -7,7 +7,8 @@ using MegaCrit.Sts2.Core.Saves;
 namespace SlayTheRequiem.SlayTheRequiemCode.Rollback;
 
 /// <summary>
-/// Экран поражения: если есть Отпечаток и Свечи — окно «Вернуться к Камню Памяти» (docs/design/15 §2–3).
+/// Экран поражения: если есть Отпечаток и Свечи — окно «Вернуться к Камню Памяти» (docs/design/15 §2–3);
+/// в коопе — предложение хоста и голосование (<see cref="CoopMemoryStone"/>).
 /// AfterOverlayOpened вызывается, когда экран поражения показан (и при победе — тогда CanOffer откажет).
 /// </summary>
 [HarmonyPatch(typeof(NGameOverScreen), nameof(NGameOverScreen.AfterOverlayOpened))]
@@ -24,7 +25,9 @@ public static class GameOverMemoryStonePatch
     {
         var state = RunStateRef(__instance);
         var ended = SaveRef(__instance);
-        if (state == null || ended == null || !MemoryStone.CanOffer(state, ended)) return;
+        if (state == null || ended == null) return;
+        CoopMemoryStone.OnGameOver(state);
+        if (!MemoryStone.CanOffer(state, ended)) return;
         TaskHelper.RunSafely(MemoryStone.Offer(state, ended));
     }
 }

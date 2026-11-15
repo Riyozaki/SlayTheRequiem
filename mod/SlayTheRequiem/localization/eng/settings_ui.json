@@ -50,8 +50,11 @@
   "SLAYTHEREQUIEM-DEATH_SECTION.title": "Death and the Memory Stone",
   "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.title": "Memory Stone",
   "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.title": "Memory Stone",
-  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Imprint at the start of every act; after death you may return to it for a Candle and a Scar. Single player only for now.",
+  "SLAYTHEREQUIEM-ENABLE_MEMORY_STONE.hover.desc": "Imprint at the start of every act; after death you may return to it for a Candle and a Scar. The act gets a new map, the boss stays. In co-op the host proposes, the party votes, Candles are shared.",
   "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.title": "Requiem Candles",
   "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.title": "Requiem Candles",
-  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Returns per run. −1 — by level (0: unlimited, 1–4: 3, 5–7: 2, 8–9: 1, 10: none). 0 — classic roguelike."
+  "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Returns per run. −1 — by level (0: unlimited, 1–4: 3, 5–7: 2, 8–9: 1, 10: none). 0 — classic roguelike.",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.title": "Theft in shops",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.title": "Theft in shops",
+  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.desc": "Click an item you can't afford to try stealing it (80% −10% per 50 gold, once per shop). Later theft will come from relics and origins; this switch allows it without them. Must match in co-op."
 }

@@ -5,5 +5,8 @@
   "OPTION_SLAYTHEREQUIEM_CHEST.name": "Chest",
   "OPTION_SLAYTHEREQUIEM_CHEST.description": "Store cards and gear (they stop weighing) or take them back. Burden {Weight}/{Capacity}, in the chest: {Stored}. Doesn't end your rest.",
   "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Choose cards to put in the chest",
-  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Choose cards to take from the chest"
+  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Choose cards to take from the chest",
+  "OPTION_SLAYTHEREQUIEM_FORGE.name": "Forge",
+  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Improve one equipped item by +1 (up to +2). Ends your rest.",
+  "OPTION_SLAYTHEREQUIEM_FORGE.descriptionDisabled": "No equipped item can be improved further."
 }

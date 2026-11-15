@@ -28,7 +28,12 @@ public sealed record EquipItem(
     ArmorClass Armor = ArmorClass.None,
     WeaponKind Weapon = WeaponKind.None,
     string? Set = null,
-    int Ward = 0);
+    int Ward = 0,
+    int Upgrade = 0)
+{
+    /// <summary>Ступень с учётом улучшений (Кузня/Заточка, 07 §2): +1 улучшение ≈ ступень выше.</summary>
+    public int EffectiveTier => Tier + Math.Max(0, Upgrade);
+}
 
 /// <summary>Сводные бонусы снаряжения (броня, комплекты не включены — они у предметов-комплектов).</summary>
 public readonly record struct LoadoutBonuses(
@@ -83,7 +88,10 @@ public static class EquipmentRules
     public static int WeaponDamage(WeaponKind kind, int tier)
     {
         var t = Math.Clamp(tier, 1, 5) - 1;
-        return kind switch
+        // Улучшения сверх V: +1 урона за уровень (двуручное +2).
+        var beyond = Math.Max(0, tier - 5) * (kind == WeaponKind.TwoHanded ? 2 : 1);
+        if (kind == WeaponKind.None || kind == WeaponKind.Staff || kind == WeaponKind.Shield) beyond = 0;
+        return beyond + (kind switch
         {
             WeaponKind.Dagger => new[] { 0, 1, 2, 2, 3 }[t],
             WeaponKind.Sword or WeaponKind.Axe or WeaponKind.Mace or WeaponKind.Spear => new[] { 1, 2, 3, 3, 4 }[t],
@@ -91,7 +99,7 @@ public static class EquipmentRules
             WeaponKind.Bow => new[] { 2, 3, 4, 5, 6 }[t],
             WeaponKind.Crossbow => new[] { 4, 5, 6, 7, 8 }[t],
             _ => 0,
-        };
+        });
     }
 
     /// <summary>Сдвиг цены ◆ «Оружейных» атак от типа оружия.</summary>
@@ -109,7 +117,7 @@ public static class EquipmentRules
         var light = armor.Count(e => e.Armor == ArmorClass.Light);
 
         // Тяжёлая: Латы +1 за каждые 2 части ступени II+, плюс +1 за каждую часть IV+; Стойкость +1 за часть.
-        var plating = heavy.Count(e => e.Tier >= 2) / 2 + heavy.Count(e => e.Tier >= 4);
+        var plating = heavy.Count(e => e.EffectiveTier >= 2) / 2 + heavy.Count(e => e.EffectiveTier >= 4);
         var poise = heavy.Count;
         var manaPenalty = heavy.Count >= 3 ? 1 : 0;
 
@@ -134,7 +142,7 @@ public static class EquipmentRules
             StaminaRegenBonus: duelist || monk ? 1 : 0,
             ManaRegenPenalty: manaPenalty,
             Ward: ward,
-            WeaponDamage: main == null ? 0 : WeaponDamage(weapon, main.Tier),
+            WeaponDamage: main == null ? 0 : WeaponDamage(weapon, main.EffectiveTier),
             WeaponStaminaDelta: WeaponStaminaDelta(weapon),
             Duelist: duelist,
             Monk: monk);

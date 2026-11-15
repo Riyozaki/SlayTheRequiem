@@ -456,3 +456,73 @@ public class Stage35Tests
         Assert.False(MemoryStoneRules.IsSnapshotCompatible(6, 7));
     }
 }
+
+public class Stage36Tests
+{
+    [Fact]
+    public void TrustAndOrders()
+    {
+        Assert.Equal(new[] { 0, 1, 2, 3, 3 }, new[] { 0, 1, 2, 3, 5 }.Select(ShopRules.RefillsPerVisit));
+        Assert.False(ShopRules.CanOrder(2));
+        Assert.True(ShopRules.CanOrder(3));
+        Assert.Equal(66, ShopRules.OrderPrice(131));
+        Assert.Equal(2, ShopRules.OrderTier(ShopType.Wanderer, 0));
+        Assert.Equal(5, ShopRules.OrderTier(ShopType.Armorer, 3));
+        Assert.Equal(80, ShopRules.OrderItemPrice(OrderCategory.Weapon, 0));
+        Assert.Equal(130, ShopRules.OrderItemPrice(OrderCategory.Potion, 0));
+        Assert.Equal(new[] { OrderCategory.Weapon, OrderCategory.Armor, OrderCategory.Shield }, ShopRules.OrderOptions(ShopType.Armorer));
+    }
+
+    [Theory]
+    [InlineData(0, 80)]
+    [InlineData(49, 80)]
+    [InlineData(50, 70)]
+    [InlineData(149, 60)]
+    [InlineData(400, 0)]
+    public void TheftChance(int price, int expected) => Assert.Equal(expected, ShopRules.TheftChancePercent(price));
+
+    [Fact]
+    public void Theft()
+    {
+        Assert.True(ShopRules.TheftSucceeds(79u, 40));
+        Assert.False(ShopRules.TheftSucceeds(80u, 40));
+        Assert.Equal(16, ShopRules.TheftFailDamage(80));
+        Assert.Equal(15, ShopRules.TheftFailDamage(71));
+        Assert.Equal(1, ShopRules.TheftFailDamage(0));
+    }
+
+    [Fact]
+    public void Services()
+    {
+        Assert.Equal(new[] { 60, 60, 90, 130, 130 }, Enumerable.Range(1, 5).Select(ShopRules.SharpenPrice));
+        Assert.Equal(new[] { 20, 25, 30, 35, 35 }, Enumerable.Range(0, 5).Select(ShopRules.ReagentKitPrice));
+        Assert.Equal(15, ShopRules.ReagentSellValue(5));
+        Assert.Equal(125, ShopRules.RemovalPrice(2));
+        Assert.Equal(40, ShopRules.DeathEchoSurcharge(100, 40));
+        Assert.Equal(100, ShopRules.DeathEchoSurcharge(100, 500));
+    }
+
+    [Fact]
+    public void UpgradesBeyondV()
+    {
+        Assert.Equal(4, EquipmentRules.WeaponDamage(WeaponKind.Sword, 5));
+        Assert.Equal(6, EquipmentRules.WeaponDamage(WeaponKind.Sword, 7));
+        Assert.Equal(10, EquipmentRules.WeaponDamage(WeaponKind.TwoHanded, 6));
+        Assert.Equal(0, EquipmentRules.WeaponDamage(WeaponKind.None, 7));
+        var item = new EquipItem("Saber", EquipSlot.MainHand, 2, 3, ArmorClass.None, WeaponKind.Sword, null, 0, 2);
+        Assert.Equal(5, item.EffectiveTier);
+    }
+
+    [Fact]
+    public void CoopStone()
+    {
+        Assert.True(MemoryStoneRules.VoteApproved(1, 1));
+        Assert.False(MemoryStoneRules.VoteApproved(1, 2));
+        Assert.Equal(1, MemoryStoneRules.SharedCandlesLeft(new[] { 3, 1, 2 }));
+        Assert.Equal(0, MemoryStoneRules.SharedCandlesLeft(Array.Empty<int>()));
+        Assert.Equal(MemoryStoneRules.Infinite, MemoryStoneRules.SharedCandlesLeft(new[] { MemoryStoneRules.Infinite }));
+        Assert.Equal(2, MemoryStoneRules.SharedCandlesUsed(new[] { 0, 2, 1 }));
+        Assert.Equal("act_1_map_requiem_1", MemoryStoneRules.MapRngName(0, 1));
+        Assert.Equal(Scar.Purse, MemoryStoneRules.DefaultScar);
+    }
+}

@@ -5,6 +5,8 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Map;
+using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Runs;
@@ -49,7 +51,11 @@ public sealed class MemoryStoneRelic : RequiemRelic
     private int _soulScars;
     private int _purseScars;
     private string _revengeTargets = string.Empty;
-    private int _revengeAct = -1;
+    private int _revengeAct1;
+    private int _mapRerollAct1;
+    private int _pendingFlesh;
+    private int _pendingSoul;
+    private int _pendingPurse;
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int CandlesUsed { get => _candlesUsed; set { AssertMutable(); _candlesUsed = value; SyncVars(); } }
@@ -74,9 +80,31 @@ public sealed class MemoryStoneRelic : RequiemRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public string RevengeTargets { get => _revengeTargets; set { AssertMutable(); _revengeTargets = value ?? string.Empty; } }
 
-    /// <summary>Акт повторной попытки, в котором действует Месть; −1 — Мести нет.</summary>
+    /// <summary>
+    /// Акт повторной попытки, в котором действует Месть, + 1 (0 — Мести нет). Хранится со сдвигом: значение 0 по
+    /// умолчанию не записывается в сохранение, и «акт 1» иначе терялся бы после «Сохранить и выйти».
+    /// </summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
-    public int RevengeAct { get => _revengeAct; set { AssertMutable(); _revengeAct = value; } }
+    public int RevengeAct1 { get => _revengeAct1; set { AssertMutable(); _revengeAct1 = value; } }
+
+    /// <summary>Акт + 1, карту которого нужно построить заново после возврата (0 — не нужно), docs/design/15 §1.3.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int MapRerollAct1 { get => _mapRerollAct1; set { AssertMutable(); _mapRerollAct1 = value; } }
+
+    public int RevengeAct => _revengeAct1 - 1;
+
+    /// <summary>
+    /// Шрамы, которые нужно наложить после загрузки Отпечатка (вписываются в Отпечаток перед возвратом и снимаются
+    /// при первой генерации карты — она происходит при любой загрузке забега, одинаково у всех игроков коопа).
+    /// </summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int PendingFlesh { get => _pendingFlesh; set { AssertMutable(); _pendingFlesh = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int PendingSoul { get => _pendingSoul; set { AssertMutable(); _pendingSoul = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int PendingPurse { get => _pendingPurse; set { AssertMutable(); _pendingPurse = value; } }
 
     /// <summary>Уровень «Реквием». Пока своих уровней нет (этап 6) — берётся уровень Возвышения забега.</summary>
     public int RequiemLevel => IsMutable && Owner != null ? Owner.RunState.AscensionLevel : 0;
@@ -96,12 +124,52 @@ public sealed class MemoryStoneRelic : RequiemRelic
         return Task.CompletedTask;
     }
 
+    // ───── новая карта акта ─────
+
+    /// <summary>
+    /// После возврата к Камню карта акта строится заново (новое зерно — своё для каждого отката), босс остаётся прежним:
+    /// он хранится в наборе комнат акта, а не в карте. Карту строит Камень первого игрока системы — один раз,
+    /// одинаково у всех игроков коопа (всё зависит только от зерна забега и счётчика откатов).
+    /// </summary>
+    public override ActMap ModifyGeneratedMap(IRunState runState, ActMap map, int actIndex)
+    {
+        if (_mapRerollAct1 != actIndex + 1 || !IsMutable) return map;
+        var leader = runState.Players.Select(Of).FirstOrDefault(s => s != null);
+        if (leader != this) return map;
+        try
+        {
+            var rng = new Rng(runState.Rng.Seed, MemoryStoneRules.MapRngName(actIndex, _rollbacks));
+            var fresh = new StandardActMap(rng, runState.Act, runState.Players.Count > 1, false, runState.Act.HasSecondBoss);
+            foreach (var p in runState.Players) if (Of(p) is { } stone) stone._mapRerollAct1 = 0;
+            MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти: новая карта акта {actIndex + 1} (откат {_rollbacks}).");
+            return fresh;
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Warn($"[SlayTheRequiem] Камень Памяти: новая карта не построена ({e.Message}) — карта по зерну акта.");
+            return map;
+        }
+    }
+
+    // ───── отложенные Шрамы ─────
+
+    public override async Task AfterMapGenerated(ActMap map, int actIndex)
+    {
+        if (!IsMutable || Owner == null || (_pendingFlesh | _pendingSoul | _pendingPurse) == 0) return;
+        var flesh = _pendingFlesh;
+        var soul = _pendingSoul;
+        var purse = _pendingPurse;
+        _pendingFlesh = _pendingSoul = _pendingPurse = 0;
+        await MemoryStone.ApplyScars(Owner, flesh, soul, purse);
+        Flash();
+    }
+
     // ───── Месть ─────
 
     public bool IsRevengeTarget(Creature? target)
     {
-        if (!IsMutable || target?.Monster == null || _revengeAct < 0 || string.IsNullOrEmpty(_revengeTargets)) return false;
-        if (Owner.RunState.CurrentActIndex != _revengeAct) return false;
+        if (!IsMutable || target?.Monster == null || _revengeAct1 <= 0 || string.IsNullOrEmpty(_revengeTargets)) return false;
+        if (Owner.RunState.CurrentActIndex != RevengeAct) return false;
         var name = target.Monster.GetType().Name;
         var faction = RequiemData.MonsterEntry(name).Faction;
         foreach (var token in _revengeTargets.Split(',', StringSplitOptions.RemoveEmptyEntries))

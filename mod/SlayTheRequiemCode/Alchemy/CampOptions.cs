@@ -189,3 +189,31 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         return await Done(changed);
     }
 }
+
+/// <summary>
+/// Кузня (docs/design/07 §4, 10): +1 к улучшению одной надетой вещи (не выше +2). Стоит 2 очка лагеря; пока очков нет
+/// (этап 5), Кузня — полноценное действие привала, как ванильная «Кузница»: после неё привал заканчивается.
+/// </summary>
+public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_FORGE";
+    public override string FallbackIcon => "SMITH";
+
+    private List<RelicModel> Upgradable => Loadout.Equipped(Owner).Where(r => r.CanUpgrade).Cast<RelicModel>().ToList();
+
+    public override bool IsEnabled => Upgradable.Count > 0;
+
+    public override LocString Description =>
+        IsEnabled ? base.Description : new LocString("rest_site_ui", $"OPTION_{OptionId}.descriptionDisabled");
+
+    public override async Task<bool> OnSelect()
+    {
+        var options = Upgradable;
+        if (options.Count == 0) return false;
+        var pick = options.Count == 1 ? options[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
+        if (pick is not EquipmentRelic item || !item.CanUpgrade) return false;
+        item.Upgrades += 1;
+        item.Flash();
+        return true;
+    }
+}
