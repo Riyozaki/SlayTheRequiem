@@ -1,0 +1,297 @@
+# Переработка ванильных реликвий (docs/design/07 §7). Правится руками; проверка и сводка — tools/relics/build_relics.py.
+key,pool,rarity,bucket,weight,change,replacement,note
+Akabeko,Shared,Uncommon,keep,1,,,
+AlchemicalCoffer,Event,Ancient,keep,0,,,разовая: действует при получении
+AmethystAubergine,Shared,Common,keep,1,,,
+Anchor,Shared,Common,jewelry,0,,RingOfIronSkin,"07 §7: Anchor → Кольцо Железной Кожи, переработано под Латы"
+ArcaneScroll,Event,Ancient,keep,0,,,разовая: действует при получении
+ArchaicTooth,Event,Ancient,keep,0,,,разовая: действует при получении
+ArtOfWar,Shared,Rare,keep,2,,,
+Astrolabe,Event,Ancient,keep,0,,,разовая: действует при получении
+BagOfMarbles,Shared,Common,keep,1,,,
+BagOfPreparation,Shared,Common,keep,1,,,"07 §7: уникальное правило — без изменений, вес 1"
+BeatingRemnant,Shared,Rare,keep,2,,,
+BeautifulBracelet,Event,Ancient,keep,0,,,разовая: действует при получении
+Bellows,Shared,Rare,keep,2,,,
+BeltBuckle,Shared,Shop,keep,1,,,
+BigHat,Necrobinder,Rare,keep,2,,,
+BigMushroom,Event,Event,keep,1,,,
+BiiigHug,Event,Ancient,keep,2,,,
+BingBong,Event,Event,keep,1,,,
+BlackBlood,Event,Starter,keep,0,,,стартовая
+BlackStar,Event,Ancient,keep,2,,,
+BlessedAntler,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+BloodSoakedRose,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+BloodVial,Shared,Common,keep,1,,,
+BoneFlute,Necrobinder,Common,keep,1,,,
+BoneTea,Event,Event,keep,1,,,
+BookOfFiveRings,Shared,Common,keep,1,,,
+BookRepairKnife,Necrobinder,Uncommon,keep,1,,,
+Bookmark,Necrobinder,Rare,keep,2,,,
+BoomingConch,Event,Ancient,keep,2,,,
+BoundPhylactery,Necrobinder,Starter,keep,0,,,стартовая
+BowlerHat,Shared,Uncommon,keep,1,,,
+Bread,Shared,Shop,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+BrilliantScarf,Event,Ancient,keep,2,,,
+Brimstone,Ironclad,Shop,keep,1,,,
+BronzeScales,Shared,Common,jewelry,0,,NecklaceOfThorns,07 §5.1: Шипы — у Ожерелья Колючих Шипов (пассивный бонус → бижутерия)
+BurningBlood,Ironclad,Starter,keep,0,,,стартовая
+BurningSticks,Shared,Shop,keep,1,,,
+Byrdpip,Event,Event,keep,1,,,
+CallingBell,Event,Ancient,keep,0,,,разовая: действует при получении
+Candelabra,Shared,Uncommon,keep,1,,,
+CaptainsWheel,Shared,Rare,keep,2,,,
+Cauldron,Shared,Shop,keep,0,,,разовая: действует при получении
+CentennialPuzzle,Shared,Common,keep,1,,,
+Chandelier,Shared,Rare,keep,2,,,
+CharonsAshes,Ironclad,Rare,keep,2,,,
+ChemicalX,Shared,Shop,keep,1,,,
+ChoicesParadox,Event,Ancient,keep,2,,,
+ChosenCheese,Event,Event,keep,1,,,
+Claws,Event,Ancient,keep,0,,,разовая: действует при получении
+CloakClasp,Shared,Rare,keep,2,,,
+CrackedCore,Defect,Starter,keep,0,,,стартовая
+Crossbow,Event,Ancient,keep,2,,,
+CursedPearl,Event,Ancient,keep,0,,,разовая: действует при получении
+DarkstonePeriapt,Event,Event,keep,1,,,
+DataDisk,Defect,Common,keep,1,,,
+DaughterOfTheWind,Event,Event,keep,1,,,
+DelicateFrond,Event,Ancient,keep,2,,,
+DemonTongue,Ironclad,Rare,keep,2,,,
+DiamondDiadem,Event,Ancient,keep,2,,,
+DingyRug,Shared,Shop,keep,1,,,
+DistinguishedCape,Event,Ancient,keep,0,,,разовая: действует при получении
+DivineDestiny,Event,Starter,keep,0,,,стартовая
+DivineRight,Regent,Starter,keep,0,,,стартовая
+DollysMirror,Shared,Shop,keep,0,,,разовая: действует при получении
+DragonFruit,Shared,Shop,keep,1,,,
+DreamCatcher,Event,Event,keep,1,,,
+Driftwood,Event,Ancient,keep,2,,,
+DustyTome,Event,Ancient,keep,0,,,разовая: действует при получении
+Ectoplasm,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+ElectricShrymp,Event,Ancient,keep,0,,,разовая: действует при получении
+EmberTea,Event,Event,keep,1,,,
+EmotionChip,Defect,Rare,keep,2,,,
+EmptyCage,Event,Ancient,keep,0,,,разовая: действует при получении
+EternalFeather,Shared,Uncommon,keep,1,,,
+FakeAnchor,Event,Event,keep,1,,,
+FakeBloodVial,Event,Event,keep,1,,,
+FakeHappyFlower,Event,Event,keep,1,,,
+FakeLeesWaffle,Event,Event,keep,0,,,разовая: действует при получении
+FakeMango,Event,Event,keep,0,,,разовая: действует при получении
+FakeMerchantsRug,Event,Event,keep,1,,,
+FakeOrichalcum,Event,Event,keep,1,,,
+FakeSneckoEye,Event,Event,keep,1,,,
+FakeStrikeDummy,Event,Event,keep,1,,,
+FakeVenerableTeaSet,Event,Event,keep,1,,,
+FencingManual,Regent,Common,keep,1,,,
+FestivePopper,Shared,Common,keep,1,,,
+Fiddle,Event,Ancient,keep,2,,,
+FishingRod,Event,Ancient,keep,2,,,
+ForgottenSoul,Event,Event,keep,1,,,
+FragrantMushroom,Event,Event,keep,0,,,разовая: действует при получении
+FresnelLens,Shared,Event,keep,1,,,
+FrozenEgg,Shared,Rare,keep,2,,,
+FuneraryMask,Necrobinder,Uncommon,keep,1,,,
+FurCoat,Event,Ancient,keep,2,,,
+GalacticDust,Regent,Uncommon,keep,1,,,
+GamblingChip,Shared,Rare,keep,2,,,
+GamePiece,Shared,Rare,keep,2,,,
+GhostSeed,Shared,Shop,keep,1,,,
+Girya,Shared,Rare,keep,2,,,
+GlassEye,Event,Ancient,keep,0,,,разовая: действует при получении
+Glitter,Event,Ancient,keep,2,,,
+GnarledHammer,Shared,Shop,keep,0,,,разовая: действует при получении
+GoldPlatedCables,Defect,Uncommon,keep,1,,,
+GoldenCompass,Event,Ancient,keep,2,,,
+GoldenPearl,Event,Ancient,keep,0,,,разовая: действует при получении
+Gorget,Shared,Common,keep,1,,,
+GremlinHorn,Shared,Uncommon,keep,1,,,
+HandDrill,Event,Event,keep,1,,,
+HappyFlower,Shared,Common,keep,1,,,
+HeftyTablet,Event,Ancient,keep,0,,,разовая: действует при получении
+HelicalDart,Silent,Rare,keep,2,,,
+HistoryCourse,Event,Event,keep,1,,,
+HornCleat,Shared,Uncommon,keep,1,,,
+IceCream,Shared,Rare,keep,1,,,"07 §7: уникальное правило — без изменений, вес 1 (редкая, но лёгкая)"
+InfusedCore,Event,Starter,keep,0,,,стартовая
+IntimidatingHelmet,Shared,Rare,keep,2,,,
+IronClub,Event,Ancient,keep,2,,,
+IvoryTile,Necrobinder,Rare,keep,2,,,
+JeweledMask,Event,Ancient,keep,2,,,
+JewelryBox,Event,Ancient,keep,0,,,разовая: действует при получении
+JossPaper,Shared,Uncommon,keep,1,,,
+JuzuBracelet,Shared,Common,keep,1,,,
+Kaleidoscope,Event,Ancient,keep,2,,,
+Kifuda,Shared,Shop,keep,0,,,разовая: действует при получении
+Kunai,Shared,Rare,keep,2,,,
+Kusarigama,Shared,Uncommon,keep,1,,,
+Lantern,Shared,Common,keep,1,,,
+LargeCapsule,Event,Ancient,keep,0,,,разовая: действует при получении
+LastingCandy,Shared+Event,Uncommon,keep,1,,,
+LavaLamp,Shared,Shop,keep,1,,,
+LavaRock,Event,Ancient,keep,2,,,
+LeadPaperweight,Event,Ancient,keep,0,,,разовая: действует при получении
+LeafyPoultice,Event,Ancient,keep,0,,,разовая: действует при получении
+LeesWaffle,Shared,Shop,keep,0,,,разовая: действует при получении
+LetterOpener,Shared,Uncommon,keep,1,,,
+LizardTail,Shared,Rare,keep,2,,,
+LoomingFruit,Shared,Ancient,keep,0,,,разовая: действует при получении
+LordsParasol,Event,Ancient,keep,2,,,
+LostCoffer,Event,Ancient,keep,0,,,разовая: действует при получении
+LostWisp,Event,Event,keep,1,,,
+LuckyFysh,Shared,Uncommon,keep,1,,,
+LunarPastry,Regent,Rare,keep,2,,,
+Mango,Shared,Rare,keep,0,,,разовая: действует при получении
+MassiveScroll,Event,Ancient,keep,2,,,
+MawBank,Event,Event,keep,1,,,
+MealTicket,Shared,Common,keep,1,,,
+MeatCleaver,Event,Ancient,keep,2,,,
+MeatOnTheBone,Shared,Rare,keep,2,,,
+MembershipCard,Shared,Shop,keep,1,,,
+MercuryHourglass,Shared,Uncommon,keep,1,,,
+Metronome,Defect,Rare,keep,2,,,
+MiniRegent,Regent,Rare,keep,2,,,
+MiniatureCannon,Shared,Uncommon,keep,1,,,
+MiniatureTent,Shared,Shop,keep,1,,,
+MoltenEgg,Shared,Rare,keep,2,,,
+MrStruggles,Event,Event,keep,1,,,
+MummifiedHand,Shared,Rare,keep,2,,,
+MusicBox,Event,Ancient,keep,2,,,
+MysticLighter,Shared,Shop,keep,1,,,
+NeowsBones,Event,Ancient,keep,0,,,разовая: действует при получении
+NeowsTalisman,Event,Ancient,keep,0,,,разовая: действует при получении
+NeowsTorment,Event,Ancient,keep,0,,,разовая: действует при получении
+NewLeaf,Event,Ancient,keep,0,,,разовая: действует при получении
+NinjaScroll,Silent,Shop,keep,1,,,
+Nunchaku,Shared,Uncommon,keep,1,,,
+NutritiousOyster,Event,Ancient,keep,0,,,разовая: действует при получении
+NutritiousSoup,Event,Ancient,keep,0,,,разовая: действует при получении
+OddlySmoothStone,Shared,Common,keep,1,,,
+OldCoin,Shared,Rare,keep,2,,,
+OrangeDough,Regent,Rare,keep,2,,,
+Orichalcum,Shared,Uncommon,jewelry,0,,RingOfIronSkin,07 §5.2: «Orichalcum-подобное» — Блок каждый ход теперь у Кольца Железной Кожи
+OrnamentalFan,Shared,Uncommon,keep,1,,,
+Orrery,Shared,Shop,keep,0,,,разовая: действует при получении
+PaelsBlood,Event,Ancient,keep,2,,,
+PaelsClaw,Event,Ancient,keep,0,,,разовая: действует при получении
+PaelsEye,Event,Ancient,keep,2,,,
+PaelsFlesh,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+PaelsGrowth,Event,Ancient,keep,2,,,
+PaelsHorn,Event,Ancient,keep,0,,,разовая: действует при получении
+PaelsLegion,Event,Ancient,keep,2,,,
+PaelsTears,Event,Ancient,keep,2,,,
+PaelsTooth,Event,Ancient,keep,2,,,
+PaelsWing,Event,Ancient,keep,2,,,
+PandorasBox,Event,Ancient,keep,0,,,разовая: действует при получении
+Pantograph,Shared,Uncommon,keep,1,,,
+PaperKrane,Silent,Rare,keep,2,,,
+PaperPhrog,Ironclad,Uncommon,keep,1,,,
+ParryingShield,Shared,Uncommon,keep,1,,,
+Pear,Shared,Uncommon,keep,0,,,разовая: действует при получении
+PenNib,Shared,Uncommon,keep,1,,,"07 §7: уникальное правило — без изменений, вес 1"
+Pendulum,Shared,Common,keep,1,,,
+Permafrost,Shared,Uncommon,keep,1,,,
+PetrifiedToad,Shared,Uncommon,keep,1,,,
+PhialHolster,Event,Ancient,keep,0,,,разовая: действует при получении
+PhilosophersStone,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+PhylacteryUnbound,Event,Starter,keep,0,,,стартовая
+Planisphere,Shared,Uncommon,keep,1,,,
+Pocketwatch,Shared,Rare,keep,2,,,
+PollinousCore,Event,Event,keep,1,,,
+Pomander,Event,Ancient,keep,0,,,разовая: действует при получении
+PotionBelt,Shared,Common,keep,0,,,разовая: действует при получении
+PowerCell,Defect,Rare,keep,2,,,
+PrayerWheel,Shared,Rare,keep,2,,,
+PrecariousShears,Event,Ancient,keep,0,,,разовая: действует при получении
+PreciseScissors,Event,Ancient,keep,0,,,разовая: действует при получении
+PreservedFog,Event,Ancient,keep,0,,,разовая: действует при получении
+PrismaticGem,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+PumpkinCandle,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+PunchDagger,Shared,Shop,keep,0,,,разовая: действует при получении
+RadiantPearl,Event,Ancient,keep,2,,,
+RainbowRing,Shared,Rare,keep,2,,,
+RazorTooth,Shared+Event,Rare,keep,2,,,
+RedMask,Shared,Common,keep,1,,,
+RedSkull,Ironclad,Common,keep,1,,,
+RegalPillow,Shared,Common,keep,1,,,
+Regalite,Regent,Uncommon,keep,1,,,
+ReptileTrinket,Shared,Uncommon,keep,1,,,
+RingOfTheDrake,Event,Starter,keep,0,,,стартовая
+RingOfTheSnake,Silent,Starter,keep,0,,,стартовая
+RingingTriangle,Shared,Shop,keep,1,,,
+RippleBasin,Shared,Uncommon,keep,1,,,
+RoyalPoison,Event,Event,keep,1,,,
+RoyalStamp,Shared,Shop,keep,0,,,разовая: действует при получении
+RuinedHelmet,Ironclad,Rare,keep,2,,,
+RunicCapacitor,Defect,Shop,keep,1,,,
+RunicPyramid,Event,Ancient,keep,2,,,
+Sai,Event,Ancient,keep,2,,,
+SandCastle,Event,Ancient,keep,0,,,разовая: действует при получении
+ScreamingFlagon,Shared,Shop,keep,1,,,
+ScrollBoxes,Event,Ancient,keep,2,,,
+SeaGlass,Event,Ancient,keep,0,,,разовая: действует при получении
+SealOfGold,Event,Ancient,keep,2,,,
+SelfFormingClay,Ironclad,Uncommon,keep,1,,,
+SereTalon,Event,Ancient,keep,0,,,разовая: действует при получении
+Shovel,Shared,Rare,keep,2,,,
+Shuriken,Shared,Rare,keep,2,,,
+SignetRing,Event,Ancient,keep,0,,,разовая: действует при получении
+SilkenTress,Event,Ancient,keep,2,,,
+SilverCrucible,Event,Ancient,keep,2,,,
+SlingOfCourage,Shared,Shop,keep,1,,,
+SmallCapsule,Event,Ancient,keep,0,,,разовая: действует при получении
+SneckoEye,Event,Ancient,keep,2,,,
+SneckoSkull,Silent,Common,keep,1,,,
+Sozu,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+SparklingRouge,Shared+Event,Uncommon,keep,1,,,
+SpikedGauntlets,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+StoneCalendar,Shared,Rare,keep,2,,,
+StoneCracker,Shared,Uncommon,keep,1,,,
+StoneHumidifier,Event,Ancient,keep,2,,,
+Storybook,Event,Ancient,keep,0,,,разовая: действует при получении
+Strawberry,Shared,Common,keep,0,,,разовая: действует при получении
+StrikeDummy,Shared,Common,keep,1,,,
+SturdyClamp,Shared,Rare,keep,2,,,
+SwordOfJade,Event,Event,keep,1,,,
+SwordOfStone,Event,Event,keep,1,,,
+SymbioticVirus,Defect,Uncommon,keep,1,,,
+TanxsWhistle,Event,Ancient,keep,0,,,разовая: действует при получении
+TeaOfDiscourtesy,Event,Event,keep,1,,,
+TheAbacus,Shared,Shop,keep,1,,,
+TheBoot,Event,Event,keep,1,,,
+TheCourier,Shared,Rare,keep,2,,,
+ThrowingAxe,Event,Ancient,keep,2,,,
+Tingsha,Silent,Uncommon,keep,1,,,
+TinyMailbox,Shared,Uncommon,keep,1,,,
+ToastyMittens,Event,Ancient,keep,2,,,
+Toolbox,Shared,Shop,keep,1,,,
+TouchOfOrobas,Event,Ancient,keep,0,,,разовая: действует при получении
+ToughBandages,Silent,Rare,keep,2,,,
+ToxicEgg,Shared,Rare,keep,2,,,
+ToyBox,Event,Ancient,keep,2,,,
+TriBoomerang,Event,Ancient,keep,0,,,разовая: действует при получении
+TungstenRod,Shared,Rare,keep,2,,,
+TuningFork,Shared,Uncommon,keep,1,,,
+TwistedFunnel,Silent,Uncommon,keep,1,,,
+UnceasingTop,Shared,Rare,keep,2,,,
+UndyingSigil,Necrobinder,Shop,keep,1,,,
+UnsettlingLamp,Shared,Rare,keep,2,,,
+Vajra,Shared,Common,jewelry,0,,RingOfFuryStrike,07 §7: Vajra → Кольцо Ярого Удара (+1 урона Оружейным атакам вместо +1 Силы ко всему)
+Vambrace,Shared,Uncommon,keep,1,,,
+VelvetChoker,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+VenerableTeaSet,Shared,Common,keep,1,,,
+VeryHotCocoa,Shared,Ancient,keep,2,,,
+VexingPuzzlebox,Shared,Rare,keep,2,,,
+VitruvianMinion,Regent,Shop,keep,1,,,
+WarHammer,Event,Ancient,keep,2,,,
+WarPaint,Shared,Common,keep,0,,,разовая: действует при получении
+Whetstone,Shared,Common,keep,0,,,разовая: действует при получении
+WhisperingEarring,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
+WhiteBeastStatue,Shared,Rare,keep,2,,,
+WhiteStar,Shared,Rare,keep,2,,,
+WingCharm,Shared,Shop,keep,1,,,
+WingedBoots,Event,Ancient,keep,2,,,
+WongoCustomerAppreciationBadge,Event,Event,keep,1,,,
+WongosMysteryTicket,Event,Event,keep,1,,,
+YummyCookie,Event,Ancient,keep,0,,,разовая: действует при получении

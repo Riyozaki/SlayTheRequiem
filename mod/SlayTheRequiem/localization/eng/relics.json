@@ -532,5 +532,14 @@
   "SLAYTHEREQUIEM-ORDINATOR_BACKGROUND.flavor": "The Tribunal sees. The Tribunal judges.",
   "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.title": "Ash Nomad",
   "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.description": "Tribunal gifts are a tier stronger: Treachery — attacks +3, Pierce 2; Web Weaver — up to 8 healing per turn, +3 damage after the Vow; Dusk Star — +9 max HP, +3 max ✦, Fire and Frost resistance II.",
-  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.flavor": "The ash walks with those who walk on it."
+  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.flavor": "The ash walks with those who walk on it.",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.title": "Ring of Fury Strike",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.description": "Ring. Weapon attacks deal 1 more damage.\nShown number — weight; 0 — stowed in the backpack.",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.flavor": "A thunderbolt, filed down to fit a finger.",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.title": "Ring of Iron Skin",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.description": "Ring. At the start of each turn, gain 3 Block while you have [gold]Plating[/gold].\nShown number — weight; 0 — stowed in the backpack.",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.flavor": "Iron answers iron.",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.title": "Necklace of Thorns",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.description": "Amulet. Start each combat with 2 [gold]Thorns[/gold].\nShown number — weight; 0 — stowed in the backpack.",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.flavor": "Hug at your own risk."
 }

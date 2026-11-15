@@ -1579,3 +1579,19 @@ def binding_multiplier(stacks: int) -> float:
 
 def bypasses_ghostly(is_spell: bool, damage_type: str, silver: bool) -> bool:
     return is_spell or damage_type != "physical" or silver
+
+
+# ═════════════ M4 п. 4: переработка ванильных реликвий (Core/VanillaRelicTable.cs) ═════════════
+
+FURY_STRIKE_DAMAGE = 1
+IRON_SKIN_BLOCK = 3
+THORNS_NECKLACE = 2
+
+
+def iron_skin_active(plating: int) -> bool:
+    return plating >= 1
+
+
+def relic_regen_penalty(hero: str, reworked_count: int) -> tuple:
+    """(◆, ✦): у Регента режется ✦, у остальных героев Реквиема — ◆ (07 §7 «по типу»)."""
+    return (0, reworked_count) if hero == "Regent" else (reworked_count, 0)

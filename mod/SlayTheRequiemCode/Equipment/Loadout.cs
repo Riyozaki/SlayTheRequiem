@@ -34,7 +34,10 @@ public static class Loadout
     /// <summary>Снять в рюкзак.</summary>
     public static void Stow(EquipmentRelic item) => item.IsStowed = true;
 
-    /// <summary>Вес колоды и всех реликвий (снаряжение — по весу предмета, обычные реликвии — 1, стартовые — 0).</summary>
+    /// <summary>
+    /// Вес колоды и всех реликвий: снаряжение — по весу предмета, ванильные реликвии — по таблице переработки
+    /// (07 §7, <c>data/vanilla_relics.csv</c>, 0–3), прочие реликвии — 1, стартовые — 0.
+    /// </summary>
     public static int TotalWeight(Player? player)
     {
         if (player == null) return 0;
@@ -45,6 +48,7 @@ public static class Loadout
             EquipmentRelic e => waivers.Any(w => w.Waives(e)) ? 0 : e.Weight,
             IWeighted w => w.Weight,
             IWeightless => 0,
+            _ when VanillaRelicRework.EntryOf(r) is { } vanilla => vanilla.Weight,
             _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
             _ => 1,
         });

@@ -532,5 +532,14 @@
   "SLAYTHEREQUIEM-ORDINATOR_BACKGROUND.flavor": "Трибунал видит. Трибунал судит.",
   "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.title": "Пепельный кочевник",
   "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.description": "Дары Тройственных на ступень сильнее: Измена — атаки +3, Пробитие 2; Паутина — до 8 лечения за ход, +3 урона после Обета; Звезда — +9 макс. ♥, +3 пул ✦, сопротивление огню и холоду II.",
-  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.flavor": "Пепел идёт с тем, кто по нему идёт."
+  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.flavor": "Пепел идёт с тем, кто по нему идёт.",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.title": "Кольцо Ярого Удара",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.description": "Кольцо. Оружейные атаки наносят на 1 урона больше.\nЧисло на иконке — вес; 0 — снято (в рюкзаке).",
+  "SLAYTHEREQUIEM-RING_OF_FURY_STRIKE.flavor": "Молния, подпиленная под палец.",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.title": "Кольцо Железной Кожи",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.description": "Кольцо. В начале каждого хода — 3 Блока, пока у вас есть [gold]Латы[/gold].\nЧисло на иконке — вес; 0 — снято (в рюкзаке).",
+  "SLAYTHEREQUIEM-RING_OF_IRON_SKIN.flavor": "Железо отвечает железу.",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.title": "Ожерелье Колючих Шипов",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.description": "Амулет. Каждый бой начинается с 2 [gold]Шипов[/gold].\nЧисло на иконке — вес; 0 — снято (в рюкзаке).",
+  "SLAYTHEREQUIEM-NECKLACE_OF_THORNS.flavor": "Обнимать на свой страх и риск."
 }

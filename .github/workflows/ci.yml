@@ -75,3 +75,8 @@ jobs:
           git -C /tmp/rl sparse-checkout set --no-cone '/decompiled/**'
           git -C /tmp/rl checkout -q 5d874e855ae1d0550d5c30416fadd7dbb0d133b7
           python tools/ci/check_harmony_targets.py /tmp/rl/decompiled
+      - name: Vanilla relic rework covers every relic of the game (07 §7, data/vanilla_relics.csv)
+        run: |
+          python tools/art/snapshot_vanilla.py /tmp/rl/decompiled 0.107.1
+          git diff --exit-code -- tools/art/vanilla_models.txt tools/art/vanilla_card_types.txt tools/relics/vanilla_relics_snapshot.txt || (echo "::error::Vanilla snapshot is stale: run tools/art/snapshot_vanilla.py" && exit 1)
+          python tools/relics/build_relics.py --check

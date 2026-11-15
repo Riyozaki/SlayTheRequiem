@@ -12,14 +12,18 @@ public static class RequiemData
     public static StaminaTable? Attacks { get; private set; }
     public static MonsterTable? Monsters { get; private set; }
     public static PoolTable? Pools { get; private set; }
+    public static VanillaRelicTable? Relics { get; private set; }
 
     public static void Load()
     {
         Attacks = Read("vanilla_attacks_stamina.csv", StaminaTable.Parse);
         Monsters = Read("monsters_requiem.csv", MonsterTable.Parse);
         Pools = Read("requiem_pools.csv", PoolTable.Parse);
+        Relics = Read("vanilla_relics.csv", VanillaRelicTable.Parse);
         MainFile.Logger.Info($"Requiem data: {Attacks?.Count ?? 0} attacks, {Monsters?.Count ?? 0} monsters, " +
-                             $"pools: {Pools?.CutCount ?? 0} cut, {Pools?.GatedCount ?? 0} gated.");
+                             $"pools: {Pools?.CutCount ?? 0} cut, {Pools?.GatedCount ?? 0} gated, " +
+                             $"vanilla relics: {Relics?.Count ?? 0} ({Relics?.CountOf(RelicBucket.Jewelry) ?? 0} → jewelry, " +
+                             $"{Relics?.CountOf(RelicBucket.Rework) ?? 0} reworked).");
     }
 
     private static T? Read<T>(string fileName, Func<string, T> parse) where T : class

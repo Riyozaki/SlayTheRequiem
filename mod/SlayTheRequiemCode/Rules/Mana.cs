@@ -49,8 +49,10 @@ public static class Mana
 
     public static int StartBonus(Player? player) => player == null ? 0 : ManaSources(player).Sum(s => s.ManaStartBonus);
 
+    /// <summary>Все источники пулов и приростов: реликвии, силы и штраф переработанных ванильных реликвий (07 §7).</summary>
     public static IEnumerable<IResourceSource> ManaSources(Player player) =>
-        player.Relics.OfType<IResourceSource>().Concat(player.Creature.Powers.OfType<IResourceSource>());
+        player.Relics.OfType<IResourceSource>().Concat(player.Creature.Powers.OfType<IResourceSource>())
+            .Concat(VanillaRelicRework.Sources(player));
 }
 
 /// <summary>Реликвия/сила, меняющая пулы и приросты ◆/✦ (происхождения, посохи, Божественное право).</summary>

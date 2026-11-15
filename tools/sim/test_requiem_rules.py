@@ -652,5 +652,23 @@ class Stage7(unittest.TestCase):
         self.assertFalse(r.bypasses_ghostly(False, "physical", False))
 
 
+
+class VanillaRelics(unittest.TestCase):
+    def test_rework(self):
+        self.assertEqual(r.relic_regen_penalty("Ironclad", 2), (2, 0))
+        self.assertEqual(r.relic_regen_penalty("Regent", 1), (0, 1))
+        self.assertTrue(r.iron_skin_active(1))
+        self.assertFalse(r.iron_skin_active(0))
+
+    def test_shipped_table(self):
+        import csv, os
+        path = os.path.join(os.path.dirname(__file__), "..", "..", "mod", "SlayTheRequiem", "data", "vanilla_relics.csv")
+        rows = list(csv.DictReader(l for l in open(path, encoding="utf-8") if not l.startswith("#")))
+        by = {row["key"]: row for row in rows}
+        self.assertEqual(by["Vajra"]["replacement"], "RingOfFuryStrike")
+        self.assertEqual(sum(1 for row in rows if row["change"] == "regen-1"), 12)
+        self.assertTrue(all(0 <= int(row["weight"]) <= 3 for row in rows))
+
+
 if __name__ == "__main__":
     unittest.main()

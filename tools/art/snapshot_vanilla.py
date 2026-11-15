@@ -3,7 +3,9 @@
 
 Источник — декомпиляция игры (например, github.com/zhiyue/sts2-rl-agent, папка decompiled/).
 Пишет tools/art/vanilla_models.txt: строки «kind pool Class» (pool только у карт, у прочих «-»),
-и tools/art/vanilla_card_types.txt: «Class Type» (Attack/Skill/Power/…) — для проверки tools/art/art_fit.py.
+tools/art/vanilla_card_types.txt: «Class Type» (Attack/Skill/Power/…) — для проверки tools/art/art_fit.py,
+и tools/relics/vanilla_relics_snapshot.txt: «Class Pool Rarity признаки» — для таблицы переработки реликвий
+(tools/relics/build_relics.py; признаки: energy — меняет макс. энергию, once — действует только при получении).
 Перезапускать после обновлений игры:
 
     python3 tools/art/snapshot_vanilla.py /path/to/decompiled 0.107.1
@@ -15,6 +17,36 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "vanilla_models.txt")
 TYPES_OUT = os.path.join(HERE, "vanilla_card_types.txt")
+RELICS_OUT = os.path.join(HERE, "..", "relics", "vanilla_relics_snapshot.txt")
+# Пулы реликвий, которые видит игрок (Deprecated и Fallback — служебные).
+RELIC_POOLS = ["Shared", "Ironclad", "Silent", "Regent", "Necrobinder", "Defect", "Event"]
+
+
+def snapshot_relics(src: str, version: str) -> None:
+    pools_dir = os.path.join(src, "MegaCrit.Sts2.Core.Models.RelicPools")
+    relics_dir = os.path.join(src, "MegaCrit.Sts2.Core.Models.Relics")
+    pools_of: dict[str, list[str]] = {}
+    for pool in RELIC_POOLS:
+        text = open(os.path.join(pools_dir, f"{pool}RelicPool.cs"), encoding="utf-8").read()
+        for name in sorted(set(re.findall(r"ModelDb\.Relic<(\w+)>", text))):
+            pools_of.setdefault(name, []).append(pool)
+    rows = []
+    for name, pools in sorted(pools_of.items()):
+        pool = "+".join(pools)
+        body = open(os.path.join(relics_dir, f"{name}.cs"), encoding="utf-8").read()
+        rarity = re.search(r"Rarity => RelicRarity\.(\w+)", body)
+        hooks = set(re.findall(r"public override (?:async )?[\w<>?,\s]+? (\w+)\(", body))
+        flags = []
+        if "ModifyMaxEnergy" in hooks:
+            flags.append("energy")
+        if hooks and hooks <= {"AfterObtained"}:
+            flags.append("once")
+        rows.append(f"{name} {pool} {rarity.group(1) if rarity else 'None'} {','.join(flags) or '-'}")
+    os.makedirs(os.path.dirname(RELICS_OUT), exist_ok=True)
+    with open(RELICS_OUT, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(f"# Ванильные реликвии Slay the Spire 2 {version} (tools/art/snapshot_vanilla.py): класс, пул, редкость, признаки\n")
+        fh.write("\n".join(rows) + "\n")
+    print(f"{os.path.normpath(RELICS_OUT)}: {len(rows)} реликвий")
 POOLS = ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect", "Colorless", "Event", "Token", "Curse", "Status", "Quest"]
 
 
@@ -49,6 +81,7 @@ def main(src: str, version: str) -> int:
         fh.write(f"# Типы ванильных карт Slay the Spire 2 {version} (tools/art/snapshot_vanilla.py)\n")
         fh.write("\n".join(types) + "\n")
     print(f"{TYPES_OUT}: {len(types)} карт")
+    snapshot_relics(src, version)
     return 0
 
 

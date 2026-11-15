@@ -26,5 +26,9 @@
   "SLAYTHEREQUIEM-BURDEN_HEAVY.title": "Heavy overload +{Excess}",
   "SLAYTHEREQUIEM-BURDEN_HEAVY.description": "Overload {Excess} (6–10): ◆ regeneration −{StaminaPenalty}, opening hand −{HandPenalty} card.",
   "SLAYTHEREQUIEM-BURDEN_CRUSHING.title": "Crushing overload +{Excess}",
-  "SLAYTHEREQUIEM-BURDEN_CRUSHING.description": "Overload {Excess} (above 10): ◆ regeneration −{StaminaPenalty}, opening hand −{HandPenalty} card, you cannot pick up anything until you drop something."
+  "SLAYTHEREQUIEM-BURDEN_CRUSHING.description": "Overload {Excess} (above 10): ◆ regeneration −{StaminaPenalty}, opening hand −{HandPenalty} card, you cannot pick up anything until you drop something.",
+  "SLAYTHEREQUIEM-RELIC_WEIGHT.title": "Weight",
+  "SLAYTHEREQUIEM-RELIC_WEIGHT.description": "This relic adds {Weight} to your [gold]Burden[/gold].",
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.title": "Reworked",
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Energy relic: in Requiem it also costs −1 regeneration of your main resource — ◆ for the Platebearer and the Silent, ✦ for the Regent."
 }

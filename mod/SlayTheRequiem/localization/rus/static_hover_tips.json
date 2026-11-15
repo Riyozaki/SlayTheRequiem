@@ -26,5 +26,9 @@
   "SLAYTHEREQUIEM-BURDEN_HEAVY.title": "Тяжёлый перегруз +{Excess}",
   "SLAYTHEREQUIEM-BURDEN_HEAVY.description": "Перегруз {Excess} (6–10): прирост ◆ −{StaminaPenalty}, стартовая рука −{HandPenalty} карта.",
   "SLAYTHEREQUIEM-BURDEN_CRUSHING.title": "Неподъёмный груз +{Excess}",
-  "SLAYTHEREQUIEM-BURDEN_CRUSHING.description": "Перегруз {Excess} (больше 10): прирост ◆ −{StaminaPenalty}, стартовая рука −{HandPenalty} карта, ничего не поднять, пока что-нибудь не выбросите."
+  "SLAYTHEREQUIEM-BURDEN_CRUSHING.description": "Перегруз {Excess} (больше 10): прирост ◆ −{StaminaPenalty}, стартовая рука −{HandPenalty} карта, ничего не поднять, пока что-нибудь не выбросите.",
+  "SLAYTHEREQUIEM-RELIC_WEIGHT.title": "Вес",
+  "SLAYTHEREQUIEM-RELIC_WEIGHT.description": "Реликвия добавляет {Weight} к [gold]Грузу[/gold].",
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.title": "Переработана",
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Реликвия энергии: в Реквиеме она ещё и стоит −1 прироста основного ресурса — ◆ у Латоносца и Безмолвной, ✦ у Регента."
 }
