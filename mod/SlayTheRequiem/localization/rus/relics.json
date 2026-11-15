@@ -595,5 +595,20 @@
   "SLAYTHEREQUIEM-NECKLACE_OF_THE_VOID.flavor": "Оно пьёт свет вокруг себя.",
   "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.title": "Ожерелье Звёздного Камня",
   "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.description": "Амулет. Раз в бой, когда ✦ кончается, — восстановить 4 ✦.\nЧисло на иконке — вес; 0 — снято (в рюкзаке).",
-  "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.flavor": "Упавшая звезда, всё ещё падающая внутрь."
+  "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.flavor": "Упавшая звезда, всё ещё падающая внутрь.",
+  "SLAYTHEREQUIEM-FEATHER_SACK.title": "Мешок-Перышко",
+  "SLAYTHEREQUIEM-FEATHER_SACK.description": "+8 к вместимости [gold]Груза[/gold]. Сам ничего не весит.",
+  "SLAYTHEREQUIEM-FEATHER_SACK.flavor": "Набит чем-то легче воздуха. Наверное, перьями.",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.title": "Походный котелок",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.description": "Еда даёт +1 к каждому своему действию.",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.flavor": "Мятый, закопчённый, незаменимый.",
+  "SLAYTHEREQUIEM-BARROW_MAP.title": "Карта Курганов",
+  "SLAYTHEREQUIEM-BARROW_MAP.description": "Наведите, чтобы увидеть ближайшие бои с элитой в этом акте.",
+  "SLAYTHEREQUIEM-BARROW_MAP.flavor": "Кто-то пометил могилы, которые кусаются.",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.title": "Точильный камень",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.description": "Оружейные атаки на первом ходу боя наносят на 1 урона больше.",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.flavor": "Три взмаха перед каждым боем.",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.title": "Бутыль Хмельного",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.description": "В начале каждого боя, если есть свободный слот, — зелье [gold]«Похмелье?»[/gold]. После боя оно выдыхается.",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.flavor": "Никогда не пустеет. Никогда не бывает одинаковой."
 }

@@ -595,5 +595,20 @@
   "SLAYTHEREQUIEM-NECKLACE_OF_THE_VOID.flavor": "It drinks the light around it.",
   "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.title": "Starstone Necklace",
   "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.description": "Amulet. Once per combat, when you run out of ✦, regain 4 ✦.\nShown number — weight; 0 — stowed in the backpack.",
-  "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.flavor": "A fallen star, still falling inward."
+  "SLAYTHEREQUIEM-NECKLACE_OF_STARSTONE.flavor": "A fallen star, still falling inward.",
+  "SLAYTHEREQUIEM-FEATHER_SACK.title": "Feather Sack",
+  "SLAYTHEREQUIEM-FEATHER_SACK.description": "+8 [gold]Burden[/gold] capacity. Weighs nothing.",
+  "SLAYTHEREQUIEM-FEATHER_SACK.flavor": "Stuffed with something lighter than air. Probably feathers.",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.title": "Camp Kettle",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.description": "Food gives +1 to each of its effects.",
+  "SLAYTHEREQUIEM-CAMP_KETTLE.flavor": "Dented, sooty, irreplaceable.",
+  "SLAYTHEREQUIEM-BARROW_MAP.title": "Barrow Map",
+  "SLAYTHEREQUIEM-BARROW_MAP.description": "Hover to see the next elite fights of this act.",
+  "SLAYTHEREQUIEM-BARROW_MAP.flavor": "Someone marked the graves that bite back.",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.title": "Sharpening Stone",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.description": "Weapon attacks deal 1 more damage on the first turn of combat.",
+  "SLAYTHEREQUIEM-SHARPENING_STONE.flavor": "Three strokes before every fight.",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.title": "Bottle of Mead",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.description": "At the start of each combat, if you have an empty potion slot, gain a [gold]Hangover?[/gold] potion. It fizzles out after combat.",
+  "SLAYTHEREQUIEM-BOTTLE_OF_MEAD.flavor": "Never empty. Never quite the same twice."
 }

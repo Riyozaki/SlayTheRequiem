@@ -70,6 +70,32 @@ RELICS_EQUIPMENT = [
      "A fallen star, still falling inward.", "Упавшая звезда, всё ещё падающая внутрь."),
 ]
 
+# Новые реликвии рюкзака (07 §7 «Прочее», M4 п. 5) — не снаряжение, без пометки о весе на иконке.
+RELICS_BACKPACK = [
+    ("FeatherSack", "Feather Sack", "+8 [gold]Burden[/gold] capacity. Weighs nothing.",
+     "Мешок-Перышко", "+8 к вместимости [gold]Груза[/gold]. Сам ничего не весит.",
+     "Stuffed with something lighter than air. Probably feathers.", "Набит чем-то легче воздуха. Наверное, перьями."),
+    ("CampKettle", "Camp Kettle", "Food gives +1 to each of its effects.",
+     "Походный котелок", "Еда даёт +1 к каждому своему действию.",
+     "Dented, sooty, irreplaceable.", "Мятый, закопчённый, незаменимый."),
+    ("BarrowMap", "Barrow Map", "Hover to see the next elite fights of this act.",
+     "Карта Курганов", "Наведите, чтобы увидеть ближайшие бои с элитой в этом акте.",
+     "Someone marked the graves that bite back.", "Кто-то пометил могилы, которые кусаются."),
+    ("SharpeningStone", "Sharpening Stone", "Weapon attacks deal 1 more damage on the first turn of combat.",
+     "Точильный камень", "Оружейные атаки на первом ходу боя наносят на 1 урона больше.",
+     "Three strokes before every fight.", "Три взмаха перед каждым боем."),
+    ("BottleOfMead", "Bottle of Mead", "At the start of each combat, if you have an empty potion slot, gain a [gold]Hangover?[/gold] potion. It fizzles out after combat.",
+     "Бутыль Хмельного", "В начале каждого боя, если есть свободный слот, — зелье [gold]«Похмелье?»[/gold]. После боя оно выдыхается.",
+     "Never empty. Never quite the same twice.", "Никогда не пустеет. Никогда не бывает одинаковой."),
+]
+
+RELICS_POTIONS = [
+    ("HangoverPotion", "Hangover?", "Random: heal {Heal} HP, or restore {Stamina} ◆, or gain {Mana} ✦, or gain {Strength} [gold]Strength[/gold], "
+                                   "or a headache — 1 [gold]Weak[/gold] and draw {Draw} cards.",
+     "Похмелье?", "Случайно: лечит {Heal} ♥, или {Stamina} ◆, или {Mana} ✦, или {Strength} [gold]Силы[/gold], "
+                  "или головная боль — 1 [gold]Слабости[/gold] и добор {Draw}."),
+]
+
 # Подсказки к ванильным реликвиям (UI/RequiemUi.Tip, static_hover_tips.json).
 RELICS_TIPS = {
     "eng": {
@@ -78,6 +104,7 @@ RELICS_TIPS = {
         "RELIC_REWORK_ENERGY.title": "Reworked",
         "RELIC_REWORK_ENERGY.description": "Energy relic: in Requiem it also costs −1 regeneration of your main resource — "
                                            "◆ for the Platebearer and the Silent, ✦ for the Regent.",
+        "BARROW_MAP.title": "Next elites",
         "RING_COMBO_STEAM.title": "Combo: Steam",
         "RING_COMBO_STEAM.description": "With the Pyromancer's Ring and the Ring of Hoarfrost: when a target has both [gold]Burning[/gold] "
                                         "and [gold]Chill[/gold], both are removed and it takes their sum as damage, ignoring resistances.",
@@ -92,6 +119,7 @@ RELICS_TIPS = {
         "RELIC_REWORK_ENERGY.title": "Переработана",
         "RELIC_REWORK_ENERGY.description": "Реликвия энергии: в Реквиеме она ещё и стоит −1 прироста основного ресурса — "
                                            "◆ у Латоносца и Безмолвной, ✦ у Регента.",
+        "BARROW_MAP.title": "Ближайшие элиты",
         "RING_COMBO_STEAM.title": "Сочетание: Пар",
         "RING_COMBO_STEAM.description": "Кольца Пиромана и Изморози: когда на цели есть и [gold]Горение[/gold], и [gold]Озноб[/gold], "
                                         "оба снимаются, а цель получает урон, равный их сумме, без сопротивлений.",

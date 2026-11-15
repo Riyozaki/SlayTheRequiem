@@ -688,5 +688,14 @@ class Jewelry(unittest.TestCase):
         self.assertEqual(r.ring_combos(["RingOfQuickBreath", "RingOfFuryStrike"]), ["QuickFury"])
 
 
+class Backpack(unittest.TestCase):
+    def test_kettle(self):
+        self.assertEqual(r.kettle_boost({"MaxHp": 6, "Regen": 0}), {"MaxHp": 7, "Regen": 0})
+
+    def test_barrow(self):
+        self.assertEqual(r.barrow_indices(2, 3), [2, 0, 1])
+        self.assertEqual(r.barrow_indices(0, 0), [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -271,7 +271,9 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     public List<Meal> MealList => FoodRules.Parse(_meals);
     public bool HasRevel => Owner.Relics.OfType<GiftOfRevel>().Any();
-    public DishEffect Food => FoodRules.Total(MealList, _mushroomFights);
+    public DishEffect Food => IsMutable && Owner?.Relics.OfType<CampKettle>().Any() == true
+        ? FoodRules.Boosted(FoodRules.Total(MealList, _mushroomFights))
+        : FoodRules.Total(MealList, _mushroomFights);
 
     public async Task Eat(Dish dish)
     {

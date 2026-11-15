@@ -144,5 +144,7 @@
   "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.title": "Hearth Mother's Tears",
   "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.description": "When you would die, revive with 25% of your Max HP.",
   "SLAYTHEREQUIEM-COMBINED_POISON_I.title": "Combined Poison I",
-  "SLAYTHEREQUIEM-COMBINED_POISON_I.description": "Coat your weapon ({Charges} charges). Weapon attacks: [gold]Poison[/gold] {Amount} and drain 2 ◆."
+  "SLAYTHEREQUIEM-COMBINED_POISON_I.description": "Coat your weapon ({Charges} charges). Weapon attacks: [gold]Poison[/gold] {Amount} and drain 2 ◆.",
+  "SLAYTHEREQUIEM-HANGOVER_POTION.title": "Hangover?",
+  "SLAYTHEREQUIEM-HANGOVER_POTION.description": "Random: heal {Heal} HP, or restore {Stamina} ◆, or gain {Mana} ✦, or gain {Strength} [gold]Strength[/gold], or a headache — 1 [gold]Weak[/gold] and draw {Draw} cards."
 }

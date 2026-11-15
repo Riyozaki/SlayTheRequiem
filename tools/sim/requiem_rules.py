@@ -1631,3 +1631,16 @@ def ring_combos(rings) -> list:
     rs = set(rings)
     return [c for c, (a, b) in RING_COMBOS.items() if a in rs and b in rs]
 
+
+# ───── реликвии рюкзака (M4 п. 5) — зеркало Core/BackpackRules, FoodRules.Boosted ─────
+FEATHER_BURDEN = 8
+KETTLE_BONUS = 1
+
+
+def kettle_boost(effect: dict) -> dict:
+    return {k: (v + KETTLE_BONUS if v > 0 else v) for k, v in effect.items()}
+
+
+def barrow_indices(visited: int, count: int, shown: int = 3) -> list:
+    return [] if count <= 0 else [(max(0, visited) + i) % count for i in range(min(shown, count))]
+

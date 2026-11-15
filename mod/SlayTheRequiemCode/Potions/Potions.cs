@@ -1033,3 +1033,48 @@ public sealed class HearthMotherTears : RequiemPotion
     public override Task AfterPreventingDeath(Creature creature) =>
         OnUseWrapper(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), creature);
 }
+
+/// <summary>
+/// «Похмелье?» (Бутыль Хмельного, 07 §7): бесплатное зелье на один бой со случайным эффектом —
+/// лечение, ◆, ✦, Сила или «головная боль» (Слабость 1 себе, добор 2). Само не выпадает.
+/// </summary>
+[Pool(typeof(TokenPotionPool))]
+public sealed class HangoverPotion : RequiemPotion
+{
+    public override Brew Kind => Brew.Health;
+    public override int Tier => 1;
+    public override bool CanBeGeneratedInCombat => false;
+    protected override string VanillaArt => "gamblers_brew";
+
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new DynamicVar("Heal", BackpackRules.HangoverHeal), new DynamicVar("Stamina", BackpackRules.HangoverStamina),
+        new DynamicVar("Mana", BackpackRules.HangoverMana), new DynamicVar("Strength", BackpackRules.HangoverStrength),
+        new DynamicVar("Draw", BackpackRules.HangoverDraw),
+    ];
+
+    protected override async Task OnUse(PlayerChoiceContext ctx, Creature? target)
+    {
+        var roll = Owner.RunState.Rng.CombatTargets.NextInt(BackpackRules.Outcomes.Length);
+        switch (BackpackRules.Roll(roll))
+        {
+            case Hangover.Heal:
+                await CreatureCmd.Heal(Hero, Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverHeal));
+                break;
+            case Hangover.Stamina:
+                RestoreStamina(Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverStamina));
+                break;
+            case Hangover.Mana:
+                await Mana.Gain(Owner, Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverMana));
+                break;
+            case Hangover.Strength:
+                await PowerCmd.Apply<StrengthPower>(ctx, Hero, BackpackRules.HangoverStrength, Hero, null);
+                break;
+            default:
+                await PowerCmd.Apply<WeakPower>(ctx, Hero, BackpackRules.HangoverWeak, Hero, null);
+                await CardPileCmd.Draw(ctx, BackpackRules.HangoverDraw, Owner);
+                break;
+        }
+    }
+}
+

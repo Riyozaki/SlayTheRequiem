@@ -112,6 +112,19 @@ public static class FoodRules
 
     public static int DurationOf(Dish dish) => dish == Dish.Feast ? FeastDuration : Duration;
 
+    /// <summary>
+    /// Походный котелок (07, «Новые реликвии рюкзака»): еда даёт +1 к каждому своему действию
+    /// (Кровяная похлёбка — +7 ♥ вместо +6, Оленина — +2 прироста ◆ и т. д.). Пустой Сытости не прибавляет.
+    /// </summary>
+    public static DishEffect Boosted(DishEffect e)
+    {
+        static int Up(int v) => v > 0 ? v + KettleBonus : v;
+        return new DishEffect(Up(e.MaxHp), Up(e.StaminaRegen), Up(e.ManaRegen), Up(e.FrostResistance), Up(e.StartStamina),
+            Up(e.Regen), Up(e.OpeningDraw));
+    }
+
+    public const int KettleBonus = 1;
+
     /// <summary>Грибная похлёбка совместима с любой другой едой — свой слот.</summary>
     public static bool IsCompanion(Dish dish) => dish == Dish.MushroomStew;
 

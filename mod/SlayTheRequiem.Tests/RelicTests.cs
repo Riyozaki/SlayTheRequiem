@@ -97,3 +97,36 @@ public class VanillaRelicTableTests
         Assert.Equal(6, table.CountOf(RelicBucket.Jewelry));
     }
 }
+
+/// <summary>Реликвии рюкзака (07 §7 «Прочее», M4 п. 5).</summary>
+public class BackpackRulesTests
+{
+    [Fact]
+    public void KettleBoostsOnlyPresentEffects()
+    {
+        var stew = FoodRules.Boosted(FoodRules.Effect(Dish.BloodmossStew));
+        Assert.Equal(7, stew.MaxHp);
+        Assert.Equal(0, stew.StaminaRegen);
+        var sausage = FoodRules.Boosted(FoodRules.Effect(Dish.SpicedSausage));
+        Assert.Equal(2, sausage.FrostResistance);
+        Assert.Equal(3, sausage.StartStamina);
+        Assert.Equal(new DishEffect(), FoodRules.Boosted(new DishEffect()));
+    }
+
+    [Fact]
+    public void BarrowMapIndicesWrap()
+    {
+        Assert.Equal(new[] { 2, 0, 1 }, BackpackRules.UpcomingIndices(2, 3));
+        Assert.Equal(new[] { 1, 0 }, BackpackRules.UpcomingIndices(3, 2));
+        Assert.Empty(BackpackRules.UpcomingIndices(0, 0));
+    }
+
+    [Fact]
+    public void HangoverRolls()
+    {
+        Assert.Equal(5, BackpackRules.Outcomes.Length);
+        Assert.Equal(Hangover.Heal, BackpackRules.Roll(0));
+        Assert.Equal(Hangover.Headache, BackpackRules.Roll(99));
+        Assert.Equal(8, BackpackRules.FeatherBurden);
+    }
+}

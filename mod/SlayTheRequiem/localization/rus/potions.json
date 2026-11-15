@@ -144,5 +144,7 @@
   "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.title": "Слёзы Матери Очага",
   "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.description": "Когда вы должны умереть — воскрешение с 25 % макс. ♥.",
   "SLAYTHEREQUIEM-COMBINED_POISON_I.title": "Комбинированный яд I",
-  "SLAYTHEREQUIEM-COMBINED_POISON_I.description": "Нанести на оружие ({Charges} заряда). Оружейные атаки: [gold]Яд[/gold] {Amount} и −2 ◆ цели."
+  "SLAYTHEREQUIEM-COMBINED_POISON_I.description": "Нанести на оружие ({Charges} заряда). Оружейные атаки: [gold]Яд[/gold] {Amount} и −2 ◆ цели.",
+  "SLAYTHEREQUIEM-HANGOVER_POTION.title": "Похмелье?",
+  "SLAYTHEREQUIEM-HANGOVER_POTION.description": "Случайно: лечит {Heal} ♥, или {Stamina} ◆, или {Mana} ✦, или {Strength} [gold]Силы[/gold], или головная боль — 1 [gold]Слабости[/gold] и добор {Draw}."
 }
