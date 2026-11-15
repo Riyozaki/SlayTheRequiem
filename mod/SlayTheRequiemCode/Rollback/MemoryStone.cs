@@ -247,6 +247,21 @@ public static class MemoryStone
                 relicSave.Props = SavedProperties.From(stone);
             }
 
+            // Слава (02 §5, 15): половина Славы, набранной после Отпечатка, сохраняется.
+            var recordId = ModelDb.Relic<Progression.HeroRecord>().Id;
+            foreach (var sp in save.Players)
+            {
+                var recordSave = sp.Relics.FirstOrDefault(r => r.Id == recordId);
+                var deadRecord = Progression.HeroRecord.Of(dead.GetPlayer(sp.NetId));
+                if (recordSave == null || deadRecord == null) continue;
+                var record = (Progression.HeroRecord)ModelDb.Relic<Progression.HeroRecord>().ToMutable();
+                recordSave.Props?.Fill(record);
+                var retained = ProgressionRules.RetainedRenown(record.Renown, deadRecord.Renown);
+                if (retained == record.Renown) continue;
+                record.Renown = retained;
+                recordSave.Props = SavedProperties.From(record);
+            }
+
             // Новая карта (15 §1.3): без сохранённой карты акт строит её заново, а Камень подменяет зерно.
             if (imprint.ActIndex >= 0 && imprint.ActIndex < save.Acts.Count) save.Acts[imprint.ActIndex].SavedMap = null;
             return save;

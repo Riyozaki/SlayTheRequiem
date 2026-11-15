@@ -1,27 +1,167 @@
+using HarmonyLib;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.RestSite;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rewards;
+using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
+using SlayTheRequiem.SlayTheRequiemCode.Pantheon;
 using SlayTheRequiem.SlayTheRequiemCode.Potions;
+using SlayTheRequiem.SlayTheRequiemCode.Progression;
+using SlayTheRequiem.SlayTheRequiemCode.Relics;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
+using SlayTheRequiem.SlayTheRequiemCode.Spells;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 
 /// <summary>
-/// Действия лагеря Реквиема (docs/design/10). Пока очков лагеря нет (этап 5), Варка и Сундук — «свободные»
-/// действия: не завершают привал (см. <see cref="TravelPack.ShouldDisableRemainingRestSiteOptions"/>), но каждое —
-/// один раз за привал. Значки — ванильные (своих картинок пока нет): подменяются патчем
-/// <see cref="Patches.RestSiteIconPatch"/>.
+/// Очки лагеря (docs/design/10 §1). Привал даёт 2 очка (+ узлы Выживания), каждое действие стоит 0–2; действие можно
+/// выбрать один раз за привал (так устроен экран игры: выбранная кнопка исчезает), неистраченные очки сгорают.
+/// Привал заканчивается, когда не осталось ни одного доступного действия (хук ShouldDisableRemainingRestSiteOptions
+/// Летописи героя). Чужие действия (ванильные «Отдых»/«Кузница», реликвии вроде Лопаты, другие моды) оборачиваются
+/// в <see cref="ForeignRestSiteOption"/> с ценой 2 — см. <see cref="RestSiteGeneratePatch"/>.
+/// </summary>
+public static class Camp
+{
+    private static readonly Dictionary<ulong, List<RestSiteOption>> Lists = new();
+    private static readonly Dictionary<ulong, RestSiteOption> LastChosen = new();
+
+    public static bool InSystem(Player player) => RequiemMode.IsInSystem(player) && HeroRecord.Of(player) != null;
+
+    public static int Budget(Player player)
+    {
+        var hero = HeroRecord.Of(player);
+        return CampRules.Budget(hero?.Has(Skill.Wayfarer) == true, hero?.Has(Skill.CampMaster) == true);
+    }
+
+    public static int Points(Player player) => HeroRecord.Of(player)?.CampPoints ?? 0;
+
+    public static int CostOf(Player player, CampAction action) =>
+        CampRules.Cost(action, HeroRecord.Of(player)?.Has(Skill.CampMaster) == true);
+
+    /// <summary>Вне системы очков нет — всё «по карману» (ванильное поведение не трогаем).</summary>
+    public static bool CanAfford(Player player, int cost) =>
+        !InSystem(player) || CampRules.CanAfford(Points(player), cost);
+
+    /// <summary>Начало привала: полный запас очков; запомнить список кнопок игрока.</summary>
+    public static void Begin(Player player, List<RestSiteOption> options)
+    {
+        var hero = HeroRecord.Of(player);
+        if (hero == null) return;
+        hero.CampPoints = Budget(player);
+        hero.ArtisanUsed = false;
+        hero.Refresh();
+        Lists[player.NetId] = options;
+        LastChosen.Remove(player.NetId);
+    }
+
+    public static void Choosing(Player player, RestSiteOption option) => LastChosen[player.NetId] = option;
+
+    /// <summary>Списать очки; «Мастер-ремесленник» раз за привал возвращает 1 очко за ремесло.</summary>
+    public static void Spend(Player player, CampAction action, int cost)
+    {
+        var hero = HeroRecord.Of(player);
+        if (hero == null) return;
+        hero.CampPoints -= cost;
+        if (CampRules.IsCraft(action) && cost > 0 && hero.Has(Skill.CraftArtisan) && !hero.ArtisanUsed)
+        {
+            hero.ArtisanUsed = true;
+            hero.CampPoints += 1;
+            hero.Flash();
+        }
+        hero.Refresh();
+    }
+
+    /// <summary>Осталось ли доступное действие, кроме только что выбранного (оно сейчас уйдёт из списка).</summary>
+    public static bool AnyRemaining(Player player)
+    {
+        if (!Lists.TryGetValue(player.NetId, out var list)) return false;
+        LastChosen.TryGetValue(player.NetId, out var last);
+        return list.Any(o => !ReferenceEquals(o, last) && o.IsEnabled);
+    }
+
+    /// <summary>Обернуть чужие действия ценой в очки (после всех хуков ModifyRestSiteOptions).</summary>
+    public static void Wrap(Player player, List<RestSiteOption> options)
+    {
+        for (var i = 0; i < options.Count; i++)
+        {
+            var option = options[i];
+            if (option is RequiemRestSiteOption or ForeignRestSiteOption) continue;
+            var action = option.OptionId switch
+            {
+                "HEAL" => CampAction.Rest,
+                "SMITH" => CampAction.Smith,
+                _ => CampAction.Other,
+            };
+            options[i] = new ForeignRestSiteOption(player, option, action);
+        }
+    }
+
+    // ───── постройки лагеря (10 §5: без метапрогресса — в половине лагерей) ─────
+
+    private static uint Hash(Player player, string salt) =>
+        ShopRules.Fnv1a($"{player.RunState.Rng.StringSeed}|camp|{salt}", player.RunState.TotalFloor);
+
+    /// <summary>Зачаровальный стол: в половине лагерей; Зачарователю — в любом.</summary>
+    public static bool HasEnchantingTable(Player player) =>
+        player.Relics.OfType<EnchanterBackground>().Any() || Hash(player, "table") % 2 == 0;
+
+    /// <summary>Алтарь: в половине лагерей.</summary>
+    public static bool HasAltar(Player player) => Hash(player, "altar") % 2 == 0;
+
+    /// <summary>Бог алтаря этого лагеря.</summary>
+    public static Celestial AltarGod(Player player) =>
+        (Celestial)(int)(Hash(player, "god") % (uint)CelestialBlessing.Blessings.Length);
+
+    /// <summary>Действия Реквиема (добавляются хуком Походного мешка).</summary>
+    public static void AddOptions(Player player, ICollection<RestSiteOption> options)
+    {
+        var hero = HeroRecord.Of(player);
+        options.Add(new ShortRestRestSiteOption(player));
+        options.Add(new BrewRestSiteOption(player));
+        if (hero != null && (hero.Has(Skill.CampKettle) || player.Relics.OfType<HermitBackground>().Any()))
+            options.Add(new CookingRestSiteOption(player));
+        options.Add(new ForgeRestSiteOption(player));
+        if (hero != null && hero.TotalStones > 0 && HasEnchantingTable(player))
+            options.Add(new EnchantRestSiteOption(player));
+        if (hero != null) options.Add(new MeditateRestSiteOption(player));
+        if (RequiemConfig.EnablePantheon && HasAltar(player)) options.Add(new PrayRestSiteOption(player));
+        options.Add(new ChestRestSiteOption(player));
+        if (hero != null && hero.HasUnspentPoints) options.Add(new TrainRestSiteOption(player));
+    }
+}
+
+/// <summary>Генерация кнопок привала: обернуть чужие действия и выдать очки лагеря.</summary>
+[HarmonyPatch(typeof(RestSiteOption), nameof(RestSiteOption.Generate))]
+public static class RestSiteGeneratePatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(Player player, List<RestSiteOption> __result)
+    {
+        if (!Camp.InSystem(player)) return;
+        Camp.Wrap(player, __result);
+        Camp.Begin(player, __result);
+    }
+}
+
+/// <summary>
+/// Действие лагеря Реквиема: цена в очках, доступность, описание с ценой. Значки — ванильные заглушки
+/// (своих картинок пока нет): подменяются патчем <see cref="Patches.RestSiteIconPatch"/>.
 /// </summary>
 public abstract class RequiemRestSiteOption(Player owner) : RestSiteOption(owner)
 {
     /// <summary>Ванильный значок-заглушка (OptionId ванильного действия: HEAL, SMITH, COOK, DIG...).</summary>
     public abstract string FallbackIcon { get; }
+
+    public abstract CampAction Action { get; }
+
+    public int Cost => Camp.CostOf(Owner, Action);
 
     public string IconPathOverride
     {
@@ -34,42 +174,136 @@ public abstract class RequiemRestSiteOption(Player owner) : RestSiteOption(owner
 
     public override IEnumerable<string> AssetPaths => [IconPathOverride];
 
-    /// <summary>Отметить свободное действие — привал после него не завершается.</summary>
-    protected Task<bool> Done(bool success)
+    /// <summary>Своё условие действия (есть реагенты, есть что улучшить...).</summary>
+    protected virtual bool Available => true;
+
+    public override bool IsEnabled => Available && Camp.CanAfford(Owner, Cost);
+
+    public override LocString Description
     {
-        if (success) TravelPack.Of(Owner)?.MarkFreeAction();
-        return Task.FromResult(success);
+        get
+        {
+            var loc = new LocString("rest_site_ui", Available ? $"OPTION_{OptionId}.description" : $"OPTION_{OptionId}.descriptionDisabled");
+            loc.Add("Cost", Cost);
+            loc.Add("Points", Camp.Points(Owner));
+            Fill(loc);
+            return loc;
+        }
+    }
+
+    /// <summary>Доп. переменные описания.</summary>
+    protected virtual void Fill(LocString loc) { }
+
+    public sealed override async Task<bool> OnSelect()
+    {
+        Camp.Choosing(Owner, this);
+        var cost = Cost;
+        var success = await Perform();
+        if (success) Camp.Spend(Owner, Action, cost);
+        return success;
+    }
+
+    protected abstract Task<bool> Perform();
+}
+
+/// <summary>
+/// Чужое действие привала (ванильные «Отдых», «Кузница», «Помочь» в коопе, Лопата, Гиря...) с ценой в очках лагеря.
+/// Название, значок и описание — исходного действия (по его OptionId). После ванильного «Отдыха» снимается Усталость
+/// похода и выдаётся Бодрость «Отдохнувшего».
+/// </summary>
+public sealed class ForeignRestSiteOption(Player owner, RestSiteOption inner, CampAction action) : RestSiteOption(owner)
+{
+    public RestSiteOption Inner => inner;
+    public CampAction Action => action;
+    public int Cost => Camp.CostOf(Owner, action);
+
+    public override string OptionId => inner.OptionId;
+    public override LocString Description => inner.Description;
+    public override IEnumerable<string> AssetPaths => inner.AssetPaths;
+    public override bool IsEnabled => inner.IsEnabled && Camp.CanAfford(Owner, Cost);
+
+    public override async Task<bool> OnSelect()
+    {
+        Camp.Choosing(Owner, this);
+        var cost = Cost;
+        var success = await inner.OnSelect();
+        if (!success) return false;
+        Camp.Spend(Owner, action, cost);
+        if (action == CampAction.Rest) HeroRecord.Of(Owner)?.AfterRest();
+        return true;
+    }
+
+    public override Task DoLocalPostSelectVfx(CancellationToken ct = default) => inner.DoLocalPostSelectVfx(ct);
+    public override Task DoRemotePostSelectVfx() => inner.DoRemotePostSelectVfx();
+}
+
+/// <summary>Короткий привал (10 §1): 1 очко, лечит 15 % макс. ♥ («Первая помощь» — 20 %).</summary>
+public sealed class ShortRestRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_SHORT_REST";
+    public override string FallbackIcon => "HEAL";
+    public override CampAction Action => CampAction.ShortRest;
+
+    private int Percent => CampRules.ShortRestPercent(HeroRecord.Of(Owner)?.Has(Skill.FirstAid) == true);
+
+    private decimal Amount => Hook.ModifyRestSiteHealAmount(Owner.RunState, Owner.Creature,
+        CampRules.HealAmount(Owner.Creature.MaxHp, Percent));
+
+    protected override void Fill(LocString loc)
+    {
+        loc.Add("Percent", Percent);
+        loc.Add("Heal", (int)Amount);
+    }
+
+    protected override async Task<bool> Perform()
+    {
+        await CreatureCmd.Heal(Owner.Creature, Amount);
+        return true;
+    }
+
+    public override Task DoLocalPostSelectVfx(CancellationToken ct = default)
+    {
+        HealRestSiteOption.PlayRestSiteHealSfx();
+        return Task.CompletedTask;
     }
 }
 
 /// <summary>
-/// Варка (docs/design/09 §2, 10): из Сумки травника — выбор из до 3 сильнейших доступных рецептов (экран наград);
-/// реагенты списываются за взятое зелье, взять можно одно.
+/// Варка (docs/design/09 §2, 10): 1 очко. Из Сумки травника — выбор из до 3 сильнейших доступных рецептов (экран
+/// наград); реагенты списываются за взятое зелье, взять можно одно. Ступень выше: «Алхимия» (Ремесло), «Знаток трав»
+/// (Выживание); яды — ещё и «Мастер ядов».
 /// </summary>
 public sealed class BrewRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
 {
     public const int MaxOffers = 3;
     public override string OptionId => "SLAYTHEREQUIEM_BREW";
     public override string FallbackIcon => "COOK";
+    public override CampAction Action => CampAction.Brew;
 
-    private List<AlchemyRules.BrewOption> Options =>
-        HerbalistPouch.Of(Owner) is { } pouch ? AlchemyRules.Available(pouch.Reagents, HerbalismSteps) : [];
-
-    /// <summary>Ступени «Знатока трав» (ветка Выживания — этап 5).</summary>
-    private int HerbalismSteps => 0;
-
-    public override bool IsEnabled => Options.Count > 0;
-
-    public override LocString Description
+    public static int PotionSteps(Player player)
     {
-        get
-        {
-            if (!IsEnabled) return new LocString("rest_site_ui", $"OPTION_{OptionId}.descriptionDisabled");
-            var loc = base.Description;
-            loc.Add("Count", HerbalistPouch.Of(Owner)?.Total ?? 0);
-            return loc;
-        }
+        var hero = HeroRecord.Of(player);
+        if (hero == null) return 0;
+        return (hero.Has(Skill.CraftAlchemy) ? 1 : 0) + (hero.Has(Skill.HerbLore) ? 1 : 0);
     }
+
+    public static int PoisonSteps(Player player) =>
+        PotionSteps(player) + (HeroRecord.Of(player)?.Has(Skill.VenomMaster) == true ? 1 : 0);
+
+    /// <summary>Доступные рецепты: зелья и яды со своими ступенями перков, по силе.</summary>
+    public static List<AlchemyRules.BrewOption> Brewable(Player player)
+    {
+        if (HerbalistPouch.Of(player) is not { } pouch) return [];
+        var potions = AlchemyRules.Available(pouch.Reagents, PotionSteps(player)).Where(o => !o.Recipe.IsPoison);
+        var poisons = AlchemyRules.Available(pouch.Reagents, PoisonSteps(player)).Where(o => o.Recipe.IsPoison);
+        return potions.Concat(poisons).OrderByDescending(o => o.Tier).ToList();
+    }
+
+    private List<AlchemyRules.BrewOption> Options => Brewable(Owner);
+
+    protected override bool Available => Options.Count > 0;
+
+    protected override void Fill(LocString loc) => loc.Add("Count", HerbalistPouch.Of(Owner)?.Total ?? 0);
 
     /// <summary>Выбор вариантов: лучшее зелье, лучший яд, затем следующий по силе — чтобы было из чего выбрать.</summary>
     public static List<AlchemyRules.BrewOption> PickOffers(List<AlchemyRules.BrewOption> available)
@@ -87,7 +321,7 @@ public sealed class BrewRestSiteOption(Player owner) : RequiemRestSiteOption(own
         return picked;
     }
 
-    public override async Task<bool> OnSelect()
+    protected override async Task<bool> Perform()
     {
         var pouch = HerbalistPouch.Of(Owner);
         if (pouch == null) return false;
@@ -104,33 +338,293 @@ public sealed class BrewRestSiteOption(Player owner) : RequiemRestSiteOption(own
         await RewardsCmd.OfferCustom(Owner, rewards);
         var brewed = pouch.BrewTaken;
         pouch.EndBrew();
-        return await Done(brewed);
+        return brewed;
     }
 }
 
 /// <summary>
-/// Сундук лагеря (docs/design/02 §3, 10): убрать карты из колоды (они перестают весить) и забрать обратно;
-/// переложить одну вещь снаряжения между рюкзаком и сундуком. Надетое в сундук не кладётся.
+/// Готовка (10 §3): 1 очко, открывается «Походным котлом» (Выживание I); Отшельник готовит Грибную похлёбку и без котла.
+/// Сытость длится 3 боя (Пир — 1), одна за раз (Хмельной Князь — две); Грибная похлёбка совместима с любой едой.
+/// </summary>
+public sealed class CookingRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_COOK";
+    public override string FallbackIcon => "COOK";
+    public override CampAction Action => CampAction.Cook;
+
+    public static List<Dish> Cookable(Player player)
+    {
+        var pouch = HerbalistPouch.Of(player);
+        var hero = HeroRecord.Of(player);
+        if (pouch == null || hero == null) return [];
+        var kettle = hero.Has(Skill.CampKettle);
+        var hermit = player.Relics.OfType<HermitBackground>().Any();
+        return FoodRules.Dishes
+            .Where(d => d == Dish.MushroomStew ? hermit : kettle)
+            .Where(d => FoodRules.IngredientsFor(d, pouch.Reagents) != null)
+            .ToList();
+    }
+
+    protected override bool Available => Cookable(Owner).Count > 0;
+
+    protected override async Task<bool> Perform()
+    {
+        var pouch = HerbalistPouch.Of(Owner);
+        var hero = HeroRecord.Of(Owner);
+        if (pouch == null || hero == null) return false;
+        var choices = Cookable(Owner)
+            .Select(d => new CampMenu.Choice(CampMenu.DishCard(d), FoodRules.DurationOf(d),
+                FoodRules.IngredientsFor(d, pouch.Reagents)?.Length ?? 0, d))
+            .ToList();
+        if (await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_COOK_PROMPT") is not Dish dish) return false;
+        var ingredients = FoodRules.IngredientsFor(dish, pouch.Reagents);
+        if (ingredients == null || !pouch.TrySpend(ingredients)) return false;
+        await hero.Eat(dish);
+        return true;
+    }
+}
+
+/// <summary>
+/// Кузня (docs/design/07 §4, 10): 2 очка («Мастер привала» — 1): +1 к улучшению одной надетой вещи
+/// (до +2; «Кузнечное дело» — до +3).
+/// </summary>
+public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_FORGE";
+    public override string FallbackIcon => "SMITH";
+    public override CampAction Action => CampAction.Forge;
+
+    private List<RelicModel> Upgradable => Loadout.Equipped(Owner).Where(r => r.CanUpgrade).Cast<RelicModel>().ToList();
+
+    protected override bool Available => Upgradable.Count > 0;
+
+    protected override async Task<bool> Perform()
+    {
+        var options = Upgradable;
+        if (options.Count == 0) return false;
+        var pick = options.Count == 1 ? options[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
+        if (pick is not EquipmentRelic item || !item.CanUpgrade) return false;
+        item.Upgrades += 1;
+        item.Flash();
+        return true;
+    }
+}
+
+/// <summary>
+/// Зачарование (07 §6.1, 10): 2 очка («Мастер привала» — 1), нужен Камень душ и Зачаровальный стол.
+/// Камень → предмет → чары; сила чар = сила камня. Такие же чары заменяются (у оружейных — новые заряды).
+/// </summary>
+public sealed class EnchantRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_ENCHANT";
+    public override string FallbackIcon => "LIFT";
+    public override CampAction Action => CampAction.Enchant;
+
+    protected override bool Available =>
+        HeroRecord.Of(Owner) is { TotalStones: > 0 } && Enchanting.Enchantable(Owner).Count > 0;
+
+    protected override void Fill(LocString loc) => loc.Add("Stones", HeroRecord.Of(Owner)?.TotalStones ?? 0);
+
+    protected override async Task<bool> Perform()
+    {
+        var hero = HeroRecord.Of(Owner);
+        if (hero == null) return false;
+
+        var powers = new[] { 1, 2, 3 }.Where(p => hero.Stones(p) > 0).ToList();
+        if (powers.Count == 0) return false;
+        var power = powers[0];
+        if (powers.Count > 1)
+        {
+            var stones = powers.Select(p => new CampMenu.Choice(CampMenu.StoneCard(p), hero.Stones(p), p, p)).ToList();
+            if (await CampMenu.Pick(Owner, stones, "SLAYTHEREQUIEM_STONE_PROMPT") is not int chosen) return false;
+            power = chosen;
+        }
+
+        var items = Enchanting.Enchantable(Owner);
+        if (items.Count == 0) return false;
+        var picked = items.Count == 1 ? items[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, items.Cast<RelicModel>().ToList());
+        if (picked is not EquipmentRelic item) return false;
+
+        var choices = Enchanting.AllowedFor(item)
+            .Select(e => new CampMenu.Choice(CampMenu.EnchantCard(e), EnchantRules.Value(e, power),
+                EnchantRules.IsWeaponBrand(e) ? EnchantRules.Charges(power) : 0, e))
+            .ToList();
+        if (await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_ENCHANT_PROMPT") is not Enchant enchant) return false;
+        if (!hero.SpendStone(power)) return false;
+        Enchanting.Apply(Owner, item, enchant, power);
+        await hero.SyncMaxHp();
+        TravelPack.Of(Owner)?.Refresh();
+        hero.Refresh();
+        return true;
+    }
+}
+
+/// <summary>Медитация (10 §1): 1 очко — +1 к ступени ◆ или ✦ (не выше III) до конца следующего боя.</summary>
+public sealed class MeditateRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_MEDITATE";
+    public override string FallbackIcon => "HEAL";
+    public override CampAction Action => CampAction.Meditate;
+
+    private static readonly StatAxis[] Axes = [StatAxis.Stamina, StatAxis.Mana];
+
+    protected override bool Available =>
+        HeroRecord.Of(Owner) is { Meditation: 0 } hero && Axes.Any(a => hero.BaseTier(a) < ProgressionRules.MaxTier);
+
+    protected override async Task<bool> Perform()
+    {
+        var hero = HeroRecord.Of(Owner);
+        if (hero == null) return false;
+        var choices = Axes.Where(a => hero.BaseTier(a) < ProgressionRules.MaxTier)
+            .Select(a => new CampMenu.Choice(a == StatAxis.Stamina ? typeof(PickMeditateStamina) : typeof(PickMeditateMana),
+                hero.BaseTier(a) + 1, 0, a))
+            .ToList();
+        if (await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_MEDITATE_PROMPT") is not StatAxis axis) return false;
+        hero.Meditation = axis == StatAxis.Stamina ? 1 : 2;
+        hero.Flash();
+        hero.Refresh();
+        return true;
+    }
+}
+
+/// <summary>
+/// Молитва (05 §3, 10 §1): 1 очко, у алтаря лагеря. Сменить благословение на бога алтаря или искупиться
+/// (+1 ступень праведности, раз в акт — без пожертвования).
+/// </summary>
+public sealed class PrayRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_PRAY";
+    public override string FallbackIcon => "HEAL";
+    public override CampAction Action => CampAction.Pray;
+
+    private bool CanSwitch => CelestialBlessing.Of(Owner) is { } blessing && blessing.God != Camp.AltarGod(Owner);
+
+    protected override bool Available => Faith.CanRedeem(Owner) || CanSwitch;
+
+    protected override void Fill(LocString loc) => loc.Add("God", (int)Camp.AltarGod(Owner));
+
+    protected override async Task<bool> Perform()
+    {
+        var choices = new List<CampMenu.Choice>();
+        if (Faith.CanRedeem(Owner)) choices.Add(new CampMenu.Choice(typeof(PickPrayRedeem), 0, 0, "redeem"));
+        if (CanSwitch) choices.Add(new CampMenu.Choice(typeof(PickPraySwitch), (int)Camp.AltarGod(Owner), 0, "switch"));
+        var tag = await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_PRAY_PROMPT") as string;
+        switch (tag)
+        {
+            case "redeem":
+                if (!Faith.Redeem(Owner)) return false;
+                Faith.RefreshAll(Owner);
+                return true;
+            case "switch":
+                await CelestialBlessing.Grant(Owner, Camp.AltarGod(Owner));
+                Faith.RefreshAll(Owner);
+                return true;
+            default:
+                return false;
+        }
+    }
+}
+
+/// <summary>
+/// Развитие (02 §5, 04): 0 очков — потратить очки характеристик и навыков (экран-карта за экраном, пока есть что
+/// брать или пока игрок не закроет выбор). Владение школой — 1 очко для родной, 2 для чужой.
+/// </summary>
+public sealed class TrainRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
+{
+    public override string OptionId => "SLAYTHEREQUIEM_TRAIN";
+    public override string FallbackIcon => "LIFT";
+    public override CampAction Action => CampAction.Train;
+
+    protected override bool Available => HeroRecord.Of(Owner) is { HasUnspentPoints: true };
+
+    protected override void Fill(LocString loc)
+    {
+        var hero = HeroRecord.Of(Owner);
+        loc.Add("StatPoints", hero?.UnspentStatPoints ?? 0);
+        loc.Add("SkillPoints", hero?.UnspentSkillPoints ?? 0);
+        loc.Add("Level", hero?.Level ?? 1);
+    }
+
+    private static readonly StatAxis[] Axes = [StatAxis.Health, StatAxis.Stamina, StatAxis.Mana, StatAxis.Burden];
+
+    private static int PerPoint(StatAxis axis) => axis switch
+    {
+        StatAxis.Health => ProgressionRules.HealthPerPoint,
+        StatAxis.Stamina => ProgressionRules.StaminaPoolPerPoint,
+        StatAxis.Mana => ProgressionRules.ManaPoolPerPoint,
+        StatAxis.Burden => ProgressionRules.BurdenPerPoint,
+        _ => 1,
+    };
+
+    private List<SpellSchool> RaisableSchools(HeroRecord hero) =>
+        Mastery.Schools.Where(s => (Mastery.GrimoireOf(Owner)?.Level(s) ?? SpellAffinity.MaxMastery) < SpellAffinity.MaxMastery
+                                   && hero.MasteryCost(s) <= hero.UnspentStatPoints).ToList();
+
+    protected override async Task<bool> Perform()
+    {
+        var hero = HeroRecord.Of(Owner);
+        if (hero == null) return false;
+        var changed = false;
+        while (true)
+        {
+            var choices = new List<CampMenu.Choice>();
+            if (hero.UnspentStatPoints > 0)
+            {
+                foreach (var axis in Axes)
+                    choices.Add(new CampMenu.Choice(CampMenu.StatCard(axis), PerPoint(axis), hero.Points(axis), axis));
+                if (RaisableSchools(hero).Count > 0)
+                    choices.Add(new CampMenu.Choice(CampMenu.StatCard(StatAxis.Mastery), 1, hero.UnspentStatPoints, StatAxis.Mastery));
+            }
+            if (hero.UnspentSkillPoints > 0)
+                foreach (var node in hero.Learnable())
+                    choices.Add(new CampMenu.Choice(CampMenu.NodeCard(node.Skill), node.Rank, hero.CostOf(node), node.Skill));
+            if (choices.Count == 0) break;
+
+            var tag = await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_TRAIN_PROMPT");
+            switch (tag)
+            {
+                case Skill skill:
+                    changed |= await hero.Learn(skill);
+                    break;
+                case StatAxis.Mastery:
+                {
+                    var schools = RaisableSchools(hero)
+                        .Select(s => new CampMenu.Choice(CampMenu.SchoolCard(s), Mastery.GrimoireOf(Owner)?.Level(s) ?? 0, hero.MasteryCost(s), s))
+                        .ToList();
+                    if (await CampMenu.Pick(Owner, schools, "SLAYTHEREQUIEM_SCHOOL_PROMPT") is SpellSchool school)
+                        changed |= await hero.SpendStat(StatAxis.Mastery, school);
+                    break;
+                }
+                case StatAxis axis:
+                    changed |= await hero.SpendStat(axis);
+                    break;
+                default:
+                    return changed;
+            }
+        }
+        return changed;
+    }
+}
+
+/// <summary>
+/// Сундук лагеря (docs/design/02 §3, 10): 0 очков. Убрать карты из колоды (они перестают весить) и забрать обратно;
+/// переложить одну вещь снаряжения между рюкзаком и сундуком («Ловкая укладка» — сколько угодно). Надетое не кладётся.
 /// </summary>
 public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
 {
     public override string OptionId => "SLAYTHEREQUIEM_CHEST";
     public override string FallbackIcon => "DIG";
+    public override CampAction Action => CampAction.Chest;
 
-    public override LocString Description
+    protected override void Fill(LocString loc)
     {
-        get
-        {
-            var loc = base.Description;
-            var pack = TravelPack.Of(Owner);
-            loc.Add("Weight", pack == null ? 0 : Loadout.TotalWeight(Owner));
-            loc.Add("Capacity", pack == null ? 0 : Loadout.Capacity(Owner));
-            loc.Add("Stored", pack?.StoredCount ?? 0);
-            return loc;
-        }
+        var pack = TravelPack.Of(Owner);
+        loc.Add("Weight", pack == null ? 0 : Loadout.TotalWeight(Owner));
+        loc.Add("Capacity", pack == null ? 0 : Loadout.Capacity(Owner));
+        loc.Add("Stored", pack?.StoredCount ?? 0);
     }
 
-    public override async Task<bool> OnSelect()
+    protected override async Task<bool> Perform()
     {
         var pack = TravelPack.Of(Owner);
         if (pack == null) return false;
@@ -168,11 +662,13 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             }
         }
 
-        // 3. Одна вещь снаряжения: снятая из рюкзака → в сундук, или из сундука → в рюкзак.
-        var stowed = Loadout.All(Owner).Where(r => r.IsStowed).Cast<RelicModel>().ToList();
-        var stored = pack.StoredItemRelics();
-        if (stowed.Count + stored.Count > 0)
+        // 3. Снаряжение: снятая из рюкзака → в сундук, или из сундука → в рюкзак (одна вещь; «Ловкая укладка» — пока не закроете).
+        var unlimited = HeroRecord.Of(Owner)?.Has(Skill.DeftPacking) == true;
+        do
         {
+            var stowed = Loadout.All(Owner).Where(r => r.IsStowed).Cast<RelicModel>().ToList();
+            var stored = pack.StoredItemRelics();
+            if (stowed.Count + stored.Count == 0) break;
             var pick = await RelicSelectCmd.FromChooseARelicScreen(Owner, [.. stowed, .. stored]);
             if (pick is EquipmentRelic item && stowed.Contains(item))
             {
@@ -184,36 +680,9 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
                 await pack.TakeItem(pick.GetType().Name);
                 changed = true;
             }
-        }
+            else break;
+        } while (unlimited);
 
-        return await Done(changed);
-    }
-}
-
-/// <summary>
-/// Кузня (docs/design/07 §4, 10): +1 к улучшению одной надетой вещи (не выше +2). Стоит 2 очка лагеря; пока очков нет
-/// (этап 5), Кузня — полноценное действие привала, как ванильная «Кузница»: после неё привал заканчивается.
-/// </summary>
-public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
-{
-    public override string OptionId => "SLAYTHEREQUIEM_FORGE";
-    public override string FallbackIcon => "SMITH";
-
-    private List<RelicModel> Upgradable => Loadout.Equipped(Owner).Where(r => r.CanUpgrade).Cast<RelicModel>().ToList();
-
-    public override bool IsEnabled => Upgradable.Count > 0;
-
-    public override LocString Description =>
-        IsEnabled ? base.Description : new LocString("rest_site_ui", $"OPTION_{OptionId}.descriptionDisabled");
-
-    public override async Task<bool> OnSelect()
-    {
-        var options = Upgradable;
-        if (options.Count == 0) return false;
-        var pick = options.Count == 1 ? options[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
-        if (pick is not EquipmentRelic item || !item.CanUpgrade) return false;
-        item.Upgrades += 1;
-        item.Flash();
-        return true;
+        return changed;
     }
 }

@@ -128,25 +128,11 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
 
     // ───── лагерь ─────
 
-    private bool _freeActionPending;
-
-    /// <summary>Отметить, что выбранное действие лагеря — свободное (Варка, Сундук).</summary>
-    public void MarkFreeAction() => _freeActionPending = true;
-
-    public override bool ShouldDisableRemainingRestSiteOptions(Player player)
-    {
-        if (player != Owner) return true;
-        var free = _freeActionPending;
-        _freeActionPending = false;
-        return !free;
-    }
-
+    /// <summary>Действия лагеря Реквиема (очки лагеря — <see cref="Camp"/>).</summary>
     public override bool TryModifyRestSiteOptions(Player player, ICollection<RestSiteOption> options)
     {
         if (player != Owner || !RequiemMode.IsInSystem(Owner)) return false;
-        options.Add(new BrewRestSiteOption(player));
-        options.Add(new ChestRestSiteOption(player));
-        options.Add(new ForgeRestSiteOption(player));
+        Camp.AddOptions(player, options);
         return true;
     }
 
@@ -164,8 +150,6 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
     {
         // «Пёрышко» действует до следующего лагеря.
         if (room.RoomType == RoomType.RestSite && FeatherBonus > 0) FeatherBonus = 0;
-        // Флаг свободного действия мог остаться, если хук прервал другой слушатель раньше нас.
-        _freeActionPending = false;
         Refresh();
         return Task.CompletedTask;
     }

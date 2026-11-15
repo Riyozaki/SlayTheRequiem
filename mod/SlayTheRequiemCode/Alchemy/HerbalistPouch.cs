@@ -114,7 +114,9 @@ public sealed class HerbalistPouch : RequiemRelic
 
         var rng = Owner.PlayerRng.Rewards;
         var gained = 0;
-        for (var i = 0; i < AlchemyRules.DropCount(rank); i++)
+        // «Знаток трав» (Выживание III): реагенты с врагов ×2.
+        var drops = AlchemyRules.DropCount(rank) * (Progression.HeroRecord.Of(Owner)?.Has(Skill.HerbLore) == true ? 2 : 1);
+        for (var i = 0; i < drops; i++)
             gained += Add(rng.NextItem(candidates), 1);
         // Элиты и боссы — шанс на Драконий порошок (сопротивления).
         if (rank == EnemyRank.Boss || (rank == EnemyRank.Elite && rng.NextInt(2) == 0))

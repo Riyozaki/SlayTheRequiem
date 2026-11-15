@@ -191,8 +191,11 @@ public static class ShopRules
 
     // ───── услуги ─────
 
-    /// <summary>Максимум улучшений предмета (07 §2: +2; «Легендарный» +3 — перк «Ремесло III», этап 5).</summary>
+    /// <summary>Максимум улучшений предмета (07 §2: +2; «Легендарный» +3 — узел «Кузнечное дело», см. LegendaryUpgrade).</summary>
     public const int MaxUpgrade = 2;
+
+    /// <summary>«Легендарный» предмет: +3 (узел «Кузнечное дело», ветка Ремесла).</summary>
+    public const int LegendaryUpgrade = 3;
 
     /// <summary>Заточка Оружейника (§2.2): 60 (I–II), 90 (III), 130 (IV–V).</summary>
     public static int SharpenPrice(int tier) => tier <= 2 ? 60 : tier == 3 ? 90 : 130;

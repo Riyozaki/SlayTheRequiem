@@ -48,6 +48,13 @@ public static class StartingRelicsPatch
             sigil.FloorAddedToDeck = 1;
             __instance.AddRelicInternal(sigil, silent: true);
         }
+        // Летопись героя — Слава, уровни, навыки, Сытость, Камни душ, очки лагеря (docs/design/02 §5, 04, 10).
+        if (!__instance.Relics.OfType<Progression.HeroRecord>().Any())
+        {
+            var record = ModelDb.Relic<Progression.HeroRecord>().ToMutable();
+            record.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(record, silent: true);
+        }
         if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();
         grimoire.InitFor(__instance.Character.GetType().Name);

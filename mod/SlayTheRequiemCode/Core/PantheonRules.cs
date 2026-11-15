@@ -59,7 +59,7 @@ public sealed record Boon
     public int HeavyAttackDamage { get; init; }
     /// <summary>Урон Кличей.</summary>
     public int ShoutDamage { get; init; }
-    /// <summary>Перезарядка Кличей короче на N (система Кличей — этап 5).</summary>
+    /// <summary>Перезарядка Кличей короче на N (полка Кличей — Cards/Shouts.cs).</summary>
     public int ShoutCooldown { get; init; }
     /// <summary>Урон атак по нежити и Бездне.</summary>
     public int UndeadDamage { get; init; }
@@ -395,7 +395,7 @@ public static class PantheonRules
         AbyssPrince.GateBreaker => new Boon { SummonDamage = 2 },
         // Атаки +2, Пробитие 1. Цена: призывы получают +50 % урона.
         AbyssPrince.Treachery => new Boon { AttackDamage = 2, Pierce = 1, SummonTakenPercent = 50 },
-        // Две Особые еды (этап 5). Цена: статус в руку в начале боя (особое).
+        // Две Сытости одновременно (FoodRules.Slots). Цена: статус в руку в начале боя (особое).
         AbyssPrince.Revel => Boon.None,
         // Лечение 2 после боя (особое); тяжёлые атаки +2. Цена: праведность недоступна; лавки +15 %.
         AbyssPrince.Outcast => new Boon { HeavyAttackDamage = 2, MerchantPricePercent = 15 },
@@ -414,6 +414,26 @@ public static class PantheonRules
     };
 
     /// <summary>Сколько нужно для Обета.</summary>
+    /// <summary>Второе свойство напитка (Обет Хмельного Князя).</summary>
+    public enum DrinkBonus { None, Stamina, Mana, Heal, Block }
+
+    /// <summary>
+    /// Вторые свойства напитков после Обета Хмельного Князя (05 §4): восполнения ♥ дают ещё ◆, восполнения ◆ — ✦,
+    /// восполнения ✦ — лечение, усиления и Панацея — блок. Сила растёт со ступенью (I/III/V). Яды не пьют.
+    /// </summary>
+    public static (DrinkBonus Kind, int Amount) RevelSecondProperty(Brew brew, int tier)
+    {
+        var step = Math.Max(1, (tier + 1) / 2); // I → 1, III → 2, V → 3
+        return brew switch
+        {
+            Brew.Health or Brew.Rejuvenation => (DrinkBonus.Stamina, step),
+            Brew.Stamina or Brew.SecondWind => (DrinkBonus.Mana, step),
+            Brew.Mana or Brew.Clarity => (DrinkBonus.Heal, 2 * step),
+            _ when AlchemyRules.IsPoison(brew) => (DrinkBonus.None, 0),
+            _ => (DrinkBonus.Block, 3 * step),
+        };
+    }
+
     public static int VowTarget(AbyssPrince prince) => prince switch
     {
         AbyssPrince.PlagueLord => 3,   // убить 3 врагов под Хворью

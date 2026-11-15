@@ -226,5 +226,8 @@
   "SLAYTHEREQUIEM-COMBINED_POISON_POWER.smartDescription": "Weapon attacks: Toxin and Exhaustion. Charges: {Amount}.",
   "SLAYTHEREQUIEM-PANIC_POWER.title": "Panic",
   "SLAYTHEREQUIEM-PANIC_POWER.description": "The next attack deals no damage.",
-  "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "The next attack deals no damage."
+  "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "The next attack deals no damage.",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.title": "Shouts Recharging",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.description": "{Amount} Shout(s) recharging; they return to your hand at the start of a turn.",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "{Amount} Shout(s) recharging; they return to your hand at the start of a turn."
 }

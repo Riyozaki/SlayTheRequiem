@@ -723,3 +723,289 @@ def below_half(hp: int, max_hp: int) -> bool:
 def star_marks_after_act(marks: int, vow_done: bool) -> int:
     return 0 if vow_done else marks + 1
 
+
+
+# ═════════════ Этап 5: Прогрессия (Core/ProgressionRules.cs) ═════════════
+
+MAX_LEVEL = 15
+
+
+def renown_for(rank: str) -> int:
+    return {"boss": 6, "elite": 3}.get(rank, 1)
+
+
+def renown_to_reach(level: int) -> int:
+    level = max(1, min(MAX_LEVEL, level))
+    return (level - 1) * (level + 4) // 2
+
+
+def level_for(renown: int) -> int:
+    level = 1
+    while level < MAX_LEVEL and renown >= renown_to_reach(level + 1):
+        level += 1
+    return level
+
+
+def renown_to_next(renown: int) -> int:
+    level = level_for(renown)
+    return 0 if level >= MAX_LEVEL else renown_to_reach(level + 1) - renown
+
+
+def stat_points_for(level: int) -> int:
+    return 2 * (max(1, min(MAX_LEVEL, level)) - 1)
+
+
+def skill_points_for(level: int) -> int:
+    return max(1, min(MAX_LEVEL, level)) // 2
+
+
+def retained_renown(imprint: int, dead: int) -> int:
+    return imprint + max(0, dead - imprint) // 2
+
+
+def stat_tier(points: int) -> int:
+    return max(0, min(3, points // 3))
+
+
+def with_meditation(tier: int, meditated: bool) -> int:
+    return min(3, tier + 1) if meditated else tier
+
+
+def tiers(hp: int, st: int, mana: int) -> dict:
+    return dict(
+        poison_res=1 if hp >= 1 else 0, burden=6 if hp >= 2 else 0, plating=1 if hp >= 3 else 0,
+        stamina_regen=1 if st >= 1 else 0, attack_damage=1 if st >= 2 else 0, free_first_attack=st >= 3,
+        mana_regen=1 if mana >= 1 else 0, first_spell_discount=1 if mana >= 2 else 0, ward=3 if mana >= 3 else 0)
+
+
+def is_clumsy(hero: str, main_hand: str, heavy_shield: bool, trained: bool) -> bool:
+    if trained:
+        return False
+    if hero == "Regent":
+        return main_hand in ("TwoHanded", "Crossbow") or heavy_shield
+    if hero == "Silent":
+        return main_hand == "TwoHanded"
+    return False
+
+
+# Деревья навыков: ветка → узлы по рангу (Выживание — ярусы по 3).
+SKILL_LAYOUT = {
+    "Craft": ["CraftAlchemy", "CraftEnchanting", "CraftSmithing", "CraftArtisan"],
+    "Martial": ["WeaponTraining", "Conditioning", "SecondBreath", "Veteran"],
+    "Survival": ["CampKettle", "DeftPacking", "FirstAid", "Wayfarer", "Acclimatization", "TradeName",
+                 "WellRested", "CampMaster", "HerbLore"],
+    "OneHanded": ["Fighter", "Fencer", "Butcher", "Crusher"],
+    "TwoHanded": ["Sweep", "HeavyHand", "Shatter", "Relentless"],
+    "Block": ["ShieldBearer", "ShieldWall", "ShieldBash", "Bastion"],
+    "HeavyArmor": ["Hardened", "Steadfast", "WeightBearer", "AgainstAllOdds"],
+    "Blades": ["Bloodletter", "Ambush", "Precision", "Hemorrhage"],
+    "Archery": ["Marksman", "QuickDraw", "AimedShot", "ArmorPiercer"],
+    "Evasion": ["Nimble", "Counterstrike", "LightStep", "Elusive"],
+    "Poisons": ["Poisoner", "Toxicologist", "VenomWard", "VenomMaster"],
+    "Destruction": ["Destruction1", "Destruction2", "Destruction3", "ElementLord"],
+    "Restoration": ["Restoration1", "Restoration2", "Restoration3", "Warden"],
+    "Alteration": ["Alteration1", "Alteration2", "Alteration3", "Stoneskin"],
+    "Conjuration": ["Conjuration1", "Conjuration2", "Conjuration3", "BoundMaster"],
+    "Illusion": ["Illusion1", "Illusion2", "Illusion3", "Phantasm"],
+}
+SCHOOL_BRANCHES = ["Destruction", "Restoration", "Alteration", "Conjuration", "Illusion"]
+COMMON_BRANCHES = ["Craft", "Martial", "Survival"]
+SKILL_NODES = {}
+for _branch, _skills in SKILL_LAYOUT.items():
+    for _i, _s in enumerate(_skills):
+        SKILL_NODES[_s] = (_branch, _i // 3 + 1 if _branch == "Survival" else _i + 1)
+
+
+def hero_branches(hero: str) -> list:
+    return {"Ironclad": ["OneHanded", "TwoHanded", "Block", "HeavyArmor"],
+            "Silent": ["Blades", "Archery", "Evasion", "Poisons"]}.get(hero, [])
+
+
+def branches_for(hero: str) -> list:
+    out = []
+    for b in hero_branches(hero) + COMMON_BRANCHES + SCHOOL_BRANCHES:
+        if b not in out:
+            out.append(b)
+    return out
+
+
+def skill_cost(skill: str, native: bool) -> int:
+    return (1 if native else 2) if SKILL_NODES[skill][0] in SCHOOL_BRANCHES else 1
+
+
+def can_learn(skill: str, learned: set, branches: list) -> bool:
+    branch, rank = SKILL_NODES[skill]
+    if branch not in branches or skill in learned:
+        return False
+    if branch == "Survival":
+        return sum(1 for s in learned if SKILL_NODES[s][0] == "Survival") >= 2 * (rank - 1)
+    if rank == 1:
+        return True
+    return any(SKILL_NODES[s] == (branch, rank - 1) for s in learned)
+
+
+def learnable(hero: str, learned: set, points: int, is_native) -> list:
+    br = branches_for(hero)
+    out = []
+    for s, (branch, _) in SKILL_NODES.items():
+        if not can_learn(s, learned, br):
+            continue
+        native = branch in SCHOOL_BRANCHES and is_native(branch)
+        if skill_cost(s, native) <= points:
+            out.append(s)
+    return out
+
+
+# ═════════════ Этап 5: Лагерь (Core/CampRules.cs) ═════════════
+
+CAMP_COSTS = {"Rest": 2, "ShortRest": 1, "Smith": 2, "Forge": 2, "Brew": 1, "Enchant": 2, "Cook": 1,
+              "Pray": 1, "Chest": 0, "Meditate": 1, "Train": 0}
+
+
+def camp_budget(wayfarer: bool, camp_master: bool) -> int:
+    return 2 + (1 if wayfarer else 0) + (1 if camp_master else 0)
+
+
+def camp_cost(action: str, camp_master: bool) -> int:
+    if camp_master and action in ("Forge", "Enchant"):
+        return 1
+    return CAMP_COSTS.get(action, 2)
+
+
+def short_rest_percent(first_aid: bool) -> int:
+    return 20 if first_aid else 15
+
+
+def fatigue_stacks(nodes_since_rest: int, enabled: bool) -> int:
+    return max(0, min(3, nodes_since_rest // 3)) if enabled else 0
+
+
+def soul_stone_for(rank: str, act_index: int) -> int:
+    if rank == "normal":
+        return 0
+    power = 1 if act_index <= 1 else 2 if act_index <= 3 else 3
+    if rank == "boss":
+        power += 1
+    return max(1, min(3, power))
+
+
+DISH_EFFECTS = {
+    "BloodmossStew": dict(max_hp=6), "VenisonRoast": dict(stamina_regen=1), "FishSoup": dict(mana_regen=1),
+    "SpicedSausage": dict(frost_res=1, start_stamina=2), "MushroomStew": dict(regen=1), "SweetRoll": dict(opening_draw=1),
+}
+DISH_FIELDS = ["max_hp", "stamina_regen", "mana_regen", "frost_res", "start_stamina", "regen", "opening_draw"]
+
+
+def dish_effect(dish: str) -> dict:
+    if dish == "Feast":
+        total = {f: 0 for f in DISH_FIELDS}
+        for d in DISH_EFFECTS:
+            for k, v in DISH_EFFECTS[d].items():
+                total[k] = max(total[k], v) if k == "frost_res" else total[k] + v
+        return total
+    out = {f: 0 for f in DISH_FIELDS}
+    out.update(DISH_EFFECTS[dish])
+    return out
+
+
+def dish_duration(dish: str) -> int:
+    return 1 if dish == "Feast" else 3
+
+
+def feast_ingredients(pouch: list):
+    left = list(pouch)
+    picked = []
+    while len(picked) < 5:
+        best = -1
+        for i, n in enumerate(left):
+            if i == REAGENTS.index("DragonScale") or n <= 0:
+                continue
+            if best < 0 or n > left[best]:
+                best = i
+        if best < 0:
+            return None
+        left[best] -= 1
+        picked.append(best)
+    return picked
+
+
+def eat(meals: list, dish: str, slots: int) -> list:
+    lst = [m for m in meals if m[1] > 0]
+    meal = (dish, dish_duration(dish))
+    for i, m in enumerate(lst):
+        if m[0] == dish:
+            lst[i] = meal
+            return lst
+    while len(lst) >= max(1, slots):
+        lst.pop(0)
+    lst.append(meal)
+    return lst
+
+
+def meals_after_combat(meals: list) -> list:
+    return [(d, f - 1) for d, f in meals if f - 1 > 0]
+
+
+ENCHANT_SLOTS = {
+    "Health": ("Head", "Body"), "Stamina": ("Feet", "Body"), "Magic": ("Head", "Ring"),
+    "FireResistance": ("OffHand", "Ring", "Feet"), "FrostResistance": ("OffHand", "Ring", "Feet"),
+    "ShockResistance": ("OffHand", "Ring", "Feet"), "WeaponMight": ("Hands", "Ring"), "Burden": ("Hands", "Feet"),
+    "FireBrand": ("MainHand",), "FrostBrand": ("MainHand",), "ShockBrand": ("MainHand",),
+}
+
+
+def enchant_allowed(e: str, slot: str) -> bool:
+    return slot in ENCHANT_SLOTS[e]
+
+
+def enchant_value(e: str, power: int) -> int:
+    p = max(1, min(3, power))
+    return {"Health": 4 * p, "Stamina": p, "Magic": 2 * p, "WeaponMight": p, "Burden": 4 * p,
+            "FireBrand": 2 * p, "FrostBrand": p, "ShockBrand": p}.get(e, 2 if p >= 3 else 1)
+
+
+def enchant_charges(power: int) -> int:
+    return 4 + 4 * max(1, min(3, power))
+
+
+def apply_enchant(current: list, e: str, power: int, slots: int) -> list:
+    lst = list(current)
+    brand = e in ("FireBrand", "FrostBrand", "ShockBrand")
+    slot = (e, max(1, min(3, power)), enchant_charges(power) if brand else 0)
+    for i, s in enumerate(lst):
+        if s[0] == e:
+            lst[i] = slot
+            return lst
+    while len(lst) >= max(1, slots):
+        lst.pop(0)
+    lst.append(slot)
+    return lst
+
+
+# ───── Кличи (04 «Глас») ─────
+
+def shout_cooldown(base: int, reduction: int) -> int:
+    return max(1, base - max(0, reduction))
+
+
+def shout_shelf_capacity(skald: bool) -> int:
+    return 2 if skald else 1
+
+
+def soul_tear_executes(hp: int, max_hp: int, boss: bool) -> bool:
+    return not boss and hp > 0 and hp * 4 < max_hp
+
+
+# ───── Хмельной Князь: вторые свойства напитков ─────
+
+def revel_second_property(brew: str, tier: int, is_poison: bool) -> tuple:
+    step = max(1, (tier + 1) // 2)
+    if brew in ("Health", "Rejuvenation"):
+        return ("Stamina", step)
+    if brew in ("Stamina", "SecondWind"):
+        return ("Mana", step)
+    if brew in ("Mana", "Clarity"):
+        return ("Heal", 2 * step)
+    if is_poison:
+        return ("None", 0)
+    return ("Block", 3 * step)

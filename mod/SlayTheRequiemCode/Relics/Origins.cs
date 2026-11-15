@@ -154,7 +154,7 @@ public sealed class MistbornOrigin : OriginRelic
 }
 
 /// <summary>
-/// Пеплорождённые (данмеры): ♥ +5, сопротивление огню I. Дары Тройственных — с системой Князей Бездны (этап 5).
+/// Пеплорождённые (данмеры): ♥ +5, сопротивление огню I. Дары Тройственных — вместе с Пеплорождёнными предысториями (отложено).
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class AshbornOrigin : OriginRelic

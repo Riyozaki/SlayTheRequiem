@@ -46,7 +46,7 @@ public abstract class EquipmentRelic : RequiemRelic
 
     private int _upgrades;
 
-    /// <summary>Улучшения предмета (+1/+2: Заточка Оружейника, Кузня лагеря — этап 5), docs/design/07 §2.</summary>
+    /// <summary>Улучшения предмета (+1/+2, «Кузнечное дело» — +3: Заточка Оружейника, Кузня лагеря), docs/design/07 §2.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int Upgrades
     {
@@ -54,11 +54,38 @@ public abstract class EquipmentRelic : RequiemRelic
         set
         {
             AssertMutable();
-            _upgrades = Math.Clamp(value, 0, ShopRules.MaxUpgrade);
+            _upgrades = Math.Clamp(value, 0, ShopRules.LegendaryUpgrade);
         }
     }
 
-    public bool CanUpgrade => _upgrades < ShopRules.MaxUpgrade;
+    /// <summary>Потолок улучшений: +2, с узлом «Кузнечное дело» (Ремесло III) — «Легендарный» +3.</summary>
+    public int MaxUpgrades => IsMutable && Owner != null && Progression.HeroRecord.Of(Owner)?.Has(Skill.CraftSmithing) == true
+        ? ShopRules.LegendaryUpgrade
+        : ShopRules.MaxUpgrade;
+
+    public bool CanUpgrade => _upgrades < MaxUpgrades;
+
+    private string _enchants = "";
+
+    /// <summary>Чары предмета (docs/design/07 §6.1) — «Вид:сила:заряды» через запятую (<see cref="EnchantRules"/>).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string Enchants
+    {
+        get => _enchants;
+        set
+        {
+            AssertMutable();
+            _enchants = value ?? "";
+        }
+    }
+
+    public List<EnchantSlot> EnchantSlots => EnchantRules.Parse(_enchants);
+
+    public void SetEnchants(IEnumerable<EnchantSlot> slots)
+    {
+        Enchants = EnchantRules.Serialize(slots);
+        InvokeDisplayAmountChanged();
+    }
 
     /// <summary>Ступень с учётом улучшений — для порогов свойств (IV+ и т. п.). Цена считается по базовой ступени.</summary>
     public int EffectiveTier => Tier + _upgrades;

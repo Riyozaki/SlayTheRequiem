@@ -287,6 +287,6 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
     public static bool ImmuneToParalysis(Player? player) => TotalOf(player).ImmuneParalysis;
     public static bool ImmuneToShock(Player? player) => TotalOf(player).ImmuneShock;
 
-    /// <summary>Насколько короче перезарядка Кличей (система Кличей — этап 5).</summary>
+    /// <summary>Насколько короче перезарядка Кличей (полка Кличей — Cards/Shouts.cs).</summary>
     public static int ShoutCooldownReduction(Player? player) => Math.Max(0, TotalOf(player).ShoutCooldown);
 }

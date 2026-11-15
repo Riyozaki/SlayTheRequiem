@@ -39,6 +39,18 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
 
     protected decimal Var(string name) => DynamicVars[name].BaseValue;
 
+    /// <summary>Клич, отправленный на полку текущим розыгрышем (см. <see cref="Shouts"/>).</summary>
+    public bool ShelvedByThisPlay { get; set; }
+
+    protected override PileType GetResultPileTypeForCardPlay()
+    {
+        var pile = base.GetResultPileTypeForCardPlay();
+        ShelvedByThisPlay = false;
+        if (this is not IShoutCard || pile == PileType.None || !Shouts.Active(Owner) || !Shouts.HasRoom(Owner)) return pile;
+        ShelvedByThisPlay = true;
+        return PileType.None;
+    }
+
     protected Task Hit(PlayerChoiceContext ctx, Creature target, string vfx = "vfx/vfx_attack_slash", decimal? damage = null) =>
         DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this).Targeting(target).WithHitFx(vfx).Execute(ctx);
 
@@ -57,8 +69,13 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
 }
 
 /// <summary>
-/// Клич (docs/design/04 «Глас»): карта, усиливаемая Знамением Гласа и Громовым Венценосцем (+урон).
-/// Перезарядка Кличей — с системой Кличей (этап 5), до тех пор Кличи — обычные карты.
+/// Клич (docs/design/04 «Глас»): в системе Реквиема после розыгрыша уходит на полку и через
+/// <see cref="ShoutCooldown"/> ходов возвращается в руку (<see cref="ShoutShelfPower"/>). Знамение Гласа и Крылатый Час
+/// сокращают перезарядку, Знамение Гласа и Громовой Венценосец добавляют урон.
 /// </summary>
-public interface IShoutCard { }
+public interface IShoutCard
+{
+    /// <summary>Базовая перезарядка в ходах.</summary>
+    int ShoutCooldown => 3;
+}
 

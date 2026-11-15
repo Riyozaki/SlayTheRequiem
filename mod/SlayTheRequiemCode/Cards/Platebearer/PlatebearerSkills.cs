@@ -84,15 +84,22 @@ public sealed class SmotherFlames : RequiemCard
     }
 }
 
-/// <summary>Боевой клич: Слабость и Шаткость всем врагам. Сжигается.</summary>
+/// <summary>Боевой клич: Слабость и Шаткость всем врагам. Клич: перезарядка 4 (вне системы Реквиема — сжигается).</summary>
 [Pool(typeof(IroncladCardPool))]
 public sealed class BattleCry : RequiemCard, IShoutCard
 {
+    public int ShoutCooldown => 4;
+
     public BattleCry() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.AllEnemies)
     {
         WithPower<WeakPower>(1, 1);
         WithPower<StaggerPower>(3);
-        WithKeyword(CardKeyword.Exhaust);
+    }
+
+    protected override PileType GetResultPileTypeForCardPlay()
+    {
+        var pile = base.GetResultPileTypeForCardPlay();
+        return pile == PileType.Discard && !Shouts.Active(Owner) ? PileType.Exhaust : pile;
     }
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)

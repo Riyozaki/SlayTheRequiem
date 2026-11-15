@@ -226,5 +226,8 @@
   "SLAYTHEREQUIEM-COMBINED_POISON_POWER.smartDescription": "Оружейные атаки: Токсин и Истощение. Заряды: {Amount}.",
   "SLAYTHEREQUIEM-PANIC_POWER.title": "Паника",
   "SLAYTHEREQUIEM-PANIC_POWER.description": "Следующая атака не наносит урона.",
-  "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "Следующая атака не наносит урона."
+  "SLAYTHEREQUIEM-PANIC_POWER.smartDescription": "Следующая атака не наносит урона.",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.title": "Кличи на полке",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.description": "Кличей на перезарядке: {Amount}; вернутся в руку в начале хода.",
+  "SLAYTHEREQUIEM-SHOUT_SHELF_POWER.smartDescription": "Кличей на перезарядке: {Amount}; вернутся в руку в начале хода."
 }

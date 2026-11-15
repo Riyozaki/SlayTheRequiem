@@ -177,7 +177,7 @@ public sealed class BeastSpeakerBackground : BackgroundRelic
     }
 }
 
-/// <summary>Скальд: «Боевой клич» вместо одной Защиты. Система Кличей — с ветками навыков (этап 5).</summary>
+/// <summary>Скальд: «Боевой клич» вместо одной Защиты; на полке Кличей — 2 места вместо 1 (<see cref="Cards.Shouts"/>).</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class SkaldBackground : BackgroundRelic
 {
@@ -273,7 +273,8 @@ public sealed class HunterBackground : BackgroundRelic
 }
 
 /// <summary>
-/// Отшельник: после каждого боя +1 реагент (Кровяной мох или Ночная поганка). Грибные похлёбки — с Готовкой (этап 5).
+/// Отшельник: после каждого боя +1 реагент (Кровяной мох или Ночная поганка). Готовит Грибную похлёбку в лагере и без
+/// «Походного котла» (<see cref="Alchemy.CookingRestSiteOption"/>).
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class HermitBackground : BackgroundRelic
@@ -403,7 +404,10 @@ public sealed class KnightBackground : BackgroundRelic
     }
 }
 
-/// <summary>Зачарователь: каждая не-заклинательная атака возвращает 1 ✦. Зачарование в любом лагере — этап 5.</summary>
+/// <summary>
+/// Зачарователь: каждая не-заклинательная атака возвращает 1 ✦. Зачаровальный стол — в любом лагере
+/// (<see cref="Alchemy.Camp.HasEnchantingTable"/>).
+/// </summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class EnchanterBackground : BackgroundRelic
 {

@@ -375,5 +375,8 @@
   "SLAYTHEREQUIEM-AMULET_OF_SUN_ARCHER.flavor": "",
   "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.title": "Облачение Солнечного Лучника",
   "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.description": "Одеяние (тело), [gold]Покров[/gold] 2 (Святилище, 150 золотых). При благословении того же бога у Праведника: Сопротивление магии I.",
-  "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.flavor": ""
+  "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.flavor": "",
+  "SLAYTHEREQUIEM-HERO_RECORD.title": "Летопись героя",
+  "SLAYTHEREQUIEM-HERO_RECORD.description": "Уровень {Level} (Слава {Renown}, до следующего — {ToNext}). Не потрачено: очков характеристик {StatPoints}, навыков {SkillPoints} — тратятся в лагере ([gold]Развитие[/gold]). Изучено навыков: {Skills}. Сытость: {Fed}. Усталость похода: {Fatigue}. Камни душ: {Stones}.\nСлава: бой 1, элита 3, босс 6. Число на иконке — уровень.",
+  "SLAYTHEREQUIEM-HERO_RECORD.flavor": "У каждого шрама в ней своя строка."
 }

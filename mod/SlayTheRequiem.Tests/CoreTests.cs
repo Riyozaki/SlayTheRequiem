@@ -637,3 +637,175 @@ public class Stage4Tests
         Assert.Equal(7, CombatMath.ApplyPlating(6, -1));
     }
 }
+
+public class Stage5Tests
+{
+    [Fact]
+    public void RenownAndLevels()
+    {
+        Assert.Equal(1, ProgressionRules.RenownFor(EnemyRank.Normal));
+        Assert.Equal(3, ProgressionRules.RenownFor(EnemyRank.Elite));
+        Assert.Equal(6, ProgressionRules.RenownFor(EnemyRank.Boss));
+        Assert.Equal(0, ProgressionRules.RenownToReach(1));
+        Assert.Equal(3, ProgressionRules.RenownToReach(2));
+        Assert.Equal(7, ProgressionRules.RenownToReach(3));
+        Assert.Equal(133, ProgressionRules.RenownToReach(15));
+        Assert.Equal(1, ProgressionRules.LevelFor(2));
+        Assert.Equal(2, ProgressionRules.LevelFor(3));
+        Assert.Equal(15, ProgressionRules.LevelFor(1000));
+        Assert.Equal(4, ProgressionRules.RenownToNext(3));
+        Assert.Equal(0, ProgressionRules.RenownToNext(133));
+        Assert.Equal(28, ProgressionRules.StatPointsFor(15));
+        Assert.Equal(7, ProgressionRules.SkillPointsFor(15));
+        Assert.Equal(0, ProgressionRules.SkillPointsFor(1));
+        Assert.Equal(15, ProgressionRules.RetainedRenown(10, 20));
+        Assert.Equal(10, ProgressionRules.RetainedRenown(10, 5));
+    }
+
+    [Fact]
+    public void TiersAndMeditation()
+    {
+        Assert.Equal(0, ProgressionRules.Tier(2));
+        Assert.Equal(1, ProgressionRules.Tier(3));
+        Assert.Equal(3, ProgressionRules.Tier(20));
+        Assert.Equal(3, ProgressionRules.WithMeditation(3, true));
+        Assert.Equal(2, ProgressionRules.WithMeditation(1, true));
+        var t = ProgressionRules.Tiers(3, 3, 3);
+        Assert.Equal(1, t.PoisonResistance);
+        Assert.Equal(6, t.BurdenBonus);
+        Assert.Equal(1, t.Plating);
+        Assert.True(t.FreeFirstAttack);
+        Assert.Equal(3, t.Ward);
+        var none = ProgressionRules.Tiers(0, 1, 2);
+        Assert.Equal(0, none.PoisonResistance);
+        Assert.Equal(1, none.StaminaRegen);
+        Assert.False(none.FreeFirstAttack);
+        Assert.Equal(1, none.FirstSpellDiscount);
+        Assert.Equal(0, none.Ward);
+    }
+
+    [Fact]
+    public void ClumsyGrip()
+    {
+        Assert.True(ProgressionRules.IsClumsy("Regent", WeaponKind.Crossbow, false, false));
+        Assert.True(ProgressionRules.IsClumsy("Regent", WeaponKind.Staff, true, false));
+        Assert.False(ProgressionRules.IsClumsy("Regent", WeaponKind.Crossbow, false, true));
+        Assert.True(ProgressionRules.IsClumsy("Silent", WeaponKind.TwoHanded, false, false));
+        Assert.False(ProgressionRules.IsClumsy("Silent", WeaponKind.Crossbow, true, false));
+        Assert.False(ProgressionRules.IsClumsy("Ironclad", WeaponKind.TwoHanded, true, false));
+    }
+
+    [Fact]
+    public void SkillTreeShapeAndCosts()
+    {
+        Assert.Equal(69, SkillTree.Nodes.Count);
+        Assert.Equal(Enum.GetValues<Skill>().Length, SkillTree.Nodes.Count);
+        Assert.Equal(3, SkillTree.Node(Skill.HerbLore).Rank);
+        Assert.Equal(2, SkillTree.Node(Skill.Wayfarer).Rank);
+        Assert.Equal(1, SkillTree.Cost(SkillTree.Node(Skill.Fighter), false));
+        Assert.Equal(2, SkillTree.Cost(SkillTree.Node(Skill.Destruction1), false));
+        Assert.Equal(1, SkillTree.Cost(SkillTree.Node(Skill.Destruction1), true));
+        Assert.True(SkillTree.GrantsMastery(SkillTree.Node(Skill.Phantasm)));
+        Assert.False(SkillTree.GrantsMastery(SkillTree.Node(Skill.CampKettle)));
+    }
+
+    [Fact]
+    public void SkillTreeOrder()
+    {
+        var none = new HashSet<Skill>();
+        var learnable = SkillTree.Learnable("Ironclad", none, 1, _ => false).Select(n => n.Skill).ToList();
+        Assert.Contains(Skill.Fighter, learnable);
+        Assert.DoesNotContain(Skill.Fencer, learnable);
+        Assert.DoesNotContain(Skill.Bloodletter, learnable);       // ветка Безмолвной
+        Assert.DoesNotContain(Skill.Destruction1, learnable);      // чужая школа — 2 очка
+        Assert.Contains(Skill.CampKettle, learnable);
+        Assert.DoesNotContain(Skill.Wayfarer, learnable);          // ярус II требует 2 узла Выживания
+        var two = new HashSet<Skill> { Skill.CampKettle, Skill.FirstAid };
+        Assert.Contains(Skill.Wayfarer, SkillTree.Learnable("Ironclad", two, 1, _ => false).Select(n => n.Skill));
+        Assert.Contains(Skill.Destruction1, SkillTree.Learnable("Regent", none, 1, _ => true).Select(n => n.Skill));
+        var parsed = SkillTree.Parse(SkillTree.Serialize(new[] { Skill.Fighter, Skill.HerbLore }) + ",Bogus");
+        Assert.Equal(2, parsed.Count);
+    }
+
+    [Fact]
+    public void CampPointsAndCosts()
+    {
+        Assert.Equal(2, CampRules.Budget(false, false));
+        Assert.Equal(4, CampRules.Budget(true, true));
+        Assert.Equal(2, CampRules.Cost(CampAction.Rest, false));
+        Assert.Equal(1, CampRules.Cost(CampAction.Forge, true));
+        Assert.Equal(1, CampRules.Cost(CampAction.Enchant, true));
+        Assert.Equal(0, CampRules.Cost(CampAction.Chest, false));
+        Assert.Equal(2, CampRules.Cost(CampAction.Other, true));
+        Assert.True(CampRules.IsCraft(CampAction.Brew));
+        Assert.False(CampRules.IsCraft(CampAction.Cook));
+        Assert.Equal(20, CampRules.ShortRestPercent(true));
+        Assert.Equal(15m, CampRules.HealAmount(100, 15));
+    }
+
+    [Fact]
+    public void FatigueAndSoulStones()
+    {
+        Assert.False(CampRules.FatigueEnabled(4));
+        Assert.Equal(0, CampRules.FatigueStacks(9, false));
+        Assert.Equal(2, CampRules.FatigueStacks(7, true));
+        Assert.Equal(3, CampRules.FatigueStacks(30, true));
+        Assert.Equal(0, CampRules.SoulStoneFor(EnemyRank.Normal, 0));
+        Assert.Equal(1, CampRules.SoulStoneFor(EnemyRank.Elite, 0));
+        Assert.Equal(2, CampRules.SoulStoneFor(EnemyRank.Boss, 1));
+        Assert.Equal(3, CampRules.SoulStoneFor(EnemyRank.Boss, 4));
+    }
+
+    [Fact]
+    public void Food()
+    {
+        var meals = FoodRules.Eat(new List<Meal>(), Dish.VenisonRoast, 1);
+        meals = FoodRules.Eat(meals, Dish.FishSoup, 1);
+        Assert.Single(meals);
+        Assert.Equal(Dish.FishSoup, meals[0].Dish);
+        var two = FoodRules.Eat(meals, Dish.VenisonRoast, FoodRules.Slots(true));
+        Assert.Equal(2, two.Count);
+        Assert.Equal(1, FoodRules.Total(two, 0).StaminaRegen);
+        Assert.Equal(1, FoodRules.Total(two, 2).Regen);
+        var after = FoodRules.AfterCombat(new List<Meal> { new(Dish.Feast, 1), new(Dish.SweetRoll, 3) });
+        Assert.Single(after);
+        Assert.Equal(2, after[0].Fights);
+        var feast = FoodRules.Effect(Dish.Feast);
+        Assert.Equal(6, feast.MaxHp);
+        Assert.Equal(1, feast.OpeningDraw);
+        Assert.Equal(1, FoodRules.DurationOf(Dish.Feast));
+        Assert.Equal(meals, FoodRules.Parse(FoodRules.Serialize(meals)));
+    }
+
+    [Fact]
+    public void Enchanting()
+    {
+        Assert.True(EnchantRules.Allowed(Enchant.Health, EquipSlot.Head));
+        Assert.False(EnchantRules.Allowed(Enchant.Health, EquipSlot.Ring));
+        Assert.True(EnchantRules.Allowed(Enchant.FireBrand, EquipSlot.MainHand));
+        Assert.Equal(12, EnchantRules.Value(Enchant.Health, 3));
+        Assert.Equal(2, EnchantRules.Value(Enchant.FrostResistance, 3));
+        Assert.Equal(1, EnchantRules.Value(Enchant.FrostResistance, 2));
+        Assert.Equal(16, EnchantRules.Charges(3));
+        var slots = EnchantRules.Apply(new List<EnchantSlot>(), Enchant.Health, 1, 1);
+        slots = EnchantRules.Apply(slots, Enchant.Magic, 2, 1);
+        Assert.Single(slots);
+        Assert.Equal(Enchant.Magic, slots[0].Enchant);
+        var brand = EnchantRules.Apply(new List<EnchantSlot>(), Enchant.FireBrand, 2, 2);
+        Assert.Equal(12, brand[0].Charges);
+        Assert.Equal(brand, EnchantRules.Parse(EnchantRules.Serialize(brand)));
+    }
+
+    [Fact]
+    public void ShoutsAndRevel()
+    {
+        Assert.Equal(3, ShoutRules.Cooldown(3, 0));
+        Assert.Equal(1, ShoutRules.Cooldown(3, 5));
+        Assert.Equal(2, ShoutRules.ShelfCapacity(true));
+        Assert.True(ShoutRules.SoulTearExecutes(24, 100, false));
+        Assert.False(ShoutRules.SoulTearExecutes(24, 100, true));
+        Assert.Equal((PantheonRules.DrinkBonus.Mana, 2), PantheonRules.RevelSecondProperty(Brew.SecondWind, 3));
+        Assert.Equal((PantheonRules.DrinkBonus.Block, 9), PantheonRules.RevelSecondProperty(Brew.Giant, 5));
+        Assert.Equal((PantheonRules.DrinkBonus.None, 0), PantheonRules.RevelSecondProperty(Brew.SnakeBite, 1));
+    }
+}

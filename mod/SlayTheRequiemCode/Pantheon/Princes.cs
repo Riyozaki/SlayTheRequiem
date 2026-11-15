@@ -413,8 +413,9 @@ public sealed class GiftOfTreachery : AbyssGift
 // ───────────── Хмельной Князь ─────────────
 
 /// <summary>
-/// Хмельной Князь: две Особые еды одновременно (с едой этапа 5). Цена: в начале боя в руку приходит «Похмелье» (Головокружение).
-/// Обет «Выпей 3 напитка» (зелья) → вторые свойства напитков (этап 5).
+/// Хмельной Князь: две Сытости одновременно (<see cref="FoodRules.Slots"/>, Летопись героя). Цена: в начале боя в руку
+/// приходит «Похмелье» (Головокружение). Обет «Выпей 3 напитка» (зелья) → вторые свойства напитков
+/// (<see cref="PantheonRules.RevelSecondProperty"/>).
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class GiftOfRevel : AbyssGift
@@ -431,7 +432,34 @@ public sealed class GiftOfRevel : AbyssGift
 
     public override async Task AfterPotionUsed(PotionModel potion, Creature? target)
     {
-        if (potion.Owner == Owner) await AdvanceVow();
+        if (potion.Owner != Owner) return;
+        if (VowDone && potion is Potions.RequiemPotion drink) await SecondProperty(drink);
+        await AdvanceVow();
+    }
+
+    private async Task SecondProperty(Potions.RequiemPotion drink)
+    {
+        var (kind, amount) = PantheonRules.RevelSecondProperty(drink.Kind, drink.Tier);
+        if (amount <= 0 || !Owner.Creature.IsAlive) return;
+        switch (kind)
+        {
+            case PantheonRules.DrinkBonus.Stamina:
+                Resources.RequiemResource.Of<Resources.StaminaResource>(Owner)?.ModifyAmount(amount);
+                break;
+            case PantheonRules.DrinkBonus.Mana:
+                await Mana.Gain(Owner, amount);
+                break;
+            case PantheonRules.DrinkBonus.Heal:
+                await CreatureCmd.Heal(Owner.Creature, amount);
+                break;
+            case PantheonRules.DrinkBonus.Block:
+                if (Owner.Creature.CombatState != null)
+                    await CreatureCmd.GainBlock(Owner.Creature, amount, ValueProp.Unpowered, null);
+                break;
+            default:
+                return;
+        }
+        Flash();
     }
 }
 

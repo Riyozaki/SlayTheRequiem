@@ -333,3 +333,124 @@ class Pantheon(unittest.TestCase):
         self.assertEqual(r.apply_plating(6, 2, pierce=1), 5)
         self.assertEqual(r.apply_plating(6, 1, pierce=1), 6)
         self.assertEqual(r.apply_plating(6, -1), 7)   # Осколок Ветра: Латы −1
+
+
+class Progression(unittest.TestCase):
+    def test_levels(self):
+        self.assertEqual([r.renown_to_reach(l) for l in (1, 2, 3, 4, 15)], [0, 3, 7, 12, 133])
+        self.assertEqual([r.level_for(x) for x in (0, 2, 3, 6, 7, 12, 132, 133, 999)], [1, 1, 2, 2, 3, 4, 14, 15, 15])
+        self.assertEqual(r.renown_to_next(4), 3)
+        self.assertEqual(r.renown_to_next(500), 0)
+        self.assertEqual(r.stat_points_for(1), 0)
+        self.assertEqual(r.stat_points_for(15), 28)
+        self.assertEqual([r.skill_points_for(l) for l in (1, 2, 3, 15)], [0, 1, 1, 7])
+        self.assertEqual(r.renown_for("boss"), 6)
+        self.assertEqual(r.retained_renown(10, 21), 15)
+        self.assertEqual(r.retained_renown(10, 8), 10)
+
+    def test_tiers(self):
+        self.assertEqual([r.stat_tier(p) for p in (0, 2, 3, 6, 9, 20)], [0, 0, 1, 2, 3, 3])
+        self.assertEqual(r.with_meditation(3, True), 3)
+        self.assertEqual(r.with_meditation(1, True), 2)
+        t = r.tiers(3, 2, 1)
+        self.assertEqual((t["poison_res"], t["burden"], t["plating"]), (1, 6, 1))
+        self.assertEqual((t["stamina_regen"], t["attack_damage"], t["free_first_attack"]), (1, 1, False))
+        self.assertEqual((t["mana_regen"], t["first_spell_discount"], t["ward"]), (1, 0, 0))
+
+    def test_clumsy(self):
+        self.assertTrue(r.is_clumsy("Regent", "Crossbow", False, False))
+        self.assertTrue(r.is_clumsy("Regent", "Sword", True, False))
+        self.assertFalse(r.is_clumsy("Regent", "TwoHanded", False, True))
+        self.assertTrue(r.is_clumsy("Silent", "TwoHanded", False, False))
+        self.assertFalse(r.is_clumsy("Silent", "Crossbow", True, False))
+        self.assertFalse(r.is_clumsy("Ironclad", "TwoHanded", True, False))
+
+    def test_skill_tree(self):
+        self.assertEqual(len(r.SKILL_NODES), 69)
+        self.assertEqual(len(r.branches_for("Regent")), 8)
+        self.assertEqual(len(r.branches_for("Ironclad")), 12)
+        br = r.branches_for("Ironclad")
+        self.assertTrue(r.can_learn("Fighter", set(), br))
+        self.assertFalse(r.can_learn("Fencer", set(), br))
+        self.assertTrue(r.can_learn("Fencer", {"Fighter"}, br))
+        self.assertFalse(r.can_learn("Bloodletter", set(), br))     # чужая ветка героя
+        self.assertFalse(r.can_learn("Wayfarer", {"CampKettle"}, br))
+        self.assertTrue(r.can_learn("Wayfarer", {"CampKettle", "FirstAid"}, br))
+        self.assertFalse(r.can_learn("CampMaster", {"CampKettle", "FirstAid", "Wayfarer"}, br))
+        self.assertTrue(r.can_learn("CampMaster", {"CampKettle", "FirstAid", "Wayfarer", "TradeName"}, br))
+        self.assertEqual(r.skill_cost("Destruction1", False), 2)
+        self.assertEqual(r.skill_cost("Destruction1", True), 1)
+        self.assertEqual(r.skill_cost("Fighter", False), 1)
+        one = r.learnable("Ironclad", set(), 1, lambda b: False)
+        self.assertNotIn("Destruction1", one)
+        self.assertIn("Destruction1", r.learnable("Ironclad", set(), 2, lambda b: False))
+
+
+class Camp(unittest.TestCase):
+    def test_points(self):
+        self.assertEqual(r.camp_budget(False, False), 2)
+        self.assertEqual(r.camp_budget(True, True), 4)
+        self.assertEqual(r.camp_cost("Forge", False), 2)
+        self.assertEqual(r.camp_cost("Forge", True), 1)
+        self.assertEqual(r.camp_cost("Chest", False), 0)
+        self.assertEqual(r.camp_cost("DIG", False), 2)
+        self.assertEqual(r.short_rest_percent(True), 20)
+
+    def test_fatigue_and_stones(self):
+        self.assertEqual([r.fatigue_stacks(n, True) for n in (0, 2, 3, 8, 9, 30)], [0, 0, 1, 2, 3, 3])
+        self.assertEqual(r.fatigue_stacks(9, False), 0)
+        self.assertEqual(r.soul_stone_for("normal", 0), 0)
+        self.assertEqual(r.soul_stone_for("elite", 1), 1)
+        self.assertEqual(r.soul_stone_for("elite", 2), 2)
+        self.assertEqual(r.soul_stone_for("boss", 4), 3)
+
+    def test_food(self):
+        feast = r.dish_effect("Feast")
+        self.assertEqual((feast["max_hp"], feast["frost_res"], feast["regen"], feast["opening_draw"]), (6, 1, 1, 1))
+        meals = r.eat([], "FishSoup", 1)
+        meals = r.eat(meals, "VenisonRoast", 1)
+        self.assertEqual(meals, [("VenisonRoast", 3)])
+        meals = r.eat(meals, "FishSoup", 2)
+        self.assertEqual(len(meals), 2)
+        meals = r.meals_after_combat(r.meals_after_combat(meals))
+        self.assertEqual(meals, [("VenisonRoast", 1), ("FishSoup", 1)])
+        self.assertEqual(r.meals_after_combat(meals), [])
+        pouch = [3, 0, 1, 0, 0, 0, 0, 0, 5, 1]
+        self.assertEqual(sorted(r.feast_ingredients(pouch)), [0, 0, 0, 2, 9])
+        self.assertIsNone(r.feast_ingredients([1, 0, 0, 0, 0, 0, 0, 0, 9, 1]))
+
+    def test_enchant(self):
+        self.assertTrue(r.enchant_allowed("Health", "Body"))
+        self.assertFalse(r.enchant_allowed("Health", "Ring"))
+        self.assertEqual(r.enchant_value("Magic", 3), 6)
+        self.assertEqual(r.enchant_value("FireResistance", 2), 1)
+        self.assertEqual(r.enchant_value("FireResistance", 3), 2)
+        self.assertEqual(r.enchant_charges(2), 12)
+        e = r.apply_enchant([], "Health", 1, 1)
+        e = r.apply_enchant(e, "Stamina", 2, 1)
+        self.assertEqual(e, [("Stamina", 2, 0)])
+        e = r.apply_enchant(e, "FireBrand", 3, 2)
+        self.assertEqual(e, [("Stamina", 2, 0), ("FireBrand", 3, 16)])
+
+
+class ShoutAndRevelTests(unittest.TestCase):
+    def test_shout_cooldown(self):
+        self.assertEqual(r.shout_cooldown(3, 0), 3)
+        self.assertEqual(r.shout_cooldown(3, 2), 1)
+        self.assertEqual(r.shout_cooldown(3, 5), 1)
+        self.assertEqual(r.shout_cooldown(4, -1), 4)
+        self.assertEqual(r.shout_shelf_capacity(True), 2)
+        self.assertEqual(r.shout_shelf_capacity(False), 1)
+
+    def test_soul_tear(self):
+        self.assertTrue(r.soul_tear_executes(24, 100, False))
+        self.assertFalse(r.soul_tear_executes(25, 100, False))
+        self.assertFalse(r.soul_tear_executes(10, 100, True))
+        self.assertFalse(r.soul_tear_executes(0, 100, False))
+
+    def test_revel(self):
+        self.assertEqual(r.revel_second_property("Health", 1, False), ("Stamina", 1))
+        self.assertEqual(r.revel_second_property("SecondWind", 3, False), ("Mana", 2))
+        self.assertEqual(r.revel_second_property("Clarity", 5, False), ("Heal", 6))
+        self.assertEqual(r.revel_second_property("Giant", 3, False), ("Block", 6))
+        self.assertEqual(r.revel_second_property("SnakeBite", 5, True), ("None", 0))

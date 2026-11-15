@@ -375,5 +375,8 @@
   "SLAYTHEREQUIEM-AMULET_OF_SUN_ARCHER.flavor": "",
   "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.title": "Robe of Sun Archer",
   "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.description": "Robe (body), [gold]Ward[/gold] 2 (Shrine, 150 gold). With the Blessing of Sun Archer while Righteous: Magic Resistance I.",
-  "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.flavor": ""
+  "SLAYTHEREQUIEM-ROBE_OF_SUN_ARCHER.flavor": "",
+  "SLAYTHEREQUIEM-HERO_RECORD.title": "Hero's Chronicle",
+  "SLAYTHEREQUIEM-HERO_RECORD.description": "Level {Level} (renown {Renown}, {ToNext} to the next level). Unspent: {StatPoints} stat and {SkillPoints} skill points — spend them at camp ([gold]Train[/gold]). Skills learned: {Skills}. Meals: {Fed}. Travel Fatigue: {Fatigue}. Soul stones: {Stones}.\nRenown: 1 per combat, 3 per elite, 6 per boss. Shown number — level.",
+  "SLAYTHEREQUIEM-HERO_RECORD.flavor": "Every scar has a line in it."
 }
