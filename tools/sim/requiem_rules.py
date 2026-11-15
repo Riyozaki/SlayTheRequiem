@@ -2561,3 +2561,34 @@ def court_of(monster_type: str) -> str | None:
 
 def combined_hue(court_hue: float, game_hue: float) -> float:
     return (court_hue + game_hue) % 1.0
+
+
+# ───── M7 п. 2: фоны актов — бой, лагерь, карта, сундук (Core/ActLookRules, Acts/ActLooks, tools/art/acts) ─────
+
+ACT_ART = {"FrozenBarrows": "frozen_barrows", "ClockworkDepths": "clockwork_depths", "BloodCourt": "blood_court",
+           "StarTower": "star_tower", "NamelessLimit": "nameless_limit"}
+ACT_PIECES = ["combat.jpg", "combat_fg.png", "camp.jpg", "map_top.png", "map_middle.png", "map_bottom.png"]
+ACT_PIECE_SIZE = {"combat.jpg": (2048, 960), "combat_fg.png": (2048, 960), "camp.jpg": (3072, 1440),
+                  "map_top.png": (2036, 1440), "map_middle.png": (2036, 1440), "map_bottom.png": (2036, 1440)}
+COMBAT_HALF = (1440.77, 675.36)
+CAMP_RECT = (-444.0, -139.0, 2320.8, 1157.0)
+ACT_CHEST_TINT = {
+    "FrozenBarrows": (0.80, 0.92, 1.00, "0E1620"),
+    "ClockworkDepths": (1.00, 0.88, 0.70, "1E1408"),
+    "BloodCourt": (1.00, 0.72, 0.74, "1A0608"),
+    "StarTower": (0.82, 0.84, 1.00, "0E0E24"),
+    "NamelessLimit": (0.78, 0.70, 0.92, "0E0A16"),
+}
+
+
+def act_piece_path(kind: str, piece: str) -> str | None:
+    key = ACT_ART.get(kind)
+    return f"acts/{key}/{piece}" if key else None
+
+
+def camp_target(look_id: str) -> str:
+    return "RestSiteBG2" if look_id == "underdocks" else "RestSiteBG"
+
+
+def camp_keeps(node: str, target: str) -> bool:
+    return node == target or node == "RestSiteLighting" or "Log" in node or node.startswith("light_small")

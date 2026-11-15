@@ -1317,5 +1317,76 @@ class M7SuperbossLooks(unittest.TestCase):
             self.assertIn(f'"{key}": (draw_{key}, {vs!r})'.replace("'", '"'), sprites)
 
 
+class M7ActLooks(unittest.TestCase):
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    @staticmethod
+    def size(path):
+        import struct
+        with open(path, "rb") as f:
+            data = f.read()
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            return struct.unpack(">II", data[16:24])
+        i = 2  # JPEG: ищем SOF0/SOF2
+        while i < len(data):
+            marker, length = data[i + 1], struct.unpack(">H", data[i + 2:i + 4])[0]
+            if marker in (0xC0, 0xC2):
+                h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                return w, h
+            i += 2 + length
+        raise ValueError(path)
+
+    def test_paths(self):
+        self.assertEqual(r.act_piece_path("BloodCourt", "camp.jpg"), "acts/blood_court/camp.jpg")
+        for vanilla in ("Foothills", "Hive", "Glory", "Other"):
+            self.assertIsNone(r.act_piece_path(vanilla, "combat.jpg"))
+        self.assertEqual(set(r.ACT_CHEST_TINT), set(r.ACT_ART))
+        self.assertEqual(set(r.ACT_PIECE_SIZE), set(r.ACT_PIECES))
+
+    def test_camp_nodes(self):
+        self.assertEqual(r.camp_target("underdocks"), "RestSiteBG2")
+        self.assertEqual(r.camp_target("glory"), "RestSiteBG")
+        for keep in ("RestSiteLighting", "RestSiteFireLogs3", "RestSiteLLog", "light_small3", "RestSiteBG"):
+            self.assertTrue(r.camp_keeps(keep, "RestSiteBG"), keep)
+        for hide in ("RestSiteForeground2", "Foliage4", "overlay_vfx", "water_reflection6", "stars", "b_blob", "RestSiteBG"):
+            self.assertFalse(r.camp_keeps(hide, "RestSiteBG2"), hide)
+
+    def test_files(self):
+        img = os.path.join(self.ROOT, "mod", "SlayTheRequiem", "images")
+        for kind, key in r.ACT_ART.items():
+            for piece in r.ACT_PIECES:
+                path = os.path.join(img, r.act_piece_path(kind, piece))
+                self.assertTrue(os.path.isfile(path), path)
+                self.assertEqual(self.size(path), r.ACT_PIECE_SIZE[piece], path)
+                svg = os.path.join(self.ROOT, "art", "acts", key, os.path.splitext(piece)[0] + ".svg")
+                self.assertTrue(os.path.isfile(svg), svg)
+        # слой боя сохраняет пропорции текстуры (иначе фон растянется)
+        self.assertAlmostEqual(r.COMBAT_HALF[0] / r.COMBAT_HALF[1], 2048 / 960, places=3)
+        x0, y0, x1, y1 = r.CAMP_RECT
+        self.assertAlmostEqual((x1 - x0) / (y1 - y0), 3072 / 1440, places=2)
+
+    def test_matches_csharp(self):
+        src = open(os.path.join(self.CODE, "Core", "ActLookRules.cs"), encoding="utf-8").read()
+        for kind, key in r.ACT_ART.items():
+            self.assertIn(f'ActKind.{kind} => "{key}"', src)
+        for kind, (rr, g, b, hexc) in r.ACT_CHEST_TINT.items():
+            self.assertIn(f'ActKind.{kind} => new({rr:.2f}f, {g:.2f}f, {b:.2f}f, "{hexc}")', src)
+        for piece in r.ACT_PIECES:
+            self.assertIn(f'"{piece}"', src)
+        self.assertIn(f"CombatHalfWidth = {r.COMBAT_HALF[0]}f", src)
+        self.assertIn(f"CombatHalfHeight = {r.COMBAT_HALF[1]}f", src)
+        self.assertIn("CampRect = [-444f, -139f, 2320.8f, 1157f]", src)
+        looks = open(os.path.join(self.CODE, "Acts", "ActLooks.cs"), encoding="utf-8").read()
+        for patch in ("EncounterModel), nameof(EncounterModel.CreateBackground)", "ActModel), nameof(ActModel.CreateRestSiteBackground)",
+                      "NTreasureRoom), nameof(NTreasureRoom._Ready)"):
+            self.assertIn(patch, looks)
+        acts = open(os.path.join(self.CODE, "Acts", "RequiemActs.cs"), encoding="utf-8").read()
+        self.assertEqual(acts.count("ActLooks.MapPiece("), 6)
+        gen = open(os.path.join(self.ROOT, "tools", "art", "acts", "build_acts.py"), encoding="utf-8").read()
+        for key in r.ACT_ART.values():
+            self.assertIn(f'"{key}"', gen)
+
+
 if __name__ == "__main__":
     unittest.main()

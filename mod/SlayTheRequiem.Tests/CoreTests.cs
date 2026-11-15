@@ -1559,3 +1559,49 @@ public class M7SuperbossLookTests
         Assert.Equal(0.6f, SuperbossLookRules.CombinedHue(0.6f, 0f), 4);
     }
 }
+
+public class M7ActLookTests
+{
+    [Theory]
+    [InlineData(ActKind.FrozenBarrows, "frozen_barrows")]
+    [InlineData(ActKind.ClockworkDepths, "clockwork_depths")]
+    [InlineData(ActKind.BloodCourt, "blood_court")]
+    [InlineData(ActKind.StarTower, "star_tower")]
+    [InlineData(ActKind.NamelessLimit, "nameless_limit")]
+    [InlineData(ActKind.Foothills, null)]
+    [InlineData(ActKind.Hive, null)]
+    [InlineData(ActKind.Glory, null)]
+    [InlineData(ActKind.Other, null)]
+    public void ArtKey(ActKind kind, string? expected) => Assert.Equal(expected, ActLookRules.ArtKey(kind));
+
+    [Fact]
+    public void PiecePathsAndTints()
+    {
+        Assert.Equal("acts/star_tower/combat_fg.png", ActLookRules.PiecePath(ActKind.StarTower, ActLookRules.CombatFore));
+        Assert.Null(ActLookRules.PiecePath(ActKind.Glory, ActLookRules.Camp));
+        Assert.Equal(6, ActLookRules.Pieces.Distinct().Count());
+        foreach (var kind in Enum.GetValues<ActKind>())
+            Assert.Equal(ActLookRules.ArtKey(kind) != null, ActLookRules.ChestTint(kind) != null);
+    }
+
+    [Theory]
+    [InlineData("RestSiteLighting", "RestSiteBG", true)]
+    [InlineData("RestSiteFireLogs3", "RestSiteBG", true)]
+    [InlineData("light_small3", "RestSiteBG2", true)]
+    [InlineData("RestSiteBG2", "RestSiteBG2", true)]
+    [InlineData("RestSiteBG", "RestSiteBG2", false)]
+    [InlineData("RestSiteForeground", "RestSiteBG", false)]
+    [InlineData("overlay_vfx", "RestSiteBG", false)]
+    [InlineData("Foliage3", "RestSiteBG", false)]
+    public void CampKeeps(string node, string target, bool keep) => Assert.Equal(keep, ActLookRules.CampKeeps(node, target));
+
+    [Fact]
+    public void CampTargetAndAspect()
+    {
+        Assert.Equal("RestSiteBG2", ActLookRules.CampTarget("underdocks"));
+        Assert.Equal("RestSiteBG", ActLookRules.CampTarget("hive"));
+        Assert.Equal(2048f / 960f, ActLookRules.CombatHalfWidth / ActLookRules.CombatHalfHeight, 3);
+        var r = ActLookRules.CampRect;
+        Assert.Equal(3072f / 1440f, (r[2] - r[0]) / (r[3] - r[1]), 2);
+    }
+}

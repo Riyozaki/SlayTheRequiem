@@ -179,8 +179,23 @@
 ### 3.10 Фоны актов
 
 Для 2а, 2б, 4а, 4б и ★: карта (`map_top/middle/bottom`, как `CustomMapTopBgPath` и др.), боевой фон (`CustomBackgroundScenePath`),
-лагерь (`CustomRestSiteBackgroundPath`), сундук (Spine-скин `ChestSpineSkinNameNormal/Stroke`). Сейчас всё заимствовано:
-2а — underdocks, 2б — hive, 4а — overgrowth, 4б — glory. Параллакс-слои — как у ванильных фонов.
+лагерь (`CustomRestSiteBackgroundPath`), сундук (Spine-скин `ChestSpineSkinNameNormal/Stroke`). Основа сцен заимствована:
+2а — underdocks, 2б — hive, 4а — overgrowth, 4б и ★ — glory.
+
+✅ **Сделано (M7 п. 2).** Свои картинки `images/acts/{key}/` (`frozen_barrows`, `clockwork_depths`, `blood_court`, `star_tower`,
+`nameless_limit`) рисует `tools/art/acts/build_acts.py` (SVG → `art/acts/` → resvg; `--check` в CI). Подключение — `Acts/ActLooks.cs`,
+правила — `Core/ActLookRules.cs`. Каждая картинка необязательна: нет файла — ванильный облик акта-основы.
+
+| Кусок | Размер | Куда встаёт |
+|---|---|---|
+| `combat.jpg` | 2048×960 | постфикс `EncounterModel.CreateBackground`: ванильные слои сцены скрыты, наш задник — TextureRect ±1440,77×±675,36 от центра (как Layer_xx); пол с y≈470 |
+| `combat_fg.png` | 2048×960, прозрачный | поверх задника: обломки по нижним углам, частицы |
+| `camp.jpg` | 3072×1440 | постфикс `ActModel.CreateRestSiteBackground`: текстура `RestSiteBG` (у underdocks — `RestSiteBG2`) в прямоугольнике −444,−139 … 2320,8,1157; костёр в точке (1538, 966) картинки. Брёвна, огонь и `RestSiteLighting` — ванильные, передние планы, листва, вода и частицы акта-основы скрыты |
+| `map_top/middle/bottom.png` | 2036×1440 | `CustomMap*BgPath`: пергамент цвета `MapBgColor` со сгибами, двойной рамкой и водяными знаками акта; края непрерывны между кусками |
+| сундук | — | постфикс `NTreasureRoom._Ready`: ванильная Spine-комната act2/act3 с Modulate цвета акта и тёмным фоном (`ActLookRules.ChestTint`) |
+
+Галерея: `img/m7-acts.jpg` (бой, лагерь, карта). Параллакса нет (один статичный слой + передний план). Требует проверки в игре: кадрирование боя на 16:10 и 21:9, положение
+костра в лагере underdocks (огонь у него на 13 px левее и 20 px выше, чем у glory).
 
 ### 3.11 Герой, формы, призывы, кукла
 

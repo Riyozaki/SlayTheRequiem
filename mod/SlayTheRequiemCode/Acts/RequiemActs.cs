@@ -32,9 +32,10 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     /// <summary>Ванильный акт, чьи фоны карты, лагеря и боя используются, пока нет своих (этап 8).</summary>
     protected abstract string LookId { get; }
 
-    protected override string CustomMapTopBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_top_{LookId}.png");
-    protected override string CustomMapMidBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_middle_{LookId}.png");
-    protected override string CustomMapBotBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_bottom_{LookId}.png");
+    // свой пергамент акта (M7 п. 2, ActLooks), без файла — ванильный акта-основы
+    protected override string CustomMapTopBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapTop, LookId);
+    protected override string CustomMapMidBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapMiddle, LookId);
+    protected override string CustomMapBotBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapBottom, LookId);
     protected override string CustomRestSiteBackgroundPath => SceneHelper.GetScenePath($"rest_site/{LookId}_rest_site");
     protected override BackgroundAssets CustomGenerateBackgroundAssets(Rng rng) => new(LookId, rng);
     protected override string CustomBackgroundScenePath => SceneHelper.GetScenePath($"backgrounds/{LookId}/{LookId}_background");
@@ -213,9 +214,9 @@ public sealed class StarTower() : RequiemActModel(3)
 /// </summary>
 public sealed class NamelessLimit() : CustomActModel(-1)
 {
-    protected override string CustomMapTopBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_top_glory.png");
-    protected override string CustomMapMidBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_middle_glory.png");
-    protected override string CustomMapBotBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_bottom_glory.png");
+    protected override string CustomMapTopBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapTop, "glory");
+    protected override string CustomMapMidBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapMiddle, "glory");
+    protected override string CustomMapBotBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapBottom, "glory");
     protected override string CustomRestSiteBackgroundPath => SceneHelper.GetScenePath("rest_site/glory_rest_site");
 
     public override Color MapTraveledColor => new("0A0A0F");

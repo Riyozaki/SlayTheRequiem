@@ -146,7 +146,15 @@ UI_ASSETS = [
     # Кукла героя (M6 п. 4, Equipment/PaperDoll.cs; рисует tools/art/monsters/doll.py): основа + металл под цвет материала
     (f"images/ui/doll/{key}{layer}.png", f"кукла героя: {key}" + (" (металл)" if layer else ""))
     for key in ("dagger", "sword", "axe", "mace", "spear", "greatsword", "bow", "crossbow", "staff", "shield")
-    for layer in ("", "_metal")]
+    for layer in ("", "_metal")] + [
+    # Фоны актов (M7 п. 2, Acts/ActLooks.cs; рисует tools/art/acts/build_acts.py)
+    (f"images/acts/{key}/{piece}", f"фон акта «{title}»: {what}")
+    for key, title in (("frozen_barrows", "Ледяные Курганы"), ("clockwork_depths", "Заводные Глубины"),
+                       ("blood_court", "Кровавый Двор"), ("star_tower", "Звёздная Башня"),
+                       ("nameless_limit", "Безымянный предел"))
+    for piece, what in (("combat.jpg", "бой, 2048×960"), ("combat_fg.png", "передний план боя, 2048×960"),
+                        ("camp.jpg", "лагерь, 3072×1440"), ("map_top.png", "карта, верх 2036×1440"),
+                        ("map_middle.png", "карта, середина"), ("map_bottom.png", "карта, низ"))]
 
 
 def snake(name: str) -> str:

@@ -63,6 +63,7 @@ jobs:
           python tools/art/monsters/build_boss_icons.py --check
           python tools/art/scenes/build_scenes.py --check
           python tools/art/events/build_events.py --check
+          python tools/art/acts/build_acts.py --check
       - name: Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures
         run: python tools/ci/check_events.py
       - name: Every model has its own or a vanilla image
