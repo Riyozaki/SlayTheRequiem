@@ -23,6 +23,22 @@ public partial class NBurdenMeter : NRequiemHoverWidget
     private double _sinceRefresh = 1;
     private int _weight, _capacity;
     private BurdenRules.Overload _overload;
+    private int _previewDelta;
+
+    /// <summary>
+    /// Превью покупки (+вес) или продажи (−вес) в лавке (M6 п. 5): призрачный отрезок до веса «после», подпись
+    /// «было → станет» и ступень перегруза после сделки. 0 — без превью.
+    /// </summary>
+    public int PreviewDelta
+    {
+        get => _previewDelta;
+        set
+        {
+            if (_previewDelta == value) return;
+            _previewDelta = value;
+            QueueRedraw();
+        }
+    }
 
     public NBurdenMeter() : this(null, true) { }
 
@@ -75,6 +91,23 @@ public partial class NBurdenMeter : NRequiemHoverWidget
         DrawRect(new Rect2(X(_capacity + 5), y, X(_capacity + 10) - X(_capacity + 5), 10), new Color(RequiemUi.ExhaustedColor, 0.25f));
         DrawRect(new Rect2(X(_capacity + 10), y, X(max) - X(_capacity + 10), 10), new Color(RequiemUi.OverstrainColor, 0.25f));
         DrawRect(new Rect2(barX, y, X(_weight) - barX, 10), RequiemUi.BurdenColor.Lerp(tint, _overload.Excess > 0 ? 0.6f : 0f));
+        if (_previewDelta != 0)
+        {
+            // превью сделки: покупка — отрезок вправо цветом ступени «после», продажа — светлая «выемка» влево
+            var preview = ShopUiRules.Preview(_weight, _capacity, _previewDelta);
+            var after = BurdenRules.Evaluate(preview.After, _capacity);
+            var ghost = _previewDelta > 0 ? RequiemUi.BurdenTint(after) : new Color(0.55f, 0.95f, 0.6f);
+            var from = X(Math.Min(preview.Before, preview.After));
+            var to = X(Math.Max(preview.Before, preview.After));
+            DrawRect(new Rect2(from, y, Math.Max(2f, to - from), 10), new Color(ghost, 0.6f));
+            DrawRect(new Rect2(from, y, Math.Max(2f, to - from), 10), ghost, false, 1.5f);
+            DrawLine(new Vector2(X(_capacity), y - 3), new Vector2(X(_capacity), y + 13), StsColors.cream, 2f);
+            var arrow = $"⚖ {_weight} → {preview.After}/{_capacity}  " +
+                        RequiemUi.TipText($"{RequiemUi.BurdenEffectKey(after)}.title", ("Excess", after.Excess));
+            var color = preview.Worsens ? RequiemUi.BurdenTint(after) : preview.Improves ? ghost : tint;
+            DrawOutlined(arrow, new Vector2(barX, y - 4), barW, 16, color, HorizontalAlignment.Left);
+            return;
+        }
         DrawLine(new Vector2(X(_capacity), y - 3), new Vector2(X(_capacity), y + 13), StsColors.cream, 2f);
         var label = $"⚖ {text}  " + RequiemUi.TipText($"{RequiemUi.BurdenEffectKey(_overload)}.title", ("Excess", _overload.Excess));
         DrawOutlined(label, new Vector2(barX, y - 4), barW, 16, tint, HorizontalAlignment.Left);

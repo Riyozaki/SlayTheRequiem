@@ -635,5 +635,9 @@
   "SLAYTHEREQUIEM-PACK_MULE.flavor": "Упрямый, терпеливый и умнее трёх последних наёмников.",
   "SLAYTHEREQUIEM-TORCH.title": "Факел",
   "SLAYTHEREQUIEM-TORCH.description": "[gold]Ночное зрение[/gold] всему отряду: Тьма курганов отступает до 4 рядов, видны Засады и Тайные тропы.",
-  "SLAYTHEREQUIEM-TORCH.flavor": "Смола и тряпьё. Мертвецы его ненавидят."
+  "SLAYTHEREQUIEM-TORCH.flavor": "Смола и тряпьё. Мертвецы его ненавидят.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadHeader": "Перегруз?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadBody": "Вес покупки — {Weight}: груз станет {After} из {Capacity}, перегруз +{Excess}. Перегруз снижает прирост ◆, затем стартовую руку; больше 10 — ничего не поднять. Всё равно купить?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadYes": "Купить",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadNo": "Не сейчас"
 }

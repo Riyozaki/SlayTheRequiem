@@ -48,17 +48,23 @@ public static class Loadout
         if (player == null) return 0;
         var cards = player.Deck.Cards.Sum(CardWeight);
         var waivers = player.Relics.OfType<IEquipmentWeightWaiver>().ToList();
-        var relics = player.Relics.Sum(r => r switch
-        {
-            EquipmentRelic e => waivers.Any(w => w.Waives(e)) ? 0 : e.Weight,
-            IWeighted w => w.Weight,
-            IWeightless => 0,
-            _ when VanillaRelicRework.EntryOf(r) is { } vanilla => vanilla.Weight,
-            _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
-            _ => 1,
-        });
+        var relics = player.Relics.Sum(r => RelicWeight(r, waivers));
         return cards + relics;
     }
+
+    /// <summary>Вес реликвии для игрока — и своей, и ещё не купленной (превью в лавке, M6 п. 5).</summary>
+    public static int RelicWeight(Player? player, RelicModel relic) =>
+        RelicWeight(relic, player?.Relics.OfType<IEquipmentWeightWaiver>().ToList() ?? new List<IEquipmentWeightWaiver>());
+
+    private static int RelicWeight(RelicModel r, IReadOnlyList<IEquipmentWeightWaiver> waivers) => r switch
+    {
+        EquipmentRelic e => waivers.Any(w => w.Waives(e)) ? 0 : e.Weight,
+        IWeighted w => w.Weight,
+        IWeightless => 0,
+        _ when VanillaRelicRework.EntryOf(r) is { } vanilla => vanilla.Weight,
+        _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
+        _ => 1,
+    };
 
     public static int CardWeight(CardModel card) =>
         TransformationRules.CardWeightAfter(

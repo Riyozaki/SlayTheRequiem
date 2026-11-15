@@ -1441,3 +1441,67 @@ public class M6PaperDollTests
         Assert.True(PaperDollRules.WeaponScale(WeaponKind.Dagger) < PaperDollRules.WeaponScale(WeaponKind.TwoHanded));
     }
 }
+
+public class M6ShopUiTests
+{
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    [InlineData(5, 1)]
+    [InlineData(6, 2)]
+    [InlineData(10, 2)]
+    [InlineData(11, 3)]
+    public void OverloadTier(int excess, int tier) => Assert.Equal(tier, ShopUiRules.OverloadTier(excess));
+
+    [Fact]
+    public void TierMatchesBurdenRules()
+    {
+        for (var excess = 0; excess <= 15; excess++)
+        {
+            var overload = BurdenRules.Evaluate(20 + excess, 20);
+            var tier = ShopUiRules.OverloadTier(excess);
+            Assert.Equal(overload.OpeningHandPenalty > 0, tier >= 2);
+            Assert.Equal(!overload.CanPickUp, tier == 3);
+        }
+    }
+
+    [Theory]
+    [InlineData(18, 20, 2, false)]
+    [InlineData(19, 20, 2, true)]
+    [InlineData(22, 20, 3, false)]
+    [InlineData(25, 20, 1, true)]
+    [InlineData(31, 20, -2, false)]
+    [InlineData(40, 20, 0, false)]
+    public void OverloadWarning(int weight, int capacity, int delta, bool warn) =>
+        Assert.Equal(warn, ShopUiRules.NeedsOverloadWarning(ShopUiRules.Preview(weight, capacity, delta)));
+
+    [Fact]
+    public void PreviewSell()
+    {
+        var preview = ShopUiRules.Preview(31, 20, -2);
+        Assert.Equal(29, preview.After);
+        Assert.Equal(9, preview.ExcessAfter);
+        Assert.True(preview.Improves);
+        Assert.Equal(0, ShopUiRules.Preview(1, 20, -5).After);
+    }
+
+    [Fact]
+    public void Tabs()
+    {
+        Assert.True(ShopUiRules.TabEnabled(ShopTab.Buy, 0, 0));
+        Assert.False(ShopUiRules.TabEnabled(ShopTab.Sell, 0, 3));
+        Assert.True(ShopUiRules.TabEnabled(ShopTab.Services, 0, 1));
+        Assert.Equal(0, ShopUiRules.TabBadge(ShopTab.Buy, 2, 5));
+        Assert.Equal(2, ShopUiRules.TabBadge(ShopTab.Sell, 2, 5));
+        Assert.Equal(5, ShopUiRules.TabBadge(ShopTab.Services, 2, 5));
+    }
+
+    [Fact]
+    public void SellOrderAndPercent()
+    {
+        Assert.Equal(new[] { 2, 1, 0, 3 }, ShopUiRules.SellOrder([(10, 1), (30, 2), (30, 4), (10, 1)]));
+        Assert.Equal(35, ShopRules.SellPercent(2, false));
+        Assert.Equal(50, ShopRules.SellPercent(3, false));
+        Assert.Equal(60, ShopRules.SellPercent(0, true));
+    }
+}

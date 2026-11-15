@@ -119,5 +119,18 @@
   "SLAYTHEREQUIEM-MAP_EDGE.LOCKED.name": "Запертые врата",
   "SLAYTHEREQUIEM-MAP_EDGE.LOCKED.text": "Путь в склеп: нужен Когтистый ключ.",
   "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.name": "Последний привал",
-  "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.text": "Лагерь и Камень души, но босс получает +10 % ♥."
+  "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.text": "Лагерь и Камень души, но босс получает +10 % ♥.",
+  "SLAYTHEREQUIEM-SHOP_TAB_BUY.title": "Купить",
+  "SLAYTHEREQUIEM-SHOP_TAB_SELL.title": "Продать",
+  "SLAYTHEREQUIEM-SHOP_TAB_SERVICES.title": "Услуги",
+  "SLAYTHEREQUIEM-SHOP_SELL_HEADER.title": "Продажа за {Percent} % цены",
+  "SLAYTHEREQUIEM-SHOP_SELL_HINT.title": "Только снятое снаряжение из рюкзака. Надетое остаётся на вас.",
+  "SLAYTHEREQUIEM-SHOP_SELL_PRICE.title": "{Gold} зол.",
+  "SLAYTHEREQUIEM-SHOP_SELL_WEIGHT.title": "⚖ {Weight}",
+  "SLAYTHEREQUIEM-SHOP_SELL_ONE.title": "Продать",
+  "SLAYTHEREQUIEM-SHOP_SELL_ALL.title": "Продать всё — {Gold} зол.",
+  "SLAYTHEREQUIEM-SHOP_SELL_MORE.title": "…и ещё {Count} (сначала продайте верхние или всё разом)",
+  "SLAYTHEREQUIEM-SHOP_SELL_EMPTY.title": "Продавать нечего: рюкзак пуст.",
+  "SLAYTHEREQUIEM-SHOP_SELL_REAGENTS.title": "Реагенты ×{Count}",
+  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "К витрине"
 }

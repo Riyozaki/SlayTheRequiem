@@ -119,5 +119,18 @@
   "SLAYTHEREQUIEM-MAP_EDGE.LOCKED.name": "Locked gate",
   "SLAYTHEREQUIEM-MAP_EDGE.LOCKED.text": "The way into a vault: needs a Claw Key.",
   "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.name": "Last rest",
-  "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.text": "A camp and a soul gem, but the boss gets +10% HP."
+  "SLAYTHEREQUIEM-MAP_EDGE.LAST_REST.text": "A camp and a soul gem, but the boss gets +10% HP.",
+  "SLAYTHEREQUIEM-SHOP_TAB_BUY.title": "Buy",
+  "SLAYTHEREQUIEM-SHOP_TAB_SELL.title": "Sell",
+  "SLAYTHEREQUIEM-SHOP_TAB_SERVICES.title": "Services",
+  "SLAYTHEREQUIEM-SHOP_SELL_HEADER.title": "Sell for {Percent}% of the price",
+  "SLAYTHEREQUIEM-SHOP_SELL_HINT.title": "Only unequipped items from your pack. Equipped gear stays on you.",
+  "SLAYTHEREQUIEM-SHOP_SELL_PRICE.title": "{Gold} gold",
+  "SLAYTHEREQUIEM-SHOP_SELL_WEIGHT.title": "⚖ {Weight}",
+  "SLAYTHEREQUIEM-SHOP_SELL_ONE.title": "Sell",
+  "SLAYTHEREQUIEM-SHOP_SELL_ALL.title": "Sell all — {Gold} gold",
+  "SLAYTHEREQUIEM-SHOP_SELL_MORE.title": "…and {Count} more (sell the ones above first or sell all)",
+  "SLAYTHEREQUIEM-SHOP_SELL_EMPTY.title": "Nothing to sell: your pack is empty.",
+  "SLAYTHEREQUIEM-SHOP_SELL_REAGENTS.title": "Reagents ×{Count}",
+  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "Back to the goods"
 }

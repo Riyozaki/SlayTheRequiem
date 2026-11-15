@@ -2474,3 +2474,46 @@ def doll_scale(kind: str) -> float:
     if kind == "Dagger":
         return 0.62
     return 0.95 if kind in ("TwoHanded", "Spear", "Staff") else 0.8
+
+
+# ───── M6 п. 5: интерфейс лавки — вкладки, превью груза, «Перегруз?» (Core/ShopUiRules) ─────
+
+SHOP_TABS = ["Buy", "Sell", "Services"]
+SHOP_SELL_ROWS_VISIBLE = 8
+
+
+def overload_tier(excess: int) -> int:
+    if excess <= 0:
+        return 0
+    if excess <= 5:
+        return 1
+    return 2 if excess <= 10 else 3
+
+
+def burden_preview(weight: int, capacity: int, delta: int) -> dict:
+    before, after, cap = max(0, weight), max(0, weight + delta), max(0, capacity)
+    tb, ta = overload_tier(before - cap), overload_tier(after - cap)
+    return {"before": before, "after": after, "capacity": cap, "delta": after - before,
+            "excess_after": max(0, after - cap), "tier_before": tb, "tier_after": ta,
+            "worsens": ta > tb, "improves": ta < tb}
+
+
+def needs_overload_warning(preview: dict) -> bool:
+    return preview["delta"] > 0 and preview["worsens"]
+
+
+def shop_tab_enabled(tab: str, sell_count: int, service_count: int) -> bool:
+    return {"Buy": True, "Sell": sell_count > 0, "Services": service_count > 0}.get(tab, False)
+
+
+def shop_tab_badge(tab: str, sell_count: int, service_count: int) -> int:
+    return {"Sell": max(0, sell_count), "Services": max(0, service_count)}.get(tab, 0)
+
+
+def shop_sell_order(items: list[tuple[int, int]]) -> list[int]:
+    """items — [(выручка, вес)] → индексы: дороже выше, при равной цене тяжелее выше, дальше по порядку."""
+    return sorted(range(len(items)), key=lambda i: (-items[i][0], -items[i][1], i))
+
+
+def sell_percent(trust_level: int, fence: bool) -> int:
+    return 60 if fence else 50 if trust_level >= 3 else 35

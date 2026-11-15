@@ -635,5 +635,9 @@
   "SLAYTHEREQUIEM-PACK_MULE.flavor": "Stubborn, patient, and smarter than the last three hirelings.",
   "SLAYTHEREQUIEM-TORCH.title": "Torch",
   "SLAYTHEREQUIEM-TORCH.description": "[gold]Night sight[/gold] for the whole party: the barrow darkness recedes to 4 rows, Ambushes and secret trails show.",
-  "SLAYTHEREQUIEM-TORCH.flavor": "Pitch and rags. The dead hate it."
+  "SLAYTHEREQUIEM-TORCH.flavor": "Pitch and rags. The dead hate it.",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadHeader": "Overload?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadBody": "This weighs {Weight}: your Burden becomes {After} of {Capacity} — overload +{Excess}. Overload cuts ◆ regeneration, then your opening hand; above 10 you cannot pick anything up. Buy anyway?",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadYes": "Buy",
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.overloadNo": "Not now"
 }

@@ -1180,5 +1180,63 @@ class M6PaperDoll(unittest.TestCase):
         self.assertIn("Material => ItemMaterial.ScaledSteel", items)
 
 
+class M6ShopUi(unittest.TestCase):
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def test_tiers_match_burden(self):
+        for excess in range(-3, 20):
+            self.assertEqual(r.overload_tier(excess) > 0, excess > 0)
+        self.assertEqual([r.overload_tier(e) for e in (0, 1, 5, 6, 10, 11)], [0, 1, 1, 2, 2, 3])
+
+    def test_preview_and_warning(self):
+        p = r.burden_preview(18, 20, 2)
+        self.assertEqual((p["after"], p["tier_after"], p["worsens"]), (20, 0, False))
+        self.assertFalse(r.needs_overload_warning(p))
+        p = r.burden_preview(19, 20, 2)
+        self.assertTrue(p["worsens"] and r.needs_overload_warning(p))
+        self.assertEqual(p["excess_after"], 1)
+        p = r.burden_preview(22, 20, 3)  # 2 → 5: та же ступень
+        self.assertFalse(r.needs_overload_warning(p))
+        p = r.burden_preview(25, 20, 1)  # 5 → 6
+        self.assertTrue(r.needs_overload_warning(p))
+        p = r.burden_preview(31, 20, -2)  # продажа: 11 → 9
+        self.assertTrue(p["improves"])
+        self.assertFalse(r.needs_overload_warning(p))
+        self.assertFalse(r.needs_overload_warning(r.burden_preview(40, 20, 0)))
+        self.assertEqual(r.burden_preview(1, 20, -5)["after"], 0)
+
+    def test_tabs(self):
+        self.assertTrue(r.shop_tab_enabled("Buy", 0, 0))
+        self.assertFalse(r.shop_tab_enabled("Sell", 0, 3))
+        self.assertTrue(r.shop_tab_enabled("Sell", 1, 0))
+        self.assertFalse(r.shop_tab_enabled("Services", 4, 0))
+        self.assertEqual([r.shop_tab_badge(t, 2, 5) for t in r.SHOP_TABS], [0, 2, 5])
+
+    def test_sell_order_and_percent(self):
+        self.assertEqual(r.shop_sell_order([(10, 1), (30, 2), (30, 4), (10, 1)]), [2, 1, 0, 3])
+        self.assertEqual(r.shop_sell_order([]), [])
+        self.assertEqual([r.sell_percent(t, False) for t in (0, 2, 3)], [35, 35, 50])
+        self.assertEqual(r.sell_percent(0, True), 60)
+        # подпись совпадает с реальной выручкой
+        for price in (40, 100, 333):
+            self.assertEqual(r.sell_value(price, 0), max(1, price * 35 // 100))
+            self.assertEqual(r.fence_sell_value(price), max(1, price * 60 // 100))
+
+    def test_matches_csharp(self):
+        src = open(os.path.join(self.CODE, "Core", "ShopUiRules.cs"), encoding="utf-8").read()
+        import re
+        tabs = re.search(r"enum ShopTab\s*\{([^}]*)\}", src).group(1)
+        self.assertEqual([t.strip() for t in tabs.split(",") if t.strip()], r.SHOP_TABS)
+        self.assertIn(f"SellRowsVisible = {r.SHOP_SELL_ROWS_VISIBLE};", src)
+        self.assertIn("preview.Delta > 0 && preview.Worsens", src)
+        shop = open(os.path.join(self.CODE, "Core", "ShopRules.cs"), encoding="utf-8").read()
+        self.assertIn("fence ? 60 : trust >= MaxTrust ? 50 : 35", shop)
+        tabs_cs = open(os.path.join(self.CODE, "Shops", "ShopTabs.cs"), encoding="utf-8").read()
+        for tab in r.SHOP_TABS:
+            self.assertIn(f"ShopTab.{tab}", tabs_cs)
+        services = open(os.path.join(self.CODE, "Shops", "ShopServices.cs"), encoding="utf-8").read()
+        self.assertNotIn('HarmonyPatch(typeof(NMerchantInventory), "Close")', services)
+
+
 if __name__ == "__main__":
     unittest.main()

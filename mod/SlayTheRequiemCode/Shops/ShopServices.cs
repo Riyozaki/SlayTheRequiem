@@ -62,6 +62,7 @@ public abstract class CounterCard : RequiemCard
     }
 }
 
+// CounterSell и CounterSellReagents с M6 п. 5 на прилавке не показываются: продажа — вкладка «Продать» (ShopTabs.cs).
 [Pool(typeof(TokenCardPool))] public sealed class CounterSell : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterSharpenWeapon : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterSharpenArmor : CounterCard { }
@@ -108,8 +109,8 @@ public abstract class OrderCard : CounterCard
 [Pool(typeof(TokenCardPool))] public sealed class OrderPoison : OrderCard { public override OrderCategory Category => OrderCategory.Poison; }
 
 /// <summary>
-/// Прилавок торговца (docs/design/14 §1–2): продажа, услуги, Заказ. В ванильной сцене лавки нет кнопок для этого,
-/// поэтому прилавок открывается, когда игрок закрывает витрину: экран «выбери карту», где каждая карта — услуга
+/// Прилавок торговца (docs/design/14 §1–2): услуги и Заказ. Открывается вкладкой «Услуги» слева от витрины
+/// (Shops/ShopTabs.cs, M6 п. 5; продажа — вкладка «Продать»): экран «выбери карту», где каждая карта — услуга
 /// с ценой (до 3 на экране, «Ещё…» листает). Выбор локальный, а эффект — синхронное действие
 /// <see cref="ShopActions"/>, поэтому всё работает и в коопе.
 /// </summary>
@@ -227,14 +228,7 @@ public static class ShopServices
             Paid<CounterSoulStone>(price, power, () => ShopActions.Perform(player, ShopAction.BuyStone, price, power));
         }
 
-        // Продажа — в любой лавке.
-        var sellable = SellService.Sellable(player);
-        var fence = ledger.CurrentShop == ShopType.Fence;
-        if (sellable.Count > 0)
-        {
-            var total = sellable.Sum(i => SellService.Value(i, trust, fence));
-            list.Add(new Option((s, p) => s.CreateCard<CounterSell>(p), total, sellable.Count, () => SellService.Sell(player, sellable, trust, fence)));
-        }
+        // Продажа снятого снаряжения и реагентов — вкладка «Продать» (Shops/ShopTabs.cs, M6 п. 5), не прилавок.
 
         // Вьючный зверь (10 §6): Сундук у прилавка любой лавки; купить — у Странника и в Караване; подковать — у Оружейника.
         if (Alchemy.PackMule.Of(player) is { } mule)
@@ -292,12 +286,6 @@ public static class ShopServices
                     var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
                     Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
                         () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
-                    if (pouch.Total > 0)
-                    {
-                        var value = ShopRules.ReagentSellValue(pouch.Total);
-                        list.Add(new Option((s, p) => s.CreateCard<CounterSellReagents>(p), value, pouch.Total,
-                            () => ShopActions.Perform(player, ShopAction.SellReagents, value, 0)));
-                    }
                 }
 
                 var ailments = Ailments(player).Count();
@@ -413,6 +401,12 @@ public static class ShopServices
     }
 
     public static bool HasOptions(Player player) => Options(player).Count > 0;
+
+    /// <summary>Сколько услуг у прилавка сейчас (число на вкладке «Услуги»).</summary>
+    public static int ServiceCount(Player player) => Options(player).Count;
+
+    /// <summary>Прилавок открыт (вкладка «Услуги» подсвечена, пока идёт выбор).</summary>
+    public static bool CounterOpen => _open;
 
     // ───── экран прилавка ─────
 
@@ -605,21 +599,6 @@ public static class ShopServices
         MasteryConfirmed = true;
         try { return await entry.OnTryPurchaseWrapper(inventory); }
         finally { MasteryConfirmed = false; }
-    }
-}
-
-/// <summary>Прилавок открывается, когда игрок закрывает витрину торговца.</summary>
-[HarmonyPatch(typeof(NMerchantInventory), "Close")]
-public static class MerchantCounterPatch
-{
-    [HarmonyPostfix]
-    public static void OpenCounter()
-    {
-        var state = RequiemNet.State;
-        if (state == null || state.CurrentRoom is not MerchantRoom || NRun.Instance?.MerchantRoom == null) return;
-        var me = LocalContext.GetMe(state);
-        if (me == null || me.Creature.IsDead || !ShopServices.HasOptions(me)) return;
-        TaskHelper.RunSafely(ShopServices.OpenCounter(me));
     }
 }
 

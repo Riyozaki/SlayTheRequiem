@@ -32,6 +32,7 @@ from loc_m5shops import (M5_SCROLLS, M5_SHOP_CARDS, M5_SHOP_ENCOUNTERS, M5_SHOP_
 from loc_m5camp import M5_CAMP_CARDS, M5_CAMP_RELICS, M5_CAMP_SETTINGS  # noqa: E402
 from loc_m6map import M6_POTIONS, M6_RELICS, MAP_TIPS  # noqa: E402
 from loc_m6summons import M6_SUMMON_CARDS, M6_SUMMON_MONSTERS, M6_SUMMON_POWERS  # noqa: E402
+from loc_m6shops import SHOP_RELIC_EXTRA, SHOP_TIPS  # noqa: E402
 from loc_relics import RELICS_BACKPACK, RELICS_EQUIPMENT, RELICS_POTIONS, RELICS_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
@@ -230,7 +231,7 @@ def main() -> None:
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        relics.update({f"{PREFIX}{key}": text for key, text in {**STAGE35_RELIC_EXTRA[lang], **STAGE36_RELIC_EXTRA[lang], **STAGE7_RELIC_EXTRA[lang], **M5_SHOP_RELIC_EXTRA[lang]}.items()})
+        relics.update({f"{PREFIX}{key}": text for key, text in {**STAGE35_RELIC_EXTRA[lang], **STAGE36_RELIC_EXTRA[lang], **STAGE7_RELIC_EXTRA[lang], **M5_SHOP_RELIC_EXTRA[lang], **SHOP_RELIC_EXTRA[lang]}.items()})
         for key, texts in FLAVOR.items():  # цитаты для реликвий без своей (этап 8)
             if not relics.get(f"{PREFIX}{key}.flavor"):
                 relics[f"{PREFIX}{key}.flavor"] = texts[li]
@@ -255,7 +256,7 @@ def main() -> None:
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
         n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
-        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang]}.items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang]}.items()})
         n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 

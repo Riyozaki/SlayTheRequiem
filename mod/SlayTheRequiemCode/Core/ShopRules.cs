@@ -130,6 +130,9 @@ public static class ShopRules
     public static int SellValue(int price, int trust) =>
         price <= 0 ? 0 : Math.Max(1, (int)Math.Floor(price * (trust >= MaxTrust ? 0.50 : 0.35)));
 
+    /// <summary>Доля выручки в процентах для подписи: 35, при доверии 3 — 50, у Скупщика краденого — 60.</summary>
+    public static int SellPercent(int trust, bool fence) => fence ? 60 : trust >= MaxTrust ? 50 : 35;
+
     // ───── цены ─────
 
     private static int ByTier(int tier, params int[] prices) => prices[Math.Clamp(tier, 1, prices.Length) - 1];
