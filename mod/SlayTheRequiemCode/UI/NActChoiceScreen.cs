@@ -361,12 +361,13 @@ public partial class NActChoiceScreen : Control, IScreenContext
         _ => new Color("8C9AC8"),
     };
 
-    /// <summary>Правила варианта — только работающие (отложенное на этап 8 — см. ActRuntime.cs — не обещаем).</summary>
+    /// <summary>Правила варианта — только работающие (карта — M6 п. 1: Тьма, вентили, порталы).</summary>
     public static string RulesText(ActKind kind) => kind switch
     {
         ActKind.FrozenBarrows => RequiemUi.TipText("DOORS.FROZEN_BARROWS.rules",
             ("Chill", ActRules.FrostChill), ("Warmth", ActRules.WarmthFights),
-            ("Keys", ActRules.MaxClawKeysPerAct), ("Gold", ActRules.VaultGold)),
+            ("Keys", ActRules.MaxClawKeysPerAct), ("Gold", ActRules.VaultGold),
+            ("Dark", ActRules.DarknessVisibleRows(false)), ("Sight", ActRules.DarknessVisibleRows(true))),
         ActKind.ClockworkDepths => RequiemUi.TipText("DOORS.CLOCKWORK_DEPTHS.rules",
             ("Period", ActRules.OverheatPeriod), ("Burning", ActRules.OverheatBurning), ("Relief", ActRules.ValveReliefFights)),
         ActKind.BloodCourt => RequiemUi.TipText("DOORS.BLOOD_COURT.rules",

@@ -1110,3 +1110,152 @@ public class M5RollbackAndNodeTests
         Assert.Equal(new[] { 30, 12, 55, 2 }, new[] { NodeRules.CacheGold(0), NodeRules.CacheTrap(4), NodeRules.AmbushGold(4), NodeRules.TrialStrength(3) });
     }
 }
+
+public class M6MapGraphTests
+{
+    /// <summary>Карта 7 × 15 из четырёх непересекающихся путей (ряды 1–14, последний — лагеря).</summary>
+    private static GraphView Sample()
+    {
+        int[][] paths =
+        [
+            [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+            [3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3],
+            [4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 3],
+            [6, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 6, 5],
+        ];
+        var g = new GraphView(7, 15);
+        foreach (var path in paths)
+            for (var i = 0; i < path.Length; i++)
+            {
+                var row = i + 1;
+                var kind = row switch
+                {
+                    14 => NodeKind.Rest,
+                    8 => NodeKind.Treasure,
+                    6 or 10 => NodeKind.Elite,
+                    3 or 7 or 11 => NodeKind.Unknown,
+                    _ => NodeKind.Monster,
+                };
+                g.Node(path[i], row, kind);
+                if (i > 0) g.Edge(path[i - 1], row - 1, path[i], row);
+            }
+        return g;
+    }
+
+    private static Func<int, int> Seq(int seed)
+    {
+        var rnd = new Random(seed);
+        return n => n <= 0 ? 0 : rnd.Next(n);
+    }
+
+    [Fact]
+    public void SampleHasNoCrossings()
+    {
+        var g = Sample();
+        foreach (var e in g.Edges)
+            Assert.DoesNotContain(g.Edges, x => MapGraphRules.Crosses(e.From, e.To, x.From, x.To));
+    }
+
+    [Fact]
+    public void TowerPortalsEndInFights()
+    {
+        for (var seed = 0; seed < 20; seed++)
+        {
+            var g = Sample();
+            var plan = MapGraphRules.Plan(g, ActKind.StarTower, [], Seq(seed));
+            var portals = plan.Edges.Where(e => e.Kind == EdgeKind.Portal).ToList();
+            Assert.InRange(portals.Count, 2, 3);
+            Assert.All(portals, p =>
+            {
+                Assert.Equal(p.From.Row + 2, p.To.Row);
+                Assert.Contains(g.Nodes[p.To], new[] { NodeKind.Monster, NodeKind.Elite });
+            });
+            Assert.Single(plan.Edges, e => e.Kind == EdgeKind.Danger);
+            Assert.NotNull(plan.LastRest);
+            Assert.Equal(14, plan.LastRest!.Value.Row);
+        }
+    }
+
+    [Fact]
+    public void ValvesNeverCutTheRoad()
+    {
+        for (var seed = 0; seed < 30; seed++)
+        {
+            var g = Sample();
+            var valves = new List<Cell> { new(0, 3), new(5, 7), new(2, 11) };
+            var plan = MapGraphRules.Plan(g, ActKind.ClockworkDepths, valves, Seq(seed));
+            Assert.Contains(plan.Edges, e => e.Kind == EdgeKind.ValveClose);
+            for (var mask = 0; mask < 8; mask++)
+            {
+                var m = mask;
+                var state = new TravelState(false, false, v => (m & (1 << valves.IndexOf(v))) != 0, _ => false);
+                Assert.True(MapGraphRules.ReachesLastRow(g, (a, b) => MapGraphRules.IsBlocked(plan.EdgeOf(a, b), false, b, state)),
+                    $"seed {seed}, valves {mask}");
+            }
+        }
+    }
+
+    [Fact]
+    public void PocketsAndSecretsAreAdditive()
+    {
+        var g = Sample();
+        var before = g.Edges.ToHashSet();
+        var plan = MapGraphRules.Plan(g, ActKind.FrozenBarrows, [], Seq(3));
+        Assert.All(before, e => Assert.Contains(e, g.Edges));
+        Assert.InRange(plan.Pockets.Count, 1, 2);
+        foreach (var pocket in plan.Pockets)
+        {
+            Assert.Equal(NodeKind.Treasure, g.Nodes[pocket]);
+            Assert.Contains(plan.Edges, e => e.Kind == EdgeKind.PocketIn && e.To == pocket && e.From.Row == pocket.Row - 1);
+            Assert.Contains(plan.Edges, e => e.Kind == EdgeKind.PocketOut && e.From == pocket && e.To.Row == pocket.Row + 1);
+        }
+        Assert.InRange(plan.Edges.Count(e => e.Kind == EdgeKind.Secret), 1, 2);
+        Assert.DoesNotContain(plan.Edges, e => e.Kind is EdgeKind.Portal or EdgeKind.ValveOpen or EdgeKind.ValveClose);
+        var noSight = new TravelState(false, false, _ => false, _ => false);
+        Assert.True(MapGraphRules.ReachesLastRow(g, (a, b) => MapGraphRules.IsBlocked(plan.EdgeOf(a, b), false, b, noSight)));
+    }
+
+    [Fact]
+    public void PlanIsDeterministicAndRoundTrips()
+    {
+        var a = MapGraphRules.Plan(Sample(), ActKind.StarTower, [], Seq(7)).Encode();
+        var b = MapGraphRules.Plan(Sample(), ActKind.StarTower, [], Seq(7)).Encode();
+        Assert.Equal(a, b);
+        Assert.Equal(a, MapPlan.Decode(a).Encode());
+        var depths = MapGraphRules.Plan(Sample(), ActKind.ClockworkDepths, [new Cell(0, 3)], Seq(1));
+        Assert.Equal(depths.Encode(), MapPlan.Decode(depths.Encode()).Encode());
+        Assert.True(MapGraphRules.Plan(Sample(), ActKind.Hive, [], Seq(1)).IsEmpty);
+        Assert.True(MapPlan.Decode("garbage;Z:1,2>3,4;P:x").IsEmpty);
+    }
+
+    [Fact]
+    public void BlockingAndSight()
+    {
+        var to = new Cell(1, 2);
+        var none = new TravelState(false, false, _ => false, _ => false);
+        var all = new TravelState(true, true, _ => true, _ => false);
+        var secret = new PlanEdge(EdgeKind.Secret, new Cell(1, 1), to);
+        var open = new PlanEdge(EdgeKind.ValveOpen, new Cell(1, 1), to, new Cell(0, 0));
+        var close = new PlanEdge(EdgeKind.ValveClose, new Cell(1, 1), to, new Cell(0, 0));
+        Assert.True(MapGraphRules.IsBlocked(secret, false, to, none));
+        Assert.False(MapGraphRules.IsBlocked(secret, false, to, all));
+        Assert.True(MapGraphRules.IsBlocked(open, false, to, none));
+        Assert.False(MapGraphRules.IsBlocked(open, false, to, all));
+        Assert.False(MapGraphRules.IsBlocked(close, false, to, none));
+        Assert.True(MapGraphRules.IsBlocked(close, false, to, all));
+        Assert.True(MapGraphRules.IsBlocked(null, true, to, none));
+        Assert.False(MapGraphRules.IsBlocked(null, true, to, all));
+        Assert.False(MapGraphRules.IsBlocked(null, true, to, none with { VaultOpened = _ => true }));
+        Assert.False(MapGraphRules.IsVisible(secret, false));
+        Assert.True(MapGraphRules.IsVisible(open, false));
+        Assert.True(MapGraphRules.NightSight(false, false, true, false));
+        Assert.True(MapGraphRules.SecretSight(false, true, false));
+        Assert.False(MapGraphRules.SecretSight(false, false, false));
+        Assert.Equal(110, MapGraphRules.LastRestBossHp(100));
+        Assert.Equal(56, MapGraphRules.LastRestBossHp(50) + 1);
+        Assert.Equal(NodeGroup.Trade, NodeRules.GroupOf(NodeSubtype.Armorer));
+        Assert.Equal(NodeGroup.Danger, NodeRules.GroupOf(NodeSubtype.Ambush));
+        Assert.Equal(5, NodeRules.Groups.Count);
+        Assert.Equal(NodeSubtype.Shrine, NodeRules.FromMark(MapMark.CelestialBanner));
+    }
+}

@@ -164,5 +164,7 @@
   "SLAYTHEREQUIEM-SCROLL_OF_ICE_SPIKE.title": "Свиток Ледяного копья",
   "SLAYTHEREQUIEM-SCROLL_OF_ICE_SPIKE.description": "Положить в руку [gold]Ледяное копьё[/gold]: стоит 1 энергию и 0 ✦, владение школой не нужно, [gold]Истощение[/gold].",
   "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.title": "Свиток Каменной плоти",
-  "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.description": "Положить в руку [gold]Каменная плоть[/gold]: стоит 1 энергию и 0 ✦, владение школой не нужно, [gold]Истощение[/gold]."
+  "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.description": "Положить в руку [gold]Каменная плоть[/gold]: стоит 1 энергию и 0 ✦, владение школой не нужно, [gold]Истощение[/gold].",
+  "SLAYTHEREQUIEM-NIGHT_SIGHT_POTION.title": "Зелье Ночного зрения",
+  "SLAYTHEREQUIEM-NIGHT_SIGHT_POTION.description": "До конца акта: [gold]Ночное зрение[/gold] отряду — Тьма курганов отступает до 4 рядов, видны Засады и Тайные тропы."
 }

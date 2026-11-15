@@ -164,5 +164,7 @@
   "SLAYTHEREQUIEM-SCROLL_OF_ICE_SPIKE.title": "Scroll of Ice Spike",
   "SLAYTHEREQUIEM-SCROLL_OF_ICE_SPIKE.description": "Add [gold]Ice Spike[/gold] to your hand. It costs 1 energy and 0 ✦, ignores school mastery and [gold]Exhausts[/gold].",
   "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.title": "Scroll of Stoneflesh",
-  "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.description": "Add [gold]Stoneflesh[/gold] to your hand. It costs 1 energy and 0 ✦, ignores school mastery and [gold]Exhausts[/gold]."
+  "SLAYTHEREQUIEM-SCROLL_OF_STONEFLESH.description": "Add [gold]Stoneflesh[/gold] to your hand. It costs 1 energy and 0 ✦, ignores school mastery and [gold]Exhausts[/gold].",
+  "SLAYTHEREQUIEM-NIGHT_SIGHT_POTION.title": "Night Sight Potion",
+  "SLAYTHEREQUIEM-NIGHT_SIGHT_POTION.description": "Until the end of the act: [gold]night sight[/gold] for the party — the barrow darkness recedes to 4 rows, Ambushes and secret trails show."
 }

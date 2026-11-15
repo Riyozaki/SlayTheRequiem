@@ -2,7 +2,7 @@
 
 Ключи без префикса — build_loc.py добавляет «SLAYTHEREQUIEM-». Экран: static_hover_tips.json (UI/NActChoiceScreen →
 RequiemUi.TipText). Числа в правилах — переменные SmartFormat из Core/ActRules.cs, не литералы. Обещаем только то, что
-уже работает (Тьма курганов, переключение рёбер, порталы Башни и прочее отложенное на этап 8 — см. ActRuntime.cs — нет).
+уже работает (Тьма курганов, переключение рёбер вентилями и порталы Башни — с M6 п. 1).
 Правила — обычный текст без [gold]: экран рисует их простым Label.
 """
 
@@ -19,16 +19,18 @@ DOORS_TIPS = {
         "DOORS.FROZEN_BARROWS.foes": "Barrow dead",
         "DOORS.FROZEN_BARROWS.rules": "Bitter cold: every fight starts with Chill {Chill}. Warm up at a campfire to skip it for "
                                       "{Warmth} fights; frost resistance or freeze immunity protects you. Elites drop Claw Keys "
-                                      "(up to {Keys} per act); a key opens a locked vault for {Gold} gold.",
+                                      "(up to {Keys} per act); a key opens a locked vault for {Gold} gold. Barrow darkness: the map shows only {Dark} "
+                                      "rows ahead ({Sight} with night sight — a torch, the Omen of Shade, a night-sight potion).",
         "DOORS.CLOCKWORK_DEPTHS.foes": "Clockwork guardians and coast raiders",
         "DOORS.CLOCKWORK_DEPTHS.rules": "Steam: every {Period}th round a vent burst inflicts Burning {Burning} on the heroes. "
-                                        "Turn a valve on the map to stop the bursts for the next {Relief} fights.",
+                                        "Turn a valve on the map to stop the bursts for the next {Relief} fights — and to switch "
+                                        "the steam pipes: one route opens, another closes.",
         "DOORS.BLOOD_COURT.foes": "The Blood Court",
         "DOORS.BLOOD_COURT.rules": "Day and night: map rows alternate in blocks of {Block}. At night enemies have +{Hp}% HP, "
                                    "and every fight pays +{Gold} gold.",
         "DOORS.STAR_TOWER.foes": "Renegades of the Star Tower",
         "DOORS.STAR_TOWER.rules": "Ley lines: some fights on the map lie on a ley line — there every hero starts the fight "
-                                  "with +{Mana} ✦.",
+                                  "with +{Mana} ✦. Portals leap over a row — a fight always waits at the far end.",
     },
     "rus": {
         "DOORS.heading": "Две двери",
@@ -42,16 +44,18 @@ DOORS_TIPS = {
         "DOORS.FROZEN_BARROWS.foes": "Курганные мертвецы",
         "DOORS.FROZEN_BARROWS.rules": "Стужа: каждый бой начинается с Озноба {Chill}. «Отогреться» у костра — {Warmth} боя без "
                                       "Стужи; сопротивление холоду или иммунитет к заморозке защищают. Элиты роняют Когтистые "
-                                      "ключи (до {Keys} за акт); ключ открывает запертый склеп: +{Gold} золота.",
+                                      "ключи (до {Keys} за акт); ключ открывает запертый склеп: +{Gold} золота. Тьма курганов: на карте видно лишь на {Dark} "
+                                      "ряда вперёд (на {Sight} — с Ночным зрением: факел, Знамение Тени, зелье).",
         "DOORS.CLOCKWORK_DEPTHS.foes": "Заводные стражи и береговые грабители",
         "DOORS.CLOCKWORK_DEPTHS.rules": "Пар: каждый {Period}-й раунд выброс накладывает на героев Горение {Burning}. "
-                                        "Перекрытый на карте вентиль снимает выбросы на {Relief} следующих боя.",
+                                        "Повёрнутый на карте вентиль снимает выбросы на {Relief} следующих боя и переключает "
+                                        "паровые трубы: один путь открывается, другой закрывается.",
         "DOORS.BLOOD_COURT.foes": "Кровавый двор",
         "DOORS.BLOOD_COURT.rules": "День и ночь: ряды карты чередуются блоками по {Block}. Ночью у врагов +{Hp} % ♥, "
                                    "а каждый бой приносит +{Gold} золота.",
         "DOORS.STAR_TOWER.foes": "Отступники Звёздной Башни",
         "DOORS.STAR_TOWER.rules": "Лей-линии: часть боёв на карте лежит на лей-линии — там каждый герой начинает бой "
-                                  "с +{Mana} ✦.",
+                                  "с +{Mana} ✦. Порталы перескакивают через ряд — на том конце всегда бой.",
     },
 }
 

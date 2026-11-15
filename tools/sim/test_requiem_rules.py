@@ -268,6 +268,93 @@ class M5Nodes(unittest.TestCase):
         self.assertEqual([r.cache_gold(0), r.cache_trap(4), r.ambush_gold(4), r.trial_strength(3)], [30, 12, 55, 2])
 
 
+def _sample_graph():
+    paths = [[1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1], [3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 3],
+             [4, 5, 5, 4, 4, 5, 5, 4, 4, 5, 5, 4, 4, 3], [6, 6, 6, 6, 5, 6, 6, 6, 5, 6, 6, 6, 6, 5]]
+    g = r.Graph(7, 15)
+    for p in paths:
+        for i, c in enumerate(p):
+            row = i + 1
+            g.nodes[(c, row)] = {14: "Rest", 8: "Treasure", 6: "Elite", 10: "Elite", 3: "Unknown", 7: "Unknown",
+                                 11: "Unknown"}.get(row, "Monster")
+            if i:
+                g.edges.add(((p[i - 1], row - 1), (c, row)))
+    return g
+
+
+def _seq(seed):
+    import random
+    rnd = random.Random(seed)
+    return lambda n: 0 if n <= 0 else rnd.randrange(n)
+
+
+class M6MapGraph(unittest.TestCase):
+    def test_sample_has_no_crossings(self):
+        g = _sample_graph()
+        for a, b in g.edges:
+            self.assertFalse(any(r.edges_cross(a, b, x, y) for x, y in g.edges))
+
+    def test_tower_portals_end_in_fights(self):
+        for seed in range(30):
+            g = _sample_graph()
+            edges, _, last = r.plan_paths(g, "StarTower", [], _seq(seed))
+            portals = [e for e in edges if e[0] == "Portal"]
+            self.assertIn(len(portals), (2, 3))
+            for _, a, b, _ in portals:
+                self.assertEqual(a[1] + 2, b[1])
+                self.assertIn(g.nodes[b], ("Monster", "Elite"))
+            self.assertEqual(sum(1 for e in edges if e[0] == "Danger"), 1)
+            self.assertEqual(last[1], 14)
+
+    def test_valves_never_cut_the_road(self):
+        valves = [(0, 3), (5, 7), (2, 11)]
+        for seed in range(60):
+            g = _sample_graph()
+            edges, _, _ = r.plan_paths(g, "ClockworkDepths", valves, _seq(seed))
+            self.assertTrue(any(e[0] == "ValveClose" for e in edges))
+            by = {(e[1], e[2]): e for e in edges}
+            for mask in range(8):
+                turned = lambda v, m=mask: bool((m >> valves.index(v)) & 1)
+                self.assertTrue(g.reaches_last_row(
+                    lambda a, b: r.edge_blocked(by.get((a, b)), False, b, False, False, turned, lambda c: False)), (seed, mask))
+
+    def test_pockets_and_secrets_are_additive(self):
+        g = _sample_graph()
+        before = set(g.edges)
+        edges, pockets, _ = r.plan_paths(g, "FrozenBarrows", [], _seq(3))
+        self.assertTrue(before <= g.edges)
+        self.assertIn(len(pockets), (1, 2))
+        for p in pockets:
+            self.assertEqual(g.nodes[p], "Treasure")
+            self.assertTrue(any(e[0] == "PocketIn" and e[2] == p and e[1][1] == p[1] - 1 for e in edges))
+            self.assertTrue(any(e[0] == "PocketOut" and e[1] == p and e[2][1] == p[1] + 1 for e in edges))
+        self.assertFalse(any(e[0] in ("Portal", "ValveOpen", "ValveClose") for e in edges))
+        by = {(e[1], e[2]): e for e in edges}
+        self.assertTrue(g.reaches_last_row(lambda a, b: r.edge_blocked(by.get((a, b)), False, b, False, False,
+                                                                          lambda v: False, lambda c: False)))
+
+    def test_encode_round_trip_and_vanilla_acts(self):
+        edges, pockets, last = r.plan_paths(_sample_graph(), "ClockworkDepths", [(0, 3)], _seq(1))
+        text = r.encode_plan(edges, pockets, last)
+        self.assertEqual(r.encode_plan(*r.decode_plan(text)), text)
+        self.assertEqual(r.plan_paths(_sample_graph(), "Hive", [], _seq(1)), ([], [], None))
+        self.assertEqual(r.decode_plan("garbage;Z:1,2>3,4;P:x"), ([], [], None))
+
+    def test_blocking_and_sight(self):
+        no, yes = (lambda v: False), (lambda v: True)
+        self.assertTrue(r.edge_blocked(("Secret", 0, 0, None), False, (1, 2), False, False, no, no))
+        self.assertFalse(r.edge_blocked(("Secret", 0, 0, None), False, (1, 2), True, False, no, no))
+        self.assertTrue(r.edge_blocked(("ValveOpen", 0, 0, (0, 0)), False, (1, 2), False, False, no, no))
+        self.assertTrue(r.edge_blocked(("ValveClose", 0, 0, (0, 0)), False, (1, 2), False, False, yes, no))
+        self.assertTrue(r.edge_blocked(None, True, (1, 2), False, False, no, no))
+        self.assertFalse(r.edge_blocked(None, True, (1, 2), False, True, no, no))
+        self.assertFalse(r.edge_blocked(None, True, (1, 2), False, False, no, yes))
+        self.assertTrue(r.night_sight(False, False, True, False))
+        self.assertTrue(r.secret_sight(False, True, False))
+        self.assertEqual([r.last_rest_boss_hp(100), r.last_rest_boss_hp(50)], [110, 55])
+        self.assertEqual([r.node_group("Armorer"), r.node_group("Ambush"), r.node_group("Valve")], ["Trade", "Danger", "Magic"])
+
+
 class M5Shops(unittest.TestCase):
     def test_placement(self):
         self.assertEqual(r.guaranteed_shop("BloodCourt", 0), "Fence")

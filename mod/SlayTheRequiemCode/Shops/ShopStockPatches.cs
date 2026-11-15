@@ -275,12 +275,17 @@ public static class HerbalistPotionsPatch
                 ShopType.Fence => new[] { (1, 5), (1, 5), (0, 5) },
                 _ => new[] { (0, tier), (1, tier), (2, scrollTier) },
             };
+            // Курганы (13 §3, M6): у Травницы — зелье Ночного зрения против Тьмы вместо второго зелья.
+            if (shop == ShopType.Herbalist && Acts.ActKinds.CurrentRule(player.RunState) == ActRule.Frost) plan[1] = (3, 1);
             for (var i = 0; i < plan.Length; i++)
             {
                 var (kind, t) = plan[i];
-                var model = kind == 2
-                    ? ShopStock.PickScroll(player, t, exactTier: i == 0, scrolls)
-                    : ShopStock.PickBrew(player, kind == 1, t);
+                var model = kind switch
+                {
+                    2 => ShopStock.PickScroll(player, t, exactTier: i == 0, scrolls),
+                    3 => ModelDb.Potion<Potions.NightSightPotion>().ToMutable(),
+                    _ => ShopStock.PickBrew(player, kind == 1, t),
+                };
                 if (model == null) break;
                 list.Add(new MerchantPotionEntry(model, player));
             }

@@ -64,6 +64,12 @@ public sealed class ActLedger : RequiemRelic
     private int _warmthFights;
     private int _valveRelief;
     private bool _namelessAdded;
+    private int _mapPlanAct;
+    private string _mapPlanText = string.Empty;
+    private int _nightSightAct;
+    private int _lastRestAct;
+    private int _bannerAct;
+    private int[] _nodeVisits = [];
 
     /// <summary>Побеждённые супербоссы — биты <see cref="Superboss"/>.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -120,11 +126,59 @@ public sealed class ActLedger : RequiemRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public bool NamelessAdded { get => _namelessAdded; set { AssertMutable(); _namelessAdded = value; } }
 
+    /// <summary>Акт (индекс + 1), для которого записан <see cref="MapPlanText"/>.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int MapPlanAct { get => _mapPlanAct; set { AssertMutable(); _mapPlanAct = value; } }
+
+    /// <summary>План вариаций путей карты акта (<see cref="MapPlan.Encode"/>, M6 п. 1).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string MapPlanText { get => _mapPlanText; set { AssertMutable(); _mapPlanText = value ?? string.Empty; } }
+
+    /// <summary>Зелье Ночного зрения действует до конца этого акта (индекс + 1).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int NightSightAct { get => _nightSightAct; set { AssertMutable(); _nightSightAct = value; } }
+
+    /// <summary>«Последний привал» взят в этом акте (индекс + 1): босс акта +10 % ♥.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int LastRestAct { get => _lastRestAct; set { AssertMutable(); _lastRestAct = value; } }
+
+    /// <summary>«Небесный щит» Знамени Небесных действует до конца этого акта (индекс + 1).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int BannerAct { get => _bannerAct; set { AssertMutable(); _bannerAct = value; } }
+
+    /// <summary>Подтипы пройденных узлов, решённые при входе (лавки, Таверна, «?»): код клетки × 32 + подтип — для значков.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int[] NodeVisits { get => _nodeVisits; set { AssertMutable(); _nodeVisits = value ?? []; } }
+
+    /// <summary>Запомнить подтип узла, в который вошёл герой (значок пройденного узла на карте).</summary>
+    public void RecordVisit(IRunState run, NodeSubtype subtype)
+    {
+        if (run.CurrentMapCoord is not { } at) return;
+        var code = MapMarks.Encode(run.CurrentActIndex, at.col, at.row);
+        var entry = code * 32 + (int)subtype;
+        if (_nodeVisits.Any(v => v / 32 == code)) NodeVisits = [.. _nodeVisits.Where(v => v / 32 != code), entry];
+        else NodeVisits = [.. _nodeVisits, entry];
+        UI.MapVisuals.RefreshSoon();
+    }
+
+    /// <summary>Подтип пройденного узла, если он записан.</summary>
+    public NodeSubtype? VisitedSubtype(int code)
+    {
+        foreach (var v in _nodeVisits)
+            if (v / 32 == code && Enum.IsDefined(typeof(NodeSubtype), v % 32)) return (NodeSubtype)(v % 32);
+        return null;
+    }
+
     public bool Has(int[] list, int code) => Array.IndexOf(list, code) >= 0;
 
     public void AddGate(int code) { if (!Has(_gates, code)) Gates = [.. _gates, code]; }
     public void OpenVault(int code) { if (!Has(_openedVaults, code)) OpenedVaults = [.. _openedVaults, code]; }
-    public void TurnValve(int code) { if (!Has(_turnedValves, code)) TurnedValves = [.. _turnedValves, code]; }
+    public void TurnValve(int code)
+    {
+        if (Has(_turnedValves, code)) return;
+        TurnedValves = [.. _turnedValves, code];
+        UI.MapVisuals.RefreshSoon(); // трубы этого вентиля переключились (M6)
+    }
 
     /// <summary>Когтистый ключ с элиты/Тайника: не больше <see cref="ActRules.MaxClawKeysPerAct"/> за акт.</summary>
     public bool TryFindClawKey(int actIndex)
@@ -138,6 +192,7 @@ public sealed class ActLedger : RequiemRelic
         ClawKeysFound++;
         ClawKeys++;
         Flash();
+        UI.MapVisuals.RefreshSoon(); // Запертые врата теперь открываемы
         return true;
     }
 
@@ -155,8 +210,13 @@ public sealed class ActLedger : RequiemRelic
 
     public override Task AfterMapGenerated(ActMap map, int actIndex)
     {
-        if (Owner?.RunState is { } run && RequiemConfig.EnableRequiemSystems && actIndex < run.Acts.Count)
-            foreach (var code in ActMarks.For(run, map, actIndex).Keys) ActMarks.Show(map, code);
+        if (Owner?.RunState is not { } run || !RequiemConfig.EnableRequiemSystems || actIndex >= run.Acts.Count) return Task.CompletedTask;
+        // Вариации путей (M6 п. 1): план строится один раз для карты, каждый герой хранит его копию.
+        var plan = MapGraph.Prepare(run, map, actIndex);
+        MapPlanAct = actIndex + 1;
+        MapPlanText = plan.Encode();
+        foreach (var code in ActMarks.For(run, map, actIndex).Keys) ActMarks.Show(map, code);
+        UI.MapVisuals.RefreshSoon();
         return Task.CompletedTask;
     }
 
@@ -169,6 +229,9 @@ public sealed class ActLedger : RequiemRelic
         if (!RequiemConfig.EnableRequiemSystems || !IsMutable || Owner?.RunState is not { } run) return currentEvent;
         if (run.Players.FirstOrDefault() != Owner) return currentEvent;
         if (currentEvent is Pantheon.PantheonEvent or Transformations.FormEvent or Events.NodeEvent) return currentEvent;
+        // Знамя Небесных (Слава) — всегда Святилище.
+        if (ActMarks.At(run, run.CurrentMapCoord) == MapMark.CelestialBanner && RequiemConfig.EnablePantheon)
+            return ModelDb.Event<Pantheon.ShrineEvent>();
         var roll = (int)(ShopRules.Fnv1a((run.Rng.StringSeed ?? string.Empty) + "|library", run.TotalFloor * 13 + run.CurrentActIndex) % 100u);
         return NodeRules.RollLibrary(ActKinds.Slot(run), roll) ? ModelDb.Event<Events.LibraryEvent>() : currentEvent;
     }
@@ -193,7 +256,29 @@ public sealed class ActLedger : RequiemRelic
             case MapMark.Cache when !Has(_openedVaults, code):
                 await OpenCache(run, code);
                 break;
+            case MapMark.CelestialBanner when _bannerAct != run.CurrentActIndex + 1 && Owner != null
+                                              && Pantheon.Faith.Effective(Owner) == Piety.Righteous:
+                BannerAct = run.CurrentActIndex + 1;
+                Flash();
+                if (Pantheon.CelestialBlessing.Of(Owner) is { } blessing) await blessing.SyncMaxHp();
+                break;
         }
+        // «Последний привал» (13 §4.1): Камень души, но босс акта получит +10 % ♥.
+        if (MapGraph.IsLastRest(run, coord) && _lastRestAct != run.CurrentActIndex + 1 && Owner != null)
+        {
+            LastRestAct = run.CurrentActIndex + 1;
+            Flash();
+            if (RequiemMode.IsInSystem(Owner)) HeroRecord.Of(Owner)?.AddStone(1);
+        }
+        if (room is EventRoom events && NodeRules.FromUnknownRoll(events.CanonicalEvent switch
+            {
+                Pantheon.ShrineEvent => 1,
+                Pantheon.DarkShrineEvent => 2,
+                Pantheon.EbbStonesEvent => 3,
+                _ => 0,
+            }, events.CanonicalEvent is Events.LibraryEvent) is { } unknownSubtype)
+            RecordVisit(run, unknownSubtype);
+        UI.MapVisuals.RefreshSoon();
         if (ActMarks.NewGate(run, coord) is { } gate)
         {
             AddGate(gate);
@@ -253,6 +338,12 @@ public sealed class ActLedger : RequiemRelic
     {
         if (Owner == null || run.CurrentMapCoord is not { } at) return;
         var slot = ActKinds.Slot(run);
+        // Конец Опасной тропы (M6, 13 §4.1): после боя — Тайник (золото и зелье).
+        if (MapGraph.IsDangerEnd(run, at) && room.RoomType is RoomType.Monster or RoomType.Elite)
+        {
+            room.AddExtraReward(Owner, new GoldReward(NodeRules.CacheGold(slot), Owner));
+            room.AddExtraReward(Owner, new PotionReward(Owner));
+        }
         switch (ActMarks.SubtypeAt(run, at))
         {
             case NodeSubtype.Lair when room.RoomType == RoomType.Elite:

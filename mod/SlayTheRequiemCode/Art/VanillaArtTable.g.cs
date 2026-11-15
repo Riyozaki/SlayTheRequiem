@@ -653,6 +653,7 @@ public static partial class VanillaArt
         ["SunShard"] = "white_star",
         ["ThicketbornOrigin"] = "sling_of_courage",
         ["ThunderShamanBackground"] = "infused_core",
+        ["Torch"] = "lantern",
         ["TravelPack"] = "bag_of_preparation",
         ["TreatiseOfAlteration"] = "massive_scroll",
         ["TreatiseOfConjuration"] = "massive_scroll",

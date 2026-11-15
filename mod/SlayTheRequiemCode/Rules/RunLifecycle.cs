@@ -26,6 +26,7 @@ public static class RunLifecycle
         try
         {
             ActMarks.Reset();
+            MapGraph.Reset();
             ActDoors.Reset();
             CoopMemoryStone.ResetForNewRun();
         }

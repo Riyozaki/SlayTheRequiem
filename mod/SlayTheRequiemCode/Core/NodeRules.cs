@@ -28,6 +28,21 @@ public enum NodeSubtype
     Ambush,
 }
 
+/// <summary>Группа значков для легенды карты (13 §4.2, «Визуальный язык значков»).</summary>
+public enum NodeGroup
+{
+    /// <summary>Золотые — торговля.</summary>
+    Trade,
+    /// <summary>Белые с лучами — вера.</summary>
+    Faith,
+    /// <summary>Красно-чёрные — Бездна и опасность.</summary>
+    Danger,
+    /// <summary>Зелёные — природа и ремесло.</summary>
+    Nature,
+    /// <summary>Синие — магия и механизмы.</summary>
+    Magic,
+}
+
 /// <summary>Основа подтипа: ванильный тип узла (или ребро-барьер / старт акта).</summary>
 public enum NodeBase { Unknown, Shop, RestSite, Elite, Treasure, Monster, Boss, Edge, ActStart }
 
@@ -36,7 +51,7 @@ public enum NodeReveal
 {
     /// <summary>Отметка на карте от зерна акта — видна сразу (временный значок — маркер «задания» узла, свой — M6).</summary>
     Marked,
-    /// <summary>Отметка от зерна, но на карте не видна (Засада — до Ночного зрения, M6).</summary>
+    /// <summary>Отметка от зерна, но на карте видна только с Ночным зрением (Засада).</summary>
     Hidden,
     /// <summary>Решается при входе в узел (бросок «?», вид лавки, Таверна в лагере) — как ванильный «?».</summary>
     OnEnter,
@@ -76,6 +91,20 @@ public static class NodeRules
         NodeSubtype.Ambush => NodeReveal.Hidden,
         NodeSubtype.CrimsonPortal or NodeSubtype.MemoryStone => NodeReveal.Fixed,
         _ => NodeReveal.OnEnter,
+    };
+
+    public static IReadOnlyList<NodeGroup> Groups { get; } = Enum.GetValues<NodeGroup>();
+
+    /// <summary>Группа значка для фильтра легенды.</summary>
+    public static NodeGroup GroupOf(NodeSubtype subtype) => subtype switch
+    {
+        NodeSubtype.Armorer or NodeSubtype.Jeweler or NodeSubtype.Caravan or NodeSubtype.Fence or NodeSubtype.Tavern
+            or NodeSubtype.Cache => NodeGroup.Trade,
+        NodeSubtype.Shrine or NodeSubtype.EbbStones or NodeSubtype.MemoryStone => NodeGroup.Faith,
+        NodeSubtype.DarkAltar or NodeSubtype.Trial or NodeSubtype.AbyssGate or NodeSubtype.CrimsonPortal
+            or NodeSubtype.Ambush => NodeGroup.Danger,
+        NodeSubtype.Herbalist or NodeSubtype.Lair => NodeGroup.Nature,
+        _ => NodeGroup.Magic, // Чародейская, Библиотека, Вентиль, Запертые врата
     };
 
     /// <summary>Файл значка <c>images/map/icons/{name}.png</c> (art/map/icons).</summary>
@@ -158,6 +187,7 @@ public static class NodeRules
         MapMark.Trial => NodeSubtype.Trial,
         MapMark.Cache => NodeSubtype.Cache,
         MapMark.Ambush => NodeSubtype.Ambush,
+        MapMark.CelestialBanner => NodeSubtype.Shrine,
         _ => null,
     };
 

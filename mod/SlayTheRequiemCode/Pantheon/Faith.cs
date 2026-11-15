@@ -201,7 +201,12 @@ public static class Faith
 
     public static BlessingStrength Strength(Player? player) => PietyRules.Strength(Effective(player), Forbidden(player));
 
-    public static bool HasHeavenlyShield(Player? player) => SigilOf(player)?.HeavenlyShield == true;
+    /// <summary>
+    /// «Небесный щит»: ступень Праведника (форма) или Знамя Небесных в Славе (M6, 13 §3) — до конца акта, пока герой Праведник.
+    /// </summary>
+    public static bool HasHeavenlyShield(Player? player) =>
+        SigilOf(player)?.HeavenlyShield == true
+        || (player?.RunState is { } run && Acts.ActLedger.Of(player)?.BannerAct == run.CurrentActIndex + 1 && Effective(player) == Piety.Righteous);
 
     /// <summary>Кража в лавке, грабёж в событии, дар Князя: −1 ступень.</summary>
     public static void Sin(Player player)

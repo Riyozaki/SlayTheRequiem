@@ -30,6 +30,7 @@ from loc_m5events import M5_EVENTS  # noqa: E402
 from loc_m5shops import (M5_SCROLLS, M5_SHOP_CARDS, M5_SHOP_ENCOUNTERS, M5_SHOP_MONSTERS, M5_SHOP_REST_SITE,  # noqa: E402
                          M5_SHOP_RELIC_EXTRA, M5_STAVES)
 from loc_m5camp import M5_CAMP_CARDS, M5_CAMP_RELICS, M5_CAMP_SETTINGS  # noqa: E402
+from loc_m6map import M6_POTIONS, M6_RELICS, MAP_TIPS  # noqa: E402
 from loc_relics import RELICS_BACKPACK, RELICS_EQUIPMENT, RELICS_POTIONS, RELICS_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
@@ -192,7 +193,7 @@ def check_unique() -> None:
         "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS,
         "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS,
         "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
-                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS,
+                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS,
     }
     dupes = []
     for name, rows in tables.items():
@@ -223,7 +224,7 @@ def main() -> None:
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li] + WEIGHT_NOTE[lang]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS:
+        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li]
@@ -241,7 +242,7 @@ def main() -> None:
         encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS, **M5_ENCOUNTERS, **M5_SHOP_ENCOUNTERS}.items()}
         settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang]}.items()}
         potions = {}
-        for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS:
+        for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS + M6_POTIONS:
             k = PREFIX + snake(cls)
             potions[f"{k}.title"] = (et, rt)[li]
             potions[f"{k}.description"] = (ed, rd)[li]
@@ -253,7 +254,7 @@ def main() -> None:
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
         n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
-        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang]}.items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang]}.items()})
         n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 

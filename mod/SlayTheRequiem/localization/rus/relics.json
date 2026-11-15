@@ -632,5 +632,8 @@
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Пока нет",
   "SLAYTHEREQUIEM-PACK_MULE.title": "Вьючный мул",
   "SLAYTHEREQUIEM-PACK_MULE.description": "+{Burden} к вместимости груза (подкованный — ещё +{Shod}). Ничего не весит. Сундук лагеря доступен и у прилавка любой лавки. В бою не участвует. Подковать — Кузня в лагере или Оружейник.",
-  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Упрямый, терпеливый и умнее трёх последних наёмников."
+  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Упрямый, терпеливый и умнее трёх последних наёмников.",
+  "SLAYTHEREQUIEM-TORCH.title": "Факел",
+  "SLAYTHEREQUIEM-TORCH.description": "[gold]Ночное зрение[/gold] всему отряду: Тьма курганов отступает до 4 рядов, видны Засады и Тайные тропы.",
+  "SLAYTHEREQUIEM-TORCH.flavor": "Смола и тряпьё. Мертвецы его ненавидят."
 }

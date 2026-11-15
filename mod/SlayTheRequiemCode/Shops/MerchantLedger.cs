@@ -179,6 +179,8 @@ public sealed class MerchantLedger : RequiemRelic
         _shopsThisAct++;
         _previousShop = (int)shop;
         CurrentShopIndex = (int)shop;
+        // Значок пройденной лавки на карте (M6 п. 1).
+        if (NodeRules.FromShop(shop) is { } subtype) Acts.ActLedger.Of(Owner)?.RecordVisit(runState, subtype);
         return shop;
     }
 

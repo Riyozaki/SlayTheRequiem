@@ -2018,3 +2018,245 @@ def ambush_strength(slot: int) -> int:
 
 def ambush_gold(slot: int) -> int:
     return 15 + 10 * max(0, slot)
+
+
+# ───── M6 п. 1: вариации путей карты (Core/MapGraphRules) ─────
+# Граф: nodes {(col,row): kind}, edges {((c,r),(c,r))}. Виды узлов: Monster, Elite, Unknown, Shop, Rest, Treasure, Other.
+
+def portal_count(roll: int) -> int:
+    return 2 + abs(roll) % 2
+
+
+def secret_count(roll: int) -> int:
+    return 1 + abs(roll) % 2
+
+
+def pocket_count(roll: int) -> int:
+    return 1 + abs(roll) % 2
+
+
+PATH_VARIATION_ACTS = ("FrozenBarrows", "ClockworkDepths", "BloodCourt", "StarTower")
+LAST_REST_BOSS_HP_PERCENT = 10
+CELESTIAL_BANNER_COUNT = 2
+
+
+def last_rest_boss_hp(max_hp: int) -> int:
+    return max(1, max_hp + (max(0, max_hp) * LAST_REST_BOSS_HP_PERCENT + 99) // 100)
+
+
+def night_sight(moonborn: bool, shade: bool, torch: bool, potion: bool) -> bool:
+    return moonborn or shade or torch or potion
+
+
+def secret_sight(night: bool, barrow_map: bool, trickster: bool) -> bool:
+    return night or barrow_map or trickster
+
+
+def edges_cross(a, b, x, y) -> bool:
+    return a[1] == x[1] and b[1] == y[1] and b[1] == a[1] + 1 and (a[0] - x[0]) * (b[0] - y[0]) < 0
+
+
+def edge_blocked(edge, into_locked_vault: bool, to, secret: bool, has_key: bool, valve_turned, vault_opened) -> bool:
+    """edge — (kind, from, to, valve) или None."""
+    if into_locked_vault and not has_key and not vault_opened(to):
+        return True
+    if edge is None:
+        return False
+    kind, _, _, valve = edge
+    if kind == "Secret":
+        return not secret
+    if kind == "ValveOpen":
+        return valve is None or not valve_turned(valve)
+    if kind == "ValveClose":
+        return valve is not None and valve_turned(valve)
+    return False
+
+
+_LETTERS = {"Portal": "P", "Secret": "S", "Danger": "D", "PocketIn": "I", "PocketOut": "O", "ValveOpen": "V", "ValveClose": "C"}
+
+
+def encode_plan(edges, pockets, last_rest) -> str:
+    parts = [f"{_LETTERS[k]}:{f[0]},{f[1]}>{t[0]},{t[1]}" + (f"@{v[0]},{v[1]}" if v else "") for k, f, t, v in edges]
+    parts += [f"K:{p[0]},{p[1]}" for p in pockets]
+    if last_rest:
+        parts.append(f"L:{last_rest[0]},{last_rest[1]}")
+    return ";".join(parts)
+
+
+def decode_plan(text: str):
+    kinds = {v: k for k, v in _LETTERS.items()}
+    edges, pockets, last = [], [], None
+
+    def cell(s):
+        c, _, r = s.partition(",")
+        return (int(c), int(r))
+    for part in (text or "").split(";"):
+        if len(part) < 2 or part[1] != ":":
+            continue
+        body = part[2:]
+        try:
+            if part[0] == "K":
+                pockets.append(cell(body))
+            elif part[0] == "L":
+                last = cell(body)
+            elif part[0] in kinds:
+                valve = None
+                if "@" in body:
+                    body, _, v = body.partition("@")
+                    valve = cell(v)
+                f, _, t = body.partition(">")
+                edges.append((kinds[part[0]], cell(f), cell(t), valve))
+        except ValueError:
+            continue
+    return edges, pockets, last
+
+
+NODE_GROUPS = ["Trade", "Faith", "Danger", "Nature", "Magic"]
+
+
+def node_group(sub: str) -> str:
+    if sub in ("Armorer", "Jeweler", "Caravan", "Fence", "Tavern", "Cache"):
+        return "Trade"
+    if sub in ("Shrine", "EbbStones", "MemoryStone"):
+        return "Faith"
+    if sub in ("DarkAltar", "Trial", "AbyssGate", "CrimsonPortal", "Ambush"):
+        return "Danger"
+    if sub in ("Herbalist", "Lair"):
+        return "Nature"
+    return "Magic"
+
+
+class Graph:
+    """Зеркало GraphView + планировщик MapGraphRules.Plan (те же шаги и порядок кандидатов)."""
+
+    def __init__(self, cols: int, rows: int):
+        self.cols, self.rows = cols, rows
+        self.nodes: dict = {}
+        self.edges: set = set()
+
+    @property
+    def last_row(self):
+        return self.rows - 1
+
+    def ordered(self):
+        return sorted(self.nodes, key=lambda c: (c[1], c[0]))
+
+    def out_degree(self, c):
+        return sum(1 for e in self.edges if e[0] == c)
+
+    def in_degree(self, c):
+        return sum(1 for e in self.edges if e[1] == c)
+
+    def free_of_crossings(self, a, b):
+        return not any(edges_cross(a, b, x, y) for x, y in self.edges)
+
+    def can_add_adjacent(self, a, b):
+        return (a in self.nodes and b in self.nodes and b[1] == a[1] + 1 and abs(a[0] - b[0]) <= 1
+                and (a, b) not in self.edges and self.free_of_crossings(a, b))
+
+    def is_branch(self, node):
+        parents = [e[0] for e in self.edges if e[1] == node]
+        return bool(parents) and all(self.out_degree(p) >= 2 for p in parents)
+
+    def reaches_last_row(self, blocked):
+        rows = [c[1] for c in self.nodes if c[1] > 0]
+        first = min(rows) if rows else 1
+        frontier = [c for c in self.nodes if c[1] == first]
+        seen = set(frontier)
+        while frontier:
+            c = frontier.pop(0)
+            if c[1] == self.last_row:
+                return True
+            for e in sorted(self.edges):
+                if e[0] == c and not blocked(e[0], e[1]) and e[1] not in seen:
+                    seen.add(e[1])
+                    frontier.append(e[1])
+        return False
+
+
+def plan_paths(g: Graph, kind: str, valves, nxt):
+    edges, pockets, last = [], [], [None]
+    if kind not in PATH_VARIATION_ACTS:
+        return edges, pockets, None
+    combat = ("Monster", "Elite")
+
+    def edge_of(a, b):
+        for e in edges:
+            if e[1] == a and e[2] == b:
+                return e
+        return None
+
+    def add(e):
+        g.edges.add((e[1], e[2]))
+        edges.append(e)
+
+    if kind == "StarTower":
+        used = set()
+        for _ in range(portal_count(nxt(100))):
+            cand = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 2 <= g.last_row - 2 and a not in used
+                    for b in g.ordered() if b[1] == a[1] + 2 and abs(a[0] - b[0]) <= 2 and g.nodes[b] in combat and b not in used
+                    and (a, b) not in g.edges]
+            if not cand:
+                break
+            a, b = cand[nxt(len(cand))]
+            add(("Portal", a, b, None))
+            used |= {a, b}
+    pairs = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 2 <= g.last_row - 2 and not any(e[1] == a for e in edges)
+             for b in g.ordered() if b[1] == a[1] + 2 and abs(a[0] - b[0]) <= 1 and g.nodes[b] in combat
+             and not any(e[2] == b for e in edges) and (a, b) not in g.edges]
+    elites = [p for p in pairs if g.nodes[p[1]] == "Elite"]
+    pool = elites or pairs
+    if pool:
+        a, b = pool[nxt(len(pool))]
+        add(("Danger", a, b, None))
+    for _ in range(secret_count(nxt(100))):
+        cand = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 1 <= g.last_row - 1
+                for b in g.ordered() if g.can_add_adjacent(a, b)]
+        if not cand:
+            break
+        a, b = cand[nxt(len(cand))]
+        add(("Secret", a, b, None))
+
+    def nearest(row, col, ok):
+        for dc in (0, -1, 1):
+            c = (col + dc, row)
+            if c in g.nodes and g.nodes[c] != "Treasure" and ok(c):
+                return c
+        return None
+    for _ in range(pocket_count(nxt(100))):
+        cand = []
+        for r in range(3, g.last_row - 2):
+            for c in range(g.cols):
+                cell = (c, r)
+                if cell in g.nodes or any(abs(p[1] - r) <= 2 for p in pockets):
+                    continue
+                parent = nearest(r - 1, c, lambda p: g.free_of_crossings(p, cell))
+                child = nearest(r + 1, c, lambda q: g.free_of_crossings(cell, q))
+                if parent and child:
+                    cand.append((cell, parent, child))
+        if not cand:
+            break
+        cell, p, q = cand[nxt(len(cand))]
+        g.nodes[cell] = "Treasure"
+        pockets.append(cell)
+        add(("PocketIn", p, cell, None))
+        add(("PocketOut", cell, q, None))
+    rests = [c for c in g.ordered() if c[1] == g.last_row and g.nodes[c] == "Rest"]
+    if len(rests) >= 2:
+        last[0] = rests[nxt(len(rests))]
+    if kind == "ClockworkDepths":
+        switched = set()
+        for v in sorted(valves, key=lambda c: (c[1], c[0])):
+            def near(a, v=v):
+                return v[1] < a[1] <= min(v[1] + 5, g.last_row - 1) and abs(a[0] - v[0]) <= 3
+            swaps = sorted(((e[0], e[1], b) for e in g.edges
+                            if near(e[0]) and e[1][1] == e[0][1] + 1 and e[0] not in switched and edge_of(*e) is None
+                            for b in g.ordered() if g.can_add_adjacent(e[0], b)),
+                           key=lambda t: (t[0][1], t[0][0], t[1][0], t[2][0]))
+            if not swaps:
+                continue
+            a, old, new = swaps[nxt(len(swaps))]
+            add(("ValveOpen", a, new, v))
+            edges.append(("ValveClose", a, old, v))
+            switched.add(a)
+    return edges, pockets, last[0]

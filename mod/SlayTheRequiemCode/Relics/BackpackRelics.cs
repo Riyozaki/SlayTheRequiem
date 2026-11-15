@@ -68,6 +68,16 @@ public sealed class BarrowMap : RequiemRelic
     }
 }
 
+/// <summary>
+/// Факел (13 §3, M6 п. 1): Ночное зрение — Тьма курганов отступает до 4 рядов, Засады и Тайные тропы видны.
+/// Действует на весь отряд в коопе (<see cref="Acts.MapGraph.NightSight"/>).
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class Torch : RequiemRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+}
+
 /// <summary>Точильный камень: Оружейные атаки +1 урона на первом ходу боя.</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class SharpeningStone : RequiemRelic

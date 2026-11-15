@@ -632,5 +632,8 @@
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Not yet",
   "SLAYTHEREQUIEM-PACK_MULE.title": "Pack Mule",
   "SLAYTHEREQUIEM-PACK_MULE.description": "+{Burden} Burden capacity (shod: +{Shod} more). Weightless. The camp chest is also open at any shop counter. Doesn't fight. Shoe it at a camp Forge or an Armorer.",
-  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Stubborn, patient, and smarter than the last three hirelings."
+  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Stubborn, patient, and smarter than the last three hirelings.",
+  "SLAYTHEREQUIEM-TORCH.title": "Torch",
+  "SLAYTHEREQUIEM-TORCH.description": "[gold]Night sight[/gold] for the whole party: the barrow darkness recedes to 4 rows, Ambushes and secret trails show.",
+  "SLAYTHEREQUIEM-TORCH.flavor": "Pitch and rags. The dead hate it."
 }
