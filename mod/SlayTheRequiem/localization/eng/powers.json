@@ -298,5 +298,17 @@
   "SLAYTHEREQUIEM-LEY_LINE_POWER.smartDescription": "This fight is on a ley line: +3 ✦ to everyone at the start.",
   "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.title": "Abyss Spawn",
   "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.description": "Spawned by an Abyss Gate. Extra reward for the fight.",
-  "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.smartDescription": "Spawned by an Abyss Gate. Extra reward for the fight."
+  "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.smartDescription": "Spawned by an Abyss Gate. Extra reward for the fight.",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.title": "Spell Focus",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.description": "Your next {Amount} spells this turn cost 1 less ✦.",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.smartDescription": "Your next {Amount} spells this turn cost 1 less ✦.",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.title": "Dual Casting",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.description": "Your next {Amount} spells this turn are played twice.",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.smartDescription": "Your next {Amount} spells this turn are played twice.",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.title": "Concentration",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.description": "Whenever you play a spell, gain {Amount} [gold]Block[/gold].",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.smartDescription": "Whenever you play a spell, gain {Amount} [gold]Block[/gold].",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.title": "Arcane Mastery",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.description": "The first {Amount} spells you play each turn cost 1 less ✦.",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.smartDescription": "The first {Amount} spells you play each turn cost 1 less ✦."
 }

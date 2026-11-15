@@ -4,7 +4,7 @@
 > Значения `N(+M)` — база и прибавка улучшения. ⚡ — энергия, ◆ — выносливость, ✦ — мана (звёзды).
 > Текст — русская локализация без разметки, переменные `{…}` оставлены как есть.
 
-Всего карт: **271**. Латоносец — 20, Безмолвная — 16, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 104
+Всего карт: **283**. Латоносец — 20, Безмолвная — 16, Регент — 12, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 104
 
 ## Латоносец (20)
 
@@ -52,6 +52,23 @@
 | `Evasion` | Уклонение | Silent | 2(-1) |  |  | Power | Rare | Self |  |  | DodgePower 1 |  | +{DodgePower:diff()} заряд Уворота каждый ход. |
 | `VenomMastery` | Мастер ядов | Silent | 1 |  |  | Power | Rare | Self |  |  | VenomMasteryPower 1(+1) |  | В начале хода яд на оружии получает +{VenomMasteryPower:diff()} заряд. |
 
+## Регент (12)
+
+| Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `StaffStrike` | Удар посохом | Regent | 1 | 1 |  | Attack | Common | AnyEnemy | 6(+3) |  | SpellFocusPower 1 |  | Нанести {Damage:diff()} урона. Следующее заклинание в этот ход на 1 ✦ дешевле. |
+| `RuneOfWarding` | Руна защиты | Regent | 1 |  |  | Skill | Common | Self |  | 5(+2) | SpellShieldPower 3(+2) |  | Получить {Block:diff()} Блока. Получить {SpellShieldPower:diff()} Оберега. |
+| `ArcaneFocus` | Сосредоточение | Regent | 0 |  |  | Skill | Common | Self |  |  | ManaVar 1(+1), SpellFocusPower 1 |  | Получить {Mana:diff()} ✦. Следующее заклинание в этот ход на 1 ✦ дешевле. |
+| `ManaBurn` | Выжигание магии | Regent | 1 |  | 1 | Attack | Common | AnyEnemy | 6(+2) |  | StaticPower 3(+1) |  | Нанести {Damage:diff()} урона разрядом. Наложить {StaticPower:diff()} Статики. |
+| `GrimoireStudy` | Изучение гримуара | Regent | 1 |  |  | Skill | Common | Self |  |  | Cards 2(+1), ManaVar 1 |  | Взять {Cards:diff()} карты. +{Mana} ✦ за каждое взятое заклинание. |
+| `Concentration` | Концентрация | Regent | 1 |  |  | Power | Uncommon | Self |  |  | ConcentrationPower 3(+1) |  | Каждое ваше заклинание даёт {ConcentrationPower:diff()} Блока. |
+| `MagickaWell` | Родник магии | Regent | 1(-1) |  |  | Power | Uncommon | Self |  |  | InsightPower 1 |  | Прирост ✦ +{InsightPower} до конца боя. |
+| `SoulRend` | Удар по душе | Regent | 1 |  | 1 | Attack | Uncommon | AnyEnemy | 8(+3) |  |  |  | Нанести {Damage:diff()} урона магией. Если у врага Хворь — дважды. |
+| `ManaSurge` | Прилив магии | Regent | 0 |  |  | Skill | Uncommon | Self |  |  | ManaVar 3(+1) | Exhaust | Получить {Mana:diff()} ✦. Изгнание. |
+| `DualCasting` | Двойное заклинание | Regent | 1(-1) |  |  | Skill | Rare | Self |  |  | DualCastPower 1 |  | Следующее заклинание в этот ход срабатывает дважды. |
+| `ArcaneMastery` | Мастерство заклинателя | Regent | 2(-1) |  |  | Power | Rare | Self |  |  | ArcaneMasteryPower 1 |  | Первое заклинание каждого хода на 1 ✦ дешевле. |
+| `ManaStorm` | Магическая буря | Regent | 2 |  | X | Attack | Rare | AllEnemies | 4(+1) |  |  |  | Потратить все ✦. За каждый — {Damage:diff()} урона магией ВСЕМ врагам. |
+
 ## Кличи (5)
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
@@ -60,7 +77,7 @@
 | `FireBreath` | Огненный выдох | Ironclad | 1 |  |  | Attack | Uncommon | AllEnemies | 4(+2) |  | BurningPower 4(+1) |  | Нанести {Damage:diff()} урона огнём ВСЕМ врагам. Наложить {BurningPower:diff()} Горения ВСЕМ врагам. Клич: вернётся в руку через 3 хода. |
 | `FrostBreath` | Морозный выдох | Ironclad | 1 |  |  | Skill | Uncommon | AllEnemies |  |  | ChillPower 4(+2) |  | Наложить {ChillPower:diff()} Озноба ВСЕМ врагам, уже охлаждённым — вдвое. Клич: вернётся в руку через 3 хода. |
 | `StormCall` | Зов грозы | Ironclad | 2 |  |  | Attack | Rare | AllEnemies | 5(+3) |  | StaggerPower 2 |  | Нанести {Damage:diff()} урона разрядом ВСЕМ врагам. Шок: {StaggerPower:diff()} Шаткости ВСЕМ врагам. Клич: вернётся в руку через 4 хода. |
-| `SoulTear` | Разрыв души | Ironclad | 2 |  |  | Attack | Rare | AnyEnemy | 10(+4) |  |  |  | Нанести {Damage:diff()} урона. Если у цели осталось меньше 25 % ♥ — она погибает (не боссы). Клич: вернётся в руку через 5 хода. |
+| `SoulTear` | Разрыв души | Ironclad | 2 |  |  | Attack | Rare | AnyEnemy | 10(+4) |  |  |  | Нанести {Damage:diff()} урона. Если у цели осталось меньше 25 % ♥ — она погибает (не боссы). Клич: вернётся в руку через 5 ходов. |
 
 ## Заклинания (39)
 

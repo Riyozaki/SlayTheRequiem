@@ -298,5 +298,17 @@
   "SLAYTHEREQUIEM-LEY_LINE_POWER.smartDescription": "Бой на лей-линии: +3 ✦ всем в начале.",
   "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.title": "Порождение Бездны",
   "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.description": "Порождён Вратами Бездны. Дополнительная награда за бой.",
-  "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.smartDescription": "Порождён Вратами Бездны. Дополнительная награда за бой."
+  "SLAYTHEREQUIEM-ABYSS_SPAWN_POWER.smartDescription": "Порождён Вратами Бездны. Дополнительная награда за бой.",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.title": "Фокус",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.description": "Следующие заклинания в этот ход ({Amount}) на 1 ✦ дешевле.",
+  "SLAYTHEREQUIEM-SPELL_FOCUS_POWER.smartDescription": "Следующие заклинания в этот ход ({Amount}) на 1 ✦ дешевле.",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.title": "Двойное заклинание",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.description": "Следующие заклинания в этот ход ({Amount}) срабатывают дважды.",
+  "SLAYTHEREQUIEM-DUAL_CAST_POWER.smartDescription": "Следующие заклинания в этот ход ({Amount}) срабатывают дважды.",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.title": "Концентрация",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.description": "Каждое ваше заклинание даёт {Amount} [gold]Блока[/gold].",
+  "SLAYTHEREQUIEM-CONCENTRATION_POWER.smartDescription": "Каждое ваше заклинание даёт {Amount} [gold]Блока[/gold].",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.title": "Мастерство заклинателя",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.description": "Первые заклинания каждого хода ({Amount}) на 1 ✦ дешевле.",
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.smartDescription": "Первые заклинания каждого хода ({Amount}) на 1 ✦ дешевле."
 }

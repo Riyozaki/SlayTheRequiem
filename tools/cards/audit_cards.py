@@ -44,6 +44,7 @@ STAMINA_DECISIONS = {
 DOCS = {
     "Латоносец": ["16-platebearer-cards.md"],
     "Безмолвная": ["17-silent-cards.md"],
+    "Регент": ["18-regent-and-shared-cards.md"],
     "Кличи": ["18-regent-and-shared-cards.md", "04-heroes-origins.md"],
     "Заклинания": ["08-spells.md"],
     "Формы и Пути": ["06-paths-transformations.md", "18-regent-and-shared-cards.md"],
@@ -53,7 +54,7 @@ DOCS = {
     "Жетоны выбора": ["18-regent-and-shared-cards.md"],
 }
 
-HERO_POOLS = {"Латоносец": "Ironclad", "Безмолвная": "Silent"}
+HERO_POOLS = {"Латоносец": "Ironclad", "Безмолвная": "Silent", "Регент": "Regent"}
 SERVICE_GROUPS = {"Зачарование карт", "Камень Памяти", "Услуги лавки", "Жетоны выбора"}
 VANILLA_HERO_POOLS = {"Ironclad", "Silent", "Regent", "Necrobinder", "Defect"}
 

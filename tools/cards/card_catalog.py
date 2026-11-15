@@ -30,12 +30,13 @@ CLASS = re.compile(r"(?P<attrs>(?:\[[^\]]+\]\s*)*)public\s+sealed\s+class\s+(?P<
 ANY_TYPE = re.compile(r"^(?:\[[^\]]+\]\s*)*(?:public|internal|file)\s+(?:\w+\s+)*(?:class|record|struct|interface|enum)\s+\w+", re.M)
 BASE_CALL = re.compile(r":\s*base\((?P<args>[^)]*)\)")
 POOL = re.compile(r"\[Pool\(typeof\((?P<pool>\w+)\)\)\]")
-WITH = re.compile(r"\bWith(?P<what>Damage|Block|Heal|Stamina|SpellDamage|CostUpgradeBy|Keyword|Var|Power<(?P<power>\w+)>)"
+WITH = re.compile(r"\bWith(?P<what>Damage|Block|Heal|Cards|Stamina|SpellDamage|CostUpgradeBy|Keyword|Var|Power<(?P<power>\w+)>)"
                   r"\((?P<args>[^;]*?)\)\s*(?=[;\.\n])")
 
 GROUPS = [
     ("Латоносец", "Cards/Platebearer/"),
     ("Безмолвная", "Cards/Silent/"),
+    ("Регент", "Cards/Regent/"),
     ("Кличи", "Cards/Shouts.cs"),
     ("Заклинания", "Spells/"),
     ("Формы и Пути", "Transformations/"),
@@ -117,7 +118,7 @@ def parse_file(path: str):
         yield {
             "name": m.group("name"), "base": m.group("base"), "args": args,
             "pool": pool.group("pool") if pool else "", "fx": fx, "keywords": keywords, "cost_up": cost_up,
-            "star": resolve(star.group(1)) if star else "",
+            "star": resolve(star.group(1)) if star else ("X" if re.search(r"HasStarCostX\s*=>\s*true", body) else ""),
             "interfaces": re.findall(r"\bI[A-Z]\w+", header),
             "no_upgrade": bool(re.search(r"MaxUpgradeLevel\s*=>\s*0\b", body)),
             "damage_type": (re.search(r"DamageType\s*=>\s*DamageType\.(\w+)", body) or [None, ""])[1],

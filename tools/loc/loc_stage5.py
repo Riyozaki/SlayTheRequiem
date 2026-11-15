@@ -192,7 +192,12 @@ PICK_CARDS += [
 ]
 
 # ───────────── Кличи ─────────────
-SHOUT_NOTE = {"eng": "\n[gold]Shout[/gold]: returns to your hand in {turns} turns.", "rus": "\n[gold]Клич[/gold]: вернётся в руку через {turns} хода."}
+SHOUT_NOTE = {"eng": "\n[gold]Shout[/gold]: returns to your hand in {turns} turns.", "rus": "\n[gold]Клич[/gold]: вернётся в руку через {turns} {word}."}
+
+
+def _turns_ru(n: int) -> str:
+    """1 ход, 2–4 хода, 5–20 ходов."""
+    return "ход" if n % 10 == 1 and n % 100 != 11 else "хода" if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14 else "ходов"
 
 SHOUT_CARDS = [
     ("BattleCry", 4, "Battle Cry", "Apply {WeakPower:diff()} [gold]Weak[/gold] and {StaggerPower:diff()} [gold]Stagger[/gold] to ALL enemies.",
@@ -211,7 +216,7 @@ SHOUT_CARDS = [
 
 
 def _shout_cards():
-    return [(cls, et, ed + SHOUT_NOTE["eng"].format(turns=t), rt, rd + SHOUT_NOTE["rus"].format(turns=t))
+    return [(cls, et, ed + SHOUT_NOTE["eng"].format(turns=t), rt, rd + SHOUT_NOTE["rus"].format(turns=t, word=_turns_ru(t)))
             for cls, t, et, ed, rt, rd in SHOUT_CARDS]
 
 
