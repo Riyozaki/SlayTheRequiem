@@ -165,6 +165,12 @@ public sealed class BrokenPower : RequiemPower
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
         target == Owner ? EnemyRules.BrokenDamageTakenMultiplier : 1m;
 
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
+    {
+        UI.RequiemVfx.Broken(Owner);
+        return Task.CompletedTask;
+    }
+
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
         if (participants.Contains(Owner)) await PowerCmd.Remove(this);

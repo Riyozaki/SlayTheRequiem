@@ -111,5 +111,8 @@
   "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Открыто построек лагеря",
   "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.title": "Снаряжение на модели героя",
   "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.title": "Кукла героя",
-  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.desc": "В бою герой держит надетое оружие и щит (или посох) цвета их материала, а вокруг — аура класса и ступени брони. Только оформление."
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.desc": "В бою герой держит надетое оружие и щит (или посох) цвета их материала, а вокруг — аура класса и ступени брони. Только оформление.",
+  "SLAYTHEREQUIEM-COMBAT_VFX.title": "Боевые эффекты Реквиема",
+  "SLAYTHEREQUIEM-COMBAT_VFX.hover.title": "Боевые эффекты",
+  "SLAYTHEREQUIEM-COMBAT_VFX.hover.desc": "Ванильные эффекты в цветах Реквиема: вспышка стихии при ударе по типу урона (холод, огонь, разряд, яд, хворь, свет, магия, чистый), надрыв, Слом, Уворот, Кличи, призыв, откат Камня Памяти и Багровый портал. Выкл — только ванильные эффекты атак. Только оформление."
 }

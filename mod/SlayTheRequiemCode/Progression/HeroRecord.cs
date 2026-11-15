@@ -491,6 +491,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         if (card.Owner != Owner || !cardPlay.IsLastInSeries) return;
         _cardsThisTurn++;
         if (cardPlay.Resources.EnergyValue == 0) _zeroCostThisTurn++;
+        if (card is IShoutCard)
+            UI.RequiemVfx.Shout(Owner.Creature, VfxRules.ShoutOf(card.Type == CardType.Attack, card.Type == CardType.Power));
         // Клич — на полку (карта снимается со стола, но остаётся в бою; вернётся в руку через N ходов).
         if (card is RequiemCard { ShelvedByThisPlay: true } shoutCard && card is IShoutCard shout)
         {

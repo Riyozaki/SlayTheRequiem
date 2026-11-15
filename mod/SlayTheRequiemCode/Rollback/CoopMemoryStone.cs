@@ -111,7 +111,8 @@ public static class CoopMemoryStone
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
             await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
             Send(StonePhase.Go, round, 0, 0);
-            await Task.Delay(500); // дать сообщению уйти до разрыва соединения
+            // дать сообщению уйти до разрыва соединения; тем временем — трещины отката
+            await Task.WhenAll(Task.Delay(500), UI.RequiemVfx.Rewind(round));
             await NGame.Instance.ReturnToMainMenu();
             var submenu = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu();
             submenu?.StartHost(save);
@@ -182,6 +183,7 @@ public static class CoopMemoryStone
         MemoryStone.Restoring = true;
         try
         {
+            await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
             await NGame.Instance.ReturnToMainMenu();
             screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
         }

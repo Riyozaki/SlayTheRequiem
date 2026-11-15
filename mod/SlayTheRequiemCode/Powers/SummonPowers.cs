@@ -109,6 +109,7 @@ public abstract class SummonPower : RequiemPower
             await CreatureCmd.SetCurrentHp(pet, Amount);
             SummonLayout.Arrange(player);
             ShowIntent();
+            UI.RequiemVfx.Summon(pet, Kind);
         }
         catch (Exception e)
         {

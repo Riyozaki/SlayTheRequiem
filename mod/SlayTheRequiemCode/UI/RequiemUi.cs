@@ -34,18 +34,9 @@ public static class RequiemUi
     public static readonly Color Outline = new("2A1A08");
     public static readonly Color BarBack = new(0f, 0f, 0f, 0.62f);
 
-    public static Color DamageTypeColor(DamageType type) => type switch
-    {
-        DamageType.Frost => new Color("9FD8FF"),
-        DamageType.Fire => new Color("FF7A2E"),
-        DamageType.Shock => new Color("C9A8FF"),
-        DamageType.Poison => new Color("7BC043"),
-        DamageType.Blight => new Color("5E6B3A"),
-        DamageType.Light => new Color("FFE680"),
-        DamageType.Magic => new Color("B565E8"),
-        DamageType.True => new Color("E0E0E0"),
-        _ => StsColors.cream,
-    };
+    /// <summary>Цвет типа урона — общий с боевыми эффектами (<see cref="VfxRules.DamageTint"/>); физический — кремовый.</summary>
+    public static Color DamageTypeColor(DamageType type) =>
+        type == DamageType.Physical ? StsColors.cream : new Color(VfxRules.DamageTint(type));
 
     // ───── картинки ─────
     public static string UiImage(string name) => $"{MainFile.ResPath}/images/ui/{name}.png";

@@ -2614,3 +2614,71 @@ def origin_heading(relic_types: list[str]) -> str | None:
     if len(crests) == 1 and None not in crests:
         return ORIGIN_HEADING[crests.pop()]
     return None
+
+
+# ───── M7 п. 4: боевые эффекты (Core/VfxRules, UI/RequiemVfx, UI/RequiemVfxPatches) ─────
+
+VFX_DAMAGE_TINT = {
+    "Frost": "9FD8FF", "Fire": "FF7A2E", "Shock": "C9A8FF", "Poison": "7BC043",
+    "Blight": "5E6B3A", "Light": "FFE680", "Magic": "B565E8", "True": "E0E0E0",
+}
+VFX_HIT_KIND = {
+    "Fire": "FireBurst", "Frost": "FrostMist", "Shock": "SparkSpray", "Poison": "PoisonCloud",
+    "Blight": "BlightSpores", "Light": "LightStars", "Magic": "MagicMissile", "True": "TrueSlice",
+}
+VFX_HIT_THROTTLE_MS = 150
+VFX_TICK_SCALE = 0.6
+VFX_BLIGHT_FX_TINT = "8C9A4E"
+VFX_SECONDS = {"Overstrain": 0.4, "Broken": 0.6, "Dodge": 0.3, "Shout": 0.5, "Summon": 0.6,
+               "Rewind": 1.5, "PortalEnter": 1.0, "PortalPulse": 1.0}
+VFX_SHOUT_TINT = {"War": "FF8A3D", "Guard": "FFD36B", "Rally": "9FD8FF"}
+VFX_SUMMON_TINT = {
+    "FlameAtronach": "FF7A2E", "FrostAtronach": "9FD8FF", "StormAtronach": "C9A8FF",
+    "SpiritWolf": "7FE0B0", "BeastWolf": "7FE0B0", "BeastSabertooth": "7FE0B0", "BeastBear": "7FE0B0",
+    "RaisedDead": "A8C27A", "BoneThrall": "A8C27A", "AbyssGuardian": "B3122E", "SpectralKnight": "BFD8FF",
+    "LoyalGuard": "FFE680",
+}
+VFX_PORTAL_TINT = "B3122E"
+
+
+def vfx_hit(damage_type: str, powered_attack: bool, total_damage: int):
+    """(вид, цвет, масштаб) или None — как VfxRules.For."""
+    kind = VFX_HIT_KIND.get(damage_type)
+    if kind is None or (not powered_attack and total_damage <= 0):
+        return None
+    tint = VFX_BLIGHT_FX_TINT if damage_type == "Blight" else VFX_DAMAGE_TINT[damage_type]
+    return kind, tint, 1.0 if powered_attack else VFX_TICK_SCALE
+
+
+def vfx_throttled(last_ms: int, now_ms: int) -> bool:
+    return last_ms != 0 and now_ms >= last_ms and now_ms - last_ms < VFX_HIT_THROTTLE_MS
+
+
+def vfx_shout(attack: bool, power: bool) -> str:
+    return "War" if attack else "Rally" if power else "Guard"
+
+
+def vfx_portal_pulse(is_second_boss_point: bool, is_superboss: bool) -> bool:
+    return is_second_boss_point and is_superboss
+
+
+def vfx_rewind_cracks(seed: int, count: int = 7, segments: int = 4):
+    """Трещины отката — тот же LCG, что в VfxRules.RewindCracks (точки в долях полуэкрана)."""
+    import math
+    state = seed & 0xFFFFFFFF
+
+    def nxt():
+        nonlocal state
+        state = (state * 1664525 + 1013904223) & 0xFFFFFFFF
+        return (state >> 8) / 16777216.0
+
+    cracks = []
+    for i in range(count):
+        angle = (i + 0.3 + 0.4 * nxt()) / count * math.tau
+        pts = [(0.04 * math.cos(angle), 0.04 * math.sin(angle))]
+        for s in range(1, segments + 1):
+            radius = 0.04 + 0.96 * s / segments
+            a = angle + (nxt() - 0.5) * 0.35
+            pts.append((max(-1.0, min(1.0, radius * math.cos(a))), max(-1.0, min(1.0, radius * math.sin(a)))))
+        cracks.append(pts)
+    return cracks

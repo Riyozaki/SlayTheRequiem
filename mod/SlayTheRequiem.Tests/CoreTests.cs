@@ -1640,3 +1640,72 @@ public class M7OriginLookTests
     [Fact]
     public void HeadingEmpty() => Assert.Null(OriginLookRules.HeadingKey([]));
 }
+
+public class M7VfxLookTests
+{
+    [Theory]
+    [InlineData(DamageType.Fire, HitFxKind.FireBurst)]
+    [InlineData(DamageType.Frost, HitFxKind.FrostMist)]
+    [InlineData(DamageType.Shock, HitFxKind.SparkSpray)]
+    [InlineData(DamageType.Poison, HitFxKind.PoisonCloud)]
+    [InlineData(DamageType.Blight, HitFxKind.BlightSpores)]
+    [InlineData(DamageType.Light, HitFxKind.LightStars)]
+    [InlineData(DamageType.Magic, HitFxKind.MagicMissile)]
+    [InlineData(DamageType.True, HitFxKind.TrueSlice)]
+    public void EveryElementHasItsOwnHitFx(DamageType type, HitFxKind kind)
+    {
+        Assert.Equal(new HitFx(kind, type == DamageType.Blight ? "8C9A4E" : VfxRules.DamageTint(type), 1f), VfxRules.For(type, true, 0));
+        Assert.Equal(VfxRules.TickScale, VfxRules.For(type, false, 3)!.Value.Scale);
+        Assert.Null(VfxRules.For(type, false, 0));
+    }
+
+    [Fact]
+    public void PhysicalKeepsVanillaFx() => Assert.Null(VfxRules.For(DamageType.Physical, true, 12));
+
+    [Fact]
+    public void EightDistinctEffects() =>
+        Assert.Equal(8, Enum.GetValues<DamageType>().Select(VfxRules.KindOf).Where(k => k != HitFxKind.None).Distinct().Count());
+
+    [Theory]
+    [InlineData(0ul, 10ul, false)]
+    [InlineData(1000ul, 1149ul, true)]
+    [InlineData(1000ul, 1150ul, false)]
+    [InlineData(1000ul, 900ul, false)]
+    public void Throttle(ulong last, ulong now, bool expected) => Assert.Equal(expected, VfxRules.Throttled(last, now));
+
+    [Fact]
+    public void ShoutVariants()
+    {
+        Assert.Equal(ShoutFx.War, VfxRules.ShoutOf(true, false));
+        Assert.Equal(ShoutFx.Rally, VfxRules.ShoutOf(false, true));
+        Assert.Equal(ShoutFx.Guard, VfxRules.ShoutOf(false, false));
+        Assert.Equal(3, Enum.GetValues<ShoutFx>().Select(VfxRules.ShoutTint).Distinct().Count());
+    }
+
+    [Fact]
+    public void EverySummonHasAColour() =>
+        Assert.All(Enum.GetValues<SummonKind>(), k => Assert.Matches("^[0-9A-F]{6}$", VfxRules.SummonTint(k)));
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    public void PortalPulse(bool second, bool superboss, bool expected) => Assert.Equal(expected, VfxRules.PortalPulse(second, superboss));
+
+    [Fact]
+    public void RewindCracksRadiateAndMatchSim()
+    {
+        var cracks = VfxRules.RewindCracks(12345);
+        Assert.Equal(VfxRules.RewindCrackCount, cracks.Count);
+        foreach (var crack in cracks)
+        {
+            Assert.Equal(VfxRules.RewindCrackSegments + 1, crack.Count);
+            var radii = crack.Select(p => MathF.Sqrt(p.X * p.X + p.Y * p.Y)).ToList();
+            for (var i = 1; i < radii.Count; i++) Assert.True(radii[i] > radii[i - 1]);
+        }
+        // те же точки, что у зеркала tools/sim (vfx_rewind_cracks(12345))
+        Assert.Equal(0.0384795, cracks[0][0].X, 3);
+        Assert.Equal(0.9130420, cracks[0][4].X, 3);
+        Assert.Equal(-0.4714294, cracks[6][4].Y, 3);
+    }
+}

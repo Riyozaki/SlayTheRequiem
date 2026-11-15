@@ -281,6 +281,7 @@ public static class MemoryStone
         Restoring = true;
         try
         {
+            await UI.RequiemVfx.Rewind(save.GetHashCode());
             await NGame.Instance.Transition.FadeOut();
             RunManager.Instance.CleanUp();
             // Штатный путь «Продолжить» (NMainMenu.OnContinueButtonPressedAsync).

@@ -1,5 +1,6 @@
 """python3 -m unittest discover -s tools/sim"""
 import os
+import sys
 import unittest
 
 import requiem_rules as r
@@ -1456,6 +1457,90 @@ class M7OriginLooks(unittest.TestCase):
         from loc_m7origins import ORIGIN_TIPS
         for lang in ("eng", "rus"):
             self.assertEqual(set(ORIGIN_TIPS[lang]), set(r.ORIGIN_HEADING.values()) | {"ORIGIN_PICK.background"})
+
+
+class M7VfxLooks(unittest.TestCase):
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def src(self, *parts):
+        return open(os.path.join(self.CODE, *parts), encoding="utf-8").read()
+
+    def test_hit_rules(self):
+        self.assertIsNone(r.vfx_hit("Physical", True, 10))
+        self.assertEqual(r.vfx_hit("Fire", True, 0), ("FireBurst", "FF7A2E", 1.0))  # атака в блок — эффект есть
+        self.assertIsNone(r.vfx_hit("Fire", False, 0))  # тик в ноль — нет
+        self.assertEqual(r.vfx_hit("Poison", False, 3), ("PoisonCloud", "7BC043", 0.6))
+        self.assertEqual(r.vfx_hit("Blight", True, 5)[1], "8C9A4E")  # споры светлее числа урона
+        self.assertEqual(len({r.vfx_hit(t, True, 1)[0] for t in r.VFX_HIT_KIND}), 8)  # 8 разных эффектов
+        self.assertFalse(r.vfx_throttled(0, 50))
+        self.assertTrue(r.vfx_throttled(1000, 1149))
+        self.assertFalse(r.vfx_throttled(1000, 1150))
+        self.assertEqual((r.vfx_shout(True, False), r.vfx_shout(False, True), r.vfx_shout(False, False)), ("War", "Rally", "Guard"))
+        self.assertTrue(r.vfx_portal_pulse(True, True))
+        self.assertFalse(r.vfx_portal_pulse(True, False))
+        self.assertFalse(r.vfx_portal_pulse(False, True))
+
+    def test_rewind_cracks(self):
+        import math
+        cracks = r.vfx_rewind_cracks(12345)
+        self.assertEqual(len(cracks), 7)
+        for crack in cracks:
+            self.assertEqual(len(crack), 5)
+            radii = [math.hypot(x, y) for x, y in crack]
+            self.assertTrue(all(b > a for a, b in zip(radii, radii[1:])))  # от центра к краю
+            self.assertTrue(all(-1 <= c <= 1 for p in crack for c in p))
+        self.assertEqual(cracks, r.vfx_rewind_cracks(12345))
+        self.assertNotEqual(cracks, r.vfx_rewind_cracks(54321))
+        # трещины расходятся во все стороны: углы первых точек по возрастанию в пределах круга
+        angles = [math.atan2(c[0][1], c[0][0]) % math.tau for c in cracks]
+        self.assertEqual(angles, sorted(angles))
+
+    def test_matches_csharp(self):
+        import re
+        src = self.src("Core", "VfxRules.cs")
+        for t, hexv in r.VFX_DAMAGE_TINT.items():
+            self.assertIn(f'DamageType.{t} => "{hexv}"', src)
+        for t, kind in r.VFX_HIT_KIND.items():
+            self.assertIn(f"DamageType.{t} => HitFxKind.{kind}", src)
+        self.assertIn(f"HitThrottleMs = {r.VFX_HIT_THROTTLE_MS};", src)
+        self.assertIn(f"TickScale = {r.VFX_TICK_SCALE}f;", src)
+        self.assertIn(f'"{r.VFX_BLIGHT_FX_TINT}"', src)
+        for name, sec in r.VFX_SECONDS.items():
+            self.assertIn(f"{name}Seconds = {sec}f;", src)
+        for fx, hexv in r.VFX_SHOUT_TINT.items():
+            self.assertIn(f'ShoutFx.{fx} => "{hexv}"' if fx != "Guard" else f'_ => "{hexv}"', src)
+        kinds = re.findall(r"^\s+(\w+),", self.src("Core", "SummonRules.cs").split("enum SummonKind")[1].split("}")[0], re.M)
+        self.assertEqual(set(kinds), set(r.VFX_SUMMON_TINT))
+        for kind, hexv in r.VFX_SUMMON_TINT.items():
+            line = next((l for l in src.splitlines() if f"SummonKind.{kind}" in l), None)
+            self.assertEqual(hexv, "FFE680" if line is None else re.search(r'"([0-9A-F]{6})"', line).group(1), kind)
+        self.assertIn(f'PortalTint = "{r.VFX_PORTAL_TINT}"', src)
+        self.assertIn("state * 1664525u + 1013904223u", src)
+        # цвет числа урона берётся из тех же правил
+        self.assertIn("VfxRules.DamageTint(type)", self.src("UI", "RequiemUi.cs"))
+
+    def test_wiring(self):
+        """Эффекты подключены к событиям, настройка и надпись «Уворот!» есть."""
+        self.assertIn("RequiemVfx.Overstrain(player.Creature)", self.src("Rules", "RequiemCombatRules.cs"))
+        self.assertIn("RequiemVfx.Quiet()", self.src("Rules", "RequiemCombatRules.cs"))
+        self.assertIn("RequiemVfx.Broken(Owner)", self.src("Powers", "EnemyPowers.cs"))
+        self.assertIn("RequiemVfx.Dodge(Owner)", self.src("Powers", "ArmorPowers.cs"))
+        self.assertIn("RequiemVfx.Summon(pet, Kind)", self.src("Powers", "SummonPowers.cs"))
+        self.assertIn("RequiemVfx.Shout(", self.src("Progression", "HeroRecord.cs"))
+        self.assertIn("RequiemVfx.Rewind(", self.src("Rollback", "MemoryStone.cs"))
+        self.assertEqual(self.src("Rollback", "CoopMemoryStone.cs").count("RequiemVfx.Rewind("), 2)
+        patches = self.src("UI", "RequiemVfxPatches.cs")
+        for target in ("CombatHistory), nameof(CombatHistory.DamageReceived)", "NDamageBlockedVfx), nameof(NDamageBlockedVfx._Ready)",
+                       "NBossMapPoint), nameof(NBossMapPoint._Ready)", "NCombatRoom), nameof(NCombatRoom._Ready)"):
+            self.assertIn(target, patches)
+        self.assertIn("public static bool CombatVfx { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
+        from loc_m7vfx import VFX_TIPS
+        self.assertEqual(VFX_TIPS["rus"]["VFX.dodge"], "Уворот!")
+        for lang in ("eng", "rus"):
+            path = os.path.join(self.ROOT, "mod", "SlayTheRequiem", "localization", lang, "settings_ui.json")
+            self.assertIn("SLAYTHEREQUIEM-COMBAT_VFX.title", open(path, encoding="utf-8").read())
 
 
 if __name__ == "__main__":

@@ -196,6 +196,11 @@ UI_SETTINGS = {
         "SHOW_PAPER_DOLL.hover.title": "Paper doll",
         "SHOW_PAPER_DOLL.hover.desc": "In combat the hero holds the equipped weapon and shield (or staff), coloured by material, "
                                       "and glows with an aura of the armour class and tier. Cosmetic only.",
+        "COMBAT_VFX.title": "Requiem combat effects",
+        "COMBAT_VFX.hover.title": "Combat effects",
+        "COMBAT_VFX.hover.desc": "Recoloured vanilla effects: an elemental burst on hits by damage type (frost, fire, shock, poison, "
+                                 "blight, light, magic, true), Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind and the Crimson portal. "
+                                 "Off — only the vanilla attack effects. Cosmetic only.",
     },
     "rus": {
         "SHOW_VANILLA_ONLY_HEROES.title": "Некробиндер и Дефект как герои",
@@ -211,5 +216,10 @@ UI_SETTINGS = {
         "SHOW_PAPER_DOLL.hover.title": "Кукла героя",
         "SHOW_PAPER_DOLL.hover.desc": "В бою герой держит надетое оружие и щит (или посох) цвета их материала, а вокруг — аура "
                                       "класса и ступени брони. Только оформление.",
+        "COMBAT_VFX.title": "Боевые эффекты Реквиема",
+        "COMBAT_VFX.hover.title": "Боевые эффекты",
+        "COMBAT_VFX.hover.desc": "Ванильные эффекты в цветах Реквиема: вспышка стихии при ударе по типу урона (холод, огонь, "
+                                 "разряд, яд, хворь, свет, магия, чистый), надрыв, Слом, Уворот, Кличи, призыв, откат Камня Памяти и Багровый портал. "
+                                 "Выкл — только ванильные эффекты атак. Только оформление.",
     },
 }
