@@ -39,9 +39,28 @@ internal class RequiemConfig : SimpleModConfig
     /// </summary>
     public static BackgroundChoice Background { get; set; } = BackgroundChoice.Random;
 
-    /// <summary>«Короткий забег»: акты 1 → 3 → 5 (docs/design/13 §1). Пока не используется кодом.</summary>
+    /// <summary>
+    /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
+    /// Меняется до начала забега; в коопе должна совпадать у всех.
+    /// </summary>
     [ConfigSection("RunSection")]
+    public static bool FiveActs { get; set; } = true;
+
+    /// <summary>«Короткий забег»: акты 1 → 3 → 5 — Подножие, Улей, Слава с оверлеями мода (docs/design/13 §2).</summary>
     public static bool ShortRun { get; set; } = false;
+
+    /// <summary>Уровень «Реквием» (docs/design/11 §7): −1 — по Возвышению (Возвышение N → уровень N + 1), 0–10 — свой.</summary>
+    [ConfigSlider(-1, 10, 1)]
+    public static int RequiemLevelSetting { get; set; } = -1;
+
+    /// <summary>
+    /// Супербоссы Багрового портала (docs/design/11 §6): «Выкл», «На выбор» (после босса акта — вопрос, войти ли в портал),
+    /// «Всегда». На «Реквиеме 10» портал обязателен.
+    /// </summary>
+    public static SuperbossMode Superbosses { get; set; } = SuperbossMode.Optional;
+
+    /// <summary>Ширина карты 9 в новых актах (docs/design/13 §4). Выкл — ванильные 7 колонок.</summary>
+    public static bool WideMaps { get; set; } = true;
 
     /// <summary>Лавки Реквиема (docs/design/14): вид лавки на узле, свои витрины, доверие, продажа, золото ×1.3.</summary>
     public static bool ShopVariety { get; set; } = true;
@@ -62,9 +81,16 @@ internal class RequiemConfig : SimpleModConfig
     [ConfigSection("DeathSection")]
     public static bool EnableMemoryStone { get; set; } = true;
 
-    /// <summary>Свечи Реквиема за забег: −1 — по уровню (Возвышения, пока нет уровней «Реквием»), 0 — классический рогалик.</summary>
+    /// <summary>Свечи Реквиема за забег: −1 — по уровню «Реквием», 0 — классический рогалик.</summary>
     [ConfigSlider(-1, 9, 1)]
     public static int MemoryStoneCandles { get; set; } = -1;
+}
+
+public enum SuperbossMode
+{
+    Off,
+    Optional,
+    Always,
 }
 
 public enum PlatebearerOriginChoice

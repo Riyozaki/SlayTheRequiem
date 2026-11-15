@@ -477,5 +477,12 @@
   "SLAYTHEREQUIEM-MEDIUM_ESSENCE.flavor": "",
   "SLAYTHEREQUIEM-REBORN_ESSENCE.title": "Сущность: Перерождённый",
   "SLAYTHEREQUIEM-REBORN_ESSENCE.description": "Без бонуса. Единожды: новая предыстория и сброс очков характеристик (распределить заново в лагере). Путь Героя.",
-  "SLAYTHEREQUIEM-REBORN_ESSENCE.flavor": ""
+  "SLAYTHEREQUIEM-REBORN_ESSENCE.flavor": "",
+  "SLAYTHEREQUIEM-ACT_LEDGER.title": "Дорожная карта",
+  "SLAYTHEREQUIEM-ACT_LEDGER.description": "Помнит акты забега. Побеждено супербоссов: {Superbosses}. Когтистых ключей: {Keys}. Тепло: {Warmth} боёв. Вентили закрыты: {Relief} боёв.",
+  "SLAYTHEREQUIEM-ACT_LEDGER.flavor": "Отмеченные узлы — Врата, склепы, вентили и лей-линии.",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalHeader": "Багровый портал",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalBody": "Там, где пал босс, раскрылся багровый разлом. Войти к супербоссу акта (артефакт, чёрный Камень душ, Свеча — раз за забег)?",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalYes": "Войти",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalNo": "Идти дальше"
 }

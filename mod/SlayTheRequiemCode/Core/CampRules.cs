@@ -1,7 +1,7 @@
 namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 
 /// <summary>Действия лагеря (docs/design/10 §1). Other — чужие действия (ванильные реликвии, другие моды).</summary>
-public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other }
+public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm }
 
 /// <summary>
 /// Лагерь: очки лагеря, лечение, Усталость похода, Медитация (docs/design/10). Чистые функции — зеркало в tools/sim.
@@ -30,6 +30,7 @@ public static class CampRules
         CampAction.Chest => 0,
         CampAction.Meditate => 1,
         CampAction.Train => 0,
+        CampAction.Warm => 0,
         _ => 2,
     };
 

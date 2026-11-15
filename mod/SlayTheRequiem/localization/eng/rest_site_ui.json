@@ -44,5 +44,8 @@
   "SLAYTHEREQUIEM_BEAST_PROMPT": "Choose a branch node",
   "SLAYTHEREQUIEM_PATH_PROMPT": "Choose your Path",
   "SLAYTHEREQUIEM_ELEMENT_PROMPT": "Choose your element",
-  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Choose an enchantment"
+  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Choose an enchantment",
+  "OPTION_SLAYTHEREQUIEM_WARM.name": "Warm Up",
+  "OPTION_SLAYTHEREQUIEM_WARM.description": "No [gold]Chill[/gold] from the Frost for the next {Fights} fights. Free.",
+  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "You are already warm."
 }

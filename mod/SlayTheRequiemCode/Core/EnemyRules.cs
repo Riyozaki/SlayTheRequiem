@@ -76,21 +76,6 @@ public static class EnemyRules
 
     /// <summary>Множитель ♥ ванильных врагов (компенсация новых источников урона), по умолчанию +10 %.</summary>
     public static int ScaledMaxHp(int maxHp, decimal multiplier) => Math.Max(1, (int)Math.Round(maxHp * multiplier, MidpointRounding.AwayFromZero));
-}
-
-/// <summary>Шаткость против Стойкости.</summary>
-public static class StaggerRules
-{
-    public readonly record struct Result(bool Triggered, int RemainingStagger, int NewThreshold);
-
-    /// <summary>Накопить шаткость. При достижении порога — срабатывание, шаткость в 0, порог ×1.5.</summary>
-    public static Result Accumulate(int stagger, int threshold)
-    {
-        if (threshold <= 0) return new Result(false, stagger, threshold);
-        return stagger >= threshold
-            ? new Result(true, 0, EnemyRules.RaiseThreshold(threshold))
-            : new Result(false, stagger, threshold);
-    }
 
     // ───── аффиксы (docs/design/11 §2) ─────
 
@@ -106,20 +91,48 @@ public static class StaggerRules
     /// <summary>Свита элиты (разбойники Атаманши, мелочь в элитных боях) — ниже этого ♥ аффиксов не получает.</summary>
     public const int EliteMinionHp = 40;
 
+    // аффиксы этапа 7
+    public const int BannerDamage = 2;
+    public const int AbsorberStacks = 1;
+    /// <summary>Неистовый: ниже этой доли ♥ (в процентах) — +1 удар в каждой атаке.</summary>
+    public const int FrenzyHpPercent = 50;
+    /// <summary>Призрачный (аффикс): физический урон не от заклинаний −50 % (у «Призрачного Великана» — −75 %).</summary>
+    public const int GhostlyAffixReduction = 50;
+    public const int AvengerDamage = 6;
+
     /// <summary>
-    /// Сколько аффиксов получает враг: элита — 1 (свита элиты с ♥ &lt; <see cref="EliteMinionHp"/> — 0),
-    /// обычный с акта 2 — 0/1 (бросок 0..99), босс — 0.
+    /// Сколько аффиксов получает враг (docs/design/11 §2): элита — 1, на «Реквиеме» 7+ — 2–3 (бросок &lt; 50 → 3),
+    /// плюс <paramref name="eliteBonus"/> (Слава в пяти актах: +1); свита элиты с ♥ &lt; <see cref="EliteMinionHp"/> — 0;
+    /// обычный с акта 2 — 0/1 (бросок 0..99); босс — 0.
     /// </summary>
-    public static int AffixCount(EnemyRank rank, int actIndex, int roll, int maxHp = int.MaxValue) => rank switch
+    public static int AffixCount(EnemyRank rank, int actIndex, int roll, int maxHp = int.MaxValue, int requiemLevel = 1, int eliteBonus = 0) => rank switch
     {
         EnemyRank.Elite when maxHp < EliteMinionHp => 0,
-        EnemyRank.Elite => 1,
+        EnemyRank.Elite => Math.Min(MaxAffixes, RequiemLevelRules.EliteAffixBase(requiemLevel, roll) + Math.Max(0, eliteBonus)),
         EnemyRank.Normal when actIndex >= 1 && roll < NormalAffixChance => 1,
         _ => 0,
     };
+
+    /// <summary>Больше аффиксов на одном враге не бывает (всего их 11 видов, повторов нет).</summary>
+    public const int MaxAffixes = 4;
 }
 
-/// <summary>Аффиксы, сделанные на этапах 1–3 (остальные — этап 7).</summary>
+/// <summary>Шаткость против Стойкости.</summary>
+public static class StaggerRules
+{
+    public readonly record struct Result(bool Triggered, int RemainingStagger, int NewThreshold);
+
+    /// <summary>Накопить шаткость. При достижении порога — срабатывание, шаткость в 0, порог ×1.5.</summary>
+    public static Result Accumulate(int stagger, int threshold)
+    {
+        if (threshold <= 0) return new Result(false, stagger, threshold);
+        return stagger >= threshold
+            ? new Result(true, 0, EnemyRules.RaiseThreshold(threshold))
+            : new Result(false, stagger, threshold);
+    }
+}
+
+/// <summary>Все 11 аффиксов (docs/design/11 §2; огонь/лёд/гроза — три вида одного «стихийного»).</summary>
 public enum EnemyAffix
 {
     Hardened,
@@ -130,4 +143,36 @@ public enum EnemyAffix
     ManaEater,
     Vampiric,
     PoisonedBlade,
+    Bannerman,
+    Absorber,
+    Frenzied,
+    Ghostly,
+    Avenger,
+}
+
+public static class AffixRules
+{
+    /// <summary>
+    /// Выбрать <paramref name="count"/> разных аффиксов по броскам (каждый бросок — индекс среди ещё не выбранных).
+    /// Стихийные аффиксы взаимоисключающие: огненный враг не станет ещё и ледяным.
+    /// </summary>
+    public static List<EnemyAffix> Pick(int count, IEnumerable<int> rolls)
+    {
+        var pool = Enum.GetValues<EnemyAffix>().ToList();
+        var result = new List<EnemyAffix>();
+        using var roll = rolls.GetEnumerator();
+        while (result.Count < count && pool.Count > 0 && roll.MoveNext())
+        {
+            var affix = pool[((roll.Current % pool.Count) + pool.Count) % pool.Count];
+            result.Add(affix);
+            pool.Remove(affix);
+            if (IsElemental(affix)) pool.RemoveAll(IsElemental);
+        }
+        return result;
+    }
+
+    public static bool IsElemental(EnemyAffix affix) => affix is EnemyAffix.Fiery or EnemyAffix.Icy or EnemyAffix.Stormy;
+
+    /// <summary>Неистовый: ♥ ниже порога.</summary>
+    public static bool IsFrenzied(int hp, int maxHp) => maxHp > 0 && hp * 100 < maxHp * EnemyRules.FrenzyHpPercent;
 }

@@ -121,7 +121,7 @@ public sealed class FaithSigil : RequiemRelic, IWeightless
         if (!IsMutable || Owner == null) return;
         if (DynamicVars.TryGetValue("Piety", out var p)) p.BaseValue = (int)Faith.Effective(Owner);
         if (DynamicVars.TryGetValue("Recorded", out var r)) r.BaseValue = _piety;
-        if (DynamicVars.TryGetValue("Cost", out var c)) c.BaseValue = PietyRules.RedemptionCost(Owner.RunState.CurrentActIndex);
+        if (DynamicVars.TryGetValue("Cost", out var c)) c.BaseValue = PietyRules.RedemptionCost(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(Owner.RunState));
         InvokeDisplayAmountChanged();
     }
 
@@ -144,7 +144,7 @@ public sealed class FaithSigil : RequiemRelic, IWeightless
         var run = Owner.RunState;
         if (run.Players.FirstOrDefault() != Owner) return currentEvent;
         var roll = (int)(ShopRules.Fnv1a((run.Rng.StringSeed ?? string.Empty) + "|pantheon", run.TotalFloor * 17 + run.CurrentActIndex) % 100u);
-        EventModel? pantheon = PantheonRules.UnknownRoomRoll(run.CurrentActIndex, roll) switch
+        EventModel? pantheon = PantheonRules.UnknownRoomRoll(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(run), roll) switch
         {
             1 => ModelDb.Event<ShrineEvent>(),
             2 => ModelDb.Event<DarkShrineEvent>(),

@@ -44,5 +44,8 @@
   "SLAYTHEREQUIEM_BEAST_PROMPT": "Выберите узел ветки",
   "SLAYTHEREQUIEM_PATH_PROMPT": "Выберите Путь",
   "SLAYTHEREQUIEM_ELEMENT_PROMPT": "Выберите стихию",
-  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Выберите чары"
+  "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Выберите чары",
+  "OPTION_SLAYTHEREQUIEM_WARM.name": "Отогреться",
+  "OPTION_SLAYTHEREQUIEM_WARM.description": "Следующие {Fights} боя Стужа не накладывает [gold]Озноб[/gold]. Бесплатно.",
+  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "Вы уже согрелись."
 }

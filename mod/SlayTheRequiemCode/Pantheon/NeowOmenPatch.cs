@@ -50,7 +50,7 @@ public static class NeowOmenPatch
 
     private static Task ShowOmens(Neow neow, Player player)
     {
-        var count = OmenRules.OmenOfferCount(player.RunState.AscensionLevel);
+        var count = OmenRules.OmenOfferCount(Acts.RequiemLevel.Of(player.RunState));
         var picks = OmenRules.PickDistinct(OmenRules.OmenCount, count, n => n <= 0 ? 0 : neow.Rng.NextInt(n));
         ShowPage(neow, player, picks, 0);
         return Task.CompletedTask;

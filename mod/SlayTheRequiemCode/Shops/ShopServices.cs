@@ -146,7 +146,7 @@ public static class ShopServices
         if (ledger == null || !MerchantLedger.Active(player)) return list;
         var trust = ledger.CurrentTrust;
         var gold = player.Gold;
-        var act = player.RunState.CurrentActIndex;
+        var act = Acts.ActKinds.Tier(player.RunState);
         int Price(int basePrice) => ShopRules.ApplyTrust(basePrice, trust);
 
         void Paid<T>(int price, int amount, Func<Task> run) where T : CounterCard
@@ -257,7 +257,7 @@ public static class ShopServices
     private static async Task OrderMenu(Player player, MerchantLedger ledger)
     {
         var shop = ledger.CurrentShop;
-        var act = player.RunState.CurrentActIndex;
+        var act = Acts.ActKinds.Tier(player.RunState);
         var options = new List<Option>();
         foreach (var category in ShopRules.OrderOptions(shop))
         {

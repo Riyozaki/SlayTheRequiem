@@ -133,7 +133,7 @@ public sealed class ShrineEvent : PantheonEvent
         }
 
         // Искупление.
-        var cost = PietyRules.RedemptionCost(player.RunState.CurrentActIndex);
+        var cost = PietyRules.RedemptionCost(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(player.RunState));
         void CostVar(LocString s) => s.Add("Cost", cost);
         if (Faith.Recorded(player) != Piety.Righteous)
         {
@@ -146,7 +146,7 @@ public sealed class ShrineEvent : PantheonEvent
         AddGarment(options, CelestialBlessing.Robes[(int)god], PantheonRules.RobePrice, BuyRobe);
 
         // Ограбление.
-        var loot = PietyRules.RobberyGold(player.RunState.CurrentActIndex);
+        var loot = PietyRules.RobberyGold(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(player.RunState));
         options.Add(Choice(Rob, "ROB", s => s.Add("Gold", loot)));
         options.Add(Choice(Leave, "LEAVE"));
         return options;
@@ -176,7 +176,7 @@ public sealed class ShrineEvent : PantheonEvent
     private async Task Redeem()
     {
         var player = Owner!;
-        var cost = PietyRules.RedemptionCost(player.RunState.CurrentActIndex);
+        var cost = PietyRules.RedemptionCost(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(player.RunState));
         if (player.Gold < cost || !Faith.CanRedeem(player))
         {
             Refresh("INITIAL");
@@ -208,7 +208,7 @@ public sealed class ShrineEvent : PantheonEvent
     private async Task Rob()
     {
         var player = Owner!;
-        await PlayerCmd.GainGold(PietyRules.RobberyGold(player.RunState.CurrentActIndex), player);
+        await PlayerCmd.GainGold(PietyRules.RobberyGold(global::SlayTheRequiem.SlayTheRequiemCode.Acts.ActKinds.Tier(player.RunState)), player);
         Faith.Sin(player);
         if (CelestialBlessing.Of(player) is { } blessing) await blessing.SyncMaxHp();
         Finish("ROBBED");

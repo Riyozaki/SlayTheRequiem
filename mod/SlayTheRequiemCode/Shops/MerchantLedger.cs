@@ -139,7 +139,7 @@ public sealed class MerchantLedger : RequiemRelic
         }
         var hash = ShopRules.Fnv1a(runState.Rng.StringSeed ?? string.Empty, floor * 31 + runState.CurrentActIndex);
         ShopType? previous = _previousShop >= 0 ? (ShopType)_previousShop : null;
-        var shop = ShopRules.RollShopType(hash, runState.CurrentActIndex, _shopsThisAct, previous);
+        var shop = ShopRules.RollShopType(hash, Acts.ActKinds.Tier(runState), _shopsThisAct, previous);
         _currentFloor = floor;
         _refillsUsed = 0;
         // Заказ выполняется в первой следующей лавке того же вида.

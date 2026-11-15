@@ -85,10 +85,13 @@ public sealed class TombGuardian : CustomMonsterModel
     }
 }
 
-/// <summary>Энкаунтер элиты: акт 2 (в ванильной раскладке — Улей; в пяти актах Реквиема — 2а «Курганы»).</summary>
+/// <summary>
+/// Энкаунтер элиты акта 2а «Ледяные Курганы» (этап 7: перенесён из Улья). Курганы перечисляют его сами
+/// (<c>FrozenBarrows.OwnElites</c>); в трёх ванильных актах (пять актов выключены) он остаётся в Улье.
+/// </summary>
 public sealed class TombGuardianElite() : CustomEncounterModel(RoomType.Elite)
 {
-    public override bool IsValidForAct(ActModel act) => act is Hive;
+    public override bool IsValidForAct(ActModel act) => act is Hive && !Config.RequiemConfig.FiveActs;
 
     public override IEnumerable<MonsterModel> AllPossibleMonsters => [ModelDb.Monster<TombGuardian>()];
 

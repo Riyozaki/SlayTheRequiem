@@ -120,7 +120,7 @@ public static class ShopRelicsPatch
         var list = Relics(__instance);
         try
         {
-            var act = player.RunState.CurrentActIndex;
+            var act = Acts.ActKinds.Tier(player.RunState);
             var (min, max) = ShopRules.EquipmentTiers(shop.Value, act);
             var taken = new HashSet<Type>();
             var order = ShopTypePatch.OrderFor(player);
@@ -197,7 +197,7 @@ public static class HerbalistPotionsPatch
         var list = Potions(__instance);
         try
         {
-            var tier = ShopRules.BrewTier(player.RunState.CurrentActIndex);
+            var tier = ShopRules.BrewTier(Acts.ActKinds.Tier(player.RunState));
             var order = ShopTypePatch.OrderFor(player);
             var orderedPotion = order == OrderCategory.Potion;
             var orderedPoison = order == OrderCategory.Poison;
@@ -240,7 +240,7 @@ public static class EquipmentRestockPatch
         if (player == null || shop == null) return true;
         try
         {
-            var (min, max) = ShopRules.EquipmentTiers(shop.Value, player.RunState.CurrentActIndex);
+            var (min, max) = ShopRules.EquipmentTiers(shop.Value, Acts.ActKinds.Tier(player.RunState));
             var taken = new HashSet<Type> { bought.GetType() };
             foreach (var entry in inventory?.RelicEntries ?? [])
                 if (entry.Model != null) taken.Add(entry.Model.GetType());

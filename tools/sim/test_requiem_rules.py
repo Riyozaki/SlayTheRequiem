@@ -551,3 +551,68 @@ class Stage6(unittest.TestCase):
         self.assertEqual(r.run_score(1000, 0), 1000)
         self.assertEqual(r.run_score(1000, 2), 700)
         self.assertEqual(r.run_score(1000, 9), 0)
+
+
+class Stage7(unittest.TestCase):
+    def test_levels(self):
+        self.assertEqual(r.resolve_level(-1, 0), 1)
+        self.assertEqual(r.resolve_level(-1, 20), 10)
+        self.assertEqual(r.resolve_level(0, 9), 0)
+        self.assertEqual(r.level_damage_taken(0), 0.75)
+        self.assertEqual(r.level_damage_taken(7), 1.25)
+        self.assertEqual(r.level_damage_dealt(10), 0.8)
+        self.assertEqual(r.level_enemy_hp(0), 0.75)
+        self.assertFalse(r.candles_allowed(10))
+        self.assertEqual(r.candles_for(10), 0)
+
+    def test_elite_affixes(self):
+        self.assertEqual(r.affix_count("elite", 0, 99, 72), 1)
+        self.assertEqual(r.affix_count("elite", 0, 10, 72, requiem_level=7), 3)
+        self.assertEqual(r.affix_count("elite", 0, 60, 72, requiem_level=7), 2)
+        self.assertEqual(r.affix_count("elite", 4, 10, 72, requiem_level=7, elite_bonus=1), 4)
+        self.assertEqual(r.affix_count("elite", 4, 10, 30, requiem_level=10, elite_bonus=1), 0)
+        picked = r.pick_affixes(3, [1, 1, 1])
+        self.assertEqual(picked[0], "Fiery")
+        self.assertEqual(len([a for a in picked if a in r.ELEMENTAL_AFFIXES]), 1)
+        self.assertEqual(len(set(picked)), 3)
+        self.assertTrue(r.is_frenzied(49, 100))
+        self.assertFalse(r.is_frenzied(50, 100))
+
+    def test_acts(self):
+        self.assertEqual(r.act_slots(True), [0, 2, 4])
+        self.assertEqual([r.vanilla_tier(i, 5) for i in range(5)], [0, 1, 1, 2, 2])
+        self.assertEqual(r.vanilla_tier(5, 6), 2)   # Безымянный предел
+        self.assertEqual([r.vanilla_tier(i, 3) for i in range(3)], [0, 1, 2])
+        self.assertEqual([r.slot_of(i, 3) for i in range(3)], [0, 2, 4])
+        self.assertEqual(r.map_width("BloodCourt"), 9)
+        self.assertEqual(r.map_width("Hive"), 7)
+        self.assertEqual(r.enemy_hp_bonus_percent("Hive", True), 5)
+        self.assertEqual(r.enemy_hp_bonus_percent("Hive", False), 0)
+        self.assertEqual(r.enemy_hp_bonus_percent("FrozenBarrows", True), 35)
+        self.assertEqual(r.elite_affix_bonus("Glory", True), 1)
+        self.assertEqual(r.soul_stone_for("elite", r.slot_of(2, 3)), 3)
+
+    def test_act_rules(self):
+        self.assertEqual([r.is_night(row) for row in range(1, 8)], [False, False, False, True, True, True, False])
+        self.assertTrue(r.is_overheat_round(4))
+        self.assertTrue(r.is_overheat_warning_round(3))
+        self.assertTrue(r.hidden_by_darkness(5, 2, False))
+        self.assertFalse(r.hidden_by_darkness(5, 2, True))
+        self.assertTrue(r.is_rift_trigger("AbyssRifts", 6))
+        self.assertFalse(r.is_rift_trigger("AbyssRifts", 4))
+        self.assertTrue(r.can_become_gate("AbyssInvasion", 5, 4, False, False, False))
+        self.assertFalse(r.can_become_gate("AbyssRifts", 5, 4, False, False, False))
+        self.assertEqual(r.act_pick_distinct(5, 2, [7, 7]), [2, 4])
+        self.assertTrue(r.roll_rare_elite(14, False))
+        self.assertFalse(r.roll_rare_elite(14, True))
+        self.assertEqual(r.decode_mark(r.encode_mark(4, 8, 12)), (4, 8, 12))
+
+    def test_superbosses(self):
+        self.assertEqual(r.SUPERBOSS_HP["NamelessShadow"], 700)
+        mask = sum(1 << i for i in range(5))
+        self.assertEqual(r.count_superbosses(mask | (1 << 7)), 5)
+        self.assertTrue(r.nameless_unlocked(mask, True))
+        self.assertFalse(r.nameless_unlocked(mask, False))
+        self.assertTrue(r.portal_mandatory(False, 10))
+        self.assertAlmostEqual(r.binding_multiplier(5), 1.45)
+        self.assertFalse(r.bypasses_ghostly(False, "physical", False))

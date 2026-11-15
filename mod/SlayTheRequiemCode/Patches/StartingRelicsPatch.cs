@@ -1,3 +1,4 @@
+using SlayTheRequiem.SlayTheRequiemCode.Core;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
@@ -41,12 +42,21 @@ public static class StartingRelicsPatch
             stone.FloorAddedToDeck = 1;
             __instance.AddRelicInternal(stone, silent: true);
         }
-        // Знак веры — праведность и Святилища (docs/design/05 §2). «Реквием 10» начинает Запятнанным — этап 7.
+        // Знак веры — праведность и Святилища (docs/design/05 §2). «Реквием 10» начинает Запятнанным (docs/design/11 §7).
         if (!__instance.Relics.OfType<Pantheon.FaithSigil>().Any())
         {
-            var sigil = ModelDb.Relic<Pantheon.FaithSigil>().ToMutable();
+            var sigil = (Pantheon.FaithSigil)ModelDb.Relic<Pantheon.FaithSigil>().ToMutable();
             sigil.FloorAddedToDeck = 1;
+            if (RequiemLevelRules.StartsTainted(Acts.RequiemLevel.Of(__instance.RunState)))
+                sigil.RecordedPiety = (int)Piety.Tainted;
             __instance.AddRelicInternal(sigil, silent: true);
+        }
+        // Дорожная карта — состояние актов: супербоссы, Врата Бездны, ключи, Стужа/Перегрев (docs/design/13).
+        if (!__instance.Relics.OfType<Acts.ActLedger>().Any())
+        {
+            var actLedger = ModelDb.Relic<Acts.ActLedger>().ToMutable();
+            actLedger.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(actLedger, silent: true);
         }
         // Летопись героя — Слава, уровни, навыки, Сытость, Камни душ, очки лагеря (docs/design/02 §5, 04, 10).
         if (!__instance.Relics.OfType<Progression.HeroRecord>().Any())

@@ -477,5 +477,12 @@
   "SLAYTHEREQUIEM-MEDIUM_ESSENCE.flavor": "",
   "SLAYTHEREQUIEM-REBORN_ESSENCE.title": "Essence: Reborn",
   "SLAYTHEREQUIEM-REBORN_ESSENCE.description": "No bonus. Once: choose a new background and reset your stat points (spend them again at camp). Path of the Hero.",
-  "SLAYTHEREQUIEM-REBORN_ESSENCE.flavor": ""
+  "SLAYTHEREQUIEM-REBORN_ESSENCE.flavor": "",
+  "SLAYTHEREQUIEM-ACT_LEDGER.title": "Road Map",
+  "SLAYTHEREQUIEM-ACT_LEDGER.description": "Remembers the acts of this run. Superbosses defeated: {Superbosses}. Claw Keys: {Keys}. Warmth: {Warmth} fights. Valve relief: {Relief} fights.",
+  "SLAYTHEREQUIEM-ACT_LEDGER.flavor": "Marked nodes show Gates, vaults, valves and ley lines.",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalHeader": "Crimson Portal",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalBody": "A crimson rift opens where the boss fell. Step through to face the act's superboss (artifact, black soul stone, a Candle once per run)?",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalYes": "Enter",
+  "SLAYTHEREQUIEM-ACT_LEDGER.portalNo": "Move on"
 }

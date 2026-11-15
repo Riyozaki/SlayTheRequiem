@@ -80,7 +80,21 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (!RequiemConfig.EnableRequiemSystems) return 1m;
-        return StaminaMultiplier(props, cardSource) * ResistanceMultiplier(target, props, dealer, cardSource);
+        return StaminaMultiplier(props, cardSource) * ResistanceMultiplier(target, props, dealer, cardSource)
+            * LevelMultiplier(target, dealer);
+    }
+
+    /// <summary>
+    /// Уровень «Реквием» (11 §7): «Странник» — герои получают −25 % урона, «Легенда»+ — +25 %; «Проклятый» — герои наносят
+    /// врагам −20 %. Урон от себя/своих и без источника не трогаем.
+    /// </summary>
+    private static decimal LevelMultiplier(Creature? target, Creature? dealer)
+    {
+        if (target == null || dealer == null || target.IsPlayer == dealer.IsPlayer) return 1m;
+        var level = Acts.RequiemLevel.Of(Net.RequiemNet.State);
+        return target.IsPlayer
+            ? RequiemLevelRules.DamageTakenMultiplier(level)
+            : RequiemLevelRules.DamageDealtMultiplier(level);
     }
 
     private static decimal StaminaMultiplier(ValueProp props, CardModel? cardSource)

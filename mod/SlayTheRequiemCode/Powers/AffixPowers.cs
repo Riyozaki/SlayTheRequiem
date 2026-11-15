@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -13,7 +14,8 @@ using VanillaPoison = MegaCrit.Sts2.Core.Models.Powers.PoisonPower;
 namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
 // Аффиксы врагов (docs/design/11 §2). Значок аффикса — сила-маркер без счётчика; сами числа — в EnemyRules.
-// Выдаются в EnemySetup.Ensure: элиты — 1 аффикс, обычные враги с акта 2 — с шансом 25 %.
+// Выдаются в EnemySetup.Ensure: элиты — 1 аффикс (на «Реквиеме» 7+ — 2–3, в Славе пяти актов — ещё +1),
+// обычные враги с акта 2 — с шансом 25 %.
 
 public abstract class AffixPower : RequiemPower
 {
@@ -79,6 +81,67 @@ public sealed class PoisonedBladeAffixPower : AffixPower
         Flash();
         await PowerCmd.Apply<VanillaPoison>(choiceContext, target, EnemyRules.AffixPoison, Owner, null);
     }
+}
+
+/// <summary>Знаменосец: остальные враги наносят атаками +2 урона, пока носитель жив.</summary>
+public sealed class BannermanAffixPower : AffixPower
+{
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        Owner.IsAlive && dealer != null && dealer != Owner && dealer.Monster != null && dealer.PetOwner == null && props.IsPoweredAttack() ? EnemyRules.BannerDamage : 0m;
+}
+
+/// <summary>Поглотитель: Поглощение заклинаний 1, восстанавливается в начале каждого хода героев.</summary>
+public sealed class AbsorberAffixPower : AffixPower
+{
+    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (side != CombatSide.Player || !Owner.IsAlive) return;
+        var missing = EnemyRules.AbsorberStacks - Owner.GetPowerAmount<SpellAbsorptionPower>();
+        if (missing > 0)
+            await PowerCmd.Apply<SpellAbsorptionPower>(new ThrowingPlayerChoiceContext(), Owner, missing, Owner, null, silent: true);
+    }
+}
+
+/// <summary>Неистовый: при ♥ &lt; 50 % каждая атака носителя бьёт на 1 раз больше.</summary>
+public sealed class FrenziedAffixPower : AffixPower
+{
+    public override int ModifyAttackHitCount(AttackCommand attack, int hitCount) =>
+        attack.Attacker == Owner && Owner.IsAlive && AffixRules.IsFrenzied(Owner.CurrentHp, Owner.MaxHp) ? hitCount + 1 : hitCount;
+}
+
+/// <summary>
+/// Призрачный (аффикс): физический урон не от заклинаний по носителю −50 % (полная Призрачность у духов — −75 %,
+/// docs/design/03). Серебряное оружие героя Призрачность не замечает.
+/// </summary>
+public sealed class GhostlyAffixPower : AffixPower
+{
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    {
+        if (target != Owner || dealer == null || dealer == Owner) return 1m;
+        if (MagicDamage.IsSpell(props, dealer, cardSource)) return 1m;
+        if (DamageTyping.Resolve(props, dealer, cardSource) != DamageType.Physical) return 1m;
+        if (dealer.Player?.Relics.OfType<SlayTheRequiem.SlayTheRequiemCode.Equipment.SilverSaber>().Any() == true) return 1m;
+        return (100 - EnemyRules.GhostlyAffixReduction) / 100m;
+    }
+}
+
+/// <summary>Мститель: при смерти носителя — 6 урона каждому живому герою.</summary>
+public sealed class AvengerAffixPower : AffixPower
+{
+    private bool _fired;
+
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    {
+        if (creature != Owner || wasRemovalPrevented || _fired) return;
+        _fired = true;
+        var heroes = Owner.CombatState?.Players.Select(p => p.Creature).Where(c => c is { IsAlive: true }).ToList() ?? [];
+        if (heroes.Count == 0) return;
+        Flash();
+        foreach (var hero in heroes)
+            await CreatureCmd.Damage(choiceContext, hero, EnemyRules.AvengerDamage, ValueProp.Unpowered, Owner, null);
+    }
+
+    public override bool ShouldPowerBeRemovedOnDeath(PowerModel power) => power != this && base.ShouldPowerBeRemovedOnDeath(power);
 }
 
 // ═════════════ Атаманша Багряных Ножей ═════════════

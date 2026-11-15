@@ -136,6 +136,7 @@ public static class Camp
         if (hero != null) options.Add(new MeditateRestSiteOption(player));
         if (RequiemConfig.EnablePantheon && HasAltar(player)) options.Add(new PrayRestSiteOption(player));
         options.Add(new ChestRestSiteOption(player));
+        if (Acts.WarmRestSiteOption.Offered(player)) options.Add(new Acts.WarmRestSiteOption(player));
         if (hero != null && hero.HasUnspentPoints) options.Add(new TrainRestSiteOption(player));
         // Оборотень (этап 6): узлы веток за Обращения.
         if (Transformations.Forms.Of<Transformations.WerewolfForm>(player) is { PendingNodes: > 0 })

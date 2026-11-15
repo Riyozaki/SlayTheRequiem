@@ -282,7 +282,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     // ───── Усталость похода ─────
 
-    public bool FatigueEnabled => CampRules.FatigueEnabled(Owner.RunState.AscensionLevel);
+    public bool FatigueEnabled => CampRules.FatigueEnabled(Acts.RequiemLevel.Of(Owner.RunState));
     public int FatigueStacks => CampRules.FatigueStacks(_nodesSinceRest, FatigueEnabled);
 
     /// <summary>После Отдыха: Усталость снята; «Отдохнувший» даёт Бодрость на 2 боя.</summary>
@@ -595,7 +595,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
             _ => EnemyRank.Normal,
         };
         GainRenown(ProgressionRules.RenownFor(rank));
-        var stone = CampRules.SoulStoneFor(rank, Owner.RunState.CurrentActIndex);
+        var stone = CampRules.SoulStoneFor(rank, Acts.ActKinds.Slot(Owner.RunState));
         if (stone > 0) AddStone(stone);
 
         Meals = FoodRules.Serialize(FoodRules.AfterCombat(MealList));

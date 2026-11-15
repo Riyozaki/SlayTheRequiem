@@ -40,7 +40,11 @@ public static class EnemySetup
         var rank = RankOf(combatState ?? creature.CombatState);
         var entry = RequiemData.MonsterEntry(creature.Monster.GetType().Name);
 
-        var hpMultiplier = (decimal)RequiemConfig.EnemyHpPercent / 100m;
+        var state0 = combatState ?? creature.CombatState;
+        var run0 = state0?.RunState;
+        var hpMultiplier = (decimal)RequiemConfig.EnemyHpPercent / 100m
+                           * RequiemLevelRules.EnemyHpMultiplier(Acts.RequiemLevel.Of(run0))
+                           * (100 + ActHpBonusPercent(run0, rank)) / 100m;
         if (hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)
             await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(creature.MaxHp, hpMultiplier));
 
@@ -69,14 +73,35 @@ public static class EnemySetup
             }
         }
 
-        var state = combatState ?? creature.CombatState;
-        if (state?.RunState is { } run)
+        if (run0 is { } run)
         {
-            var count = EnemyRules.AffixCount(rank, run.CurrentActIndex, run.Rng.Niche.NextInt(100), creature.MaxHp);
-            var all = Enum.GetValues<EnemyAffix>();
-            for (var i = 0; i < count; i++)
-                await ApplyAffix(ctx, creature, all[run.Rng.Niche.NextInt(all.Length)]);
+            var kind = Acts.ActKinds.Current(run);
+            var fullRun = Acts.ActKinds.IsFullRun(run);
+            // «Ученичество» акта 1 — обычные без аффиксов; в коротком забеге акт 3 — второй по счёту, но с правилами слота 3.
+            var actIndex = ActRules.SlotOf(run.CurrentActIndex, run.Acts.Count);
+            var count = EnemyRules.AffixCount(rank, actIndex, run.Rng.Niche.NextInt(100), creature.MaxHp,
+                Acts.RequiemLevel.Of(run), ActRules.EliteAffixBonus(kind, fullRun));
+            if (count > 0)
+            {
+                var rolls = Enumerable.Range(0, EnemyRules.MaxAffixes).Select(_ => run.Rng.Niche.NextInt(100)).ToList();
+                foreach (var affix in AffixRules.Pick(count, rolls))
+                    await ApplyAffix(ctx, creature, affix);
+            }
         }
+    }
+
+    /// <summary>
+    /// Надбавка ♥ от акта (docs/design/13 §2): Улей/Слава с оверлеями и новые акты в полном забеге, ночь Кровавого Двора
+    /// (только обычные и элиты). Супербоссы и боссы новых актов — по своим числам.
+    /// </summary>
+    public static int ActHpBonusPercent(MegaCrit.Sts2.Core.Runs.IRunState? run, EnemyRank rank)
+    {
+        if (run == null || run.Acts.Count == 0) return 0;
+        var kind = Acts.ActKinds.Current(run);
+        var bonus = ActRules.EnemyHpBonusPercent(kind, Acts.ActKinds.IsFullRun(run));
+        if (kind == ActKind.BloodCourt && rank != EnemyRank.Boss && run.CurrentMapCoord is { } coord && ActRules.IsNight(coord.row))
+            bonus += ActRules.NightHpBonusPercent;
+        return bonus;
     }
 
     /// <summary>Выдать аффикс (docs/design/11 §2): маркер-сила и её числа.</summary>
@@ -108,6 +133,22 @@ public static class EnemySetup
                 break;
             case EnemyAffix.PoisonedBlade:
                 await PowerCmd.Apply<PoisonedBladeAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.Bannerman:
+                await PowerCmd.Apply<BannermanAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.Absorber:
+                await PowerCmd.Apply<AbsorberAffixPower>(ctx, creature, 1, null, null, silent: true);
+                await PowerCmd.Apply<SpellAbsorptionPower>(ctx, creature, EnemyRules.AbsorberStacks, null, null, silent: true);
+                break;
+            case EnemyAffix.Frenzied:
+                await PowerCmd.Apply<FrenziedAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.Ghostly:
+                await PowerCmd.Apply<GhostlyAffixPower>(ctx, creature, 1, null, null, silent: true);
+                break;
+            case EnemyAffix.Avenger:
+                await PowerCmd.Apply<AvengerAffixPower>(ctx, creature, 1, null, null, silent: true);
                 break;
         }
     }

@@ -397,12 +397,42 @@ NORMAL_AFFIX_CHANCE = 25
 ELITE_MINION_HP = 40
 
 
-def affix_count(rank: str, act_index: int, roll: int, max_hp: int = 10 ** 9) -> int:
+MAX_AFFIXES = 4
+
+
+def affix_count(rank: str, act_index: int, roll: int, max_hp: int = 10 ** 9, requiem_level: int = 1,
+                elite_bonus: int = 0) -> int:
     if rank == "elite":
-        return 0 if max_hp < ELITE_MINION_HP else 1
+        if max_hp < ELITE_MINION_HP:
+            return 0
+        return min(MAX_AFFIXES, elite_affix_base(requiem_level, roll) + max(0, elite_bonus))
     if rank == "normal" and act_index >= 1 and roll < NORMAL_AFFIX_CHANCE:
         return 1
     return 0
+
+
+ENEMY_AFFIXES = ["Hardened", "Fiery", "Icy", "Stormy", "Draining", "ManaEater", "Vampiric", "PoisonedBlade",
+                 "Bannerman", "Absorber", "Frenzied", "Ghostly", "Avenger"]
+ELEMENTAL_AFFIXES = ("Fiery", "Icy", "Stormy")
+FRENZY_HP_PERCENT = 50
+
+
+def pick_affixes(count: int, rolls) -> list:
+    pool = list(ENEMY_AFFIXES)
+    res = []
+    for roll in rolls:
+        if len(res) >= count or not pool:
+            break
+        affix = pool[roll % len(pool)]
+        res.append(affix)
+        pool.remove(affix)
+        if affix in ELEMENTAL_AFFIXES:
+            pool = [a for a in pool if a not in ELEMENTAL_AFFIXES]
+    return res
+
+
+def is_frenzied(hp: int, max_hp: int) -> bool:
+    return max_hp > 0 and hp * 100 < max_hp * FRENZY_HP_PERCENT
 
 
 # ───────────── Иллюзия (Core/SpellAffinity.cs) ─────────────
@@ -1254,3 +1284,208 @@ def stamina_after(cost: int, breathing: bool) -> int:
 
 def run_score(score: int, rollbacks: int) -> int:
     return score if rollbacks <= 0 else math.floor(score * score_multiplier(rollbacks))
+
+
+# ───────────── Этап 7: уровни «Реквием» (Core/RequiemLevelRules.cs) ─────────────
+
+REQUIEM_MIN, REQUIEM_MAX = 0, 10
+VETERAN_LEVEL, LEGEND_LEVEL, DAMNED_LEVEL = 5, 7, 10
+
+
+def level_from_ascension(ascension: int) -> int:
+    return max(1, min(REQUIEM_MAX, ascension + 1))
+
+
+def resolve_level(config_override: int, ascension: int) -> int:
+    return max(REQUIEM_MIN, min(REQUIEM_MAX, config_override)) if config_override >= 0 else level_from_ascension(ascension)
+
+
+def level_enemy_hp(level: int) -> float:
+    return 0.75 if level <= 0 else 1.0
+
+
+def level_damage_taken(level: int) -> float:
+    return 0.75 if level <= 0 else 1.25 if level >= LEGEND_LEVEL else 1.0
+
+
+def level_damage_dealt(level: int) -> float:
+    return 0.8 if level >= DAMNED_LEVEL else 1.0
+
+
+def elite_affix_base(level: int, roll: int) -> int:
+    return (3 if roll < 50 else 2) if level >= LEGEND_LEVEL else 1
+
+
+def superbosses_mandatory(level: int) -> bool:
+    return level >= DAMNED_LEVEL
+
+
+def candles_allowed(level: int) -> bool:
+    return level < DAMNED_LEVEL
+
+
+# ───────────── Этап 7: пять актов (Core/ActRules.cs) ─────────────
+
+FULL_RUN_ACTS, SHORT_RUN_ACTS = 5, 3
+NEW_ACTS = ("FrozenBarrows", "ClockworkDepths", "BloodCourt", "StarTower")
+
+
+def act_slots(short_run: bool) -> list:
+    return [0, 2, 4] if short_run else [0, 1, 2, 3, 4]
+
+
+def vanilla_tier(act_index: int, act_count: int) -> int:
+    if act_count >= FULL_RUN_ACTS:
+        return 0 if act_index <= 0 else 1 if act_index <= 2 else 2
+    return max(0, min(2, act_index))
+
+
+def slot_of(act_index: int, act_count: int) -> int:
+    if act_count == SHORT_RUN_ACTS:
+        return max(0, min(2, act_index)) * 2
+    return max(0, min(FULL_RUN_ACTS, act_index))
+
+
+def map_width(kind: str) -> int:
+    return 9 if kind in NEW_ACTS else 7
+
+
+def act_rooms(kind: str) -> int:
+    return {"Foothills": 15, "FrozenBarrows": 14, "ClockworkDepths": 14, "Hive": 14, "BloodCourt": 13,
+            "StarTower": 13, "Glory": 13, "NamelessLimit": 4}.get(kind, 15)
+
+
+def enemy_hp_bonus_percent(kind: str, full_run: bool) -> int:
+    if not full_run and kind in ("Hive", "Glory"):
+        return 0
+    return {"FrozenBarrows": 35, "ClockworkDepths": 35, "Hive": 5, "BloodCourt": 20, "StarTower": 20,
+            "Glory": 15, "NamelessLimit": 25}.get(kind, 0)
+
+
+def elite_affix_bonus(kind: str, full_run: bool) -> int:
+    return 1 if full_run and kind == "Glory" else 0
+
+
+ACT_RULE = {"Foothills": "Apprenticeship", "FrozenBarrows": "Frost", "ClockworkDepths": "Steam", "Hive": "AbyssRifts",
+            "BloodCourt": "DayNight", "StarTower": "LeyLines", "Glory": "AbyssInvasion"}
+
+FROST_CHILL, WARMTH_FIGHTS = 1, 2
+MAX_CLAW_KEYS_PER_ACT, VAULT_GOLD = 2, 40
+OVERHEAT_PERIOD, OVERHEAT_BURNING, VALVE_RELIEF_FIGHTS = 4, 3, 3
+DAY_NIGHT_BLOCK, NIGHT_HP_BONUS, NIGHT_GOLD_BONUS = 3, 25, 15
+LEY_LINE_MANA = 3
+RARE_ELITE_CHANCE = 15
+
+
+def darkness_visible_rows(night_sight: bool) -> int:
+    return 4 if night_sight else 2
+
+
+def hidden_by_darkness(node_row: int, current_row: int, night_sight: bool) -> bool:
+    return node_row - current_row > darkness_visible_rows(night_sight)
+
+
+def locked_vault_count(roll: int) -> int:
+    return 2 + abs(roll % 2)
+
+
+def valve_count(roll: int) -> int:
+    return 3 + abs(roll % 2)
+
+
+def ley_line_count(roll: int) -> int:
+    return 2 + abs(roll % 2)
+
+
+def is_overheat_round(rnd: int) -> bool:
+    return rnd > 0 and rnd % OVERHEAT_PERIOD == 0
+
+
+def is_overheat_warning_round(rnd: int) -> bool:
+    return rnd > 0 and rnd % OVERHEAT_PERIOD == OVERHEAT_PERIOD - 1
+
+
+def is_night(row: int) -> bool:
+    return row >= 1 and (row - 1) // DAY_NIGHT_BLOCK % 2 == 1
+
+
+def is_rift_trigger(rule: str, row: int) -> bool:
+    if rule == "AbyssRifts":
+        return row > 0 and row % 3 == 0
+    if rule == "AbyssInvasion":
+        return row > 0
+    return False
+
+
+def can_become_gate(rule: str, node_row: int, current_row: int, is_combat: bool, is_shop_or_rest: bool,
+                    is_special: bool) -> bool:
+    if node_row <= current_row or is_shop_or_rest or is_special:
+        return False
+    if rule == "AbyssRifts":
+        return is_combat
+    return rule == "AbyssInvasion"
+
+
+def pick_index(roll: int, count: int) -> int:
+    return -1 if count <= 0 else roll % count
+
+
+def act_pick_distinct(n: int, count: int, rolls) -> list:
+    pool = list(range(max(0, n)))
+    res = []
+    for roll in rolls:
+        if len(res) >= count or not pool:
+            break
+        res.append(pool.pop(pick_index(roll, len(pool))))
+    return sorted(res)
+
+
+def roll_rare_elite(roll: int, already_met: bool) -> bool:
+    return not already_met and roll < RARE_ELITE_CHANCE
+
+
+SUPERBOSSES = ["BlackWanderer", "BarrowReaper", "DeepMasterSmith", "GatebreakerEnvoy", "BloodCourtLord",
+               "FirstSummoner", "WorldEater", "NamelessShadow"]
+SUPERBOSS_HP = {"BlackWanderer": 220, "BarrowReaper": 300, "DeepMasterSmith": 320, "GatebreakerEnvoy": 420,
+                "BloodCourtLord": 450, "FirstSummoner": 430, "WorldEater": 600, "NamelessShadow": 700}
+SUPERBOSS_FOR = {"Foothills": "BlackWanderer", "FrozenBarrows": "BarrowReaper", "ClockworkDepths": "DeepMasterSmith",
+                 "Hive": "GatebreakerEnvoy", "BloodCourt": "BloodCourtLord", "StarTower": "FirstSummoner",
+                 "Glory": "WorldEater"}
+SUPERBOSSES_FOR_NAMELESS = 5
+MAX_SUPERBOSS_CANDLES = 1
+
+
+def count_superbosses(mask: int) -> int:
+    return sum(1 for b in range(SUPERBOSSES.index("NamelessShadow")) if mask & (1 << b))
+
+
+def nameless_unlocked(mask: int, full_run: bool) -> bool:
+    return full_run and count_superbosses(mask) >= SUPERBOSSES_FOR_NAMELESS
+
+
+def portal_mandatory(always_setting: bool, level: int) -> bool:
+    return always_setting or superbosses_mandatory(level)
+
+
+def encode_mark(act_index: int, col: int, row: int) -> int:
+    return act_index * 10000 + col * 100 + row
+
+
+def decode_mark(code: int) -> tuple:
+    return code // 10000, code // 100 % 100, code % 100
+
+
+# Силы актов (Powers/ActPowers.cs: ActPowerRules)
+GHOSTLY_REDUCTION = 75
+MIRROR_REFLECT_PERCENT = 50
+MIRROR_PHYSICAL_MULTIPLIER = 1.5
+FLIGHT_MULTIPLIER = 0.5
+BINDING_PERCENT_PER_STACK, BINDING_MAX_STACKS = 15, 3
+
+
+def binding_multiplier(stacks: int) -> float:
+    return 1 + max(0, min(BINDING_MAX_STACKS, stacks)) * BINDING_PERCENT_PER_STACK / 100
+
+
+def bypasses_ghostly(is_spell: bool, damage_type: str, silver: bool) -> bool:
+    return is_spell or damage_type != "physical" or silver

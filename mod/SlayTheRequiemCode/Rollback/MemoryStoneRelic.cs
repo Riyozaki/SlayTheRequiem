@@ -107,7 +107,7 @@ public sealed class MemoryStoneRelic : RequiemRelic
     public int PendingPurse { get => _pendingPurse; set { AssertMutable(); _pendingPurse = value; } }
 
     /// <summary>Уровень «Реквием». Пока своих уровней нет (этап 6) — берётся уровень Возвышения забега.</summary>
-    public int RequiemLevel => IsMutable && Owner != null ? Owner.RunState.AscensionLevel : 0;
+    public int RequiemLevel => IsMutable && Owner != null ? Acts.RequiemLevel.Of(Owner.RunState) : 0;
 
     public int CandlesLeft =>
         MemoryStoneRules.CandlesLeft(RequiemLevel, _candlesUsed, _bonusCandles, RequiemConfig.MemoryStoneCandles);
