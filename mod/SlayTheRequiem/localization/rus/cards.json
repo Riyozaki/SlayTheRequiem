@@ -564,5 +564,9 @@
   "SLAYTHEREQUIEM-ARCANE_MASTERY.title": "Мастерство заклинателя",
   "SLAYTHEREQUIEM-ARCANE_MASTERY.description": "Первое заклинание каждого хода на 1 ✦ дешевле.",
   "SLAYTHEREQUIEM-MANA_STORM.title": "Магическая буря",
-  "SLAYTHEREQUIEM-MANA_STORM.description": "Потратить все ✦. За каждый — {Damage:diff()} урона [purple]магией[/purple] ВСЕМ врагам."
+  "SLAYTHEREQUIEM-MANA_STORM.description": "Потратить все ✦. За каждый — {Damage:diff()} урона [purple]магией[/purple] ВСЕМ врагам.",
+  "SLAYTHEREQUIEM-AIMED_SHOT.title": "Прицельный выстрел",
+  "SLAYTHEREQUIEM-AIMED_SHOT.description": "Нанести {Damage:diff()} урона.\nС луком или арбалетом — наложить {VulnerablePower:diff()} [gold]Уязвимости[/gold].",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT.title": "Дух клинка",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT.description": "Призвать или отпустить дух клинка. Пока он призван, ваши атаки тратят 1 ✦ и наносят дополнительный урон [purple]магией[/purple] — половину ваших ✦."
 }

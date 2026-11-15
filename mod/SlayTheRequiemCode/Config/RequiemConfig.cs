@@ -27,8 +27,8 @@ internal class RequiemConfig : SimpleModConfig
     [ConfigSection("HeroSection")]
     public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Random;
 
-    /// <summary>Клан Латоносца. Пока готов один — Инеерождённые (этап 1).</summary>
-    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Frostborn;
+    /// <summary>Клан Латоносца (docs/design/04): Инеерождённые, Горнокровные, Дюнные клинки, Цитадельцы; «Случайно» — по сиду забега.</summary>
+    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Random;
 
     /// <summary>Племя Безмолвной (docs/design/04).</summary>
     public static SilentOriginChoice SilentOrigin { get; set; } = SilentOriginChoice.Random;
@@ -105,8 +105,14 @@ public enum SuperbossMode
 
 public enum PlatebearerOriginChoice
 {
+    Random,
     Frostborn,
+    Forgeblood,
+    Duneblade,
+    Citadel,
     None,
+    /// <summary>Выбор на экране в начале забега.</summary>
+    Choose,
 }
 
 public enum SilentOriginChoice

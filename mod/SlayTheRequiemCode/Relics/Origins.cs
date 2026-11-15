@@ -57,7 +57,7 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     /// <summary>Происхождение героя по настройкам (Гримуар выдаёт его при входе в первую комнату).</summary>
     public static OriginRelic? ForHero(Player player) => player.Character.GetType().Name switch
     {
-        "Ironclad" => ForPlatebearer(),
+        "Ironclad" => ForPlatebearer(player),
         "Silent" => ForSilent(player),
         "Regent" => ForRegent(player),
         _ => null,
@@ -68,6 +68,8 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     {
         Type[]? types = player.Character.GetType().Name switch
         {
+            "Ironclad" when RequiemConfig.PlatebearerOrigin == PlatebearerOriginChoice.Choose =>
+                [typeof(FrostbornOrigin), typeof(ForgebloodOrigin), typeof(DunebladeOrigin), typeof(CitadelOrigin)],
             "Silent" when RequiemConfig.SilentOrigin == SilentOriginChoice.Choose =>
                 [typeof(MoonbornOrigin), typeof(ThicketbornOrigin), typeof(MarshbornOrigin)],
             "Regent" when RequiemConfig.RegentOrigin == RegentOriginChoice.Choose =>
@@ -86,11 +88,21 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
         return ForHero(player);
     }
 
-    public static OriginRelic? ForPlatebearer() => RequiemConfig.PlatebearerOrigin switch
+    public static OriginRelic? ForPlatebearer(Player player)
     {
-        PlatebearerOriginChoice.Frostborn => (OriginRelic)ModelDb.Relic<FrostbornOrigin>().ToMutable(),
-        _ => null,
-    };
+        var choice = RequiemConfig.PlatebearerOrigin;
+        if (choice is PlatebearerOriginChoice.Random or PlatebearerOriginChoice.Choose)
+            choice = (PlatebearerOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(4));
+        RelicModel? canonical = choice switch
+        {
+            PlatebearerOriginChoice.Frostborn => ModelDb.Relic<FrostbornOrigin>(),
+            PlatebearerOriginChoice.Forgeblood => ModelDb.Relic<ForgebloodOrigin>(),
+            PlatebearerOriginChoice.Duneblade => ModelDb.Relic<DunebladeOrigin>(),
+            PlatebearerOriginChoice.Citadel => ModelDb.Relic<CitadelOrigin>(),
+            _ => null,
+        };
+        return (OriginRelic?)canonical?.ToMutable();
+    }
 
     public static OriginRelic? ForSilent(Player player)
     {
@@ -198,6 +210,75 @@ public sealed class FrostbornOrigin : OriginRelic
     protected override int MaxHpDelta => 5;
     public override int BurdenBonus => 2;
     protected override IEnumerable<(Type power, int tier)> Resistances => [(typeof(FrostResistancePower), 1)];
+}
+
+/// <summary>
+/// Горнокровные (орки): ♥ +10, ✦ −1. «Ярость горна» — если за ход сыграно 3+ Атаки, в ход врага урон по герою ×0.75.
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class ForgebloodOrigin : OriginRelic
+{
+    protected override int MaxHpDelta => 10;
+    public override int ManaPoolBonus => -1;
+
+    private int _attacksThisTurn;
+
+    public override bool ShowCounter => true;
+    public override int DisplayAmount => _attacksThisTurn;
+
+    public override Task BeforeCombatStart()
+    {
+        _attacksThisTurn = 0;
+        InvokeDisplayAmountChanged();
+        return base.BeforeCombatStart();
+    }
+
+    public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        if (cardPlay.Card.Owner != Owner || cardPlay.Card.Type != CardType.Attack || !cardPlay.IsLastInSeries) return Task.CompletedTask;
+        _attacksThisTurn++;
+        if (_attacksThisTurn == OriginRules.ForgeFuryAttacks) Flash();
+        InvokeDisplayAmountChanged();
+        return Task.CompletedTask;
+    }
+
+    // Счётчик живёт до начала следующего хода героя — то есть весь ход врага.
+    public override Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (player != Owner) return Task.CompletedTask;
+        _attacksThisTurn = 0;
+        InvokeDisplayAmountChanged();
+        return Task.CompletedTask;
+    }
+
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        target == Owner.Creature && dealer is { IsEnemy: true } && OriginRules.ForgeFuryActive(_attacksThisTurn)
+            ? OriginRules.ForgeFuryMultiplier : 1m;
+}
+
+/// <summary>
+/// Дюнные клинки (редгарды): пул ◆ +1, сопротивление ядам II. «Ритм дюн» — прирост ◆ +1 при ◆ ниже 75 %, +2 — ниже 50 %.
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class DunebladeOrigin : OriginRelic
+{
+    public override int StaminaPoolBonus => 1;
+    protected override IEnumerable<(Type power, int tier)> Resistances => [(typeof(PoisonResistancePower), 2)];
+
+    // Прирост считается в начале хода по остатку ◆ (Resources/RequiemResource.StartOfTurnReset).
+    public override int StaminaRegenBonus => IsMutable && Resources.RequiemResource.Of<Resources.StaminaResource>(Owner) is { } stamina
+        ? OriginRules.DuneRhythmRegen(stamina.Amount, stamina.Pool) : 0;
+}
+
+/// <summary>
+/// Цитадельцы (имперцы): ◆ +1, груз +2. «Выучка» — +1 очко характеристик за каждые 3 уровня
+/// (<see cref="Progression.HeroRecord.BonusStatPoints"/>).
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class CitadelOrigin : OriginRelic
+{
+    public override int StaminaPoolBonus => 1;
+    public override int BurdenBonus => 2;
 }
 
 // ═════════════ Безмолвная ═════════════

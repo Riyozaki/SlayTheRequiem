@@ -564,5 +564,9 @@
   "SLAYTHEREQUIEM-ARCANE_MASTERY.title": "Arcane Mastery",
   "SLAYTHEREQUIEM-ARCANE_MASTERY.description": "The first spell you play each turn costs 1 less ✦.",
   "SLAYTHEREQUIEM-MANA_STORM.title": "Mana Storm",
-  "SLAYTHEREQUIEM-MANA_STORM.description": "Spend all ✦. Deal {Damage:diff()} [purple]magic[/purple] damage to ALL enemies for each ✦ spent."
+  "SLAYTHEREQUIEM-MANA_STORM.description": "Spend all ✦. Deal {Damage:diff()} [purple]magic[/purple] damage to ALL enemies for each ✦ spent.",
+  "SLAYTHEREQUIEM-AIMED_SHOT.title": "Aimed Shot",
+  "SLAYTHEREQUIEM-AIMED_SHOT.description": "Deal {Damage:diff()} damage.\nWith a bow or crossbow, apply {VulnerablePower:diff()} [gold]Vulnerable[/gold].",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT.title": "Blade Spirit",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT.description": "Summon or dismiss the blade spirit. While it is summoned, your attacks spend 1 ✦ and deal extra [purple]magic[/purple] damage equal to half your ✦."
 }

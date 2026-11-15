@@ -4,9 +4,9 @@
 > Значения `N(+M)` — база и прибавка улучшения. ⚡ — энергия, ◆ — выносливость, ✦ — мана (звёзды).
 > Текст — русская локализация без разметки, переменные `{…}` оставлены как есть.
 
-Всего карт: **283**. Латоносец — 20, Безмолвная — 16, Регент — 12, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 104
+Всего карт: **285**. Латоносец — 22, Безмолвная — 16, Регент — 12, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 104
 
-## Латоносец (20)
+## Латоносец (22)
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -20,6 +20,7 @@
 | `FrostStrike` | Морозный удар | Ironclad | 1 | 2 |  | Attack | Uncommon | AnyEnemy | 8(+3) |  | ChillPower 3(+1) |  | Нанести {Damage:diff()} урона холодом. Наложить {ChillPower:diff()} Озноба. |
 | `AgainstAllOdds` | Вопреки всему | Ironclad | 1 | 0 |  | Attack | Uncommon | AnyEnemy | 7(+3) |  |  |  | Не тратит ◆. Нанести {Damage:diff()} урона. Вдвое больше, если вы Устали. |
 | `WrathHammer` | Молот гнева | Ironclad | 3 | 4 |  | Attack | Rare | AnyEnemy | 22(+6) |  | StaggerPower 8(+2), SunderPower 3 |  | Нанести {Damage:diff()} урона. Наложить {StaggerPower:diff()} Шаткости и {SunderPower:diff()} Раскола. |
+| `AimedShot` | Прицельный выстрел | Ironclad | 1 | 1 |  | Attack | Common | AnyEnemy | 7(+3) |  | VulnerablePower 1(+1) |  | Нанести {Damage:diff()} урона. С луком или арбалетом — наложить {VulnerablePower:diff()} Уязвимости. |
 | `CloseRanks` | Сомкнуть латы | Ironclad | 2 |  |  | Power | Uncommon | Self |  |  | PlatingPower 2(+1) |  | Получить {PlatingPower:diff()} Лат. |
 | `Tempering` | Закалка | Ironclad | 1(-1) |  |  | Power | Uncommon | Self |  |  | TemperingPower 1 |  | В начале хода восстанавливать на {TemperingPower:diff()} ◆ больше. |
 | `Frostblood` | Кровь стужи | Ironclad | 2(-1) |  |  | Power | Rare | Self |  |  | FrostbloodPower 1, FrostResistancePower 1 |  | Получить Сопротивление холоду {FrostResistancePower:diff()}. Ваш Озноб сильнее на {FrostbloodPower:diff()}. Озноб на вас спадает целиком. |
@@ -30,6 +31,7 @@
 | `SmotherFlames` | Сбить пламя | Ironclad | 0 |  |  | Skill | Common | Self |  | 3(+3) |  |  | Снять с себя Горение и Озноб. Получить {Block:diff()} Блока. |
 | `BattleCry` | Боевой клич | Ironclad | 1 |  |  | Skill | Uncommon | AllEnemies |  |  | WeakPower 1(+1), StaggerPower 3 |  | Наложить {WeakPower:diff()} Слабости и {StaggerPower:diff()} Шаткости ВСЕМ врагам. Клич: вернётся в руку через 4 хода. |
 | `ChangeGrip` | Сменить хват | Ironclad | 0 |  |  | Skill | Uncommon | Self |  |  | GripPower 3(+2) |  | Следующая атака в этом ходу не тратит ◆ и наносит на {GripPower:diff()} урона больше. |
+| `BladeSpirit` | Дух клинка | Ironclad | 1(-1) |  |  | Skill | Uncommon | Self |  |  |  |  | Призвать или отпустить дух клинка. Пока он призван, ваши атаки тратят 1 ✦ и наносят дополнительный урон магией — половину ваших ✦. |
 
 ## Безмолвная (16)
 

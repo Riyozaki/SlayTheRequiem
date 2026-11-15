@@ -24,7 +24,7 @@
   "SLAYTHEREQUIEM-AUTO_DODGE.hover.desc": "Тратить заряд Уворота и 2 ◆ автоматически, когда атака должна снять ♥. Выкл — Уворот не срабатывает.",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.title": "Клан Латоносца",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.title": "Клан Латоносца",
-  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.desc": "Пока нет экрана выбора происхождения, оно берётся отсюда.",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.desc": "Инеерождённые, Горнокровные, Дюнные клинки или Цитадельцы. «Случайно» — по сиду забега, «На выбор» — экран в начале забега.",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Frostborn": "Инеерождённые",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.None": "Без происхождения",
   "SLAYTHEREQUIEM-SILENT_ORIGIN.title": "Племя Безмолвной",
@@ -94,5 +94,10 @@
   "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "В моде это облики превращений (Лич, Заводное сердце), поэтому они скрыты на экране выбора, а их карты не попадают в награды. Вкл — вернуть их как ванильных героев (системы мода на них не действуют). В коопе должна совпадать у всех.",
   "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.title": "Цветные названия стихийных карт",
   "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.title": "Цвет стихии в названии",
-  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.desc": "Название карты огня, холода, разряда, яда, хвори, света или магии окрашено в цвет стихии. У улучшенных остаются зелёная обводка и «+». Только оформление."
+  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.desc": "Название карты огня, холода, разряда, яда, хвори, света или магии окрашено в цвет стихии. У улучшенных остаются зелёная обводка и «+». Только оформление.",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Random": "Случайно",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Forgeblood": "Горнокровные",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Duneblade": "Дюнные клинки",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Citadel": "Цитадельцы",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Choose": "На выбор"
 }

@@ -21,6 +21,7 @@ from loc_stage6 import (STAGE6_BADGES, STAGE6_CARDS, STAGE6_ENCHANTMENTS, STAGE6
                         STAGE6_EQUIPMENT, STAGE6_RELICS, STAGE6_REST_SITE, STAGE6_SETTINGS)
 from loc_flavor import FLAVOR  # noqa: E402
 from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
+from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
@@ -180,10 +181,10 @@ def check_unique() -> None:
     """Один класс — один текст. Повтор с другим текстом молча перетирал первый
     (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
     tables = {
-        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS,
-        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS,
-        "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
-                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS,
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS,
+        "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
+                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS,
     }
     dupes = []
     for name, rows in tables.items():
@@ -200,21 +201,21 @@ def main() -> None:
     check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
             powers[f"{k}.smartDescription"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT:
+        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li] + WEIGHT_NOTE[lang]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS:
+        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li]
@@ -230,9 +231,9 @@ def main() -> None:
             for move, title in data["moves"].items():
                 monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
         encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS}.items()}
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang]}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang]}.items()}
         potions = {}
-        for cls, et, ed, rt, rd in STAGE3_POTIONS:
+        for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS:
             k = PREFIX + snake(cls)
             potions[f"{k}.title"] = (et, rt)[li]
             potions[f"{k}.description"] = (ed, rd)[li]

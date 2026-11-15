@@ -121,3 +121,22 @@ public sealed class ChangeGrip : RequiemCard
     protected override Task OnPlay(PlayerChoiceContext ctx, CardPlay play) =>
         Apply<GripPower>(ctx, Owner.Creature, Var(nameof(GripPower)));
 }
+
+/// <summary>
+/// Дух клинка (старт «Клинка-ансея» Дюнных клинков, 04): переключатель — первый розыгрыш призывает дух
+/// (<see cref="BladeSpiritPower"/>: атаки +урон магией ⌊✦/2⌋, но стоят +1 ✦), следующий — отпускает.
+/// </summary>
+[Pool(typeof(IroncladCardPool))]
+public sealed class BladeSpirit : RequiemCard
+{
+    public BladeSpirit() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.Self)
+    {
+        WithCostUpgradeBy(-1);
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
+    {
+        if (Owner.Creature.GetPower<BladeSpiritPower>() is { } spirit) await PowerCmd.Remove(spirit);
+        else await PowerCmd.Apply<BladeSpiritPower>(ctx, Owner.Creature, 1, Owner.Creature, this);
+    }
+}

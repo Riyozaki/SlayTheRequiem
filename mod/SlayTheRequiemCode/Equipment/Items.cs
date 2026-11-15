@@ -64,6 +64,27 @@ public sealed class SteelWarhammer : WeaponRelic
     public override WeaponKind PropertyKind => WeaponKind.Mace;
 }
 
+/// <summary>Двуручный боевой топор (I): старт «Берсерка» Горнокровных (04) — Рубящий ×2 и Шаткость 2.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class IronBattleaxe : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override WeaponKind Weapon => WeaponKind.TwoHanded;
+    public override WeaponKind PropertyKind => WeaponKind.Axe;
+}
+
+/// <summary>Тяжёлый лук (I): старт «Браконьера» Горнокровных (04). Тяжелее обычного лука (вес 3), бьёт на +1 сильнее.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class HeavyBow : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override WeaponKind Weapon => WeaponKind.Bow;
+    public override int Weight => 3;
+
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        base.ModifyDamageAdditive(target, amount, props, dealer, cardSource) + (target != null && IsMyWeaponAttack(dealer, props, cardSource) ? 1m : 0m);
+}
+
 [Pool(typeof(SharedRelicPool))]
 public sealed class SilverSaber : WeaponRelic
 {

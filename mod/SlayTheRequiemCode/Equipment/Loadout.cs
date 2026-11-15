@@ -39,9 +39,10 @@ public static class Loadout
     {
         if (player == null) return 0;
         var cards = player.Deck.Cards.Sum(CardWeight);
+        var waivers = player.Relics.OfType<IEquipmentWeightWaiver>().ToList();
         var relics = player.Relics.Sum(r => r switch
         {
-            EquipmentRelic e => e.Weight,
+            EquipmentRelic e => waivers.Any(w => w.Waives(e)) ? 0 : e.Weight,
             IWeighted w => w.Weight,
             IWeightless => 0,
             _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
@@ -62,6 +63,12 @@ public static class Loadout
 
 /// <summary>Реликвия без веса Груза: дары и благословения (не вещи).</summary>
 public interface IWeightless { }
+
+/// <summary>Реликвия, снимающая вес с части снаряжения («Браконьер»: луки и арбалеты не весят).</summary>
+public interface IEquipmentWeightWaiver
+{
+    bool Waives(EquipmentRelic item);
+}
 
 /// <summary>Не-снаряжение со своим весом Груза (Филактерия — 3).</summary>
 public interface IWeighted

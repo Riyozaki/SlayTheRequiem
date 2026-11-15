@@ -340,6 +340,16 @@ public class Stage3Tests
         Assert.Equal(3, OriginRules.FugitiveBonus(5));
         Assert.Equal(2, OriginRules.WinddancerBonus(7));
         Assert.Equal((20, 7), OriginRules.BeastSpirit(4));
+        // Кланы Латоносца (M4 п. 1) — те же числа, что в tools/sim/test_requiem_rules.py.
+        Assert.False(OriginRules.ForgeFuryActive(2));
+        Assert.True(OriginRules.ForgeFuryActive(3));
+        Assert.Equal(new[] { 0, 0, 1, 2, 2 }, new[] { 9, 7, 6, 4, 0 }.Select(s => OriginRules.DuneRhythmRegen(s, 9)));
+        Assert.Equal(new[] { 0, 0, 1, 2, 5, 5 }, new[] { 1, 2, 3, 6, 15, 20 }.Select(OriginRules.TrainingBonusPoints));
+        Assert.Equal(new[] { 0, 3, 4, 5, 9 }, new[] { 0, 2, 3, 4, 7 }.Select(OriginRules.ConspiratorPotency));
+        Assert.Equal(new[] { 0, 0, 1, 2 }, new[] { 0, 1, 3, 4 }.Select(OriginRules.BladeSpiritBonus));
+        Assert.Equal((10, 2), OriginRules.LoyalGuard(1));
+        Assert.Equal((16, 3), OriginRules.LoyalGuard(4));
+        Assert.Equal((38, 5), OriginRules.LoyalGuard(15));
     }
 
     [Fact]

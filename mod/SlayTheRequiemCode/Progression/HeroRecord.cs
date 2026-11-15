@@ -138,7 +138,11 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     public int Level => ProgressionRules.LevelFor(_renown);
     public int StatPointsSpent => _statHealth + _statStamina + _statMana + _statBurden + _statMastery;
-    public int UnspentStatPoints => Math.Max(0, ProgressionRules.StatPointsFor(Level) - StatPointsSpent);
+    public int UnspentStatPoints => Math.Max(0, ProgressionRules.StatPointsFor(Level) + BonusStatPoints - StatPointsSpent);
+
+    /// <summary>«Выучка» Цитадельцев (04): +1 очко характеристик за каждые 3 уровня.</summary>
+    public int BonusStatPoints => IsMutable && Owner?.Relics.OfType<CitadelOrigin>().Any() == true
+        ? OriginRules.TrainingBonusPoints(Level) : 0;
     public int UnspentSkillPoints => Math.Max(0, ProgressionRules.SkillPointsFor(Level) - _skillPointsSpent);
     public bool HasUnspentPoints => UnspentStatPoints > 0 || UnspentSkillPoints > 0;
 

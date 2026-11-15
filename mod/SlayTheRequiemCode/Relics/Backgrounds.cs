@@ -72,6 +72,9 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
 
     protected Task GivePotion<T>() where T : PotionModel => PotionCmd.TryToProcure<T>(Owner);
 
+    /// <summary>Стартовый предмет: снаряжение надевается само (<see cref="Equipment.EquipmentRelic.AfterObtained"/>).</summary>
+    protected Task GiveRelic<T>() where T : RelicModel => RelicCmd.Obtain(ModelDb.Relic<T>().ToMutable(), Owner);
+
     protected void RaiseMastery(SpellSchool school) => Mastery.GrimoireOf(Owner)?.Raise(school);
 
     /// <summary>Аура на врагов в первый ход героя (враги уже подготовлены правилами боя).</summary>
@@ -95,6 +98,9 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     public static Type?[] Options(OriginRelic? origin) => origin switch
     {
         FrostbornOrigin => [typeof(BeastSpeakerBackground), typeof(SkaldBackground), typeof(FrostbinderBackground)],
+        ForgebloodOrigin => [typeof(BerserkerBackground), typeof(PoacherBackground), typeof(ThunderShamanBackground)],
+        DunebladeOrigin => [typeof(DawnBrotherBackground), typeof(ConspiratorBackground), typeof(AnseiBackground)],
+        CitadelOrigin => [typeof(LegionaryBackground), typeof(EnvoyBackground), typeof(CitadelMageBackground)],
         MoonbornOrigin => [typeof(FugitiveBackground), typeof(RogueBackground), typeof(DuskSingerBackground)],
         ThicketbornOrigin => [typeof(WinddancerBackground), typeof(HunterBackground), typeof(HermitBackground)],
         MarshbornOrigin => [typeof(GladiatorBackground), typeof(ShadowscaleBackground), typeof(VenomweaverBackground)],
@@ -205,6 +211,122 @@ public sealed class FrostbinderBackground : BackgroundRelic
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (IsFirstTurnOf(player, Owner)) await ApplyToAllEnemies<FrostResistancePower>(-1);
+    }
+}
+
+// ═════════════ Латоносец · Горнокровные ═════════════
+
+/// <summary>Берсерк: тяжёлые атаки (◆ 2+) на 1 ◆ дешевле; стартовый двуручный топор.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class BerserkerBackground : BackgroundRelic, IAttackStaminaModifier
+{
+    protected override Task SetUpStart() => GiveRelic<Equipment.IronBattleaxe>();
+
+    public int ModifyAttackStamina(CardModel card, int cost) =>
+        card.Owner == Owner && Pantheon.BoonRelic.IsHeavy(card) ? cost - 1 : cost;
+}
+
+/// <summary>Браконьер: тяжёлый лук; «Прицельный выстрел» вместо Удара; луки и арбалеты не весят (выстрелы без штрафа к весу).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class PoacherBackground : BackgroundRelic, Equipment.IEquipmentWeightWaiver
+{
+    protected override async Task SetUpStart()
+    {
+        await GiveRelic<Equipment.HeavyBow>();
+        await ReplaceStarter<AimedShot>(CardTag.Strike);
+    }
+
+    public bool Waives(Equipment.EquipmentRelic item) => Progression.HeroRecord.IsRanged(item.Weapon);
+}
+
+/// <summary>Громовой шаман: +1 владения Разрушением; «Искры» вместо Удара; аура — враги уязвимы к разряду (I).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class ThunderShamanBackground : BackgroundRelic
+{
+    protected override Task SetUpStart()
+    {
+        RaiseMastery(SpellSchool.Destruction);
+        return ReplaceStarter<Sparks>(CardTag.Strike);
+    }
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (IsFirstTurnOf(player, Owner)) await ApplyToAllEnemies<ShockResistancePower>(-1);
+    }
+}
+
+// ═════════════ Латоносец · Дюнные клинки ═════════════
+
+/// <summary>Брат Рассвета: +1 владения Восстановлением; бесплатно поддерживаемый «Дух света» (2 урона светом в начале хода).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class DawnBrotherBackground : BackgroundRelic
+{
+    protected override Task SetUpStart()
+    {
+        RaiseMastery(SpellSchool.Restoration);
+        return Task.CompletedTask;
+    }
+
+    public override async Task BeforeCombatStart() =>
+        await PowerCmd.Apply<LightSpiritPower>(new ThrowingPlayerChoiceContext(), Owner.Creature, OriginRules.LightSpiritDamage, Owner.Creature, null, silent: true);
+}
+
+/// <summary>Заговорщик: яды на оружии +1 заряд и +25 % силы (<see cref="WeaponPoisonPower"/>); стартовый Комбинированный яд I.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class ConspiratorBackground : BackgroundRelic, IPoisonChargeSource
+{
+    public int ExtraPoisonCharges => 1;
+
+    protected override Task SetUpStart() => GivePotion<CombinedPoisonI>();
+}
+
+/// <summary>Клинок-ансей: в колоде «Дух клинка» — переключаемый дух (атаки + урон магией ⌊✦/2⌋, но +1 ✦).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class AnseiBackground : BackgroundRelic
+{
+    protected override Task SetUpStart() => AddToDeck<BladeSpirit>();
+}
+
+// ═════════════ Латоносец · Цитадельцы ═════════════
+
+/// <summary>Легионер: стартовый щит; «Удар щитом» вместо Удара; в первый ход боя Блок от карт +2, если в руке щит.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class LegionaryBackground : BackgroundRelic
+{
+    protected override async Task SetUpStart()
+    {
+        await GiveRelic<Equipment.OakShield>();
+        await ReplaceStarter<ShieldBash>(CardTag.Strike);
+    }
+
+    public override decimal ModifyBlockAdditive(Creature target, decimal block, ValueProp props, CardModel? cardSource, CardPlay? cardPlay) =>
+        target == Owner.Creature && cardSource != null && Owner.Creature.CombatState is { RoundNumber: 1 }
+        && Equipment.Loadout.InSlot(Owner, EquipSlot.OffHand) is { Weapon: WeaponKind.Shield }
+            ? OriginRules.LegionaryFirstTurnBlock : 0m;
+}
+
+/// <summary>Посланник: в каждом бою рядом страж «Верный-до-Конца» — принимает удары первым, растёт с уровнем героя.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class EnvoyBackground : BackgroundRelic
+{
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (!IsFirstTurnOf(player, Owner)) return;
+        var (hp, damage) = OriginRules.LoyalGuard(Progression.HeroRecord.Of(Owner)?.Level ?? 1);
+        await SummonPower.Summon<LoyalGuardPower>(choiceContext, Owner.Creature, hp, null);
+        Owner.Creature.GetPower<LoyalGuardPower>()?.SetDamage(damage);
+        Flash();
+    }
+}
+
+/// <summary>Маг цитадели: +1 владения Изменением; «Импульс» (телекинез) вместо Удара.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class CitadelMageBackground : BackgroundRelic
+{
+    protected override Task SetUpStart()
+    {
+        RaiseMastery(SpellSchool.Alteration);
+        return ReplaceStarter<Telekinesis>(CardTag.Strike);
     }
 }
 

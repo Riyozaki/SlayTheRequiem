@@ -153,6 +153,13 @@ class Stage3(unittest.TestCase):
         self.assertEqual([r.fugitive_bonus(n) for n in (0, 2, 5)], [0, 2, 3])
         self.assertEqual([r.winddancer_bonus(n) for n in (2, 3, 7)], [0, 1, 2])
         self.assertEqual([r.beast_spirit(n) for n in (0, 1, 4)], [(6, 3), (12, 5), (20, 7)])
+        # Кланы Латоносца (M4 п. 1)
+        self.assertEqual([r.forge_fury_active(n) for n in (2, 3)], [False, True])
+        self.assertEqual([r.dune_rhythm_regen(s, 9) for s in (9, 7, 6, 4, 0)], [0, 0, 1, 2, 2])
+        self.assertEqual([r.training_bonus_points(lv) for lv in (1, 2, 3, 6, 15, 20)], [0, 0, 1, 2, 5, 5])
+        self.assertEqual([r.conspirator_potency(p) for p in (0, 2, 3, 4, 7)], [0, 3, 4, 5, 9])
+        self.assertEqual([r.blade_spirit_bonus(m) for m in (0, 1, 3, 4)], [0, 0, 1, 2])
+        self.assertEqual([r.loyal_guard(lv) for lv in (1, 4, 15)], [(10, 2), (16, 3), (38, 5)])
 
     def test_brewing(self):
         pouch = [0] * 10

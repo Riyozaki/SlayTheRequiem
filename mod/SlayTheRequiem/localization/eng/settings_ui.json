@@ -24,7 +24,7 @@
   "SLAYTHEREQUIEM-AUTO_DODGE.hover.desc": "Spend a Dodge charge and 2 ◆ automatically when an attack would hit your HP. Off — Dodge never triggers.",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.title": "Platebearer clan",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.title": "Platebearer clan",
-  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.desc": "Until the origin select screen exists, the origin is taken from here.",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.hover.desc": "Frostborn, Forgeblood, Duneblades or Citadel-born. Random — by the run seed; Choose — a screen at the start of the run.",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Frostborn": "Frostborn",
   "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.None": "None",
   "SLAYTHEREQUIEM-SILENT_ORIGIN.title": "Silent tribe",
@@ -94,5 +94,10 @@
   "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "In the mod they are transformation forms (Lich, Clockwork Heart), so they are hidden on the character select screen and their cards never appear in rewards. On — bring them back as vanilla heroes (the mod's systems do not apply to them). Must match in co-op.",
   "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.title": "Elemental card titles in colour",
   "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.title": "Elemental titles",
-  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.desc": "The title of a fire, frost, shock, poison, blight, light or magic card takes the colour of its element. Upgraded cards keep the green outline and the \"+\". Cosmetic only."
+  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.desc": "The title of a fire, frost, shock, poison, blight, light or magic card takes the colour of its element. Upgraded cards keep the green outline and the \"+\". Cosmetic only.",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Random": "Random",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Forgeblood": "Forgeblood",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Duneblade": "Duneblades",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Citadel": "Citadel-born",
+  "SLAYTHEREQUIEM-PLATEBEARER_ORIGIN.Choose": "Choose"
 }

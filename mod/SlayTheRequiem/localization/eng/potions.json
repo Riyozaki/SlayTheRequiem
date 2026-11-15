@@ -142,5 +142,7 @@
   "SLAYTHEREQUIEM-MOON_SUGAR_ELIXIR.title": "Moon Sugar Elixir",
   "SLAYTHEREQUIEM-MOON_SUGAR_ELIXIR.description": "Gain {Amount} ✦. Spells cost 1 less ✦ for {Turns} turns, then lose 2 ✦.",
   "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.title": "Hearth Mother's Tears",
-  "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.description": "When you would die, revive with 25% of your Max HP."
+  "SLAYTHEREQUIEM-HEARTH_MOTHER_TEARS.description": "When you would die, revive with 25% of your Max HP.",
+  "SLAYTHEREQUIEM-COMBINED_POISON_I.title": "Combined Poison I",
+  "SLAYTHEREQUIEM-COMBINED_POISON_I.description": "Coat your weapon ({Charges} charges). Weapon attacks: [gold]Poison[/gold] {Amount} and drain 2 ◆."
 }

@@ -315,6 +315,41 @@ def beast_spirit(elites_defeated: int) -> tuple[int, int]:
     return 20, 7
 
 
+
+# Кланы Латоносца (M4 п. 1)
+FORGE_FURY_ATTACKS = 3
+
+
+def forge_fury_active(attacks_this_turn: int) -> bool:
+    return attacks_this_turn >= FORGE_FURY_ATTACKS
+
+
+def dune_rhythm_regen(stamina: int, pool: int) -> int:
+    if pool <= 0:
+        return 0
+    if stamina * 2 < pool:
+        return 2
+    if stamina * 4 < pool * 3:
+        return 1
+    return 0
+
+
+def training_bonus_points(level: int, max_level: int = 15) -> int:
+    return max(1, min(max_level, level)) // 3
+
+
+def conspirator_potency(potency: int) -> int:
+    return potency if potency <= 0 else (potency * 5 + 3) // 4
+
+
+def blade_spirit_bonus(mana: int) -> int:
+    return max(0, mana) // 2
+
+
+def loyal_guard(level: int, max_level: int = 15) -> tuple[int, int]:
+    lv = max(1, min(max_level, level))
+    return 8 + 2 * lv, 2 + lv // 4
+
 # ───────────── Алхимия (Core/AlchemyRules.cs) ─────────────
 
 REAGENTS = ["Bloodmoss", "Bluebloom", "Yellowsorrel", "AshSalt", "FrostSalt", "StormCrystal", "Nightcap", "GraveDust",

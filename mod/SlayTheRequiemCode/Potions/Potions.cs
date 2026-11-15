@@ -782,6 +782,16 @@ public sealed class SnakeBitePoisonV : RequiemPoison<SnakeBitePoisonPower>
     protected override string VanillaArt => "orobic_acid";
 }
 
+// ───── яд: Комбинированный (09 §4: Токсин + Истощение; дорогой, старт «Заговорщика» 04) ─────
+
+[Pool(typeof(TokenPotionPool))]
+public sealed class CombinedPoisonI : RequiemPoison<CombinedPoisonPower>
+{
+    public override Brew Kind => Brew.Toxin;
+    public override int Tier => 1;
+    protected override string VanillaArt => "poison_potion";
+}
+
 // ───── яд: Toxin ─────
 
 [Pool(typeof(TokenPotionPool))]

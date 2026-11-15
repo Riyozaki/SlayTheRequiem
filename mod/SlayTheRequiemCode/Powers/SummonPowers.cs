@@ -25,6 +25,8 @@ public abstract class SummonPower : RequiemPower
     public abstract int AttackDamage { get; }
     public virtual DamageType AttackType => DamageType.Physical;
     public virtual bool HitsAll => false;
+    /// <summary>Спутник («Верный-до-Конца»): слот призыва не занимает, другие призывы его не вытесняют.</summary>
+    public virtual bool IsCompanion => false;
 
     private int _pending;
     private Creature? _pendingAttacker;
@@ -32,7 +34,7 @@ public abstract class SummonPower : RequiemPower
     public static async Task Summon<T>(PlayerChoiceContext ctx, Creature hero, int hp, CardModel? source) where T : SummonPower
     {
         // Слотов призыва 1 (+Знамение Обряда и др.): лишние — самые старые — уходят.
-        var others = hero.Powers.OfType<SummonPower>().Where(p => p is not T).ToList();
+        var others = hero.Powers.OfType<SummonPower>().Where(p => p is not T && !p.IsCompanion).ToList();
         var excess = others.Count - (Slots(hero) - 1);
         foreach (var other in others.Take(Math.Max(0, excess)).ToList())
             await PowerCmd.Remove(other);

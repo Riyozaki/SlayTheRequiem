@@ -310,5 +310,14 @@
   "SLAYTHEREQUIEM-CONCENTRATION_POWER.smartDescription": "Каждое ваше заклинание даёт {Amount} [gold]Блока[/gold].",
   "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.title": "Мастерство заклинателя",
   "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.description": "Первые заклинания каждого хода ({Amount}) на 1 ✦ дешевле.",
-  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.smartDescription": "Первые заклинания каждого хода ({Amount}) на 1 ✦ дешевле."
+  "SLAYTHEREQUIEM-ARCANE_MASTERY_POWER.smartDescription": "Первые заклинания каждого хода ({Amount}) на 1 ✦ дешевле.",
+  "SLAYTHEREQUIEM-LIGHT_SPIRIT_POWER.title": "Дух света",
+  "SLAYTHEREQUIEM-LIGHT_SPIRIT_POWER.description": "В начале хода — {Amount} урона [gold]светом[/gold] случайному врагу.",
+  "SLAYTHEREQUIEM-LIGHT_SPIRIT_POWER.smartDescription": "В начале хода — {Amount} урона [gold]светом[/gold] случайному врагу.",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT_POWER.title": "Дух клинка",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT_POWER.description": "Ваши атаки тратят 1 ✦ и наносят дополнительный урон [purple]магией[/purple] — половину ваших ✦ (до траты).",
+  "SLAYTHEREQUIEM-BLADE_SPIRIT_POWER.smartDescription": "Ваши атаки тратят 1 ✦ и наносят дополнительный урон [purple]магией[/purple] — половину ваших ✦ (до траты).",
+  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.title": "Верный-до-Конца",
+  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.description": "Страж со щитом, {Amount} ♥: принимает удары первым и в конце хода бьёт врага. Растёт с вашим уровнем.",
+  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.smartDescription": "Страж со щитом, {Amount} ♥: принимает удары первым и в конце хода бьёт врага. Растёт с вашим уровнем."
 }
