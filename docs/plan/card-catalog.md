@@ -4,9 +4,9 @@
 > Значения `N(+M)` — база и прибавка улучшения. ⚡ — энергия, ◆ — выносливость, ✦ — мана (звёзды).
 > Текст — русская локализация без разметки, переменные `{…}` оставлены как есть.
 
-Всего карт: **295**. Латоносец — 22, Безмолвная — 16, Регент — 12, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 114
+Всего карт: **316**. Латоносец — 39, Безмолвная — 20, Регент — 12, Кличи — 5, Заклинания — 39, Формы и Пути — 59, Зачарование карт — 6, Камень Памяти — 4, Услуги лавки — 18, Жетоны выбора — 114
 
-## Латоносец (22)
+## Латоносец (39)
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -21,6 +21,23 @@
 | `AgainstAllOdds` | Вопреки всему | Ironclad | 1 | 0 |  | Attack | Uncommon | AnyEnemy | 7(+3) |  |  |  | Не тратит ◆. Нанести {Damage:diff()} урона. Вдвое больше, если вы Устали. |
 | `WrathHammer` | Молот гнева | Ironclad | 3 | 4 |  | Attack | Rare | AnyEnemy | 22(+6) |  | StaggerPower 8(+2), SunderPower 3 |  | Нанести {Damage:diff()} урона. Наложить {StaggerPower:diff()} Шаткости и {SunderPower:diff()} Раскола. |
 | `AimedShot` | Прицельный выстрел | Ironclad | 1 | 1 |  | Attack | Common | AnyEnemy | 7(+3) |  | VulnerablePower 1(+1) |  | Нанести {Damage:diff()} урона. С луком или арбалетом — наложить {VulnerablePower:diff()} Уязвимости. |
+| `StokeTheForge` | Раздуть горн | Ironclad | 1 | 1 |  | Attack | Common | AnyEnemy | 5(+2) |  |  |  | Нанести {Damage:diff()} урона. Если в этом ходу сыграно 2+ атаки — нанести ещё раз. |
+| `ThunderingBlow` | Громовой удар | Ironclad | 1 | 2 |  | Attack | Uncommon | AnyEnemy | 8(+3) |  | DrainVar 2(+1) |  | Нанести {Damage:diff()} урона разрядом. Выжечь {ManaDrain:diff()} ✦ врага. |
+| `ForgeHeart` | Сердце горна | Ironclad | 2(-1) |  |  | Power | Rare | Self |  |  | ForgeHeartPower 1 |  | Каждая 3-я атака за ход: взять {ForgeHeartPower:diff()} карту. |
+| `DuneDance` | Танец дюн | Ironclad | 1 | 0 |  | Attack | Common | AnyEnemy | 6(+2) |  | WearyBonusVar 4(+2) |  | Не тратит ◆. Нанести {Damage:diff()} урона. Если вы Устали — ещё {WearyBonus:diff()} и вернуть 1 ◆. |
+| `DesertPatience` | Терпение пустыни | Ironclad | 1 |  |  | Skill | Common | Self |  | 6(+3) | CatchBreath.GainVar 3(+1) |  | Получить {Block:diff()} Блока. Если вы Устали — вернуть {StaminaGain:diff()} ◆. |
+| `LockShields` | Сцепить щиты | Ironclad | 1 |  |  | Skill | Common | Self |  | 6(+3) | PlatingPower 1 |  | Получить {Block:diff()} Блока. Со щитом — получить {PlatingPower:diff()} Лат. |
+| `ShieldCharge` | Таран щитом | Ironclad | 2 | 2 |  | Attack | Uncommon | AnyEnemy | 4(+3) |  |  |  | Нанести {Damage:diff()} урона плюс ваш текущий Блок. |
+| `LegionDrill` | Строй легиона | Ironclad | 1 |  |  | Power | Uncommon | Self |  |  | LegionDrillPower 3(+1) |  | В начале хода, если надет щит, получать {LegionDrillPower:diff()} Блока. |
+| `RendingCut` | Рваная рана | Ironclad | 1 | 1 |  | Attack | Common | AnyEnemy | 3(+1) |  | BleedPower 1(+1) |  | Дважды нанести {Damage:diff()} урона. Каждый удар накладывает {BleedPower:diff()} Кровотечения. |
+| `OpenVeins` | Вскрыть жилы | Ironclad | 1(-1) |  |  | Skill | Uncommon | AnyEnemy |  |  |  |  | Удвоить Кровотечение цели. |
+| `Hemorrhage` | Кровопускание | Ironclad | 2 | 2 |  | Attack | Rare | AnyEnemy | 8(+3) |  | PerBleedVar 2(+1) |  | Нанести {Damage:diff()} урона и ещё {PerBleed:diff()} за каждое Кровотечение цели. |
+| `SteelEndurance` | Стальная выдержка | Ironclad | 1 |  |  | Skill | Common | Self |  | 4(+2) | PerPieceVar 2(+1) |  | Получить {Block:diff()} Блока и ещё {PerHeavy:diff()} за каждую надетую вещь тяжёлой брони. |
+| `LivingFortress` | Живая крепость | Ironclad | 2 |  |  | Power | Rare | Self |  |  | PlatingPower 1(+1) |  | Получить {PlatingPower:diff()} Лат и ещё 1 за каждую надетую вещь тяжёлой брони. |
+| `MeasuredStrike` | Выверенный удар | Ironclad | 1 | 1 |  | Attack | Common | AnyEnemy | 7(+3) |  |  |  | Оружейная. Нанести {Damage:diff()} урона. С одноручным оружием — взять 1 карту. |
+| `SwordAndBoard` | Меч и щит | Ironclad | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 6(+2) | 5(+2) |  |  | Оружейная. Нанести {Damage:diff()} урона. С одноручным оружием и щитом — получить {Block:diff()} Блока. |
+| `OverheadSmash` | Удар с плеча | Ironclad | 2 | 3 |  | Attack | Uncommon | AnyEnemy | 12(+4) |  | TwoHandedBonusVar 6(+2) |  | Оружейная. Нанести {Damage:diff()} урона. С двуручным оружием — ещё {TwoHandedBonus:diff()}. |
+| `MountainBreaker` | Горолом | Ironclad | 2 | 4 |  | Attack | Rare | AllEnemies | 9(+3) |  |  |  | Оружейная. Нанести {Damage:diff()} урона ВСЕМ врагам. С двуручным оружием — дважды. |
 | `CloseRanks` | Сомкнуть латы | Ironclad | 2 |  |  | Power | Uncommon | Self |  |  | PlatingPower 2(+1) |  | Получить {PlatingPower:diff()} Лат. |
 | `Tempering` | Закалка | Ironclad | 1(-1) |  |  | Power | Uncommon | Self |  |  | TemperingPower 1 |  | В начале хода восстанавливать на {TemperingPower:diff()} ◆ больше. |
 | `Frostblood` | Кровь стужи | Ironclad | 2(-1) |  |  | Power | Rare | Self |  |  | FrostbloodPower 1, FrostResistancePower 1 |  | Получить Сопротивление холоду {FrostResistancePower:diff()}. Ваш Озноб сильнее на {FrostbloodPower:diff()}. Озноб на вас спадает целиком. |
@@ -33,7 +50,7 @@
 | `ChangeGrip` | Сменить хват | Ironclad | 0 |  |  | Skill | Uncommon | Self |  |  | GripPower 3(+2) |  | Следующая атака в этом ходу не тратит ◆ и наносит на {GripPower:diff()} урона больше. |
 | `BladeSpirit` | Дух клинка | Ironclad | 1(-1) |  |  | Skill | Uncommon | Self |  |  |  |  | Призвать или отпустить дух клинка. Пока он призван, ваши атаки тратят 1 ✦ и наносят дополнительный урон магией — половину ваших ✦. |
 
-## Безмолвная (16)
+## Безмолвная (20)
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -53,6 +70,10 @@
 | `Riposte` | Контрудар | Silent | 1 |  |  | Power | Uncommon | Self |  |  | RipostePower 4(+2) |  | Каждый раз, когда вы Увернулись, атакующий получает {RipostePower:diff()} урона, а ваша следующая атака — Подлая. |
 | `Evasion` | Уклонение | Silent | 2(-1) |  |  | Power | Rare | Self |  |  | DodgePower 1 |  | +{DodgePower:diff()} заряд Уворота каждый ход. |
 | `VenomMastery` | Мастер ядов | Silent | 1 |  |  | Power | Rare | Self |  |  | VenomMasteryPower 1(+1) |  | В начале хода яд на оружии получает +{VenomMasteryPower:diff()} заряд. |
+| `ThirdStep` | Третий шаг | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 5(+2) |  |  |  | Оружейная. Нанести {Damage:diff()} урона. Если в этом ходу сыграно 2+ карты — нанести ещё раз. |
+| `WindRhythm` | Ритм ветра | Silent | 1(-1) |  |  | Power | Uncommon | Self |  |  | WindRhythmPower 1 |  | Каждая 3-я карта за ход: взять {WindRhythmPower:diff()} карту. |
+| `SlipAway` | Ускользнуть | Silent | 0 |  |  | Skill | Common | Self |  | 3(+2) |  |  | Получить {Block:diff()} Блока. Взять 1 карту. |
+| `FleetingStrike` | Мимолётный удар | Silent | 0 | 1 |  | Attack | Uncommon | AnyEnemy | 3(+1) |  | PerZeroVar 2(+1) |  | Нанести {Damage:diff()} урона и ещё {PerZero:diff()} за каждую 0-энергетическую карту, сыгранную раньше в этом ходу (до 3). |
 
 ## Регент (12)
 

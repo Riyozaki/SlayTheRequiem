@@ -319,5 +319,14 @@
   "SLAYTHEREQUIEM-BLADE_SPIRIT_POWER.smartDescription": "Your attacks spend 1 ✦ and deal extra [purple]magic[/purple] damage equal to half your ✦ (before spending).",
   "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.title": "Loyal-to-the-End",
   "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.description": "A shield-bearing guard with {Amount} HP: takes attacks first and strikes an enemy at the end of your turn. Grows with your level.",
-  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.smartDescription": "A shield-bearing guard with {Amount} HP: takes attacks first and strikes an enemy at the end of your turn. Grows with your level."
+  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.smartDescription": "A shield-bearing guard with {Amount} HP: takes attacks first and strikes an enemy at the end of your turn. Grows with your level.",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.title": "Legion Drill",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.description": "At the start of your turn, if you have a shield, gain {Amount} [gold]Block[/gold].",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.smartDescription": "At the start of your turn, if you have a shield, gain {Amount} [gold]Block[/gold].",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.title": "Forge Heart",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.description": "Every 3rd Attack you play each turn draws {Amount} card(s).",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.smartDescription": "Every 3rd Attack you play each turn draws {Amount} card(s).",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.title": "Wind Rhythm",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.description": "Every 3rd card you play each turn draws {Amount} card(s).",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Every 3rd card you play each turn draws {Amount} card(s)."
 }

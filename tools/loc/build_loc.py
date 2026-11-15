@@ -23,6 +23,7 @@ from loc_flavor import FLAVOR  # noqa: E402
 from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
 from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
+from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_relics import RELICS_BACKPACK, RELICS_EQUIPMENT, RELICS_POTIONS, RELICS_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
@@ -182,8 +183,8 @@ def check_unique() -> None:
     """Один класс — один текст. Повтор с другим текстом молча перетирал первый
     (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
     tables = {
-        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS,
-        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS,
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS,
         "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
                   + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK,
     }
@@ -202,11 +203,11 @@ def main() -> None:
     check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]

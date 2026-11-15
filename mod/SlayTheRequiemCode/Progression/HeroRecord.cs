@@ -398,10 +398,19 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private bool _bashThisTurn, _secondBreathUsed, _againstAllOddsUsed;
     // Заклинаний каждой школы за ход — для «Ремесла школы» (07 §6.1). Создаётся в бою: каноническая модель его не делит.
     private int[]? _schoolSpellsThisTurn;
+    private int _cardsThisTurn, _zeroCostThisTurn;
+
+    /// <summary>Сколько атак (не заклинаний) герой уже сыграл в этом ходу — для карт «3+ атаки» (16 §3, Горнокровные).</summary>
+    public int AttacksThisTurn => _attacksThisTurn;
+    /// <summary>Сколько карт сыграно в этом ходу (Ветроплясун, 17 §3).</summary>
+    public int CardsThisTurn => _cardsThisTurn;
+    /// <summary>Сколько 0-энергетических карт сыграно в этом ходу (Беглец, 17 §3).</summary>
+    public int ZeroCostThisTurn => _zeroCostThisTurn;
 
     public override Task BeforeCombatStart()
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
+        _cardsThisTurn = _zeroCostThisTurn = 0;
         _weaponAttacksThisCombat = 0;
         _bashThisTurn = _secondBreathUsed = _againstAllOddsUsed = false;
         _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
@@ -428,6 +437,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     protected override async Task OnTurnStarted(PlayerChoiceContext ctx)
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
+        _cardsThisTurn = _zeroCostThisTurn = 0;
         _bashThisTurn = false;
         _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
         var hero = Owner.Creature;
@@ -454,6 +464,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     {
         var card = cardPlay.Card;
         if (card.Owner != Owner || !cardPlay.IsLastInSeries) return;
+        _cardsThisTurn++;
+        if (cardPlay.Resources.EnergyValue == 0) _zeroCostThisTurn++;
         // Клич — на полку (карта снимается со стола, но остаётся в бою; вернётся в руку через N ходов).
         if (card is RequiemCard { ShelvedByThisPlay: true } shoutCard && card is IShoutCard shout)
         {

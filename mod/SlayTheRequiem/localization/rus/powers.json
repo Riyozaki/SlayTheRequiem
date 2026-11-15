@@ -319,5 +319,14 @@
   "SLAYTHEREQUIEM-BLADE_SPIRIT_POWER.smartDescription": "Ваши атаки тратят 1 ✦ и наносят дополнительный урон [purple]магией[/purple] — половину ваших ✦ (до траты).",
   "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.title": "Верный-до-Конца",
   "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.description": "Страж со щитом, {Amount} ♥: принимает удары первым и в конце хода бьёт врага. Растёт с вашим уровнем.",
-  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.smartDescription": "Страж со щитом, {Amount} ♥: принимает удары первым и в конце хода бьёт врага. Растёт с вашим уровнем."
+  "SLAYTHEREQUIEM-LOYAL_GUARD_POWER.smartDescription": "Страж со щитом, {Amount} ♥: принимает удары первым и в конце хода бьёт врага. Растёт с вашим уровнем.",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.title": "Строй легиона",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.description": "В начале хода, если надет щит, получать {Amount} [gold]Блока[/gold].",
+  "SLAYTHEREQUIEM-LEGION_DRILL_POWER.smartDescription": "В начале хода, если надет щит, получать {Amount} [gold]Блока[/gold].",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.title": "Сердце горна",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.description": "Каждая 3-я атака за ход: взять карт — {Amount}.",
+  "SLAYTHEREQUIEM-FORGE_HEART_POWER.smartDescription": "Каждая 3-я атака за ход: взять карт — {Amount}.",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.title": "Ритм ветра",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.description": "Каждая 3-я карта за ход: взять карт — {Amount}.",
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Каждая 3-я карта за ход: взять карт — {Amount}."
 }
