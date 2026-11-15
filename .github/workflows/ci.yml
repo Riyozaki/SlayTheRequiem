@@ -52,7 +52,9 @@ jobs:
       - name: C# syntax (all mod files)
         run: python tools/ci/check_csharp_syntax.py
       - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)
-        run: python tools/art/build_vanilla_art.py --check
+        run: |
+          python tools/art/build_vanilla_art.py --check
+          python tools/art/art_fit.py --check
       - name: Every model has its own or a vanilla image
         run: python tools/assets/asset_manifest.py --check
       - name: Card audit (card spec §7), design tables (docs/design 16/17/18/06) and card pools (19) match the code

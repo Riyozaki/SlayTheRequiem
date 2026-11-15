@@ -2,7 +2,8 @@
 """Снимок ванильных моделей игры для проверки таблицы заимствованного арта (tools/art/vanilla_art.csv).
 
 Источник — декомпиляция игры (например, github.com/zhiyue/sts2-rl-agent, папка decompiled/).
-Пишет tools/art/vanilla_models.txt: строки «kind pool Class» (pool только у карт, у прочих «-»).
+Пишет tools/art/vanilla_models.txt: строки «kind pool Class» (pool только у карт, у прочих «-»),
+и tools/art/vanilla_card_types.txt: «Class Type» (Attack/Skill/Power/…) — для проверки tools/art/art_fit.py.
 Перезапускать после обновлений игры:
 
     python3 tools/art/snapshot_vanilla.py /path/to/decompiled 0.107.1
@@ -13,6 +14,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "vanilla_models.txt")
+TYPES_OUT = os.path.join(HERE, "vanilla_card_types.txt")
 POOLS = ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect", "Colorless", "Event", "Token", "Curse", "Status", "Quest"]
 
 
@@ -37,6 +39,16 @@ def main(src: str, version: str) -> int:
         fh.write(f"# Ванильные модели Slay the Spire 2 {version} (tools/art/snapshot_vanilla.py)\n")
         fh.write("\n".join(rows) + "\n")
     print(f"{OUT}: {len(rows)} моделей")
+    types = []
+    cards_dir = os.path.join(src, "MegaCrit.Sts2.Core.Models.Cards")
+    for name in sorted({r.split()[2] for r in rows if r.startswith("card ")}):
+        path = os.path.join(cards_dir, f"{name}.cs")
+        m = re.search(r"base\(\s*-?\d+\s*,\s*CardType\.(\w+)", open(path, encoding="utf-8").read()) if os.path.exists(path) else None
+        types.append(f"{name} {m.group(1) if m else '?'}")
+    with open(TYPES_OUT, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(f"# Типы ванильных карт Slay the Spire 2 {version} (tools/art/snapshot_vanilla.py)\n")
+        fh.write("\n".join(types) + "\n")
+    print(f"{TYPES_OUT}: {len(types)} карт")
     return 0
 
 
