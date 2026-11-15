@@ -93,6 +93,18 @@ internal class RequiemConfig : SimpleModConfig
     /// </summary>
     public static bool EnablePantheon { get; set; } = true;
 
+    /// <summary>
+    /// Метапрогресс лагеря (docs/design/10 §5, открытый вопрос ROADMAP №2): победы в забегах по очереди открывают постройки —
+    /// Котёл, Наковальня, Зачаровальный стол, Алтарь, Палатка травника; открытая стоит в каждом лагере. Только бонус: без
+    /// него лагерь прежний. Действует в одиночной игре (в коопе настройки у игроков разные).
+    /// </summary>
+    public static bool EnableCampMeta { get; set; } = false;
+
+    /// <summary>Сколько построек лагеря открыто победами (0–5). Не настройка — счётчик, переживает сброс по умолчанию.</summary>
+    [ConfigHideInUI]
+    [ConfigIgnoreRestoreDefaults]
+    public static int CampBuildingsUnlocked { get; set; } = 0;
+
     /// <summary>Камень Памяти (docs/design/15): Отпечаток в начале акта и возврат с экрана поражения.</summary>
     [ConfigSection("DeathSection")]
     public static bool EnableMemoryStone { get; set; } = true;

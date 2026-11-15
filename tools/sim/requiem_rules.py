@@ -619,8 +619,9 @@ def spell_allowed_in_shop(tier: int, mastery: int) -> bool:
 
 
 # доверие: витрина и Заказ
-def refills_per_visit(trust_level: int) -> int:
-    return max(0, min(3, trust_level))
+def refills_per_visit(trust_level: int, trade_name: bool = False) -> int:
+    # «Торговое имя» (Выживание II, 10 §2): ещё +1 товар за визит
+    return max(0, min(3, trust_level)) + (1 if trade_name else 0)
 
 
 def can_order(trust_level: int) -> bool:
@@ -1127,10 +1128,33 @@ def camp_budget(wayfarer: bool, camp_master: bool) -> int:
     return 2 + (1 if wayfarer else 0) + (1 if camp_master else 0)
 
 
-def camp_cost(action: str, camp_master: bool) -> int:
+def camp_cost(action: str, camp_master: bool, anvil: bool = False) -> int:
+    if action == "Forge" and anvil:  # Наковальня метапрогресса (10 §5)
+        return 1
     if camp_master and action in ("Forge", "Enchant"):
         return 1
     return CAMP_COSTS.get(action, 2)
+
+
+# M5 п. 5: вьючный зверь (10 §6) и постройки метапрогресса (10 §5)
+MULE_BURDEN, SHOD_BURDEN, MULE_PRICE, MULE_SHOE_PRICE = 10, 5, 120, 40
+CAMP_BUILDINGS = ["Kettle", "Anvil", "EnchantingTable", "Altar", "HerbalistTent"]
+
+
+def mule_capacity(shod: bool) -> int:
+    return MULE_BURDEN + (SHOD_BURDEN if shod else 0)
+
+
+def chest_loss(stored: int) -> int:
+    return (max(0, stored) + 1) // 2
+
+
+def has_building(unlocked: int, building: str) -> bool:
+    return unlocked >= CAMP_BUILDINGS.index(building) + 1
+
+
+def unlock_after_victory(unlocked: int) -> int:
+    return max(0, min(len(CAMP_BUILDINGS), unlocked + 1))
 
 
 def short_rest_percent(first_aid: bool) -> int:

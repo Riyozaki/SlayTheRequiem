@@ -71,6 +71,15 @@ public enum ShopAction
     ClearName = 23,
     /// <summary>Обмен Каравана: отданный предмет выбирается экраном у всех, полученный — по зерну.</summary>
     Trade = 24,
+
+    // ───── M5 п. 5: вьючный зверь (10 §6) ─────
+
+    /// <summary>a = цена (Странник, Караван).</summary>
+    BuyMule = 25,
+    /// <summary>a = цена («Подковать» у Оружейника).</summary>
+    ShoeMule = 26,
+    /// <summary>Сундук у прилавка (со зверем): выбор карт и вещей — синхронные экраны у всех.</summary>
+    MuleChest = 27,
 }
 
 /// <summary>
@@ -307,6 +316,24 @@ public static class ShopActions
                     await RelicCmd.Obtain(canonical.ToMutable(), player);
                     break;
                 }
+
+                case ShopAction.BuyMule:
+                {
+                    if (!Alchemy.PackMule.CanAdopt(player)) break;
+                    await Pay(player, ledger, a);
+                    await Alchemy.PackMule.Adopt(player);
+                    break;
+                }
+                case ShopAction.ShoeMule:
+                {
+                    if (Alchemy.PackMule.Of(player) is not { Shod: false } mule) break;
+                    await Pay(player, ledger, a);
+                    mule.Shoe();
+                    break;
+                }
+                case ShopAction.MuleChest:
+                    if (Alchemy.PackMule.Of(player) != null) await ChestRestSiteOption.ChestFlow(player);
+                    break;
 
                 case ShopAction.TheftFailed:
                 {

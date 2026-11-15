@@ -41,19 +41,27 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
     /// <summary>Акт, в «?» которого встречается событие.</summary>
     public abstract ActKind HomeAct { get; }
 
+    /// <summary>Другие акты, где событие тоже встречается (вьючный зверь, M5 п. 5); в ActEvents.For — во всех.</summary>
+    public virtual IReadOnlyList<ActKind> AlsoIn => [];
+
     /// <summary>Числа события: золото, ♥ и т. п. — доступны в текстах как {Имя}.</summary>
     protected abstract IEnumerable<(string Name, int Value)> Numbers { get; }
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         Numbers.Select(n => new DynamicVar(n.Name, n.Value)).ToList();
 
-    public override bool IsAllowed(IRunState runState) =>
-        ActKinds.Current(runState) == HomeAct && (!IsOverlay || RequiemConfig.EnableRequiemSystems) && Allowed(runState);
+    public override bool IsAllowed(IRunState runState)
+    {
+        var act = ActKinds.Current(runState);
+        if (act != HomeAct && !AlsoIn.Contains(act)) return false;
+        return (!IsVanillaAct(act) || RequiemConfig.EnableRequiemSystems) && Allowed(runState);
+    }
 
     /// <summary>Доп. условие появления (по умолчанию — всегда).</summary>
     protected virtual bool Allowed(IRunState runState) => true;
 
-    private bool IsOverlay => HomeAct is ActKind.Hive or ActKind.Glory;
+    /// <summary>Ванильные акты (Подножие, оверлеи Улья и Славы): события мода там — только с системами Реквиема.</summary>
+    private static bool IsVanillaAct(ActKind act) => act is ActKind.Foothills or ActKind.Hive or ActKind.Glory;
 
     public override string? CustomInitialPortraitPath =>
         $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.jpg".EventImagePath(Art.VanillaArt.EventPortrait(GetType().Name));
@@ -214,27 +222,36 @@ public static class ActEvents
 {
     public static IEnumerable<EventModel> For(ActKind kind) => kind switch
     {
+        ActKind.Foothills => [ModelDb.Event<AbandonedMuleEvent>()],
         ActKind.FrozenBarrows =>
         [
             ModelDb.Event<FrozenPilgrimEvent>(), ModelDb.Event<BarrowSealEvent>(), ModelDb.Event<FrostAltarEvent>(),
             ModelDb.Event<DraugrWakeEvent>(), ModelDb.Event<BurialUrnsEvent>(), ModelDb.Event<SnowboundSledEvent>(),
+            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(),
         ],
         ActKind.ClockworkDepths =>
         [
             ModelDb.Event<BrokenGolemEvent>(), ModelDb.Event<SteamValveEvent>(), ModelDb.Event<BrassArchiveEvent>(),
             ModelDb.Event<CoastRaidersEvent>(), ModelDb.Event<AutomatonForgeEvent>(), ModelDb.Event<ClockworkOracleEvent>(),
+            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(),
         ],
         ActKind.BloodCourt =>
         [
             ModelDb.Event<MasqueradeEvent>(), ModelDb.Event<BloodFountainEvent>(), ModelDb.Event<CountsDiceEvent>(),
             ModelDb.Event<ThrallMarketEvent>(), ModelDb.Event<BlindMirrorEvent>(), ModelDb.Event<NightCarriageEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(),
         ],
         ActKind.StarTower =>
         [
             ModelDb.Event<StarExamEvent>(), ModelDb.Event<LeyWellEvent>(), ModelDb.Event<BrokenOrreryEvent>(),
             ModelDb.Event<RenegadeApprenticeEvent>(), ModelDb.Event<MirrorLibraryEvent>(), ModelDb.Event<StarCartographerEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(),
         ],
-        ActKind.Hive => [ModelDb.Event<WhisperingRiftEvent>(), ModelDb.Event<HiveAmberEvent>(), ModelDb.Event<AshPilgrimEvent>()],
+        ActKind.Hive =>
+        [
+            ModelDb.Event<WhisperingRiftEvent>(), ModelDb.Event<HiveAmberEvent>(), ModelDb.Event<AshPilgrimEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(),
+        ],
         ActKind.Glory => [ModelDb.Event<FallenHeraldEvent>(), ModelDb.Event<VoidMerchantEvent>(), ModelDb.Event<LastCampfireEvent>()],
         _ => [],
     };
@@ -261,4 +278,19 @@ public static class GloryEventsPatch
 {
     [HarmonyPostfix]
     public static void Postfix(ref IEnumerable<EventModel> __result) => __result = OverlayEventsPatch.Append(__result, ActKind.Glory);
+}
+
+/// <summary>Подножие (ванильные Заросли и Подземные доки): «Брошенный мул» (10 §6, акты 1–2).</summary>
+[HarmonyPatch(typeof(Overgrowth), nameof(ActModel.AllEvents), MethodType.Getter)]
+public static class OvergrowthEventsPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(ref IEnumerable<EventModel> __result) => __result = OverlayEventsPatch.Append(__result, ActKind.Foothills);
+}
+
+[HarmonyPatch(typeof(Underdocks), nameof(ActModel.AllEvents), MethodType.Getter)]
+public static class UnderdocksEventsPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(ref IEnumerable<EventModel> __result) => __result = OverlayEventsPatch.Append(__result, ActKind.Foothills);
 }

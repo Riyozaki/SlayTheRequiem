@@ -281,12 +281,13 @@ public sealed class MerchantLedger : RequiemRelic
 
     /// <summary>
     /// «+1 товар на витрине за уровень доверия» (14 §1): слоты сцены фиксированы, поэтому купленный товар
-    /// замещается новым — до «доверие» раз за визит. Удаление карты не пополняется.
+    /// замещается новым — до «доверие» раз за визит («Торговое имя» — ещё +1, 10 §2). Удаление карты не пополняется.
     /// </summary>
     public override bool ShouldRefillMerchantEntry(MerchantEntry entry, Player player)
     {
         if (player != Owner || !Active(Owner) || entry is MerchantCardRemovalEntry) return false;
-        if (_refillsUsed >= ShopRules.RefillsPerVisit(CurrentTrust)) return false;
+        var tradeName = Progression.HeroRecord.Of(Owner)?.Has(Skill.TradeName) == true;
+        if (_refillsUsed >= ShopRules.RefillsPerVisit(CurrentTrust, tradeName)) return false;
         AssertMutable();
         _refillsUsed++;
         return true;

@@ -44,7 +44,7 @@ public static class Camp
     public static int Points(Player player) => HeroRecord.Of(player)?.CampPoints ?? 0;
 
     public static int CostOf(Player player, CampAction action) =>
-        CampRules.Cost(action, HeroRecord.Of(player)?.Has(Skill.CampMaster) == true);
+        CampRules.Cost(action, HeroRecord.Of(player)?.Has(Skill.CampMaster) == true, CampMeta.Has(CampBuilding.Anvil));
 
     /// <summary>Вне системы очков нет — всё «по карману» (ванильное поведение не трогаем).</summary>
     public static bool CanAfford(Player player, int cost) =>
@@ -104,20 +104,24 @@ public static class Camp
         }
     }
 
-    // ───── постройки лагеря (10 §5: без метапрогресса — в половине лагерей) ─────
+    // ───── постройки лагеря (10 §5: без метапрогресса — в половине лагерей; открытые победами — в каждом, CampMeta) ─────
 
     private static uint Hash(Player player, string salt) =>
         ShopRules.Fnv1a($"{player.RunState.Rng.StringSeed}|camp|{salt}", player.RunState.TotalFloor);
 
     /// <summary>Зачаровальный стол: в половине лагерей; Зачарователю — в любом.</summary>
     public static bool HasEnchantingTable(Player player) =>
-        player.Relics.OfType<EnchanterBackground>().Any() || Hash(player, "table") % 2 == 0;
+        player.Relics.OfType<EnchanterBackground>().Any() || CampMeta.Has(CampBuilding.EnchantingTable) || Hash(player, "table") % 2 == 0;
 
     /// <summary>Таверна с Наставником (14 §2.9): в каждом третьем лагере по зерну.</summary>
     public static bool HasTavern(Player player) => Hash(player, "tavern") % 3 == 0;
 
     /// <summary>Алтарь: в половине лагерей.</summary>
-    public static bool HasAltar(Player player) => Hash(player, "altar") % 2 == 0;
+    public static bool HasAltar(Player player) => CampMeta.Has(CampBuilding.Altar) || Hash(player, "altar") % 2 == 0;
+
+    /// <summary>Готовка открыта: «Походный котёл», Котёл метапрогресса или Отшельник (Грибная похлёбка).</summary>
+    public static bool HasKettle(Player player) =>
+        HeroRecord.Of(player)?.Has(Skill.CampKettle) == true || CampMeta.Has(CampBuilding.Kettle);
 
     /// <summary>Бог алтаря этого лагеря.</summary>
     public static Celestial AltarGod(Player player) =>
@@ -129,7 +133,7 @@ public static class Camp
         var hero = HeroRecord.Of(player);
         options.Add(new ShortRestRestSiteOption(player));
         options.Add(new BrewRestSiteOption(player));
-        if (hero != null && (hero.Has(Skill.CampKettle) || player.Relics.OfType<HermitBackground>().Any()))
+        if (hero != null && (HasKettle(player) || player.Relics.OfType<HermitBackground>().Any()))
             options.Add(new CookingRestSiteOption(player));
         options.Add(new ForgeRestSiteOption(player));
         if (hero != null && hero.TotalStones > 0 && HasEnchantingTable(player))
@@ -296,7 +300,8 @@ public sealed class BrewRestSiteOption(Player owner) : RequiemRestSiteOption(own
     {
         var hero = HeroRecord.Of(player);
         if (hero == null) return 0;
-        return (hero.Has(Skill.CraftAlchemy) ? 1 : 0) + (hero.Has(Skill.HerbLore) ? 1 : 0);
+        return (hero.Has(Skill.CraftAlchemy) ? 1 : 0) + (hero.Has(Skill.HerbLore) ? 1 : 0)
+            + (CampMeta.Has(CampBuilding.HerbalistTent) ? 1 : 0);
     }
 
     public static int PoisonSteps(Player player) =>
@@ -369,7 +374,7 @@ public sealed class CookingRestSiteOption(Player owner) : RequiemRestSiteOption(
         var pouch = HerbalistPouch.Of(player);
         var hero = HeroRecord.Of(player);
         if (pouch == null || hero == null) return [];
-        var kettle = hero.Has(Skill.CampKettle);
+        var kettle = Camp.HasKettle(player);
         var hermit = player.Relics.OfType<HermitBackground>().Any();
         return FoodRules.Dishes
             .Where(d => d == Dish.MushroomStew ? hermit : kettle)
@@ -397,8 +402,8 @@ public sealed class CookingRestSiteOption(Player owner) : RequiemRestSiteOption(
 }
 
 /// <summary>
-/// Кузня (docs/design/07 §4, 10): 2 очка («Мастер привала» — 1): +1 к улучшению одной надетой вещи
-/// (до +2; «Кузнечное дело» — до +3).
+/// Кузня (docs/design/07 §4, 10): 2 очка («Мастер привала» или Наковальня — 1): +1 к улучшению одной надетой вещи
+/// (до +2; «Кузнечное дело» — до +3) или подковать вьючного зверя (+5 груза).
 /// </summary>
 public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(owner)
 {
@@ -406,7 +411,16 @@ public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(ow
     public override string FallbackIcon => "SMITH";
     public override CampAction Action => CampAction.Forge;
 
-    private List<RelicModel> Upgradable => Loadout.Equipped(Owner).Where(r => r.CanUpgrade).Cast<RelicModel>().ToList();
+    /// <summary>Надетые вещи, которые можно улучшить, и неподкованный вьючный зверь (10 §6).</summary>
+    private List<RelicModel> Upgradable
+    {
+        get
+        {
+            var list = Loadout.Equipped(Owner).Where(r => r.CanUpgrade).Cast<RelicModel>().ToList();
+            if (PackMule.Of(Owner) is { Shod: false } mule) list.Add(mule);
+            return list;
+        }
+    }
 
     protected override bool Available => Upgradable.Count > 0;
 
@@ -415,6 +429,7 @@ public sealed class ForgeRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         var options = Upgradable;
         if (options.Count == 0) return false;
         var pick = options.Count == 1 ? options[0] : await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
+        if (pick is PackMule mule) return mule.Shoe();
         if (pick is not EquipmentRelic item || !item.CanUpgrade) return false;
         item.Upgrades += 1;
         item.Flash();
@@ -646,9 +661,15 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         loc.Add("Stored", pack?.StoredCount ?? 0);
     }
 
-    protected override async Task<bool> Perform()
+    protected override Task<bool> Perform() => ChestFlow(Owner);
+
+    /// <summary>
+    /// Сундук: карты и снаряжение туда и обратно. Лагерь, а со вьючным зверем — и прилавок любой лавки (действие лавки,
+    /// выполняется у всех игроков коопа; выбор — синхронные экраны игры).
+    /// </summary>
+    public static async Task<bool> ChestFlow(Player owner)
     {
-        var pack = TravelPack.Of(Owner);
+        var pack = TravelPack.Of(owner);
         if (pack == null) return false;
         var changed = false;
 
@@ -658,7 +679,7 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             Cancelable = true,
             RequireManualConfirmation = true,
         };
-        var toStore = (await CardSelectCmd.FromDeckGeneric(Owner, storePrefs, c => c.IsRemovable)).ToList();
+        var toStore = (await CardSelectCmd.FromDeckGeneric(owner, storePrefs, c => c.IsRemovable)).ToList();
         if (toStore.Count > 0)
         {
             await pack.StoreCards(toStore);
@@ -676,7 +697,7 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
                 Cancelable = true,
                 RequireManualConfirmation = true,
             };
-            var chosen = (await CardSelectCmd.FromSimpleGrid(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), takeable, Owner, takePrefs)).ToList();
+            var chosen = (await CardSelectCmd.FromSimpleGrid(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), takeable, owner, takePrefs)).ToList();
             if (chosen.Count > 0)
             {
                 await pack.TakeCards(chosen.Select(c => takeable.IndexOf(c)).ToList());
@@ -685,13 +706,13 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         }
 
         // 3. Снаряжение: снятая из рюкзака → в сундук, или из сундука → в рюкзак (одна вещь; «Ловкая укладка» — пока не закроете).
-        var unlimited = HeroRecord.Of(Owner)?.Has(Skill.DeftPacking) == true;
+        var unlimited = HeroRecord.Of(owner)?.Has(Skill.DeftPacking) == true;
         do
         {
-            var stowed = Loadout.All(Owner).Where(r => r.IsStowed).Cast<RelicModel>().ToList();
+            var stowed = Loadout.All(owner).Where(r => r.IsStowed).Cast<RelicModel>().ToList();
             var stored = pack.StoredItemRelics();
             if (stowed.Count + stored.Count == 0) break;
-            var pick = await RelicSelectCmd.FromChooseARelicScreen(Owner, [.. stowed, .. stored]);
+            var pick = await RelicSelectCmd.FromChooseARelicScreen(owner, [.. stowed, .. stored]);
             if (pick is EquipmentRelic item && stowed.Contains(item))
             {
                 await pack.StoreItem(item);

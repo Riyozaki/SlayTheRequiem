@@ -629,5 +629,8 @@
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryHeader": "Не по силам?",
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryBody": "Ступень заклинания — {Tier}, ваше владение его школой — {Mastery}. Пока не поднимете владение, колдовать придётся с трудом: больше ✦, а через ступень — намного больше. Всё равно купить?",
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryYes": "Купить",
-  "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Пока нет"
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Пока нет",
+  "SLAYTHEREQUIEM-PACK_MULE.title": "Вьючный мул",
+  "SLAYTHEREQUIEM-PACK_MULE.description": "+{Burden} к вместимости груза (подкованный — ещё +{Shod}). Ничего не весит. Сундук лагеря доступен и у прилавка любой лавки. В бою не участвует. Подковать — Кузня в лагере или Оружейник.",
+  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Упрямый, терпеливый и умнее трёх последних наёмников."
 }

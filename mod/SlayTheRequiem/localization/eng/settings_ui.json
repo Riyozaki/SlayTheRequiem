@@ -104,5 +104,9 @@
   "SLAYTHEREQUIEM-ACT_VARIANT.hover.title": "Two Doors",
   "SLAYTHEREQUIEM-ACT_VARIANT.hover.desc": "Two doors — after the boss of acts 1 and 3 you choose the next act (in co-op — by vote: majority wins, a tie is settled by the run seed). Random — the variant is rolled when the run begins, no screen (in co-op such a player abstains). Five acts only.",
   "SLAYTHEREQUIEM-ACT_VARIANT.Doors": "Two doors",
-  "SLAYTHEREQUIEM-ACT_VARIANT.Random": "Random"
+  "SLAYTHEREQUIEM-ACT_VARIANT.Random": "Random",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.title": "Camp meta-progression",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.title": "Camp meta-progression",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.desc": "Each won run unlocks the next camp building for all future runs: Kettle (cooking without the skill), Anvil (Forge costs 1 point), Enchanting Table and Altar (in every camp), Herbalist's Tent (brewing one tier higher). Only a bonus. Singleplayer only.",
+  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Camp buildings unlocked"
 }

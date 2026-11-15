@@ -7,7 +7,7 @@
   "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Выберите карты, которые убрать в сундук",
   "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Выберите карты, которые забрать из сундука",
   "OPTION_SLAYTHEREQUIEM_FORGE.name": "Кузня",
-  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3). Цена: {Cost} очк. лагеря, есть {Points}.",
+  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3) или подковать вьючного зверя. Цена: {Cost} очк. лагеря, есть {Points}.",
   "OPTION_SLAYTHEREQUIEM_FORGE.descriptionDisabled": "Ни одну надетую вещь нельзя улучшить дальше.",
   "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Короткий привал",
   "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Вылечить {Percent} % макс. ♥ ({Heal}). Цена: {Cost} очк. лагеря, есть {Points}.",

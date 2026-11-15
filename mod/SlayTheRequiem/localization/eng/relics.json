@@ -629,5 +629,8 @@
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryHeader": "Too advanced?",
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryBody": "This spell is tier {Tier}, your mastery of its school is {Mastery}. Until you raise it you will cast it with strain: more ✦, and much more beyond one step. Buy anyway?",
   "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryYes": "Buy",
-  "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Not yet"
+  "SLAYTHEREQUIEM-MERCHANT_LEDGER.masteryNo": "Not yet",
+  "SLAYTHEREQUIEM-PACK_MULE.title": "Pack Mule",
+  "SLAYTHEREQUIEM-PACK_MULE.description": "+{Burden} Burden capacity (shod: +{Shod} more). Weightless. The camp chest is also open at any shop counter. Doesn't fight. Shoe it at a camp Forge or an Armorer.",
+  "SLAYTHEREQUIEM-PACK_MULE.flavor": "Stubborn, patient, and smarter than the last three hirelings."
 }

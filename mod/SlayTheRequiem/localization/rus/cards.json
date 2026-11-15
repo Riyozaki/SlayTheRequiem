@@ -666,5 +666,11 @@
   "SLAYTHEREQUIEM-PICK_LESSON_CROSSBOW.title": "Урок: арбалет",
   "SLAYTHEREQUIEM-PICK_LESSON_CROSSBOW.description": "[gold]{Value}[/gold] золотых. Больше никакого [gold]Неумелого хвата[/gold] с арбалетом.",
   "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.title": "Урок: тяжёлый щит",
-  "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.description": "[gold]{Value}[/gold] золотых. Больше никакого [gold]Неумелого хвата[/gold] с тяжёлым щитом."
+  "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.description": "[gold]{Value}[/gold] золотых. Больше никакого [gold]Неумелого хвата[/gold] с тяжёлым щитом.",
+  "SLAYTHEREQUIEM-COUNTER_BUY_MULE.title": "Купить вьючного мула",
+  "SLAYTHEREQUIEM-COUNTER_BUY_MULE.description": "[gold]{Price}[/gold] золотых. +{Amount} груза; Сундук лагеря доступен у прилавков лавок.",
+  "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.title": "Подковать мула",
+  "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.description": "[gold]{Price}[/gold] золотых. Вьючный мул несёт ещё +{Amount} груза.",
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.title": "Сундук мула",
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Бесплатно. Открыть Сундук, который везёт мул (внутри: {Amount}): убрать или забрать карты и вещи."
 }

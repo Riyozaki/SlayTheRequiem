@@ -88,6 +88,10 @@ public abstract class CounterCard : RequiemCard
 [Pool(typeof(TokenCardPool))] public sealed class CounterRemoveCurse : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterClearName : CounterCard { }
 [Pool(typeof(TokenCardPool))] public sealed class CounterTrade : CounterCard { }
+// M5 п. 5: вьючный зверь (10 §6).
+[Pool(typeof(TokenCardPool))] public sealed class CounterBuyMule : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterShoeMule : CounterCard { }
+[Pool(typeof(TokenCardPool))] public sealed class CounterMuleChest : CounterCard { }
 
 /// <summary>Вариант Заказа (14 §1).</summary>
 public abstract class OrderCard : CounterCard
@@ -232,6 +236,23 @@ public static class ShopServices
             list.Add(new Option((s, p) => s.CreateCard<CounterSell>(p), total, sellable.Count, () => SellService.Sell(player, sellable, trust, fence)));
         }
 
+        // Вьючный зверь (10 §6): Сундук у прилавка любой лавки; купить — у Странника и в Караване; подковать — у Оружейника.
+        if (Alchemy.PackMule.Of(player) is { } mule)
+        {
+            list.Add(new Option((s, p) => s.CreateCard<CounterMuleChest>(p), 0, Alchemy.TravelPack.Of(player)?.StoredCount ?? 0,
+                () => ShopActions.Perform(player, ShopAction.MuleChest)));
+            if (!mule.Shod && ledger.CurrentShop == ShopType.Armorer)
+            {
+                var price = Price(CampRules.MuleShoePrice);
+                Paid<CounterShoeMule>(price, CampRules.ShodBurden, () => ShopActions.Perform(player, ShopAction.ShoeMule, price));
+            }
+        }
+        else if (Alchemy.PackMule.CanAdopt(player) && ledger.CurrentShop is ShopType.Wanderer or ShopType.Caravan)
+        {
+            var price = Price(CampRules.MulePrice);
+            Paid<CounterBuyMule>(price, CampRules.MuleBurden, () => ShopActions.Perform(player, ShopAction.BuyMule, price));
+        }
+
         switch (ledger.CurrentShop)
         {
             case ShopType.Armorer:
@@ -374,6 +395,14 @@ public static class ShopServices
             {
                 if (!ledger.TradedHere(player.RunState) && Tradeable(player).Any(i => TradeResult(player, i) != null))
                     list.Add(new Option((s, p) => s.CreateCard<CounterTrade>(p), 0, 1, () => ShopActions.Perform(player, ShopAction.Trade)));
+                // Реагенты в лавках (09, M5 п. 5): Караван везёт и травы — тот же набор, что у Травницы.
+                if (HerbalistPouch.Of(player) != null)
+                {
+                    var kitPrice = Price(ShopRules.ReagentKitPrice(act));
+                    var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
+                    Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
+                        () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
+                }
                 break;
             }
         }

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Проверка событий актов (M5 п. 3, docs/design/13 §5): каждое событие Реквиема
 
-* sealed, наследует RequiemEvent, задаёт HomeAct и зарегистрировано в ActEvents.For своего акта;
+* sealed, наследует RequiemEvent, задаёт HomeAct и зарегистрировано в ActEvents.For своего акта (и актов AlsoIn —
+  вьючный зверь, M5 п. 5; в счёт «своих» событий идёт только HomeAct);
 * у каждого нового акта (2а, 2б, 4а, 4б) не меньше 6 своих событий, у оверлеев Улья и Славы — не меньше 3;
 * все варианты (Choice("KEY")) и страницы (Finish("PAGE")) есть в events.json на обоих языках;
 * все {Числа} из текстов объявлены в Numbers (DynamicVars), картинка images/events/<id>.jpg на месте.
@@ -34,14 +35,14 @@ def main() -> int:
     loc = {lang: json.load(open(os.path.join(RES, "localization", lang, "events.json"), encoding="utf-8")) for lang in ("eng", "rus")}
     errors: list[str] = []
 
-    registered: dict[str, str] = {}
+    registered: dict[str, set[str]] = {}
     m = re.search(r"For\(ActKind kind\) => kind switch\s*\{(.*?)\n    \};", base, re.S)
     if not m:
         errors.append("RequiemEvent.cs: не найден ActEvents.For")
     else:
         for arm in re.finditer(r"ActKind\.(\w+) =>(.*?)(?=ActKind\.\w+ =>|_ =>)", m.group(1), re.S):
             for cls in re.findall(r"ModelDb\.Event<(\w+)>", arm.group(2)):
-                registered[cls] = arm.group(1)
+                registered.setdefault(cls, set()).add(arm.group(1))
 
     events: dict[str, str] = {}
     for path, text in src.items():
@@ -55,8 +56,10 @@ def main() -> int:
                 errors.append(f"{where}: нет HomeAct")
                 continue
             events[name] = act.group(1)
-            if registered.get(name) != act.group(1):
-                errors.append(f"{where}: HomeAct = {act.group(1)}, а в ActEvents.For — {registered.get(name)}")
+            also = re.search(r"AlsoIn => \[(.*?)\];", body)
+            homes = {act.group(1)} | (set(re.findall(r"ActKind\.(\w+)", also.group(1))) if also else set())
+            if registered.get(name, set()) != homes:
+                errors.append(f"{where}: HomeAct/AlsoIn = {sorted(homes)}, а в ActEvents.For — {sorted(registered.get(name, set()))}")
             eid = PREFIX + snake(name)
             keys = set(re.findall(r'Choice\("(\w+)"', body))
             if "PASS_{school" in body:

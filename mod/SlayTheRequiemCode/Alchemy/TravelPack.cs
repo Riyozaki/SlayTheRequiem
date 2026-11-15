@@ -126,6 +126,28 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
         Refresh();
     }
 
+    /// <summary>
+    /// Потерять половину содержимого Сундука (10 §6, «Засада»): карты и вещи вперемешку, выбор — <paramref name="roll"/>
+    /// (ГСЧ события, одинаков у всех и после загрузки). Возвращает, сколько пропало.
+    /// </summary>
+    public int LoseHalf(Func<int, int> roll)
+    {
+        AssertMutable();
+        var lose = CampRules.ChestLoss(StoredCount);
+        var items = StoredItemNames.ToList();
+        for (var n = 0; n < lose; n++)
+        {
+            var total = _storedCards.Count + items.Count;
+            if (total == 0) break;
+            var i = Math.Clamp(roll(total), 0, total - 1);
+            if (i < _storedCards.Count) _storedCards.RemoveAt(i);
+            else items.RemoveAt(i - _storedCards.Count);
+        }
+        _storedItems = string.Join(",", items);
+        Refresh();
+        return lose;
+    }
+
     // ───── лагерь ─────
 
     /// <summary>Действия лагеря Реквиема (очки лагеря — <see cref="Camp"/>).</summary>

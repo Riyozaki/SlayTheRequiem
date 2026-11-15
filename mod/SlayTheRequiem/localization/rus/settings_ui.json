@@ -104,5 +104,9 @@
   "SLAYTHEREQUIEM-ACT_VARIANT.hover.title": "Две двери",
   "SLAYTHEREQUIEM-ACT_VARIANT.hover.desc": "«Две двери» — после босса актов 1 и 3 вы выбираете следующий акт (в коопе — голосованием: решает большинство, ничью — сид забега). «Случайно» — вариант выпадает при создании забега, экрана нет (в коопе такой игрок воздерживается). Только в режиме «Пять актов».",
   "SLAYTHEREQUIEM-ACT_VARIANT.Doors": "Две двери",
-  "SLAYTHEREQUIEM-ACT_VARIANT.Random": "Случайно"
+  "SLAYTHEREQUIEM-ACT_VARIANT.Random": "Случайно",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.title": "Метапрогресс лагеря",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.title": "Метапрогресс лагеря",
+  "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.desc": "Каждая победа в забеге открывает следующую постройку лагеря для всех будущих забегов: Котёл (Готовка без навыка), Наковальня (Кузня за 1 очко), Зачаровальный стол и Алтарь (в каждом лагере), Палатка травника (Варка ступенью выше). Только бонус. Лишь в одиночной игре.",
+  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Открыто построек лагеря"
 }

@@ -266,7 +266,7 @@ STAGE5_REST_SITE = {
     "eng": {
         "OPTION_SLAYTHEREQUIEM_BREW.description": "Brew one potion or poison from your reagents ({Count} in the pouch)." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_CHEST.description": "Store cards and gear (they stop weighing) or take them back. Burden {Weight}/{Capacity}, in the chest: {Stored}. Free.",
-        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Improve one equipped item by +1 (up to +2, [gold]Smithing[/gold] — +3)." + _COST["eng"],
+        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Improve one equipped item by +1 (up to +2, [gold]Smithing[/gold] — +3) or shoe your pack animal." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Short Rest",
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Heal {Percent}% of max HP ({Heal})." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.descriptionDisabled": "Not enough camp points.",
@@ -296,7 +296,7 @@ STAGE5_REST_SITE = {
     "rus": {
         "OPTION_SLAYTHEREQUIEM_BREW.description": "Сварить одно зелье или яд из реагентов (в сумке: {Count})." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_CHEST.description": "Убрать карты и снаряжение (перестают весить) или забрать обратно. Груз {Weight}/{Capacity}, в сундуке: {Stored}. Бесплатно.",
-        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3)." + _COST["rus"],
+        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3) или подковать вьючного зверя." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Короткий привал",
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Вылечить {Percent} % макс. ♥ ({Heal})." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.descriptionDisabled": "Не хватает очков лагеря.",

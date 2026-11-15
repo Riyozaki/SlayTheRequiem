@@ -1022,6 +1022,90 @@ def ev_last_campfire(s, rnd):
         s.path(f"M{x - 60 * flip},{GY + 40} Q{x - 40 * flip},{GY - 20} {x + 30 * flip},{GY + 10} L{x + 50 * flip},{GY + 50} Z", "#3a2a3a", INK, 4)
 
 
+# ═══════════════════════════ вьючный зверь (10 §6, M5 п. 5) ═══════════════════════════
+
+def mule(s: Svg, x, gy, k=1.0, flip=False, packs=True, rim=None):
+    """Мул в профиль (мордой вправо; flip — влево): туловище, четыре ноги, шея, голова с длинными ушами, поклажа."""
+    if flip:
+        s.open(f'transform="translate({2 * x} 0) scale(-1 1)"')
+    coat = s.lin([(0, "#8a7262"), (1, "#3e3028")], 0, 0, 0, 1)
+    by = gy - 150 * k
+    for lx, lean in ((-105, -6), (-70, 4), (70, -4), (105, 6)):
+        s.path(poly([(x + (lx - 13) * k, by + 20 * k), (x + (lx + 13) * k, by + 20 * k),
+                     (x + (lx + 9 + lean) * k, gy - 14 * k), (x + (lx - 9 + lean) * k, gy - 14 * k)]),
+               "#4a3a30" if lx in (-70, 105) else "#5e4a3c", INK, max(3, 5 * k))
+        s.path(f"M{x + (lx - 11 + lean) * k:.1f},{gy - 14 * k:.1f} h{22 * k:.1f} v{14 * k:.1f} h{-22 * k:.1f} Z", "#1e1612", INK, max(2, 3 * k))
+    s.path(f"M{x - 150 * k:.1f},{by - 20 * k:.1f} q{-40 * k:.1f},{30 * k:.1f} {-30 * k:.1f},{110 * k:.1f}", "none", stroke=INK, sw=max(4, 9 * k))
+    s.path(f"M{x - 150 * k:.1f},{by - 20 * k:.1f} q{-40 * k:.1f},{30 * k:.1f} {-30 * k:.1f},{110 * k:.1f}", "none", stroke="#3a2c24", sw=max(2, 5 * k))
+    s.ellipse(x, by, 160 * k, 72 * k, coat, INK, max(3, 6 * k))
+    neck = [(x + 110 * k, by - 30 * k), (x + 150 * k, by - 120 * k), (x + 200 * k, by - 150 * k),
+            (x + 215 * k, by - 115 * k), (x + 175 * k, by - 70 * k), (x + 150 * k, by + 20 * k)]
+    s.path(smooth(neck, k=0.5), coat, INK, max(3, 6 * k))
+    head = [(x + 180 * k, by - 165 * k), (x + 225 * k, by - 175 * k), (x + 290 * k, by - 120 * k),
+            (x + 300 * k, by - 95 * k), (x + 270 * k, by - 85 * k), (x + 205 * k, by - 115 * k)]
+    s.path(smooth(head, k=0.6), s.lin([(0, "#9a8070"), (1, "#5a463a")]), INK, max(3, 6 * k))
+    s.ellipse(x + 288 * k, by - 100 * k, 16 * k, 13 * k, "#c8b0a0", INK, max(2, 3 * k))
+    for ex, tilt in ((190, -30), (210, -12)):
+        s.path(f"M{x + ex * k:.1f},{by - 165 * k:.1f} q{tilt * k:.1f},{-70 * k:.1f} {(tilt + 22) * k:.1f},{-95 * k:.1f} "
+               f"q{8 * k:.1f},{40 * k:.1f} {6 * k:.1f},{92 * k:.1f} Z", "#6a5446", INK, max(3, 4 * k))
+    s.circle(x + 238 * k, by - 140 * k, 6 * k, "#140c08")
+    s.circle(x + 240 * k, by - 142 * k, 2 * k, "#ffffff")
+    s.path(f"M{x + 150 * k:.1f},{by - 120 * k:.1f} q{30 * k:.1f},{-30 * k:.1f} {55 * k:.1f},{-40 * k:.1f}", "none", stroke="#2a1e18", sw=max(3, 8 * k))
+    if packs:
+        for dx, w, h, col in ((-60, 90, 110, "#8a6a3a"), (40, 80, 100, "#7a5a32")):
+            s.path(smooth([(x + (dx - w / 2) * k, by - 50 * k), (x + (dx + w / 2) * k, by - 50 * k),
+                           (x + (dx + w / 2 + 8) * k, by + (h - 50) * k), (x + (dx - w / 2 - 8) * k, by + (h - 50) * k)], k=0.4),
+                   s.lin([(0, col), (1, _tint(col, -0.45))]), INK, max(3, 5 * k))
+            s.path(f"M{x + (dx - w / 2) * k:.1f},{by - 10 * k:.1f} H{x + (dx + w / 2) * k:.1f}", "none", stroke="#3a2412", sw=max(2, 4 * k))
+        s.path(f"M{x - 110 * k:.1f},{by - 90 * k:.1f} H{x + 90 * k:.1f} a{22 * k:.1f},{22 * k:.1f} 0 0 1 0,{44 * k:.1f} "
+               f"H{x - 110 * k:.1f} a{22 * k:.1f},{22 * k:.1f} 0 0 1 0,{-44 * k:.1f} Z", s.lin([(0, "#9a3a2a"), (1, "#4a1a12")]), INK, max(3, 5 * k))
+    if rim:
+        s.ellipse(x, by, 160 * k, 72 * k, "none", rim, max(2, 4 * k), extra=f'opacity="0.5" filter="{s.blur(3)}"')
+    if flip:
+        s.close()
+
+
+@event("abandoned_mule_event", "barrows")
+def ev_abandoned_mule(s, rnd):
+    road = [(-40, GY + 30), (CX - 300, GY - 10), (CX + 200, GY + 5), (W + 40, GY - 20)]
+    s.path(smooth(road, closed=False) + f" L{W + 40},{GY + 70} L-40,{GY + 90} Z", s.lin([(0, "#9fb4c4"), (1, "#6a8296")]), stroke=None,
+           extra='opacity="0.8"')
+    for k in range(9):
+        x = CX - 520 + k * 130 + rnd.uniform(-20, 20)
+        s.path(f"M{x},{GY + 30} q{rnd.uniform(-10, 10):.1f},-30 {rnd.uniform(-20, 20):.1f},-{rnd.uniform(40, 80):.1f}", "none",
+               stroke="#5a4a3a", sw=3)
+    mule(s, CX - 40, GY + 20, 1.35)
+    s.path(f"M{CX + 360},{GY - 120} L{CX + 420},{GY - 300}", "none", stroke=INK, sw=14)
+    s.path(f"M{CX + 360},{GY - 120} L{CX + 420},{GY - 300}", "none", stroke="#6a4a2c", sw=8)
+    s.path(f"M{CX + 405},{GY - 300} h70 v50 h-70 Z", s.lin([(0, "#8a6a42"), (1, "#4a3420")]), INK, 5,
+           extra=f'transform="rotate(-8 {CX + 440} {GY - 275})"')
+    s.path(f"M{CX + 240},{GY - 110} Q{CX + 310},{GY - 160} {CX + 370},{GY - 140}", "none", stroke="#c8a070", sw=4)
+    glow_at(s, CX - 40, GY - 260, 260, "#bfe8ff", 0.18)
+
+
+@event("mule_ambush_event", "glory")
+def ev_mule_ambush(s, rnd):
+    mule(s, CX + 40, GY + 10, 1.1, flip=True)
+    for x, h, lean, flip in ((CX - 470, 360, 10, False), (CX + 470, 380, -14, True), (CX + 300, 300, -6, True)):
+        hx, top, hr, w = figure(s, x, GY + 20, h, robe=("#3a2a2e", "#120a0e"), eyes="#ff5a40", lean=lean, rim="#ff6a50")
+        bow = -1 if flip else 1
+        s.path(f"M{hx + bow * w * 0.6},{top + h * 0.18} q{bow * 60},{h * 0.2} 0,{h * 0.4}", "none", stroke=INK, sw=10)
+        s.path(f"M{hx + bow * w * 0.6},{top + h * 0.18} q{bow * 60},{h * 0.2} 0,{h * 0.4}", "none", stroke="#7a5030", sw=5)
+        s.path(f"M{hx + bow * w * 0.6},{top + h * 0.18} v{h * 0.4}", "none", stroke="#d8d0c0", sw=2)
+    for _ in range(9):
+        x0, y0 = rnd.uniform(80, W - 80), rnd.uniform(140, GY - 220)
+        ang = rnd.uniform(-0.5, 0.5) + (0 if x0 < CX else math.pi)
+        dx, dy = math.cos(ang) * 120, math.sin(ang) * 120 + 30
+        s.path(f"M{x0:.1f},{y0:.1f} l{dx:.1f},{dy:.1f}", "none", stroke="#e8d8b8", sw=3, extra=f'filter="{s.glow(3)}"')
+        s.path(f"M{x0 + dx:.1f},{y0 + dy:.1f} l{-dx * 0.12 - dy * 0.06:.1f},{-dy * 0.12 + dx * 0.06:.1f} "
+               f"m{dy * 0.12:.1f},{-dx * 0.12:.1f} l{-dx * 0.12 + dy * 0.06:.1f},{-dy * 0.12 - dx * 0.06:.1f}", "none",
+               stroke="#ffb090", sw=3)
+    for x, y in ((CX - 160, GY + 40), (CX + 220, GY + 50), (CX - 20, GY + 60)):
+        s.path(f"M{x - 40},{y} q20,-30 40,-20 q30,-20 46,6 q-10,24 -46,24 Z", "#8a6a3a", INK, 4)
+        specks(s, rnd, 8, "#e8c060", 2, 4, y - 10, y + 20, x - 50, x + 60, glow=2)
+    glow_at(s, CX + 40, GY - 200, 300, "#ff5030", 0.2)
+
+
 # ═══════════════════════════ запуск ═══════════════════════════
 
 def build(key) -> Svg:

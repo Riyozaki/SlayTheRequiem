@@ -189,6 +189,24 @@ class Stage3(unittest.TestCase):
         self.assertEqual([r.control_hp_cap(t) for t in ("novice", "expert", "master")], [20, 120, None])
 
 
+class M5Camp(unittest.TestCase):
+    def test_mule_and_trade_name(self):
+        self.assertEqual([r.mule_capacity(False), r.mule_capacity(True)], [10, 15])
+        self.assertEqual([r.chest_loss(n) for n in (0, 1, 2, 3, 7)], [0, 1, 1, 2, 4])
+        self.assertEqual([r.refills_per_visit(t, True) for t in (0, 3, 5)], [1, 4, 4])
+        self.assertEqual(r.refills_per_visit(2), 2)
+
+    def test_buildings(self):
+        self.assertFalse(r.has_building(0, "Kettle"))
+        self.assertTrue(r.has_building(1, "Kettle"))
+        self.assertFalse(r.has_building(3, "Altar"))
+        self.assertTrue(r.has_building(5, "HerbalistTent"))
+        self.assertEqual([r.unlock_after_victory(n) for n in (0, 4, 5)], [1, 5, 5])
+        self.assertEqual(r.camp_cost("Forge", False, anvil=True), 1)
+        self.assertEqual(r.camp_cost("Enchant", False, anvil=True), 2)
+        self.assertEqual(r.camp_cost("Forge", False), 2)
+
+
 class M5Shops(unittest.TestCase):
     def test_placement(self):
         self.assertEqual(r.guaranteed_shop("BloodCourt", 0), "Fence")

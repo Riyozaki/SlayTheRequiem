@@ -4,6 +4,12 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm, Tavern }
 
 /// <summary>
+/// Постройки лагеря (10 §5) в порядке открытия победами: Котёл — Готовка без «Походного котла»; Наковальня — Кузня за
+/// 1 очко; Зачаровальный стол и Алтарь — в каждом лагере; Палатка травника — Варка ступенью выше.
+/// </summary>
+public enum CampBuilding { Kettle = 1, Anvil, EnchantingTable, Altar, HerbalistTent }
+
+/// <summary>
 /// Лагерь: очки лагеря, лечение, Усталость похода, Медитация (docs/design/10). Чистые функции — зеркало в tools/sim.
 /// </summary>
 public static class CampRules
@@ -34,6 +40,10 @@ public static class CampRules
         CampAction.Tavern => 0,
         _ => 2,
     };
+
+    /// <summary>Цена с учётом построек метапрогресса (§5): «Наковальня» — Кузня за 1 очко.</summary>
+    public static int Cost(CampAction action, bool campMaster, bool anvil) =>
+        action == CampAction.Forge && anvil ? 1 : Cost(action, campMaster);
 
     public static bool CanAfford(int points, int cost) => cost <= points;
 
@@ -66,6 +76,31 @@ public static class CampRules
         if (rank == EnemyRank.Boss) power++;
         return Math.Clamp(power, 1, 3);
     }
+
+    // ───── Вьючный зверь (10 §6) ─────
+
+    public const int MuleBurden = 10;
+    public const int ShodBurden = 5;
+    /// <summary>Мул у торговца (Странник, Караван) — до скидки доверия.</summary>
+    public const int MulePrice = 120;
+    /// <summary>«Подковать» у Оружейника (в лагере — Кузня).</summary>
+    public const int MuleShoePrice = 40;
+
+    /// <summary>Вместимость Груза от зверя: +10, «Подкованный» — ещё +5.</summary>
+    public static int MuleCapacity(bool shod) => MuleBurden + (shod ? ShodBurden : 0);
+
+    /// <summary>«Засада»: со зверем пропадает половина Сундука (с округлением вверх).</summary>
+    public static int ChestLoss(int stored) => (Math.Max(0, stored) + 1) / 2;
+
+    // ───── Постройки лагеря (10 §5, метапрогресс — отдельная настройка) ─────
+
+    public const int BuildingCount = 5;
+
+    /// <summary>Открыта ли постройка при <paramref name="unlocked"/> открытых (по порядку §5).</summary>
+    public static bool HasBuilding(int unlocked, CampBuilding building) => unlocked >= (int)building;
+
+    /// <summary>Победа в забеге открывает следующую постройку.</summary>
+    public static int UnlockAfterVictory(int unlocked) => Math.Clamp(unlocked + 1, 0, BuildingCount);
 }
 
 // ═════════════ Еда (10 §3) ═════════════

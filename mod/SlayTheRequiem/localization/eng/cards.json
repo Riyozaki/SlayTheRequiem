@@ -666,5 +666,11 @@
   "SLAYTHEREQUIEM-PICK_LESSON_CROSSBOW.title": "Lesson: Crossbow",
   "SLAYTHEREQUIEM-PICK_LESSON_CROSSBOW.description": "[gold]{Value}[/gold] gold. No more [gold]Clumsy Grip[/gold] with crossbows.",
   "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.title": "Lesson: Heavy Shield",
-  "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.description": "[gold]{Value}[/gold] gold. No more [gold]Clumsy Grip[/gold] with heavy shields."
+  "SLAYTHEREQUIEM-PICK_LESSON_SHIELD.description": "[gold]{Value}[/gold] gold. No more [gold]Clumsy Grip[/gold] with heavy shields.",
+  "SLAYTHEREQUIEM-COUNTER_BUY_MULE.title": "Buy a Pack Mule",
+  "SLAYTHEREQUIEM-COUNTER_BUY_MULE.description": "[gold]{Price}[/gold] gold. +{Amount} Burden; the camp chest becomes available at shop counters.",
+  "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.title": "Shoe the Mule",
+  "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.description": "[gold]{Price}[/gold] gold. Your Pack Mule carries +{Amount} more Burden.",
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.title": "Mule's Chest",
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Free. Open the camp chest carried by your mule ({Amount} stored): move cards and gear in or out."
 }

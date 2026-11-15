@@ -395,6 +395,32 @@ public class Stage3Tests
         Assert.Equal(expected, EnemyRules.AffixCount(rank, act, roll, hp));
 }
 
+public class M5CampTests
+{
+    [Fact]
+    public void MuleAndTradeName()
+    {
+        Assert.Equal(10, CampRules.MuleCapacity(false));
+        Assert.Equal(15, CampRules.MuleCapacity(true));
+        Assert.Equal(new[] { 0, 1, 1, 2, 4 }, new[] { 0, 1, 2, 3, 7 }.Select(CampRules.ChestLoss));
+        Assert.Equal(new[] { 1, 4, 4 }, new[] { 0, 3, 5 }.Select(t => ShopRules.RefillsPerVisit(t, true)));
+        Assert.Equal(2, ShopRules.RefillsPerVisit(2, false));
+    }
+
+    [Fact]
+    public void Buildings()
+    {
+        Assert.False(CampRules.HasBuilding(0, CampBuilding.Kettle));
+        Assert.True(CampRules.HasBuilding(1, CampBuilding.Kettle));
+        Assert.False(CampRules.HasBuilding(3, CampBuilding.Altar));
+        Assert.True(CampRules.HasBuilding(5, CampBuilding.HerbalistTent));
+        Assert.Equal(new[] { 1, 5, 5 }, new[] { 0, 4, 5 }.Select(CampRules.UnlockAfterVictory));
+        Assert.Equal(1, CampRules.Cost(CampAction.Forge, false, true));
+        Assert.Equal(2, CampRules.Cost(CampAction.Enchant, false, true));
+        Assert.Equal(2, CampRules.Cost(CampAction.Forge, false, false));
+    }
+}
+
 public class M5ShopTests
 {
     [Fact]

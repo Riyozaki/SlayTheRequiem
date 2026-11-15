@@ -196,6 +196,9 @@ public static class ShopRules
     /// <summary>«+1 товар за уровень доверия» (§1): сколько раз за визит опустевший слот витрины пополняется.</summary>
     public static int RefillsPerVisit(int trust) => Math.Clamp(trust, 0, MaxTrust);
 
+    /// <summary>«Торговое имя» (Выживание II, 10 §2): ещё +1 товар за визит.</summary>
+    public static int RefillsPerVisit(int trust, bool tradeName) => RefillsPerVisit(trust) + (tradeName ? 1 : 0);
+
     /// <summary>Заказ (§1) доступен при доверии 3 и стоит 50 % цены заказанного предмета.</summary>
     public static bool CanOrder(int trust) => trust >= MaxTrust;
 
