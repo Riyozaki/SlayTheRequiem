@@ -112,7 +112,7 @@
   "SLAYTHEREQUIEM-POISONED_BLADE.title": "Отравленный клинок",
   "SLAYTHEREQUIEM-POISONED_BLADE.description": "Нанести {Damage:diff()} урона.\nЕсли на оружии яд — его эффект ещё дважды.",
   "SLAYTHEREQUIEM-GARROTE.title": "Удавка",
-  "SLAYTHEREQUIEM-GARROTE.description": "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold].",
+  "SLAYTHEREQUIEM-GARROTE.description": "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold].\n[gold]Подлый[/gold]: наложить {WeakPower:diff()} [gold]Слабости[/gold].",
   "SLAYTHEREQUIEM-ROTTING_CUT.title": "Гнилостный надрез",
   "SLAYTHEREQUIEM-ROTTING_CUT.description": "Нанести {Damage:diff()} урона.\nНаложить {BlightPower:diff()} [gold]Хвори[/gold].",
   "SLAYTHEREQUIEM-PICK_POCKET.title": "Обчистить",
@@ -538,5 +538,7 @@
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_BREATHING.title": "Дыхательная",
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_BREATHING.description": "Атака: на 1 ◆ дешевле.",
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.title": "Двойная",
-  "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.description": "Две чары на одной карте (узел [gold]Зачарование[/gold])."
+  "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.description": "Две чары на одной карте (узел [gold]Зачарование[/gold]).",
+  "SLAYTHEREQUIEM-PATH_GARROTE.title": "Удавка ассасина",
+  "SLAYTHEREQUIEM-PATH_GARROTE.description": "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold]."
 }

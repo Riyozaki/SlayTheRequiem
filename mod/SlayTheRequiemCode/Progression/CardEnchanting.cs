@@ -1,4 +1,5 @@
 using BaseLib.Abstracts;
+using BaseLib.Extensions;
 using BaseLib.Utils;
 using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Commands;
@@ -26,6 +27,11 @@ public abstract class RequiemCardEnchantment : CustomEnchantmentModel
     public abstract CardEnchant Kind { get; }
 
     public virtual IEnumerable<CardEnchant> Kinds => [Kind];
+
+    /// <summary>Свой значок images/enchantments/&lt;id&gt;.png, иначе ванильный по таблице tools/art/vanilla_art.csv.</summary>
+    protected override string? CustomIconPath => Art.VanillaArt.FirstExisting(Art.VanillaArt.MissingEnchantmentIcon,
+        $"{MainFile.ResPath}/images/enchantments/{Id.Entry.RemovePrefix().ToLowerInvariant()}.png",
+        Art.VanillaArt.EnchantmentIcon(GetType().Name));
 
     public override bool CanEnchantCardType(CardType cardType) =>
         TransformationRules.CanEnchantCard(Kind, cardType == CardType.Attack, doublePerk: true);

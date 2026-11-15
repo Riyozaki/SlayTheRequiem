@@ -32,9 +32,14 @@
 | `Acts/`, `Monsters/` | пять актов, правила актов, элиты, супербоссы |
 | `Net/` | кооператив: сообщения BaseLib, голосования |
 | `Patches/`, `Extensions/` | Harmony-патчи и вспомогательные методы |
+| `Art/` | выбор картинки: свой файл → ванильный арт (`VanillaArtTable.g.cs` генерируется `tools/art/build_vanilla_art.py`) → заглушка |
+| `Debugging/` | отладочные команды консоли `str_*` (список — [путеводитель](../docs/GUIDE.md#-для-тестеров-консоль)) |
 
 Ресурсы: `SlayTheRequiem/localization/{eng,rus}` (генерируется `tools/loc/build_loc.py`),
-`SlayTheRequiem/data/*.csv` (генерируется `tools/markup`, руками не править).
+`SlayTheRequiem/data/*.csv` (генерируется `tools/markup`, руками не править; попадает и в `.pck` — через `*.csv.import`
+с `importer="keep"`, — и в DLL как встроенный ресурс), `SlayTheRequiem/images/{ui,map}` (собирается из SVG в `art/`
+скриптом `tools/art/render_ui_icons.mjs`). Остальной арт — ванильный, по таблице `tools/art/vanilla_art.csv`
+([art spec §0](../docs/plan/art-ui-animation-spec.md)).
 
 Рискованные места первой сборки (предполагаемые имена API игры) перечислены в комментариях в начале файлов
 `Acts/ActFlowPatches.cs` и `Acts/ActRuntime.cs`. Дальше — [ROADMAP](../docs/ROADMAP.md), Этап 8.

@@ -46,8 +46,11 @@ public abstract class RequiemResource(string id) : BasicCustomResource(id)
 
     public override bool ShouldShowDisplay() => RequiemMode.IsInSystem(Owner);
 
-    public override string? IconPath => $"{MainFile.ResPath}/images/ui/{IconName}.png";
-    public override string TexturePath => $"{MainFile.ResPath}/images/ui/{IconName}.png";
+    // Значок ресурса: images/ui/<IconName>.png; если файла нет — картинка мода (ревью R-22), а не падение загрузки.
+    private string IconFile => Art.VanillaArt.FirstExisting($"{MainFile.ResPath}/mod_image.png",
+        $"{MainFile.ResPath}/images/ui/{IconName}.png");
+    public override string? IconPath => IconFile;
+    public override string TexturePath => IconFile;
     protected abstract string IconName { get; }
 
     /// <summary>Безопасно получить ресурс игрока (null вне боя или если BaseLib его не создал).</summary>

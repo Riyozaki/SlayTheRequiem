@@ -383,13 +383,16 @@ public sealed class InnerCalm : PathCard
 
 // ═════════════ Ассасин ═════════════
 
-/// <summary>Удавка: 1⚡ 1◆ — 7 урона и Кровотечение 3.</summary>
+/// <summary>
+/// Удавка ассасина: 1⚡ 1◆ — 7 урона и Кровотечение 3. Класс назван PathGarrote, а не Garrote: id модели строится
+/// из имени класса, и одноимённая карта Безмолвной (Cards/Silent) молча затирала бы эту в ModelDb (ревью R-07).
+/// </summary>
 [Pool(typeof(PathCardPool))]
-public sealed class Garrote : PathCard
+public sealed class PathGarrote : PathCard
 {
     public override HeroPath Path => HeroPath.Assassin;
 
-    public Garrote() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy)
+    public PathGarrote() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy)
     {
         WithDamage(7, 2);
         WithPower<BleedPower>(3, 1);

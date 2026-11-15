@@ -57,8 +57,8 @@ PATH_CARDS = [
     ("InnerCalm", "Inner Calm", "Gain {Block:diff()} [gold]Block[/gold] and {DodgePower:diff()} [gold]Dodge[/gold].",
      "Внутренний покой", "Получить {Block:diff()} [gold]Блока[/gold] и {DodgePower:diff()} [gold]Уворота[/gold]."),
     # Ассасин
-    ("Garrote", "Garrote", "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].",
-     "Удавка", "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold]."),
+    ("PathGarrote", "Assassin's Garrote", "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].",
+     "Удавка ассасина", "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold]."),
     ("Vanish", "Vanish", "Gain {DodgePower:diff()} [gold]Dodge[/gold].\nExhaust.", "Исчезновение", "Получить {DodgePower:diff()} [gold]Уворота[/gold].\nИзгнание."),
     ("DeathMark", "Death Mark", "Apply {VulnerablePower:diff()} [gold]Vulnerable[/gold] and [gold]Broken[/gold].",
      "Метка смерти", "Наложить {VulnerablePower:diff()} [gold]Уязвимости[/gold] и [gold]Сломлен[/gold]."),

@@ -1,4 +1,9 @@
-"""Манифест ассетов мода: какие картинки ждёт код, какие уже лежат в mod/SlayTheRequiem/images, какие — заглушки.
+"""Манифест ассетов мода: какие картинки ждёт код, что из них своё, что берётся из игры, чего нет вовсе.
+
+Политика «сначала ванильное» (docs/plan/art-ui-animation-spec.md §0): модель без своего файла показывает ванильный
+портрет/значок — карты, силы, реликвии, события, чары по таблице tools/art/vanilla_art.csv (→ Art/VanillaArtTable.g.cs),
+зелья — ванильную бутылку (VanillaArt), враги — облик ванильного врага (LookOf), действия лагеря — FallbackIcon.
+Колонка present: own (свой файл), vanilla (ванильный арт, id в колонке vanilla), no (заглушка шаблона).
 
 Источник правды — сами классы моделей (как в tools/ci/check_loc.py): конкретные sealed-наследники карт, сил, реликвий,
 зелий, событий, чар, врагов и действий лагеря. Пути — те же, что строят `Extensions/StringExtensions.cs`,
@@ -8,9 +13,9 @@
 Запуск:
     python3 tools/assets/asset_manifest.py             # сводка в stdout
     python3 tools/assets/asset_manifest.py --csv out.csv  # полный список (для художников / трекера)
-    python3 tools/assets/asset_manifest.py --check     # код 1, если есть отсутствующие ассеты (для будущего CI этапа «Арт»)
+    python3 tools/assets/asset_manifest.py --check     # CI: код 1, если у модели нет ни своей, ни ванильной картинки
 
-Колонки CSV: kind, class, id, group (файл-источник), title_rus, title_eng, asset, path, present, note.
+Колонки CSV: kind, class, id, group (файл-источник), title_rus, title_eng, asset, path, present, vanilla, note.
 """
 from __future__ import annotations
 
@@ -48,7 +53,7 @@ BASES = {
 # Что нужно каждому виду: (имя ассета, шаблон пути относительно mod/SlayTheRequiem, примечание)
 ASSETS = {
     "card": [
-        ("portrait", "images/card_portraits/{id}.png", "250×190, малый портрет (как заглушка шаблона)"),
+        ("portrait", "images/card_portraits/{id}.png", "250×190, малый портрет; иначе — ванильный по vanilla_art.csv"),
         ("portrait_big", "images/card_portraits/big/{id}.png", "1000×760, основной арт карты (CustomPortraitPath)"),
     ],
     "power": [
@@ -65,10 +70,10 @@ ASSETS = {
         ("outline", "images/potions/outline/{id}.png", "контур"),
     ],
     "event": [
-        ("image", "images/events/{id}.png", "размер как у ванильных событий; иначе — заглушка большой реликвии"),
+        ("image", "images/events/{id}.png", "размер как у ванильных событий; иначе — ванильный портрет по vanilla_art.csv"),
     ],
     "enchantment": [
-        ("icon", "images/enchantments/{id}.png", "пока FallbackIcon ванили; нужен override CustomIconPath (путь — предложение спецификации)"),
+        ("icon", "images/enchantments/{id}.png", "свой значок или ванильный по vanilla_art.csv (CustomIconPath)"),
     ],
     "monster": [
         ("visual", "scenes/creature_visuals/{id}.tscn", "пока облик ванильного врага (LookOf)"),
@@ -144,6 +149,8 @@ def load_classes():
                 "file": os.path.relpath(path, CODE),
                 "look": (look.group("look") or look.group("scene")) if look else None,
                 "option": (re.search(r'OptionId\s*=>\s*"(\w+)"', body) or [None, None])[1],
+                "fallback_icon": (re.search(r'FallbackIcon\s*=>\s*"(\w+)"', body) or [None, None])[1],
+                "potion_art": (re.search(r'VanillaArt\s*=>\s*"(\w+)"', body) or [None, None])[1],
             }
     return classes
 
@@ -165,6 +172,36 @@ def inherited_look(name, classes):
     return None
 
 
+VANILLA_TABLE = os.path.join(CODE, "Art", "VanillaArtTable.g.cs")
+TABLE_KIND = {"CardTable": "card", "PowerTable": "power", "RelicTable": "relic", "EventTable": "event",
+              "EnchantmentTable": "enchantment"}
+
+
+def load_vanilla_table():
+    """kind → {класс мода: ванильный id} из сгенерированной таблицы (tools/art/build_vanilla_art.py)."""
+    table = collections.defaultdict(dict)
+    if not os.path.exists(VANILLA_TABLE):
+        return table
+    kind = None
+    for line in open(VANILLA_TABLE, encoding="utf-8"):
+        m = re.search(r"Dictionary<string, string> (\w+)", line)
+        if m:
+            kind = TABLE_KIND.get(m.group(1))
+            continue
+        m = re.search(r'\["(\w+)"\] = "([\w/]+)"', line)
+        if m and kind:
+            table[kind][m.group(1)] = m.group(2)
+    return table
+
+
+def inherited(name, classes, key):
+    while name in classes:
+        if classes[name].get(key):
+            return classes[name][key]
+        name = classes[name]["base"]
+    return None
+
+
 def load_loc():
     tables = {}
     for lang in ("rus", "eng"):
@@ -176,6 +213,7 @@ def load_loc():
 def build_rows():
     classes = load_classes()
     loc = load_loc()
+    vanilla = load_vanilla_table()
     rows = []
     for name, info in sorted(classes.items()):
         if info["abstract"] or not info["sealed"]:
@@ -190,23 +228,28 @@ def build_rows():
             table = loc.get((lang, loc_file), {}) if loc_file else {}
             titles[lang] = table.get(f"{PREFIX}{ident.upper()}.{field}", "")
         option = (info["option"] or ident).lower().removeprefix("slaytherequiem_")
+        if kind == "monster":
+            borrowed = inherited_look(name, classes)
+        elif kind == "potion":
+            borrowed = inherited(name, classes, "potion_art") or "blood_potion"
+        elif kind == "rest_option":
+            borrowed = inherited(name, classes, "fallback_icon")
+        else:
+            borrowed = vanilla.get(kind, {}).get(name)
         for asset, template, note in ASSETS[kind]:
             rel = template.format(id=ident, option=option)
-            present = os.path.exists(os.path.join(RES, rel)) and rel not in PLACEHOLDERS
-            extra = note
-            if kind == "monster":
-                look = inherited_look(name, classes)
-                extra = f"облик: {look}" if look else note
+            own = os.path.exists(os.path.join(RES, rel)) and rel not in PLACEHOLDERS
             rows.append({
                 "kind": kind, "class": name, "id": ident, "group": info["file"],
                 "title_rus": titles["rus"], "title_eng": titles["eng"],
-                "asset": asset, "path": rel, "present": "yes" if present else "no", "note": extra,
+                "asset": asset, "path": rel, "present": "own" if own else "vanilla" if borrowed else "no",
+                "vanilla": borrowed or "", "note": note,
             })
     for rel, note in UI_ASSETS:
         present = os.path.exists(os.path.join(RES, rel))
         rows.append({"kind": "ui", "class": "", "id": os.path.splitext(os.path.basename(rel))[0], "group": "UI",
                      "title_rus": note, "title_eng": "", "asset": "ui", "path": rel,
-                     "present": "yes" if present else "no",
+                     "present": "own" if present else "no", "vanilla": "",
                      "note": "заглушка шаблона — заменить" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
     order = {k: i for i, k in enumerate(list(ASSETS) + ["ui"])}
     rows.sort(key=lambda r: (order[r["kind"]], r["group"], r["class"]))
@@ -221,21 +264,26 @@ def main() -> int:
 
     rows = build_rows()
     models = collections.Counter()
-    need = collections.Counter()
-    have = collections.Counter()
+    count = collections.defaultdict(collections.Counter)
     seen = set()
     for r in rows:
         if (r["kind"], r["class"]) not in seen and r["kind"] != "ui":
             seen.add((r["kind"], r["class"]))
             models[r["kind"]] += 1
-        need[r["kind"]] += 1
-        have[r["kind"]] += r["present"] == "yes"
+        count[r["kind"]]["all"] += 1
+        count[r["kind"]][r["present"]] += 1
 
-    print(f"{'вид':<12}{'моделей':>9}{'файлов':>9}{'есть':>7}{'нет':>7}")
+    print(f"{'вид':<12}{'моделей':>9}{'файлов':>9}{'свои':>7}{'ваниль':>8}{'нет':>7}")
     for kind in list(ASSETS) + ["ui"]:
-        print(f"{kind:<12}{models.get(kind, 0):>9}{need[kind]:>9}{have[kind]:>7}{need[kind] - have[kind]:>7}")
-    total_need, total_have = sum(need.values()), sum(have.values())
-    print(f"{'итого':<12}{sum(models.values()):>9}{total_need:>9}{total_have:>7}{total_need - total_have:>7}")
+        c = count[kind]
+        print(f"{kind:<12}{models.get(kind, 0):>9}{c['all']:>9}{c['own']:>7}{c['vanilla']:>8}{c['no']:>7}")
+    total = collections.Counter()
+    for c in count.values():
+        total.update(c)
+    print(f"{'итого':<12}{sum(models.values()):>9}{total['all']:>9}{total['own']:>7}{total['vanilla']:>8}{total['no']:>7}")
+    uncovered = [r for r in rows if r["kind"] != "ui" and r["present"] == "no"]
+    for r in uncovered[:20]:
+        print(f"✗ нет ни своей, ни ванильной картинки: {r['kind']} {r['class']} ({r['asset']})")
 
     if args.csv:
         with open(args.csv, "w", encoding="utf-8", newline="") as f:
@@ -243,7 +291,7 @@ def main() -> int:
             w.writeheader()
             w.writerows(rows)
         print(f"CSV: {args.csv} ({len(rows)} строк)")
-    return 1 if args.check and total_have < total_need else 0
+    return 1 if args.check and uncovered else 0
 
 
 if __name__ == "__main__":

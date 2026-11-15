@@ -32,6 +32,9 @@ public static class ActMarks
 {
     private static (ActMap Map, Dictionary<int, MapMark> Marks)? _cache;
 
+    /// <summary>Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31).</summary>
+    internal static void Reset() => _cache = null;
+
     public static Dictionary<int, MapMark> For(IRunState run, ActMap map, int actIndex)
     {
         if (_cache is { } c && ReferenceEquals(c.Map, map)) return c.Marks;

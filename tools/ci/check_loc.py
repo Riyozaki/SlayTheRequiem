@@ -4,6 +4,8 @@
 1. eng и rus содержат одинаковые ключи, пустых строк нет, JSON читается.
 2. У каждой конкретной (sealed) модели — карты, силы, реликвии, зелья, монстра, встречи, чары — есть заголовок.
    Наследование строится по объявлениям классов в mod/SlayTheRequiemCode, корни — игровые/BaseLib-базы.
+3. Имена классов моделей уникальны: id модели = префикс мода + имя класса (без пространства имён), и второй
+   одноимённый класс молча затирает первый в ModelDb (ревью R-07).
 
 Запуск: python3 tools/ci/check_loc.py  (код выхода 1 при ошибках)
 """
@@ -21,6 +23,8 @@ PREFIX = "SLAYTHEREQUIEM-"
 # корневой тип движка/BaseLib → (файл локализации, поле)
 ROOTS = {
     "CardModel": ("cards.json", "title"), "CustomCardModel": ("cards.json", "title"),
+    "ConstructedCardModel": ("cards.json", "title"),  # BaseLib: база RequiemCard — без неё карты не проверялись
+    "EventModel": ("events.json", "title"), "CustomEventModel": ("events.json", "title"),
     "PowerModel": ("powers.json", "title"), "CustomPowerModel": ("powers.json", "title"),
     "RelicModel": ("relics.json", "title"), "CustomRelicModel": ("relics.json", "title"),
     "PotionModel": ("potions.json", "title"), "CustomPotionModel": ("potions.json", "title"),
@@ -59,11 +63,14 @@ def check_parity(errors: list) -> None:
 
 def check_models(errors: list) -> int:
     classes = {}
-    for path in glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True):
+    decls = {}
+    for path in sorted(glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True)):
         src = re.sub(r"//[^\n]*", "", open(path, encoding="utf-8").read())
         for m in DECL.finditer(src):
             classes[m.group("name")] = (m.group("base").split(".")[-1], "abstract" in m.group("mods"),
                                         "sealed" in m.group("mods"), os.path.relpath(path, ROOT))
+            if "partial" not in m.group("mods"):
+                decls.setdefault(m.group("name"), []).append(os.path.relpath(path, ROOT))
 
     def root_of(name: str, depth: int = 0):
         if name in ROOTS:
@@ -71,6 +78,10 @@ def check_models(errors: list) -> int:
         if name not in classes or depth > 20:
             return None
         return root_of(classes[name][0], depth + 1)
+
+    for name, paths in sorted(decls.items()):
+        if len(paths) > 1 and root_of(classes[name][0]) is not None:
+            errors.append(f"{name}: одно имя у {len(paths)} моделей — один id, вторая затрёт первую ({', '.join(paths)})")
 
     tables = {}
     checked = 0

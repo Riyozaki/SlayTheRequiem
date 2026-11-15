@@ -126,11 +126,14 @@ public sealed class MerchantLedger : RequiemRelic
     /// Выбрать вид лавки для текущего узла (до генерации витрины). Повторный вызов на том же этаже ничего не меняет.
     /// Вид зависит только от зерна забега, этажа и счётчиков книги — поэтому одинаков у всех игроков коопа.
     /// </summary>
+    /// <summary>Отладка (<c>str_shop</c>): вид следующей лавки вместо броска. Сбрасывается при входе.</summary>
+    internal static ShopType? DebugNextShop { get; set; }
+
     public ShopType EnterShop(IRunState runState)
     {
         AssertMutable();
         var floor = runState.TotalFloor;
-        if (_currentFloor == floor) return CurrentShop;
+        if (_currentFloor == floor && DebugNextShop == null) return CurrentShop;
         if (_shopAct != runState.CurrentActIndex)
         {
             _shopAct = runState.CurrentActIndex;
@@ -139,7 +142,8 @@ public sealed class MerchantLedger : RequiemRelic
         }
         var hash = ShopRules.Fnv1a(runState.Rng.StringSeed ?? string.Empty, floor * 31 + runState.CurrentActIndex);
         ShopType? previous = _previousShop >= 0 ? (ShopType)_previousShop : null;
-        var shop = ShopRules.RollShopType(hash, Acts.ActKinds.Tier(runState), _shopsThisAct, previous);
+        var shop = DebugNextShop ?? ShopRules.RollShopType(hash, Acts.ActKinds.Tier(runState), _shopsThisAct, previous);
+        DebugNextShop = null;
         _currentFloor = floor;
         _refillsUsed = 0;
         // Заказ выполняется в первой следующей лавке того же вида.

@@ -61,8 +61,7 @@ CARDS = [
      "Твёрдая стойка", "Получить {Block:diff()} [gold]Блока[/gold].\nПолучить {StaminaGain:diff()} ◆."),
     ("SmotherFlames", "Smother Flames", "Remove [gold]Burning[/gold] and [gold]Chill[/gold] from yourself.\nGain {Block:diff()} [gold]Block[/gold].",
      "Сбить пламя", "Снять с себя [gold]Горение[/gold] и [gold]Озноб[/gold].\nПолучить {Block:diff()} [gold]Блока[/gold]."),
-    ("BattleCry", "Battle Cry", "Apply {WeakPower:diff()} [gold]Weak[/gold] and {StaggerPower:diff()} [gold]Stagger[/gold] to ALL enemies.",
-     "Боевой клич", "Наложить {WeakPower:diff()} [gold]Слабости[/gold] и {StaggerPower:diff()} [gold]Шаткости[/gold] ВСЕМ врагам."),
+    # BattleCry — Клич, текст в loc_stage5.SHOUT_CARDS (с пометкой о перезарядке).
     ("ChangeGrip", "Change Grip", "Your next Attack this turn costs no ◆ and deals {GripPower:diff()} more damage.",
      "Сменить хват", "Следующая атака в этом ходу не тратит ◆ и наносит на {GripPower:diff()} урона больше."),
     ("CloseRanks", "Close Ranks", "Gain {PlatingPower:diff()} [gold]Plating[/gold].",
@@ -175,7 +174,28 @@ def merge(lang: str, file: str, entries: dict) -> int:
     return len(entries)
 
 
+def check_unique() -> None:
+    """Один класс — один текст. Повтор с другим текстом молча перетирал первый
+    (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
+    tables = {
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS,
+        "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
+                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS,
+    }
+    dupes = []
+    for name, rows in tables.items():
+        seen = {}
+        for row in rows:
+            if row[0] in seen and seen[row[0]] != row[1:]:
+                dupes.append(f"{name}: {row[0]}")
+            seen[row[0]] = row[1:]
+    if dupes:
+        sys.exit("Повторяющиеся классы в таблицах текстов:\n  " + "\n  ".join(dupes))
+
+
 def main() -> None:
+    check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
         for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS:

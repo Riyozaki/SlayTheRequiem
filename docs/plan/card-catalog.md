@@ -37,7 +37,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `Backstab` | Удар в спину | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 6(+3) |  | SneakVar 6(+2) |  | Нанести {Damage:diff()} урона. Подлый: ещё {Sneak:diff()}. |
 | `PoisonedBlade` | Отравленный клинок | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 5(+2) |  |  |  | Нанести {Damage:diff()} урона. Если на оружии яд — его эффект ещё дважды. |
-| `Garrote` | Удавка | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 4(+2) |  | BleedPower 3(+1), WeakPower 1 |  | Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} Кровотечения. |
+| `Garrote` | Удавка | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 4(+2) |  | BleedPower 3(+1), WeakPower 1 |  | Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} Кровотечения. Подлый: наложить {WeakPower:diff()} Слабости. |
 | `RottingCut` | Гнилостный надрез | Silent | 1 | 1 |  | Attack | Common | AnyEnemy | 5(+2) |  | BlightPower 1(+1) |  | Нанести {Damage:diff()} урона. Наложить {BlightPower:diff()} Хвори. |
 | `PickPocket` | Обчистить | Silent | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 4(+2) |  | GoldVar 12(+6) | Exhaust | Нанести {Damage:diff()} урона. Получить {Gold:diff()} золота. Подлый: ещё украсть случайное зелье I. Изгнание. |
 | `Ambush` | Засада | Silent | 2 | 2 |  | Attack | Uncommon | AllEnemies | 7(+3) |  | BleedPower 2(+1) |  | Нанести {Damage:diff()} урона ВСЕМ врагам. Враги без атакующего намерения получают ещё {BleedPower:diff()} Кровотечения. |
@@ -127,7 +127,7 @@
 | `PalmStrike` | Удар ладонью | Path | 0 | 1 |  | Attack | Uncommon | AnyEnemy | 5(+2) |  | StaggerPower 2(+1) |  | Нанести {Damage:diff()} урона. Наложить {StaggerPower:diff()} Шаткости. |
 | `FlurryOfBlows` | Град ударов | Path | 1 | 2 |  | Attack | Rare | AnyEnemy | 3(+1) |  |  |  | 4 раза нанести {Damage:diff()} урона. |
 | `InnerCalm` | Внутренний покой | Path | 1 |  |  | Skill | Uncommon | Self |  | 7(+3) | DodgePower 1 |  | Получить {Block:diff()} Блока и {DodgePower:diff()} Уворота. |
-| `Garrote` | Удавка | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 7(+2) |  | BleedPower 3(+1) |  | Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} Кровотечения. |
+| `PathGarrote` | Удавка ассасина | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 7(+2) |  | BleedPower 3(+1) |  | Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} Кровотечения. |
 | `Vanish` | Исчезновение | Path | 1 |  |  | Skill | Uncommon | Self |  |  | DodgePower 2(+1) | Exhaust | Получить {DodgePower:diff()} Уворота. Изгнание. |
 | `DeathMark` | Метка смерти | Path | 1 |  |  | Skill | Rare | AnyEnemy |  |  | VanillaVulnerable 2(+1) |  | Наложить {VulnerablePower:diff()} Уязвимости и Сломлен. |
 | `PlagueTouch` | Касание чумы | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 5(+2) |  | VanillaPoison 4(+2) |  | Нанести {Damage:diff()} урона. Наложить {PoisonPower:diff()} Яда и 1 Хвори. |

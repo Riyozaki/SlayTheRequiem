@@ -35,8 +35,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="*" PrivateAssets="All"/>
-        <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="*" />
+        <!-- Версии закреплены (ревью R-02): API мода сверено с BaseLib 3.4.8 и игрой 0.107.1. Обновлять осознанно,
+             вместе с min_version в SlayTheRequiem.json и прогоном smoke-чек-листа (docs/plan/completion-plan.md §3). -->
+        <PackageReference Include="Alchyr.Sts2.BaseLib" Version="3.4.8" PrivateAssets="All"/>
+        <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="0.2.1" PrivateAssets="All"/>
         <!-- Generates a .pck file when building if only using simple assets. May not work on all setups. Uncomment to test. -->
         <!-- <PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" /> -->
         <AdditionalFiles Include="SlayTheRequiem/localization/**/*.json"/> <!-- Used by analyzer -->
@@ -52,6 +54,12 @@
         <EmbeddedResource Remove="materials/**" />
         <EmbeddedResource Remove="shaders/**" />
         <EmbeddedResource Remove="images/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Таблицы правил дублируются в DLL (ревью R-06): если экспорт .pck их потеряет или Godot примет CSV
+             за перевод, RequiemData прочитает встроенную копию. Имя ресурса: SlayTheRequiem.data.<файл>. -->
+        <EmbeddedResource Include="SlayTheRequiem/data/*.csv" LogicalName="SlayTheRequiem.data.%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

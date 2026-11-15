@@ -112,7 +112,7 @@
   "SLAYTHEREQUIEM-POISONED_BLADE.title": "Poisoned Blade",
   "SLAYTHEREQUIEM-POISONED_BLADE.description": "Deal {Damage:diff()} damage.\nIf your weapon is coated, its poison takes effect twice more.",
   "SLAYTHEREQUIEM-GARROTE.title": "Garrote",
-  "SLAYTHEREQUIEM-GARROTE.description": "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].",
+  "SLAYTHEREQUIEM-GARROTE.description": "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].\n[gold]Sneaky[/gold]: apply {WeakPower:diff()} [gold]Weak[/gold].",
   "SLAYTHEREQUIEM-ROTTING_CUT.title": "Rotting Cut",
   "SLAYTHEREQUIEM-ROTTING_CUT.description": "Deal {Damage:diff()} damage.\nApply {BlightPower:diff()} [gold]Blight[/gold].",
   "SLAYTHEREQUIEM-PICK_POCKET.title": "Pick Pocket",
@@ -538,5 +538,7 @@
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_BREATHING.title": "Breathing",
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_BREATHING.description": "Attack: costs 1 less ◆.",
   "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.title": "Double",
-  "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.description": "Two enchantments on one card ([gold]Enchanting[/gold] node)."
+  "SLAYTHEREQUIEM-PICK_CARD_ENCHANT_DOUBLE.description": "Two enchantments on one card ([gold]Enchanting[/gold] node).",
+  "SLAYTHEREQUIEM-PATH_GARROTE.title": "Assassin's Garrote",
+  "SLAYTHEREQUIEM-PATH_GARROTE.description": "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold]."
 }

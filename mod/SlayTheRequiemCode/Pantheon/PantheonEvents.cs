@@ -23,8 +23,9 @@ public abstract class PantheonEvent : CustomEventModel
 {
     public override bool IsAllowed(IRunState runState) => false;
 
+    /// <summary>Свой портрет images/events/&lt;id&gt;.png, иначе ванильный по таблице tools/art/vanilla_art.csv.</summary>
     public override string? CustomInitialPortraitPath =>
-        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".EventImagePath();
+        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".EventImagePath(Art.VanillaArt.EventPortrait(GetType().Name));
 
     protected LocString Text(string key) => L10NLookup($"{Id.Entry}.{key}");
 

@@ -37,6 +37,21 @@ public static class CoopMemoryStone
     /// <summary>Состояние погибшего забега у клиента (для выбора Шрама и счётчиков в окне).</summary>
     private static RunState? _clientState;
 
+    /// <summary>
+    /// Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31). Голоса и Шрамы нужны только до сборки
+    /// сохранения возврата — к запуску следующего забега раунд закончен. Счётчик раундов не сбрасывается:
+    /// по нему отсекаются опоздавшие сообщения прошлого раунда.
+    /// </summary>
+    internal static void ResetForNewRun()
+    {
+        Votes.Clear();
+        Scars.Clear();
+        _votesDone = null;
+        _scarsDone = null;
+        _expected = 0;
+        _clientState = null;
+    }
+
     // ───── хост ─────
 
     public static async Task Propose(RunState state, SerializableRun ended)

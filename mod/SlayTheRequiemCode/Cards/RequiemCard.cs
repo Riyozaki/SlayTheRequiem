@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using SlayTheRequiem.SlayTheRequiemCode.Art;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
@@ -21,10 +22,12 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
 {
     public const string StaminaVar = "Stamina";
 
-    //Normal art: 1000x760 (500x380 тоже подойдёт). Full art: 606x852.
-    public override string CustomPortraitPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".BigCardImagePath();
-    public override string PortraitPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".CardImagePath();
-    public override string BetaPortraitPath => $"beta/{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".CardImagePath();
+    // Свой арт: images/card_portraits/big/<id>.png 1000x760 (500x380 тоже подойдёт), малый — card_portraits/<id>.png.
+    // Пока своего нет — ванильный портрет по таблице tools/art/vanilla_art.csv (Art/VanillaArt).
+    private string ArtFile => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png";
+    public override string CustomPortraitPath => ArtFile.BigCardImagePath(VanillaArt.CardPortrait(GetType().Name));
+    public override string PortraitPath => ArtFile.CardImagePath(VanillaArt.CardPortrait(GetType().Name));
+    public override string BetaPortraitPath => PortraitPath;
 
     public virtual DamageType DamageType => DamageType.Physical;
 
