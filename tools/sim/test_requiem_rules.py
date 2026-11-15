@@ -1238,5 +1238,84 @@ class M6ShopUi(unittest.TestCase):
         self.assertNotIn('HarmonyPatch(typeof(NMerchantInventory), "Close")', services)
 
 
+class M7SuperbossLooks(unittest.TestCase):
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def test_variants(self):
+        self.assertEqual(r.superboss_variant("BlackWanderer", True, False, False), "guard")
+        self.assertIsNone(r.superboss_variant("BlackWanderer", False, True, True))
+        self.assertEqual(r.superboss_variant("BloodCourtLord", False, True, False), "cocoon")
+        self.assertIsNone(r.superboss_variant("BloodCourtLord", True, False, True))
+        self.assertIsNone(r.superboss_variant("WorldEater", False, False, True))
+        self.assertEqual(r.superboss_variant("WorldEater", False, False, False), "landed")
+        self.assertIsNone(r.superboss_variant("NamelessShadow", False, True, False))
+        self.assertEqual(r.superboss_variant("NamelessShadow", False, False, False), "exposed")
+        for b in ("BarrowReaper", "DeepMasterSmith", "GatebreakerEnvoy", "FirstSummoner"):
+            self.assertIsNone(r.superboss_variant(b, True, True, False))
+        # каждый возможный вариант объявлен для подгрузки
+        for b in r.SUPERBOSSES:
+            got = {r.superboss_variant(b, g, i, f) for g in (0, 1) for i in (0, 1) for f in (0, 1)} - {None}
+            self.assertEqual(got, set(r.SUPERBOSS_VARIANTS.get(b, [])), b)
+
+    def test_art_files(self):
+        img = os.path.join(self.ROOT, "mod", "SlayTheRequiem", "images", "monsters")
+        svg = os.path.join(self.ROOT, "art", "monsters")
+        keys = [r.ECHO_KNIGHT_ART] + list(r.SUPERBOSS_ART.values())
+        keys += [f"{r.SUPERBOSS_ART[b]}_{v}" for b, vs in r.SUPERBOSS_VARIANTS.items() for v in vs]
+        for k in keys:
+            self.assertTrue(os.path.isfile(os.path.join(img, k + ".png")), k)
+            self.assertTrue(os.path.isfile(os.path.join(svg, k + ".svg")), k)
+        # варианты на том же холсте — смена картинки не двигает хитбокс
+        import struct
+        def size(path):
+            with open(path, "rb") as f:
+                head = f.read(24)
+            return struct.unpack(">II", head[16:24])
+        for b, vs in r.SUPERBOSS_VARIANTS.items():
+            base = size(os.path.join(img, r.SUPERBOSS_ART[b] + ".png"))
+            for v in vs:
+                self.assertEqual(size(os.path.join(img, f"{r.SUPERBOSS_ART[b]}_{v}.png")), base, (b, v))
+
+    def test_court_tints(self):
+        self.assertEqual(set(r.COURT_TINT), set(r.SUPERBOSSES))
+        for b, (h, *rgb) in r.COURT_TINT.items():
+            self.assertTrue(0 <= h < 1, b)
+            self.assertTrue(all(r.COURT_MIN_TINT <= c <= 1 for c in rgb), b)
+            self.assertGreaterEqual(max(rgb), 0.75, b)  # цвет фракции, а не просто потемнение (Тень — нарочно тёмная)
+        self.assertEqual(r.court_of("GargoyleServant"), "BloodCourtLord")
+        self.assertIsNone(r.court_of("AbyssGateObject"))  # Врата общие с элитами Бездны
+        self.assertAlmostEqual(r.combined_hue(0.96, 0.05), 0.01, places=5)
+        self.assertAlmostEqual(r.combined_hue(0.6, 0.0), 0.6)
+        # свита каждого супербосса, кроме Посланника (у него только общие Врата), перекрашена
+        self.assertEqual(set(r.SUPERBOSS_COURT.values()), set(r.SUPERBOSSES) - {"GatebreakerEnvoy"})
+
+    def test_matches_csharp(self):
+        import re
+        src = open(os.path.join(self.CODE, "Core", "SuperbossLookRules.cs"), encoding="utf-8").read()
+        acts = open(os.path.join(self.CODE, "Core", "ActRules.cs"), encoding="utf-8").read()
+        enum = re.search(r"enum Superboss\s*\{([^}]*)\}", acts).group(1)
+        self.assertEqual([x.strip() for x in re.sub(r"///.*", "", enum).split(",") if x.strip()], r.SUPERBOSSES)
+        for b, key in r.SUPERBOSS_ART.items():
+            self.assertRegex(src, rf'(Superboss\.{b} =>|_ =>) "{key}"')
+        self.assertIn(f'EchoKnightArt = "{r.ECHO_KNIGHT_ART}"', src)
+        for b, (h, rr, g, bb) in r.COURT_TINT.items():
+            self.assertRegex(src, rf"(Superboss\.{b} =>|_ =>) new\({h:.2f}f, {rr:.2f}f, {g:.2f}f, {bb:.2f}f\)")
+        for m, b in r.SUPERBOSS_COURT.items():
+            self.assertIn(f'"{m}"', src)
+        self.assertIn(f"MinTintChannel = {r.COURT_MIN_TINT}f", src)
+        bosses = open(os.path.join(self.CODE, "Monsters", "Superbosses.cs"), encoding="utf-8").read()
+        self.assertIn("abstract class SuperbossMonster : OwnArtMonster", bosses)
+        self.assertIn("class EchoKnight : OwnArtMonster", bosses)
+        self.assertGreaterEqual(bosses.count("RefreshLook();"), 7)
+        # каждая свита из таблицы — реальный класс-миньон
+        for m in r.SUPERBOSS_COURT:
+            self.assertIn(f"class {m} : RequiemMinion", bosses)
+        sprites = open(os.path.join(self.ROOT, "tools", "art", "monsters", "superbosses.py"), encoding="utf-8").read()
+        for b, key in r.SUPERBOSS_ART.items():
+            vs = tuple([""] + r.SUPERBOSS_VARIANTS.get(b, []))
+            self.assertIn(f'"{key}": (draw_{key}, {vs!r})'.replace("'", '"'), sprites)
+
+
 if __name__ == "__main__":
     unittest.main()

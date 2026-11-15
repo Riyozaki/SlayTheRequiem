@@ -2517,3 +2517,47 @@ def shop_sell_order(items: list[tuple[int, int]]) -> list[int]:
 
 def sell_percent(trust_level: int, fence: bool) -> int:
     return 60 if fence else 50 if trust_level >= 3 else 35
+
+
+# ───── M7 п. 1: облик супербоссов — свои спрайты, вариант по состоянию, перекраска свиты (Core/SuperbossLookRules) ─────
+
+SUPERBOSSES = ["BlackWanderer", "BarrowReaper", "DeepMasterSmith", "GatebreakerEnvoy", "BloodCourtLord", "FirstSummoner",
+               "WorldEater", "NamelessShadow"]
+SUPERBOSS_ART = {b: "".join("_" + c.lower() if c.isupper() and i else c.lower() for i, c in enumerate(b)) for b in SUPERBOSSES}
+SUPERBOSS_VARIANTS = {"BlackWanderer": ["guard"], "BloodCourtLord": ["cocoon"], "WorldEater": ["landed"],
+                      "NamelessShadow": ["exposed"]}
+ECHO_KNIGHT_ART = "echo_knight"
+SUPERBOSS_COURT = {"WraithThrall": "BlackWanderer", "BarrowDead": "BarrowReaper", "SteamValve": "DeepMasterSmith",
+                   "GargoyleServant": "BloodCourtLord", "DragonEgg": "FirstSummoner", "CultistThrall": "FirstSummoner",
+                   "FacelessPriest": "WorldEater", "ShadowSoul": "NamelessShadow"}
+COURT_TINT = {
+    "BlackWanderer": (0.60, 0.70, 0.82, 1.00),
+    "BarrowReaper": (0.52, 0.80, 0.95, 1.00),
+    "DeepMasterSmith": (0.08, 1.00, 0.86, 0.62),
+    "GatebreakerEnvoy": (0.00, 1.00, 0.55, 0.45),
+    "BloodCourtLord": (0.96, 1.00, 0.50, 0.56),
+    "FirstSummoner": (0.70, 0.80, 0.74, 1.00),
+    "WorldEater": (0.04, 1.00, 0.66, 0.44),
+    "NamelessShadow": (0.78, 0.55, 0.45, 0.75),
+}
+COURT_MIN_TINT = 0.4
+
+
+def superboss_variant(boss: str, guarding: bool, invulnerable: bool, flying: bool) -> str | None:
+    if boss == "BlackWanderer":
+        return "guard" if guarding else None
+    if boss == "BloodCourtLord":
+        return "cocoon" if invulnerable else None
+    if boss == "WorldEater":
+        return None if flying else "landed"
+    if boss == "NamelessShadow":
+        return None if invulnerable else "exposed"
+    return None
+
+
+def court_of(monster_type: str) -> str | None:
+    return SUPERBOSS_COURT.get(monster_type)
+
+
+def combined_hue(court_hue: float, game_hue: float) -> float:
+    return (court_hue + game_hue) % 1.0

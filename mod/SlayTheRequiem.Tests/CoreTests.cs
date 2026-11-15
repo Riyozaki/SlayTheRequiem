@@ -1505,3 +1505,57 @@ public class M6ShopUiTests
         Assert.Equal(60, ShopRules.SellPercent(0, true));
     }
 }
+
+public class M7SuperbossLookTests
+{
+    [Theory]
+    [InlineData(Superboss.BlackWanderer, true, false, false, "guard")]
+    [InlineData(Superboss.BlackWanderer, false, true, true, null)]
+    [InlineData(Superboss.BloodCourtLord, false, true, false, "cocoon")]
+    [InlineData(Superboss.BloodCourtLord, true, false, true, null)]
+    [InlineData(Superboss.WorldEater, false, false, true, null)]
+    [InlineData(Superboss.WorldEater, false, false, false, "landed")]
+    [InlineData(Superboss.NamelessShadow, false, true, false, null)]
+    [InlineData(Superboss.NamelessShadow, false, false, false, "exposed")]
+    [InlineData(Superboss.GatebreakerEnvoy, true, true, false, null)]
+    public void Variant(Superboss boss, bool guarding, bool invulnerable, bool flying, string? expected) =>
+        Assert.Equal(expected, SuperbossLookRules.Variant(boss, guarding, invulnerable, flying));
+
+    [Fact]
+    public void EveryVariantPreloaded()
+    {
+        foreach (var boss in Enum.GetValues<Superboss>())
+        {
+            var seen = new HashSet<string>();
+            foreach (var g in new[] { false, true })
+            foreach (var i in new[] { false, true })
+            foreach (var f in new[] { false, true })
+                if (SuperbossLookRules.Variant(boss, g, i, f) is { } v) seen.Add(v);
+            Assert.Equal(seen.OrderBy(x => x), SuperbossLookRules.Variants(boss).OrderBy(x => x));
+        }
+    }
+
+    [Fact]
+    public void ArtKeysUnique()
+    {
+        var keys = Enum.GetValues<Superboss>().Select(SuperbossLookRules.ArtKey).Append(SuperbossLookRules.EchoKnightArt).ToList();
+        Assert.Equal(keys.Count, keys.Distinct().Count());
+        Assert.Equal("world_eater", SuperbossLookRules.ArtKey(Superboss.WorldEater));
+    }
+
+    [Fact]
+    public void CourtTints()
+    {
+        foreach (var boss in Enum.GetValues<Superboss>())
+        {
+            var t = SuperbossLookRules.TintFor(boss);
+            Assert.InRange(t.Hue, 0f, 0.999f);
+            foreach (var c in new[] { t.R, t.G, t.B }) Assert.InRange(c, SuperbossLookRules.MinTintChannel, 1f);
+        }
+        Assert.Equal(Superboss.BloodCourtLord, SuperbossLookRules.CourtOf("GargoyleServant"));
+        Assert.Equal(Superboss.FirstSummoner, SuperbossLookRules.CourtOf("CultistThrall"));
+        Assert.Null(SuperbossLookRules.CourtOf("AbyssGateObject"));
+        Assert.Equal(0.01f, SuperbossLookRules.CombinedHue(0.96f, 0.05f), 4);
+        Assert.Equal(0.6f, SuperbossLookRules.CombinedHue(0.6f, 0f), 4);
+    }
+}

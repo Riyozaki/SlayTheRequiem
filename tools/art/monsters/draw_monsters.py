@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Спрайты боссов актов 2/4, их свиты, призывов (summons.py) и обликов героя (heroes.py) → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
+"""Спрайты боссов актов 2/4, их свиты, супербоссов (superbosses.py), призывов (summons.py) и обликов героя (heroes.py) → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
 
     python3 tools/art/monsters/draw_monsters.py            # все SVG
     python3 tools/art/monsters/draw_monsters.py king_under_barrow   # один (для отладки)
@@ -1026,6 +1026,12 @@ from heroes import HEROES, PATH_SIGNS, draw_path_sign  # noqa: E402
 
 REGISTRY.update(HEROES)
 SIGNS_OUT = os.path.join(ROOT, "art", "ui", "path_signs")
+
+# ═════════════════════════ Супербоссы Багрового портала (M7 п. 1) — tools/art/monsters/superbosses.py ═════════════════════════
+
+from superbosses import SUPERBOSSES  # noqa: E402
+
+REGISTRY.update(SUPERBOSSES)
 
 # ═════════════════════════ Кукла героя (M6 п. 4) — tools/art/monsters/doll.py ═════════════════════════
 

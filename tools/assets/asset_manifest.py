@@ -170,10 +170,25 @@ def load_classes():
                 "option": (re.search(r'OptionId\s*=>\s*"(\w+)"', body) or [None, None])[1],
                 "fallback_icon": (re.search(r'FallbackIcon\s*=>\s*"(\w+)"', body) or [None, None])[1],
                 "potion_art": (re.search(r'VanillaArt\s*=>\s*"(\w+)"', body) or [None, None])[1],
-                "art_key": (re.search(r'ArtKey\s*=>\s*"(\w+)"', body) or [None, None])[1],
+                "art_key": (re.search(r'ArtKey\s*=>\s*"(\w+)"', body) or [None, None])[1] or superboss_art_key(body),
                 "icon_key": (re.search(r'IconKey\s*=>\s*"(\w+)"', body) or [None, None])[1],
             }
     return classes
+
+
+COURT_RULES = open(os.path.join(CODE, "Core", "SuperbossLookRules.cs"), encoding="utf-8").read().split("CourtOf(", 1)[1].split("TintFor(", 1)[0]
+
+
+def superboss_art_key(body):
+    """Супербоссы (M7 п. 1): ArtKey = SuperbossLookRules.ArtKey(Kind) — snake_case вида; Рыцарь-эхо — константа EchoKnightArt."""
+    rules = open(os.path.join(CODE, "Core", "SuperbossLookRules.cs"), encoding="utf-8").read()
+    if "SuperbossLookRules.EchoKnightArt" in body:
+        return re.search(r'EchoKnightArt\s*=\s*"(\w+)"', rules).group(1)
+    kind = re.search(r'Superboss\s+Kind\s*=>\s*Superboss\.(\w+)', body)
+    if not kind:
+        return None
+    m = re.search(rf'(?:Superboss\.{kind.group(1)}\s*=>|_\s*=>)\s*"(\w+)"', rules.split("ArtKey(Superboss boss)", 1)[1])
+    return m.group(1) if m else None
 
 
 def kind_of(name, classes, depth=0):
@@ -262,6 +277,9 @@ def build_rows():
         if art_key:
             # Свой спрайт (Monsters/OwnArtMonster.cs): PNG вместо сцены облика, варианты — {key}_{variant}.png.
             assets = [("sprite", f"images/monsters/{art_key}.png", "свой спрайт + код-анимации (OwnArtMonster)")]
+        elif kind == "monster" and re.search(rf'"{name}"(?: or "\w+")* =>', COURT_RULES):
+            # Свита супербосса (M7 п. 1, Monsters/CourtLooks.cs): ванильная модель в цвете фракции хозяина.
+            assets = [(a, t, "облик ванильного врага, перекрашен в цвет свиты (CourtLooks)") for a, t, _ in assets]
         for asset, template, note in assets:
             rel = template.format(id=ident, option=option)
             own = os.path.exists(os.path.join(RES, rel)) and rel not in PLACEHOLDERS
