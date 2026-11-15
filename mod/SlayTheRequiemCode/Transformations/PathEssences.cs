@@ -104,7 +104,7 @@ public static class Paths
     /// <summary>Варианты Пути для героя (2 своих + 1 чужой).</summary>
     public static List<HeroPath> Offer(Player player) =>
         TransformationRules.OfferPaths(player.Character.GetType().Name, Forms.Worldview(player), Apostate(player), Unarmed(player),
-            n => n <= 0 ? 0 : player.PlayerRng.Rewards.NextInt(n));
+            n => n <= 0 ? 0 : player.PlayerRng.Rewards.NextInt(n), Forms.IsOrdinator(player));
 
     /// <summary>Принять Путь: Сущность и Знак.</summary>
     public static async Task Grant(Player player, HeroPath path)

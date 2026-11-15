@@ -189,10 +189,11 @@ public sealed class MistbornOrigin : OriginRelic
 }
 
 /// <summary>
-/// Пеплорождённые (данмеры): ♥ +5, сопротивление огню I. Дары Тройственных — вместе с Пеплорождёнными предысториями (отложено).
+/// Пеплорождённые (данмеры): ♥ +5, сопротивление огню I. «Наследники Тройственных»: дары Измены, Паутины и Сумеречной Звезды —
+/// без потери праведности, всегда среди вариантов Тёмного святилища, Цена ослаблена (<see cref="Pantheon.AbyssGift"/>).
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class AshbornOrigin : OriginRelic
+public sealed class AshbornOrigin : OriginRelic, Pantheon.ITribunalHeir
 {
     protected override int MaxHpDelta => 5;
     protected override IEnumerable<(Type power, int tier)> Resistances => [(typeof(FireResistancePower), 1)];

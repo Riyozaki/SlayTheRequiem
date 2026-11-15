@@ -56,6 +56,18 @@ CLANS_RELICS = [
     ("CitadelMageBackground", "Citadel Mage", "+1 Alteration mastery. [gold]Telekinesis[/gold] replaces a Strike.",
      "Маг цитадели", "+1 владения Изменением. [gold]Импульс[/gold] вместо Удара.",
      "Walls are just slow spells.", "Стены — это медленные заклинания."),
+    ("OrdinatorBackground", "Ordinator", "Start with all three gifts of the Tribunal: [gold]Treachery[/gold], [gold]Web Weaver[/gold] and [gold]Dusk Star[/gold]. "
+     "Oath: the Righteous form, vampirism, lycanthropy and lichdom are forbidden, Celestial blessings are unavailable, "
+     "other Princes are refused. Of the holy Paths, Paladin is open.",
+     "Ординатор", "Старт со всеми тремя дарами Тройственных: [gold]Измена[/gold], [gold]Паутина[/gold] и [gold]Сумеречная Звезда[/gold]. "
+     "Клятва: запрещены Праведник, вампиризм, ликантропия и лич, благословения Небесных недоступны, "
+     "чужим Князьям — отказ. Из «святых» Путей открыт Паладин.",
+     "The Tribunal sees. The Tribunal judges.", "Трибунал видит. Трибунал судит."),
+    ("AshNomadBackground", "Ash Nomad", "Tribunal gifts are a tier stronger: Treachery — attacks +3, Pierce 2; "
+     "Web Weaver — up to 8 healing per turn, +3 damage after the Vow; Dusk Star — +9 max HP, +3 max ✦, Fire and Frost resistance II.",
+     "Пепельный кочевник", "Дары Тройственных на ступень сильнее: Измена — атаки +3, Пробитие 2; "
+     "Паутина — до 8 лечения за ход, +3 урона после Обета; Звезда — +9 макс. ♥, +3 пул ✦, сопротивление огню и холоду II.",
+     "The ash walks with those who walk on it.", "Пепел идёт с тем, кто по нему идёт."),
 ]
 
 CLANS_EQUIPMENT = [

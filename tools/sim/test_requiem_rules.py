@@ -134,9 +134,6 @@ class Table(unittest.TestCase):
         self.assertTrue(all(v["stamina"] in {"0", "1", "2", "3", "4", "X"} for v in t.values()))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class Stage3(unittest.TestCase):
     def test_overload(self):
@@ -335,6 +332,36 @@ class Pantheon(unittest.TestCase):
         self.assertFalse(r.below_half(10, 20))
         self.assertEqual(r.star_marks_after_act(2, False), 3)
         self.assertEqual(r.star_marks_after_act(2, True), 0)
+
+    def test_tribunal_heirs(self):
+        # Ашборн: ослабленная Цена; Кочевник: ступень вверх; чужие Князья не меняются.
+        self.assertEqual(r.tribunal_gift(4, False, False), {"attack": 2, "pierce": 1, "summon_taken": 50})
+        self.assertEqual(r.tribunal_gift(4, True, False)["summon_taken"], 25)
+        self.assertEqual(r.tribunal_gift(2, True, False)["rest_heal"], -15)
+        nomad = r.tribunal_gift(4, True, True)
+        self.assertEqual((nomad["attack"], nomad["pierce"], nomad["summon_taken"]), (3, 2, 25))
+        star = r.tribunal_gift(7, True, True)
+        self.assertEqual((star["max_hp"], star["mana_pool"], star["fire"], star["frost"]), (9, 3, 2, 2))
+        self.assertEqual(r.tribunal_gift(6, True, True), {})
+        self.assertEqual(r.heir_star_marks(1), 0)
+        self.assertEqual(r.heir_star_marks(3), 2)
+        self.assertEqual((r.web_leech_cap(False), r.web_leech_cap(True)), (5, 8))
+        self.assertEqual((r.web_below_half_bonus(False), r.web_below_half_bonus(True)), (2, 3))
+        # «Без условий»: в святилище всегда есть Тройственный.
+        self.assertEqual(r.heir_shrine_picks([0, 1], None, lambda n: 0), [0, 4])
+        self.assertEqual(r.heir_shrine_picks([0, 1], 4, lambda n: 0), [0, 2])
+        self.assertEqual(r.heir_shrine_picks([0, 7], None, lambda n: 0), [0, 7])
+        self.assertTrue(r.ordinator_may_accept(7))
+        self.assertFalse(r.ordinator_may_accept(0))
+
+    def test_ordinator_forms_and_paths(self):
+        for form in ("Righteous", "Vampire", "Werewolf"):
+            self.assertFalse(r.can_take_worldview("None", form, True, True, False))
+        self.assertFalse(r.can_take_worldview("Herald", "Lich", False, True, False))
+        self.assertTrue(r.can_take_worldview("None", "DarkPact", False, True, False))
+        self.assertTrue(r.path_allowed("Paladin", "None", False, False, ordinator=True))
+        self.assertFalse(r.path_allowed("BlackKnight", "None", True, False, ordinator=True))
+        self.assertIn("Paladin", r.native_paths("Regent", "None", False, False, ordinator=True))
 
     def test_pierce(self):
         self.assertEqual(r.apply_plating(6, 2, pierce=1), 5)
@@ -623,3 +650,7 @@ class Stage7(unittest.TestCase):
         self.assertTrue(r.portal_mandatory(False, 10))
         self.assertAlmostEqual(r.binding_multiplier(5), 1.45)
         self.assertFalse(r.bypasses_ghostly(False, "physical", False))
+
+
+if __name__ == "__main__":
+    unittest.main()

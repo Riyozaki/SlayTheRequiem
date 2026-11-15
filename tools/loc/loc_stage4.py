@@ -254,8 +254,9 @@ STAGE4_EVENTS = {
                   "LEAVE": "The candles flicker behind you."}),
         **_event(PREFIX + "DARK_SHRINE_EVENT", "Dark Shrine",
                  "An altar of black stone. Two Princes of the Abyss offer their gifts — each with a Price. "
-                 "A pact makes you Apostate.",
-                 {"REFUSE": ("Refuse", "Turn away from the altar.")},
+                 "A pact makes you Apostate — unless an Ashborn accepts a gift of the Tribunal.",
+                 {"ORDINATOR_OATH": ("Oath", "An Ordinator serves only the Tribunal."),
+                  "REFUSE": ("Refuse", "Turn away from the altar.")},
                  {"ACCEPTED": "The pact is sealed. The Prince is watching.",
                   "LEAVE": "Whispers follow you out."}),
     },
@@ -283,8 +284,9 @@ STAGE4_EVENTS = {
                   "LEAVE": "Свечи мерцают вам вслед."}),
         **_event(PREFIX + "DARK_SHRINE_EVENT", "Тёмное святилище",
                  "Алтарь из чёрного камня. Два Князя Бездны предлагают дары — каждый со своей Ценой. "
-                 "Договор делает вас Отступником.",
-                 {"REFUSE": ("Отказаться", "Отвернуться от алтаря.")},
+                 "Договор делает вас Отступником — если только Пеплорождённый не принимает дар Тройственных.",
+                 {"ORDINATOR_OATH": ("Клятва", "Ординатор служит только Трибуналу."),
+                  "REFUSE": ("Отказаться", "Отвернуться от алтаря.")},
                  {"ACCEPTED": "Договор скреплён. Князь смотрит на вас.",
                   "LEAVE": "Шёпот провожает вас до выхода."}),
     },

@@ -98,8 +98,8 @@ public static class Forms
 
     public static bool HasClockwork(Player? player) => All(player).Any(f => f.Kind == FormKind.Clockwork);
 
-    /// <summary>Предыстория Ординатора (этап 7) — совместима только с Праведником.</summary>
-    public static bool IsOrdinator(Player player) => player.Relics.Any(r => r.GetType().Name == "OrdinatorBackground");
+    /// <summary>Предыстория Ординатора: Праведник, вампир, оборотень и лич закрыты (06 §3), Путь Паладина — открыт.</summary>
+    public static bool IsOrdinator(Player player) => AbyssGift.IsOrdinator(player);
 
     public static bool CanTake(Player player, FormKind kind)
     {

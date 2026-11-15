@@ -228,14 +228,18 @@ public sealed class DarkShrineEvent : PantheonEvent
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions()
     {
-        var current = AbyssGift.Of(Owner);
-        var exclude = current == null ? null : new List<int> { (int)current.Prince };
-        var picks = OmenRules.PickDistinct(PantheonRules.PrinceCount, Offers, Next, exclude);
+        var held = AbyssGift.AllOf(Owner).Select(g => (int)g.Prince).ToList();
+        var picks = OmenRules.PickDistinct(PantheonRules.PrinceCount, Offers, Next, held.Count == 0 ? null : held);
+        // Наследники Тройственных: один из Тройственных — всегда среди вариантов («без условий»).
+        if (AbyssGift.IsHeir(Owner) && !AbyssGift.IsOrdinator(Owner))
+            picks = PantheonRules.HeirShrinePicks(picks, held.Count == 0 ? null : held[0], Next);
         var options = new List<EventOption>();
         foreach (var index in picks)
         {
             var prince = (AbyssPrince)index;
-            options.Add(RelicOption(AbyssGift.Create(prince), () => Accept(prince)));
+            // Ординатор: клятва Трибуналу — чужие Князи закрыты.
+            if (!AbyssGift.MayAccept(Owner!, prince)) options.Add(Locked("ORDINATOR_OATH"));
+            else options.Add(RelicOption(AbyssGift.Create(prince), () => Accept(prince)));
         }
         options.Add(Choice(Leave, "REFUSE"));
         return options;

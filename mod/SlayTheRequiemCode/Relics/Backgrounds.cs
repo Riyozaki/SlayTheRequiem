@@ -106,8 +106,7 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
         MarshbornOrigin => [typeof(GladiatorBackground), typeof(ShadowscaleBackground), typeof(VenomweaverBackground)],
         HighbornOrigin => [typeof(JusticiarBackground), typeof(ShadowSorcererBackground), typeof(WizardBackground)],
         MistbornOrigin => [typeof(KnightBackground), typeof(EnchanterBackground), typeof(SummonerBackground)],
-        // Ординатор и Пепельный кочевник — дары Князей Бездны (этап 4).
-        AshbornOrigin => [null, null, typeof(MushroomTowerBackground)],
+        AshbornOrigin => [typeof(OrdinatorBackground), typeof(AshNomadBackground), typeof(MushroomTowerBackground)],
         _ => [],
     };
 
@@ -582,4 +581,29 @@ public sealed class MushroomTowerBackground : BackgroundRelic
     {
         if (IsFirstTurnOf(player, Owner)) await ApplyToAllEnemies<FireResistancePower>(-1);
     }
+}
+
+/// <summary>
+/// Ординатор: все три дара Тройственных сразу (Измена, Паутина, Сумеречная Звезда — Цена ослаблена, праведность не страдает).
+/// Клятва Трибуналу: запрещены Праведник, вампиризм, ликантропия и лич (06 §3; из Путей — только Паладин из «святых»),
+/// благословения Небесных недоступны, чужих Князей Ординатор не принимает.
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class OrdinatorBackground : BackgroundRelic,
+    Pantheon.ITribunalHeir, Pantheon.ITribunalOrdinator, Pantheon.IPietyForbidder
+{
+    protected override async Task SetUpStart()
+    {
+        // Напрямую, а не через Accept: дары Тройственных не стоят Ординатору праведности и не вытесняют друг друга.
+        foreach (var prince in PantheonRules.Tribunal)
+            if (Pantheon.AbyssGift.AllOf(Owner).All(g => g.Prince != prince))
+                await RelicCmd.Obtain(Pantheon.AbyssGift.Create(prince), Owner);
+        Pantheon.Faith.RefreshAll(Owner);
+    }
+}
+
+/// <summary>Пепельный кочевник: дары Тройственных на ступень сильнее (<see cref="PantheonRules.TribunalTierUp"/>).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class AshNomadBackground : BackgroundRelic, Pantheon.ITribunalHeir, Pantheon.ITribunalAdept
+{
 }

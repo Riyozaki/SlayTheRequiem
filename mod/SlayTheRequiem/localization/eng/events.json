@@ -27,7 +27,7 @@
   "SLAYTHEREQUIEM-SHRINE_EVENT.pages.ROBBED.description": "You run, the offering bowl clinking. Somewhere a candle goes out.",
   "SLAYTHEREQUIEM-SHRINE_EVENT.pages.LEAVE.description": "The candles flicker behind you.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.title": "Dark Shrine",
-  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.description": "An altar of black stone. Two Princes of the Abyss offer their gifts — each with a Price. A pact makes you Apostate.",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.description": "An altar of black stone. Two Princes of the Abyss offer their gifts — each with a Price. A pact makes you Apostate — unless an Ashborn accepts a gift of the Tribunal.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.REFUSE.title": "Refuse",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.REFUSE.description": "Turn away from the altar.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.ACCEPTED.description": "The pact is sealed. The Prince is watching.",
@@ -95,5 +95,7 @@
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.INITIAL.options.NOT_HERALD.title": "Not yet",
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.INITIAL.options.NOT_HERALD.description": "Requires a Herald with 10 victories.",
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.ACCEPTED.description": "Your heart stops. You do not.",
-  "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.LEAVE.description": "You move on."
+  "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.LEAVE.description": "You move on.",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.ORDINATOR_OATH.title": "Oath",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.ORDINATOR_OATH.description": "An Ordinator serves only the Tribunal."
 }

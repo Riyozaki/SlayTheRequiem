@@ -84,7 +84,7 @@
   "SLAYTHEREQUIEM-MISTBORN_ORIGIN.description": "Max ◆ +1. [gold]Magic resistance I[/gold]. The first enemy spell each combat is absorbed.",
   "SLAYTHEREQUIEM-MISTBORN_ORIGIN.flavor": "The fog remembers every oath.",
   "SLAYTHEREQUIEM-ASHBORN_ORIGIN.title": "Ashborn",
-  "SLAYTHEREQUIEM-ASHBORN_ORIGIN.description": "Max HP +5. [gold]Fire resistance I[/gold].",
+  "SLAYTHEREQUIEM-ASHBORN_ORIGIN.description": "Max HP +5. [gold]Fire resistance I[/gold]. [gold]Heirs of the Tribunal[/gold]: gifts of Treachery, the Web Weaver and the Dusk Star cost no righteousness, one of them is always offered at the Dark Shrine, and their Price is halved (summons take +25% damage, resting heals 15% less, one star mark fewer).",
   "SLAYTHEREQUIEM-ASHBORN_ORIGIN.flavor": "Born under a red mountain, raised on its ash.",
   "SLAYTHEREQUIEM-FROSTBORN_ORIGIN.title": "Frostborn",
   "SLAYTHEREQUIEM-FROSTBORN_ORIGIN.description": "Max HP +5, capacity +2. [gold]Frost resistance I[/gold]; [gold]Chill[/gold] on you wears off at once.",
@@ -526,5 +526,11 @@
   "SLAYTHEREQUIEM-ENVOY_BACKGROUND.flavor": "He carries the letter. You carry him.",
   "SLAYTHEREQUIEM-CITADEL_MAGE_BACKGROUND.title": "Citadel Mage",
   "SLAYTHEREQUIEM-CITADEL_MAGE_BACKGROUND.description": "+1 Alteration mastery. [gold]Telekinesis[/gold] replaces a Strike.",
-  "SLAYTHEREQUIEM-CITADEL_MAGE_BACKGROUND.flavor": "Walls are just slow spells."
+  "SLAYTHEREQUIEM-CITADEL_MAGE_BACKGROUND.flavor": "Walls are just slow spells.",
+  "SLAYTHEREQUIEM-ORDINATOR_BACKGROUND.title": "Ordinator",
+  "SLAYTHEREQUIEM-ORDINATOR_BACKGROUND.description": "Start with all three gifts of the Tribunal: [gold]Treachery[/gold], [gold]Web Weaver[/gold] and [gold]Dusk Star[/gold]. Oath: the Righteous form, vampirism, lycanthropy and lichdom are forbidden, Celestial blessings are unavailable, other Princes are refused. Of the holy Paths, Paladin is open.",
+  "SLAYTHEREQUIEM-ORDINATOR_BACKGROUND.flavor": "The Tribunal sees. The Tribunal judges.",
+  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.title": "Ash Nomad",
+  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.description": "Tribunal gifts are a tier stronger: Treachery — attacks +3, Pierce 2; Web Weaver — up to 8 healing per turn, +3 damage after the Vow; Dusk Star — +9 max HP, +3 max ✦, Fire and Frost resistance II.",
+  "SLAYTHEREQUIEM-ASH_NOMAD_BACKGROUND.flavor": "The ash walks with those who walk on it."
 }

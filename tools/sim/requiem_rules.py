@@ -789,6 +789,59 @@ def star_marks_after_act(marks: int, vow_done: bool) -> int:
     return 0 if vow_done else marks + 1
 
 
+# ── Пеплорождённые: «Наследники Тройственных» (M4 п. 2) ──
+# Индексы Князей: PlagueLord 0, TwilightWidow 1, WebWeaver 2, GateBreaker 3, Treachery 4, Revel 5, Outcast 6, DuskStar 7.
+TRIBUNAL = [4, 2, 7]
+
+
+def is_tribunal(prince: int) -> bool:
+    return prince in TRIBUNAL
+
+
+def heir_star_marks(marks: int) -> int:
+    return max(0, marks - 1)
+
+
+def tribunal_gift(prince: int, heir: bool, tier_up: bool) -> dict:
+    """Числовая часть дара Тройственных (только изменённые поля)."""
+    base = {4: {"attack": 2, "pierce": 1, "summon_taken": 50},
+            2: {"rest_heal": -30},
+            7: {"max_hp": 6, "mana_pool": 2, "fire": 1, "frost": 1}}.get(prince, {})
+    out = dict(base)
+    if prince not in TRIBUNAL:
+        return out
+    if heir:
+        for k, v in {4: {"summon_taken": -25}, 2: {"rest_heal": 15}}.get(prince, {}).items():
+            out[k] = out.get(k, 0) + v
+    if tier_up:
+        for k, v in {4: {"attack": 1, "pierce": 1}, 7: {"max_hp": 3, "mana_pool": 1, "fire": 1, "frost": 1}}.get(prince, {}).items():
+            out[k] = out.get(k, 0) + v
+    return out
+
+
+def web_leech_cap(tier_up: bool) -> int:
+    return 8 if tier_up else 5
+
+
+def web_below_half_bonus(tier_up: bool) -> int:
+    return 3 if tier_up else 2
+
+
+def heir_shrine_picks(picks, held, nxt) -> list:
+    res = list(picks)
+    if not res or any(is_tribunal(p) for p in res):
+        return res
+    pool = [t for t in TRIBUNAL if t != held and t not in res]
+    if not pool:
+        return res
+    res[-1] = pool[max(0, min(nxt(len(pool)), len(pool) - 1))]
+    return res
+
+
+def ordinator_may_accept(prince: int) -> bool:
+    return is_tribunal(prince)
+
+
 
 # ═════════════ Этап 5: Прогрессия (Core/ProgressionRules.cs) ═════════════
 
@@ -1099,7 +1152,9 @@ def is_chain_step(frm: str, to: str) -> bool:
 def can_take_worldview(current: str, nxt: str, righteous_piety: bool, ordinator: bool, clockwork: bool) -> bool:
     if not is_worldview(nxt):
         return False
-    if (ordinator or clockwork) and nxt != "Righteous":
+    if ordinator and nxt in ("Righteous", "Vampire", "Werewolf", "Lich"):
+        return False
+    if clockwork and nxt != "Righteous":
         return False
     if nxt in ("Herald", "Lich"):
         return is_chain_step(current, nxt)
@@ -1228,23 +1283,23 @@ def path_offer_due(level: int, boss_act: int, total: int, has_path: bool) -> boo
     return not has_path and level >= 8 and boss_act >= path_offer_act_index(total)
 
 
-def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool) -> bool:
+def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool, ordinator: bool = False) -> bool:
     if path == "None":
         return False
     if path == "Paladin":
-        return worldview == "Righteous"
+        return worldview == "Righteous" or ordinator
     if path == "BlackKnight":
-        return apostate and worldview != "Righteous"
+        return not ordinator and apostate and worldview != "Righteous"
     if path == "Monk":
         return unarmed
     return True
 
 
-def native_paths(hero, worldview: str, apostate: bool, unarmed: bool) -> list:
+def native_paths(hero, worldview: str, apostate: bool, unarmed: bool, ordinator: bool = False) -> list:
     out = []
-    if worldview == "Righteous":
+    if worldview == "Righteous" or ordinator:
         out.append("Paladin")
-    if apostate and worldview != "Righteous":
+    if not ordinator and apostate and worldview != "Righteous":
         out.append("BlackKnight")
     out += {"Ironclad": ["Champion", "Barbarian", "Battlemage"],
             "Silent": ["Assassin", "Blightbringer", "MysticArcher"],
@@ -1254,9 +1309,9 @@ def native_paths(hero, worldview: str, apostate: bool, unarmed: bool) -> list:
     return list(dict.fromkeys(out))
 
 
-def offer_paths(hero, worldview, apostate, unarmed, nxt) -> list:
-    native = native_paths(hero, worldview, apostate, unarmed)
-    foreign = [p for p in PATHS[1:] if p not in native and path_allowed(p, worldview, apostate, unarmed)]
+def offer_paths(hero, worldview, apostate, unarmed, nxt, ordinator: bool = False) -> list:
+    native = native_paths(hero, worldview, apostate, unarmed, ordinator)
+    foreign = [p for p in PATHS[1:] if p not in native and path_allowed(p, worldview, apostate, unarmed, ordinator)]
     res = []
     for _ in range(2):
         if not native:

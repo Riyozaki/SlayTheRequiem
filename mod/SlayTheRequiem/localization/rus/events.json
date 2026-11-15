@@ -27,7 +27,7 @@
   "SLAYTHEREQUIEM-SHRINE_EVENT.pages.ROBBED.description": "Вы бежите, звеня чашей для подношений. Где-то гаснет свеча.",
   "SLAYTHEREQUIEM-SHRINE_EVENT.pages.LEAVE.description": "Свечи мерцают вам вслед.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.title": "Тёмное святилище",
-  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.description": "Алтарь из чёрного камня. Два Князя Бездны предлагают дары — каждый со своей Ценой. Договор делает вас Отступником.",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.description": "Алтарь из чёрного камня. Два Князя Бездны предлагают дары — каждый со своей Ценой. Договор делает вас Отступником — если только Пеплорождённый не принимает дар Тройственных.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.REFUSE.title": "Отказаться",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.REFUSE.description": "Отвернуться от алтаря.",
   "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.ACCEPTED.description": "Договор скреплён. Князь смотрит на вас.",
@@ -95,5 +95,7 @@
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.INITIAL.options.NOT_HERALD.title": "Рано",
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.INITIAL.options.NOT_HERALD.description": "Нужен Вестник с 10 победами.",
   "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.ACCEPTED.description": "Сердце останавливается. Вы — нет.",
-  "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.LEAVE.description": "Вы идёте дальше."
+  "SLAYTHEREQUIEM-PHYLACTERY_EVENT.pages.LEAVE.description": "Вы идёте дальше.",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.ORDINATOR_OATH.title": "Клятва",
+  "SLAYTHEREQUIEM-DARK_SHRINE_EVENT.pages.INITIAL.options.ORDINATOR_OATH.description": "Ординатор служит только Трибуналу."
 }

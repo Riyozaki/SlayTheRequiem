@@ -640,6 +640,37 @@ public class Stage4Tests
     }
 
     [Fact]
+    public void TribunalHeirs()
+    {
+        // Пеплорождённые: ослабленная Цена; Пепельный кочевник: ступень вверх; чужих Князей не трогает.
+        Assert.Equal(25, PantheonRules.TribunalGift(AbyssPrince.Treachery, true, false).SummonTakenPercent);
+        Assert.Equal(-15, PantheonRules.TribunalGift(AbyssPrince.WebWeaver, true, false).RestHealPercent);
+        var nomad = PantheonRules.TribunalGift(AbyssPrince.Treachery, true, true);
+        Assert.Equal((3, 2), (nomad.AttackDamage, nomad.Pierce));
+        var star = PantheonRules.TribunalGift(AbyssPrince.DuskStar, false, true);
+        Assert.Equal((9, 3, 2, 2), (star.MaxHp, star.ManaPool, star.FireRes, star.FrostRes));
+        Assert.Equal(PantheonRules.Gift(AbyssPrince.Outcast), PantheonRules.TribunalGift(AbyssPrince.Outcast, true, true));
+        Assert.Equal(0, PantheonRules.HeirStarMarks(1));
+        Assert.Equal(8, PantheonRules.WebLeechCap(true));
+        Assert.Equal(3, PantheonRules.WebBelowHalfBonus(true));
+        Assert.Equal(new List<int> { 0, 4 }, PantheonRules.HeirShrinePicks(new[] { 0, 1 }, null, _ => 0));
+        Assert.Equal(new List<int> { 0, 2 }, PantheonRules.HeirShrinePicks(new[] { 0, 1 }, 4, _ => 0));
+        Assert.True(PantheonRules.OrdinatorMayAccept(AbyssPrince.DuskStar));
+        Assert.False(PantheonRules.OrdinatorMayAccept(AbyssPrince.PlagueLord));
+    }
+
+    [Fact]
+    public void OrdinatorForms()
+    {
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Righteous, true, true, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.Vampire, false, true, false));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.Herald, FormKind.Lich, false, true, false));
+        Assert.True(TransformationRules.CanTakeWorldview(FormKind.None, FormKind.DarkPact, false, true, false));
+        Assert.True(TransformationRules.PathAllowed(HeroPath.Paladin, FormKind.None, false, false, ordinator: true));
+        Assert.False(TransformationRules.PathAllowed(HeroPath.BlackKnight, FormKind.None, true, false, ordinator: true));
+    }
+
+    [Fact]
     public void Pierce()
     {
         Assert.Equal(5, CombatMath.ApplyPlating(6, 2, pierce: 1));
