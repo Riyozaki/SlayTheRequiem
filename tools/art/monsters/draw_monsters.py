@@ -1027,6 +1027,12 @@ from heroes import HEROES, PATH_SIGNS, draw_path_sign  # noqa: E402
 REGISTRY.update(HEROES)
 SIGNS_OUT = os.path.join(ROOT, "art", "ui", "path_signs")
 
+# ═════════════════════════ Кукла героя (M6 п. 4) — tools/art/monsters/doll.py ═════════════════════════
+
+from doll import DOLL  # noqa: E402
+
+DOLL_OUT = os.path.join(ROOT, "art", "ui", "doll")
+
 
 def main(argv) -> int:
     os.makedirs(OUT, exist_ok=True)
@@ -1046,6 +1052,13 @@ def main(argv) -> int:
             with open(os.path.join(SIGNS_OUT, key + ".svg"), "w", encoding="utf-8") as f:
                 f.write(draw_path_sign(key).render())
         print(f"SVG: {len(PATH_SIGNS)} → {os.path.relpath(SIGNS_OUT, ROOT)}")
+        os.makedirs(DOLL_OUT, exist_ok=True)
+        for key in sorted(DOLL):
+            base, metal = DOLL[key]()
+            for name, svg in ((key, base), (key + "_metal", metal)):
+                with open(os.path.join(DOLL_OUT, name + ".svg"), "w", encoding="utf-8") as f:
+                    f.write(svg.render())
+        print(f"SVG: {len(DOLL) * 2} → {os.path.relpath(DOLL_OUT, ROOT)}")
     return 0
 
 

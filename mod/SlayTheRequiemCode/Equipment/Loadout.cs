@@ -29,10 +29,15 @@ public static class Loadout
         foreach (var old in others.Where(r => displaced.Any(d => d.Key == r.GetType().Name && d.Slot == r.Slot)))
             old.IsStowed = true;
         item.IsStowed = false;
+        PaperDoll.Refresh(player); // в бою («Сменить хват») — сразу на модели
     }
 
     /// <summary>Снять в рюкзак.</summary>
-    public static void Stow(EquipmentRelic item) => item.IsStowed = true;
+    public static void Stow(EquipmentRelic item)
+    {
+        item.IsStowed = true;
+        if (item.IsMutable) PaperDoll.Refresh(item.Owner);
+    }
 
     /// <summary>
     /// Вес колоды и всех реликвий: снаряжение — по весу предмета, ванильные реликвии — по таблице переработки

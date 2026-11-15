@@ -1383,3 +1383,61 @@ public class M6HeroLookTests
         Assert.Equal(HeroLookRules.OrbSlot(0, 1, true), HeroLookRules.OrbSlot(4, 1, true));
     }
 }
+
+public class M6PaperDollTests
+{
+    [Theory]
+    [InlineData(0, ItemMaterial.Iron)]
+    [InlineData(1, ItemMaterial.Iron)]
+    [InlineData(2, ItemMaterial.Steel)]
+    [InlineData(3, ItemMaterial.Silver)]
+    [InlineData(4, ItemMaterial.Obsidian)]
+    [InlineData(5, ItemMaterial.EternalIce)]
+    [InlineData(9, ItemMaterial.EternalIce)]
+    public void MaterialByTier(int tier, ItemMaterial expected) =>
+        Assert.Equal(expected, PaperDollRules.MaterialFor(tier, false));
+
+    [Fact]
+    public void MaterialOverrides()
+    {
+        Assert.Equal(ItemMaterial.Abyssal, PaperDollRules.MaterialFor(5, true));
+        Assert.Equal(ItemMaterial.ScaledSteel, PaperDollRules.MaterialFor(1, true, ItemMaterial.ScaledSteel));
+        Assert.Equal(PaperDollRules.MaterialColor(ItemMaterial.Iron), PaperDollRules.MaterialColor(ItemMaterial.None));
+        Assert.True(PaperDollRules.HasGlint(ItemMaterial.Silver));
+        Assert.False(PaperDollRules.HasGlint(ItemMaterial.Iron));
+        Assert.True(PaperDollRules.HasSmoke(ItemMaterial.Abyssal));
+        Assert.False(PaperDollRules.HasSmoke(ItemMaterial.Obsidian));
+    }
+
+    [Fact]
+    public void Aura()
+    {
+        Assert.False(PaperDollRules.AuraFor([]).IsVisible);
+        var aura = PaperDollRules.AuraFor([
+            (ArmorClass.Heavy, 1, ItemMaterial.None),
+            (ArmorClass.Heavy, 3, ItemMaterial.None),
+            (ArmorClass.Light, 5, ItemMaterial.None)]);
+        Assert.Equal(ArmorClass.Heavy, aura.Class);
+        Assert.Equal(ItemMaterial.Silver, aura.Material);
+        Assert.InRange(aura.Strength, 0.849f, 0.851f);
+        Assert.Equal(ArmorClass.Light, PaperDollRules.AuraFor([(ArmorClass.Robe, 2, ItemMaterial.None), (ArmorClass.Light, 1, ItemMaterial.None)]).Class);
+        Assert.Equal(1f, PaperDollRules.AuraFor(Enumerable.Repeat((ArmorClass.Light, 1, ItemMaterial.Iron), 4)).Strength);
+        Assert.Equal(AuraStyle.Flicker, PaperDollRules.StyleFor(ArmorClass.Light));
+        Assert.True(PaperDollRules.AuraPulseSeconds(AuraStyle.Flicker) < PaperDollRules.AuraPulseSeconds(AuraStyle.Steady));
+    }
+
+    [Fact]
+    public void Hands()
+    {
+        Assert.Equal("greatsword", PaperDollRules.WeaponArt(WeaponKind.TwoHanded));
+        Assert.Null(PaperDollRules.WeaponArt(WeaponKind.None));
+        Assert.True(PaperDollRules.BlocksOffHand(WeaponKind.Bow));
+        Assert.False(PaperDollRules.BlocksOffHand(WeaponKind.Sword));
+        Assert.True(PaperDollRules.ShowsWeapons(false, false));
+        Assert.False(PaperDollRules.ShowsWeapons(true, false));
+        Assert.False(PaperDollRules.ShowsWeapons(false, true));
+        Assert.Equal((70, 130), PaperDollRules.Pivot(WeaponKind.Shield));
+        Assert.Equal((70, 190), PaperDollRules.Pivot(WeaponKind.Sword));
+        Assert.True(PaperDollRules.WeaponScale(WeaponKind.Dagger) < PaperDollRules.WeaponScale(WeaponKind.TwoHanded));
+    }
+}

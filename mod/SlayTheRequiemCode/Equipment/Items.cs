@@ -307,6 +307,7 @@ public sealed class NecklaceOfThorns : EquipmentRelic
 [Pool(typeof(SharedRelicPool))]
 public sealed class ScaledDagger : WeaponRelic
 {
+    public override ItemMaterial Material => ItemMaterial.ScaledSteel;
     public override RelicRarity Rarity => RelicRarity.Rare;
     public override int Tier => 3;
     public override WeaponKind Weapon => WeaponKind.Dagger;

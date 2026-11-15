@@ -165,6 +165,7 @@ public sealed class MirrorShield : PathSign
     public override HeroPath Path => HeroPath.Reflector;
     public override EquipSlot Slot => EquipSlot.OffHand;
     public override WeaponKind Weapon => WeaponKind.Shield;
+    public override ItemMaterial Material => ItemMaterial.Silver;
     public override int Weight => 2;
     protected override Color Glow => new(0.8f, 0.95f, 1f);
     protected override Task OnCombatOpened() => ApplySelf<SpellShieldPower>(6);

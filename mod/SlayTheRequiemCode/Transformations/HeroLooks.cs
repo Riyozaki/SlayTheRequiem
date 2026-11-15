@@ -16,6 +16,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.TestSupport;
 using SlayTheRequiem.SlayTheRequiemCode.Art;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 using SlayTheRequiem.SlayTheRequiemCode.Monsters;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
@@ -219,6 +220,7 @@ public static class HeroOverlays
     {
         try
         {
+            PaperDoll.Refresh(player, node); // кукла снаряжения (M6 п. 4): оружие, щит, аура брони
             RefreshSign(player, node);
             RefreshOrbs(player, node);
         }

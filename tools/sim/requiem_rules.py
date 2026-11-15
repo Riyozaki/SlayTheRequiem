@@ -2392,3 +2392,85 @@ def orb_slot(index: int, capacity: int, is_local: bool) -> tuple[float, float]:
     sweep = 0.0 if capacity == 1 else 125.0 - index * (125.0 / (capacity - 1))
     a = math.radians(-25.0 - sweep)
     return (-math.cos(a) * radius, math.sin(a) * radius)
+
+
+# ───── M6 п. 4: кукла героя — оружие в руках и аура брони (Core/PaperDollRules) ─────
+
+DOLL_MATERIAL_COLOR = {
+    "Iron": (0.64, 0.66, 0.70), "Steel": (0.72, 0.82, 0.98), "Silver": (1.0, 1.0, 1.0),
+    "ScaledSteel": (0.95, 0.80, 0.48), "Obsidian": (0.36, 0.46, 0.40), "DragonBone": (1.0, 0.94, 0.80),
+    "EternalIce": (0.55, 0.96, 0.95), "Abyssal": (0.62, 0.14, 0.16),
+}
+DOLL_WEAPON_ART = {
+    "Dagger": "dagger", "Sword": "sword", "Axe": "axe", "Mace": "mace", "Spear": "spear", "TwoHanded": "greatsword",
+    "Bow": "bow", "Crossbow": "crossbow", "Staff": "staff", "Shield": "shield",
+}
+DOLL_AURA = {"Heavy": ("Steady", 0.42, 2.4), "Light": ("Flicker", 0.32, 0.7), "Robe": ("Shimmer", 0.36, 1.5)}
+DOLL_CANVAS = (140, 260)
+
+
+def doll_material(tier: int, abyssal: bool = False, explicit: str = "None") -> str:
+    if explicit != "None":
+        return explicit
+    if abyssal:
+        return "Abyssal"
+    return {2: "Steel", 3: "Silver", 4: "Obsidian"}.get(tier, "Iron" if tier <= 1 else "EternalIce")
+
+
+def doll_material_color(material: str) -> tuple[float, float, float]:
+    return DOLL_MATERIAL_COLOR.get(material, DOLL_MATERIAL_COLOR["Iron"])
+
+
+def doll_glint(material: str) -> bool:
+    return material in ("Silver", "Obsidian", "EternalIce")
+
+
+def doll_smoke(material: str) -> bool:
+    return material == "Abyssal"
+
+
+def doll_aura(pieces: list[tuple[str, int, str]]) -> tuple[str, str, float]:
+    """(класс, материал, сила) по броне [(класс, ступень, материал)]; ("None", "None", 0) — ауры нет."""
+    pieces = [p for p in pieces if p[0] != "None"]
+    if not pieces:
+        return ("None", "None", 0.0)
+    order = {"Heavy": 0, "Light": 1}
+    counts: dict[str, int] = {}
+    for cls, _, _ in pieces:
+        counts[cls] = counts.get(cls, 0) + 1
+    cls = min(counts, key=lambda c: (-counts[c], order.get(c, 2)))
+    best = max((p for p in pieces if p[0] == cls), key=lambda p: p[1])  # первая с наибольшей ступенью
+    material = best[2] if best[2] != "None" else doll_material(best[1])
+    return (cls, material, min(1.0, 0.4 + 0.15 * len(pieces)))
+
+
+def doll_weapon_art(kind: str) -> str | None:
+    return DOLL_WEAPON_ART.get(kind)
+
+
+def doll_blocks_off_hand(main_kind: str) -> bool:
+    return main_kind in ("TwoHanded", "Bow", "Crossbow")
+
+
+def doll_shows_weapons(own_sprite_look: bool, beast_form: bool) -> bool:
+    return not beast_form and not own_sprite_look
+
+
+def doll_pivot(kind: str) -> tuple[int, int]:
+    return (70, 130) if kind in ("Shield", "Bow", "Crossbow") else (70, 190)
+
+
+def doll_rest_angle(kind: str) -> float:
+    if kind in ("Staff", "Spear"):
+        return -0.12
+    if kind == "Shield":
+        return 0.0
+    if kind in ("Bow", "Crossbow"):
+        return 0.1
+    return 0.35
+
+
+def doll_scale(kind: str) -> float:
+    if kind == "Dagger":
+        return 0.62
+    return 0.95 if kind in ("TwoHanded", "Spear", "Staff") else 0.8

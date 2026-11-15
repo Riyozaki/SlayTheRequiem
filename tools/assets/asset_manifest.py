@@ -142,7 +142,11 @@ UI_ASSETS = [
     ("images/monsters/hero_werewolf_beast.png", "облик оборотня: Звериная форма"),
 ] + [(f"images/ui/path_signs/{key}.png", f"знамя Знака Пути: {key}") for key in (
     "paladin", "black_knight", "champion", "barbarian", "monk", "assassin", "blightbringer", "mystic_archer",
-    "element_lord", "battlemage", "reflector", "medium")]
+    "element_lord", "battlemage", "reflector", "medium")] + [
+    # Кукла героя (M6 п. 4, Equipment/PaperDoll.cs; рисует tools/art/monsters/doll.py): основа + металл под цвет материала
+    (f"images/ui/doll/{key}{layer}.png", f"кукла героя: {key}" + (" (металл)" if layer else ""))
+    for key in ("dagger", "sword", "axe", "mace", "spear", "greatsword", "bow", "crossbow", "staff", "shield")
+    for layer in ("", "_metal")]
 
 
 def snake(name: str) -> str:

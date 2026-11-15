@@ -108,5 +108,8 @@
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.title": "Camp meta-progression",
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.title": "Camp meta-progression",
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.desc": "Each won run unlocks the next camp building for all future runs: Kettle (cooking without the skill), Anvil (Forge costs 1 point), Enchanting Table and Altar (in every camp), Herbalist's Tent (brewing one tier higher). Only a bonus. Singleplayer only.",
-  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Camp buildings unlocked"
+  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Camp buildings unlocked",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.title": "Equipment on the hero model",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.title": "Paper doll",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.desc": "In combat the hero holds the equipped weapon and shield (or staff), coloured by material, and glows with an aura of the armour class and tier. Cosmetic only."
 }

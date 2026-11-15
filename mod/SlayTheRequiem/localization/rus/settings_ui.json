@@ -108,5 +108,8 @@
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.title": "Метапрогресс лагеря",
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.title": "Метапрогресс лагеря",
   "SLAYTHEREQUIEM-ENABLE_CAMP_META.hover.desc": "Каждая победа в забеге открывает следующую постройку лагеря для всех будущих забегов: Котёл (Готовка без навыка), Наковальня (Кузня за 1 очко), Зачаровальный стол и Алтарь (в каждом лагере), Палатка травника (Варка ступенью выше). Только бонус. Лишь в одиночной игре.",
-  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Открыто построек лагеря"
+  "SLAYTHEREQUIEM-CAMP_BUILDINGS_UNLOCKED.title": "Открыто построек лагеря",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.title": "Снаряжение на модели героя",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.title": "Кукла героя",
+  "SLAYTHEREQUIEM-SHOW_PAPER_DOLL.hover.desc": "В бою герой держит надетое оружие и щит (или посох) цвета их материала, а вокруг — аура класса и ступени брони. Только оформление."
 }

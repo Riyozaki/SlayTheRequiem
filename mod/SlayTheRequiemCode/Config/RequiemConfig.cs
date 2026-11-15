@@ -49,6 +49,9 @@ internal class RequiemConfig : SimpleModConfig
     /// <summary>Название стихийной карты окрашено в цвет стихии (огонь, холод, разряд, яд…). Только оформление.</summary>
     public static bool ColorElementalTitles { get; set; } = true;
 
+    /// <summary>Кукла героя (docs/design/07 §8): в бою оружие и щит в руках цвета материала, аура брони. Только оформление.</summary>
+    public static bool ShowPaperDoll { get; set; } = true;
+
     /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
     /// Меняется до начала забега; в коопе должна совпадать у всех.

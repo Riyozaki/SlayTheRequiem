@@ -28,6 +28,11 @@ public abstract class EquipmentRelic : RequiemRelic
     public virtual string? Set => null;
     /// <summary>Покров N (одеяния).</summary>
     public virtual int Ward => 0;
+    /// <summary>Материал (07 §2), если он не следует из ступени (чешуйчатая сталь, драконья кость). None — по ступени.</summary>
+    public virtual ItemMaterial Material => ItemMaterial.None;
+
+    /// <summary>Материал для куклы (07 §8): свой, иначе Бездонное или по базовой ступени.</summary>
+    public ItemMaterial EffectiveMaterial => PaperDollRules.MaterialFor(Tier, this is IAbyssalItem, Material);
 
     private bool _isStowed;
 

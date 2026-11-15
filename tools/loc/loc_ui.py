@@ -192,6 +192,10 @@ UI_SETTINGS = {
         "COLOR_ELEMENTAL_TITLES.hover.title": "Elemental titles",
         "COLOR_ELEMENTAL_TITLES.hover.desc": "The title of a fire, frost, shock, poison, blight, light or magic card takes the "
                                              "colour of its element. Upgraded cards keep the green outline and the \"+\". Cosmetic only.",
+        "SHOW_PAPER_DOLL.title": "Equipment on the hero model",
+        "SHOW_PAPER_DOLL.hover.title": "Paper doll",
+        "SHOW_PAPER_DOLL.hover.desc": "In combat the hero holds the equipped weapon and shield (or staff), coloured by material, "
+                                      "and glows with an aura of the armour class and tier. Cosmetic only.",
     },
     "rus": {
         "SHOW_VANILLA_ONLY_HEROES.title": "Некробиндер и Дефект как герои",
@@ -203,5 +207,9 @@ UI_SETTINGS = {
         "COLOR_ELEMENTAL_TITLES.hover.title": "Цвет стихии в названии",
         "COLOR_ELEMENTAL_TITLES.hover.desc": "Название карты огня, холода, разряда, яда, хвори, света или магии окрашено в цвет "
                                              "стихии. У улучшенных остаются зелёная обводка и «+». Только оформление.",
+        "SHOW_PAPER_DOLL.title": "Снаряжение на модели героя",
+        "SHOW_PAPER_DOLL.hover.title": "Кукла героя",
+        "SHOW_PAPER_DOLL.hover.desc": "В бою герой держит надетое оружие и щит (или посох) цвета их материала, а вокруг — аура "
+                                      "класса и ступени брони. Только оформление.",
     },
 }

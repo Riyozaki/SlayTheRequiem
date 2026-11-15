@@ -1102,5 +1102,83 @@ class M6HeroLooks(unittest.TestCase):
             self.assertIn(f'Element.{element} => "{art}"', src)
 
 
+class M6PaperDoll(unittest.TestCase):
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def test_material(self):
+        self.assertEqual([r.doll_material(t) for t in (0, 1, 2, 3, 4, 5, 9)],
+                         ["Iron", "Iron", "Steel", "Silver", "Obsidian", "EternalIce", "EternalIce"])
+        self.assertEqual(r.doll_material(5, abyssal=True), "Abyssal")
+        self.assertEqual(r.doll_material(1, abyssal=True, explicit="ScaledSteel"), "ScaledSteel")
+        self.assertEqual(r.doll_material_color("None"), r.doll_material_color("Iron"))
+        self.assertEqual([m for m in r.DOLL_MATERIAL_COLOR if r.doll_glint(m)], ["Silver", "Obsidian", "EternalIce"])
+        self.assertEqual([m for m in r.DOLL_MATERIAL_COLOR if r.doll_smoke(m)], ["Abyssal"])
+        # множитель не гасит рисунок: каждый канал > 0,1, хотя бы один ≥ 0,45
+        for m, c in r.DOLL_MATERIAL_COLOR.items():
+            self.assertTrue(all(0.1 < x <= 1 for x in c) and max(c) >= 0.45, m)
+
+    def test_aura(self):
+        self.assertEqual(r.doll_aura([]), ("None", "None", 0.0))
+        self.assertEqual(r.doll_aura([("None", 3, "None")]), ("None", "None", 0.0))
+        cls, mat, strength = r.doll_aura([("Heavy", 1, "None"), ("Heavy", 3, "None"), ("Light", 5, "None")])
+        self.assertEqual((cls, mat), ("Heavy", "Silver"))
+        self.assertAlmostEqual(strength, 0.85)
+        self.assertEqual(r.doll_aura([("Robe", 2, "None"), ("Light", 1, "None")])[0], "Light")
+        self.assertEqual(r.doll_aura([("Robe", 2, "None"), ("Heavy", 1, "None")])[0], "Heavy")
+        self.assertEqual(r.doll_aura([("Robe", 2, "Abyssal")])[1], "Abyssal")
+        self.assertAlmostEqual(r.doll_aura([("Light", 1, "Iron")] * 4)[2], 1.0)
+        self.assertAlmostEqual(r.doll_aura([("Light", 1, "Iron")])[2], 0.55)
+
+    def test_hands(self):
+        self.assertEqual([k for k in r.DOLL_WEAPON_ART if r.doll_blocks_off_hand(k)], ["TwoHanded", "Bow", "Crossbow"])
+        self.assertIsNone(r.doll_weapon_art("None"))
+        self.assertTrue(r.doll_shows_weapons(False, False))
+        self.assertFalse(r.doll_shows_weapons(True, False))
+        self.assertFalse(r.doll_shows_weapons(False, True))
+        w, h = r.DOLL_CANVAS
+        for kind in r.DOLL_WEAPON_ART:
+            x, y = r.doll_pivot(kind)
+            self.assertTrue(0 < x < w and 0 < y < h, kind)
+            self.assertTrue(0.5 <= r.doll_scale(kind) <= 1.0, kind)
+            self.assertLess(abs(r.doll_rest_angle(kind)), 0.6, kind)
+
+    def test_art_exists(self):
+        for art in r.DOLL_WEAPON_ART.values():
+            for layer in ("", "_metal"):
+                self.assertTrue(os.path.exists(os.path.join(ROOT, "art", "ui", "doll", art + layer + ".svg")), art + layer)
+                self.assertTrue(os.path.exists(os.path.join(ROOT, "mod", "SlayTheRequiem", "images", "ui", "doll", art + layer + ".png")), art + layer)
+
+    def test_matches_doll_art(self):
+        import sys
+        sys.path.insert(0, os.path.join(ROOT, "tools", "art", "monsters"))
+        import doll
+        self.assertEqual((doll.DOLL_W, doll.DOLL_H), r.DOLL_CANVAS)
+        self.assertEqual(sorted(doll.DOLL), sorted(r.DOLL_WEAPON_ART.values()))
+        for kind, art in r.DOLL_WEAPON_ART.items():
+            self.assertEqual(tuple(doll.PIVOTS.get(art, doll.GRIP)), r.doll_pivot(kind), kind)
+
+    def test_matches_csharp(self):
+        import re
+        src = open(os.path.join(self.CODE, "Core", "PaperDollRules.cs"), encoding="utf-8").read()
+        for m, (cr, cg, cb) in r.DOLL_MATERIAL_COLOR.items():
+            nums = re.search(rf"ItemMaterial\.{m} => \(([^)]*)\)", src)
+            if m == "Iron":
+                nums = re.search(r"_ => \(([\d.f, ]*)\)", src)
+            vals = [float(v.strip().rstrip("f")) for v in nums.group(1).split(",")]
+            self.assertEqual([round(v, 2) for v in vals], [cr, cg, cb], m)
+        for kind, art in r.DOLL_WEAPON_ART.items():
+            self.assertIn(f'WeaponKind.{kind} => "{art}"', src)
+        for cls, (style, alpha, period) in r.DOLL_AURA.items():
+            self.assertIn(f"ArmorClass.{cls} => AuraStyle.{style}", src)
+            self.assertIn(f"AuraStyle.{style} => {alpha}f", src)
+            self.assertIn(f"AuraStyle.{style} => {period}f", src)
+        w, h = r.DOLL_CANVAS
+        self.assertIn(f"CanvasWidth = {w};", src)
+        self.assertIn(f"CanvasHeight = {h};", src)
+        self.assertIn("0.4f + 0.15f * list.Count", src)
+        items = open(os.path.join(self.CODE, "Equipment", "Items.cs"), encoding="utf-8").read()
+        self.assertIn("Material => ItemMaterial.ScaledSteel", items)
+
+
 if __name__ == "__main__":
     unittest.main()
