@@ -328,5 +328,17 @@
   "SLAYTHEREQUIEM-FORGE_HEART_POWER.smartDescription": "Каждая 3-я атака за ход: взять карт — {Amount}.",
   "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.title": "Ритм ветра",
   "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.description": "Каждая 3-я карта за ход: взять карт — {Amount}.",
-  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Каждая 3-я карта за ход: взять карт — {Amount}."
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Каждая 3-я карта за ход: взять карт — {Amount}.",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.title": "Клятва стражи",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.description": "Пока рядом стоит другой враг, получает на {Amount} % меньше урона.",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.smartDescription": "Пока рядом стоит другой враг, получает на {Amount} % меньше урона.",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.title": "Давление",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.description": "Растёт на 1 каждый ход; урон [gold]холодом[/gold] сбивает 1. На пороге — «Сброс давления».",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.smartDescription": "Растёт на 1 каждый ход; урон [gold]холодом[/gold] сбивает 1. На пороге — «Сброс давления».",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.title": "Солнечная стойка",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.description": "День: получает на 50 % меньше урона, кроме [gold]Света[/gold].",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.smartDescription": "День: получает на 50 % меньше урона, кроме [gold]Света[/gold].",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.title": "Лунная стойка",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.description": "Ночь: урон [gold]Светом[/gold] по нему ×1,5.",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Ночь: урон [gold]Светом[/gold] по нему ×1,5."
 }

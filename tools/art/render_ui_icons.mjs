@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Рендер векторных значков мода: art/{ui,map}/**/*.svg → mod/SlayTheRequiem/images/{ui,map}/**/*.png.
+// Рендер векторных значков мода: art/{ui,map,monsters}/**/*.svg → mod/SlayTheRequiem/images/{ui,map,monsters}/**/*.png.
 // Исходники — SVG в art/ui (вне Godot-проекта, чтобы движок их не импортировал). Размер PNG = размер SVG.
 //
 //   npm i --prefix /tmp/r @resvg/resvg-js@2
@@ -15,7 +15,7 @@ const require = createRequire(import.meta.url);
 const { Resvg } = require("@resvg/resvg-js");
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const groups = ["ui", "map"];
+const groups = ["ui", "map", "monsters"];
 
 function* walk(dir) {
   for (const name of readdirSync(dir).sort()) {

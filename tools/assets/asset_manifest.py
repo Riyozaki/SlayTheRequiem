@@ -36,7 +36,7 @@ PREFIX = "SLAYTHEREQUIEM-"
 
 DECL = re.compile(r"\b(?P<mods>(?:(?:public|internal|sealed|abstract|static|partial)\s+)*)class\s+(?P<name>\w+)"
                   r"(?:<[^>]*>)?(?:\([^)]*\))?\s*:\s*(?P<base>[\w.]+)")
-LOOK = re.compile(r"LookOf\s*=>\s*ModelDb\.Monster<(?P<look>\w+)>|GetScenePath\(\"creature_visuals/(?P<scene>\w+)\"\)")
+LOOK = re.compile(r"LookOf\s*=>\s*ModelDb\.Monster<(?:[\w]+\.)*(?P<look>\w+)>|GetScenePath\(\"creature_visuals/(?P<scene>\w+)\"\)")
 
 # База мода → (вид, файл локализации, поле названия)
 BASES = {
@@ -151,6 +151,8 @@ def load_classes():
                 "option": (re.search(r'OptionId\s*=>\s*"(\w+)"', body) or [None, None])[1],
                 "fallback_icon": (re.search(r'FallbackIcon\s*=>\s*"(\w+)"', body) or [None, None])[1],
                 "potion_art": (re.search(r'VanillaArt\s*=>\s*"(\w+)"', body) or [None, None])[1],
+                "art_key": (re.search(r'ArtKey\s*=>\s*"(\w+)"', body) or [None, None])[1],
+                "icon_key": (re.search(r'IconKey\s*=>\s*"(\w+)"', body) or [None, None])[1],
             }
     return classes
 
@@ -236,7 +238,12 @@ def build_rows():
             borrowed = inherited(name, classes, "fallback_icon")
         else:
             borrowed = vanilla.get(kind, {}).get(name)
-        for asset, template, note in ASSETS[kind]:
+        assets = ASSETS[kind]
+        art_key = info.get("art_key") if kind == "monster" else None
+        if art_key:
+            # Свой спрайт (Monsters/OwnArtMonster.cs): PNG вместо сцены облика, варианты — {key}_{variant}.png.
+            assets = [("sprite", f"images/monsters/{art_key}.png", "свой спрайт + код-анимации (OwnArtMonster)")]
+        for asset, template, note in assets:
             rel = template.format(id=ident, option=option)
             own = os.path.exists(os.path.join(RES, rel)) and rel not in PLACEHOLDERS
             rows.append({
@@ -245,13 +252,24 @@ def build_rows():
                 "asset": asset, "path": rel, "present": "own" if own else "vanilla" if borrowed else "no",
                 "vanilla": borrowed or "", "note": note,
             })
+    # Значки боссов актов на карте (Monsters/ActBosses.cs → ActBossEncounter.IconKey): значок + контур, как placeholder/*_icon.
+    for name, info in sorted(classes.items()):
+        if not info.get("icon_key") or info["abstract"]:
+            continue
+        for suffix in ("", "_outline"):
+            rel = f"images/map/bosses/{info['icon_key']}{suffix}.png"
+            present = os.path.exists(os.path.join(RES, rel))
+            rows.append({"kind": "boss_icon", "class": name, "id": info["icon_key"] + suffix, "group": info["file"],
+                         "title_rus": "", "title_eng": "", "asset": "icon" + suffix, "path": rel,
+                         "present": "own" if present else "vanilla", "vanilla": "VantomBoss",
+                         "note": "без файла — значок Вантома (BossNodePath)"})
     for rel, note in UI_ASSETS:
         present = os.path.exists(os.path.join(RES, rel))
         rows.append({"kind": "ui", "class": "", "id": os.path.splitext(os.path.basename(rel))[0], "group": "UI",
                      "title_rus": note, "title_eng": "", "asset": "ui", "path": rel,
                      "present": "own" if present else "no", "vanilla": "",
                      "note": "заглушка шаблона — заменить" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
-    order = {k: i for i, k in enumerate(list(ASSETS) + ["ui"])}
+    order = {k: i for i, k in enumerate(list(ASSETS) + ["boss_icon", "ui"])}
     rows.sort(key=lambda r: (order[r["kind"]], r["group"], r["class"]))
     return rows
 

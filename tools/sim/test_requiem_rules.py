@@ -713,5 +713,24 @@ class Backpack(unittest.TestCase):
         self.assertEqual(r.barrow_indices(0, 0), [])
 
 
+class BossPowers(unittest.TestCase):
+    def test_oath(self):
+        self.assertEqual(r.oath_multiplier(40, True), 0.6)
+        self.assertEqual(r.oath_multiplier(40, False), 1.0)
+        self.assertEqual(r.oath_multiplier(150, True), 0.0)
+
+    def test_stance(self):
+        self.assertEqual(r.stance_multiplier(False, "Physical"), 0.5)
+        self.assertEqual(r.stance_multiplier(False, "Light"), 1.0)
+        self.assertEqual(r.stance_multiplier(True, "Light"), 1.5)
+        self.assertEqual(r.stance_multiplier(True, "Fire"), 1.0)
+
+    def test_constants_match_csharp(self):
+        import re
+        src = open(os.path.join(ROOT, "mod", "SlayTheRequiemCode", "Powers", "BossPowers.cs"), encoding="utf-8").read()
+        self.assertEqual(int(re.search(r"SunStanceReductionPercent = (\d+)", src).group(1)), r.SUN_STANCE_REDUCTION_PERCENT)
+        self.assertEqual(float(re.search(r"MoonStanceLightMultiplier = ([\d.]+)m", src).group(1)), r.MOON_STANCE_LIGHT_MULTIPLIER)
+
+
 if __name__ == "__main__":
     unittest.main()

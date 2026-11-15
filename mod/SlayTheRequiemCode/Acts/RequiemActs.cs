@@ -51,7 +51,7 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     /// <summary>Свои элиты (редкая — отдельно, <see cref="RareElite"/>).</summary>
     protected abstract IEnumerable<EncounterModel> OwnElites { get; }
 
-    /// <summary>Пул боссов (ванильные; повторы с прошлыми актами забега отсеиваются).</summary>
+    /// <summary>Пул боссов: свои боссы варианта акта (docs/design/11 §6.1, Monsters/*Bosses.cs).</summary>
     protected abstract IEnumerable<EncounterModel> BossPool { get; }
 
     /// <summary>Редкая элита акта (15 %, <see cref="ActRules.RareEliteChancePercent"/>).</summary>
@@ -104,7 +104,7 @@ public sealed class FrozenBarrows() : RequiemActModel(1)
         [ModelDb.Encounter<TombGuardianElite>(), ModelDb.Encounter<GlacierGiantElite>(), ModelDb.Encounter<PhantomBladeElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<LagavulinMatriarchBoss>(), ModelDb.Encounter<SoulFyshBoss>(), ModelDb.Encounter<VantomBoss>()];
+        [ModelDb.Encounter<KingUnderBarrowBoss>(), ModelDb.Encounter<BoneFrostWyrmBoss>(), ModelDb.Encounter<BarrowWailerBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<FirstSnowPrinceElite>();
 }
@@ -142,7 +142,7 @@ public sealed class ClockworkDepths() : RequiemActModel(1)
         [ModelDb.Encounter<DeepCenturionElite>(), ModelDb.Encounter<SpiderMatriarchElite>(), ModelDb.Encounter<RenegadeMechanicElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<WaterfallGiantBoss>(), ModelDb.Encounter<CeremonialBeastBoss>(), ModelDb.Encounter<TheKinBoss>()];
+        [ModelDb.Encounter<ClockworkColossusBoss>(), ModelDb.Encounter<AutomatonArchitectBoss>(), ModelDb.Encounter<BoilerWyrmBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<ReactorHeartElite>();
 }
@@ -172,7 +172,7 @@ public sealed class BloodCourt() : RequiemActModel(3)
         [ModelDb.Encounter<BloodNobleElite>(), ModelDb.Encounter<GargoyleWardenElite>(), ModelDb.Encounter<VampireHunterElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<TheInsatiableBoss>(), ModelDb.Encounter<KnowledgeDemonBoss>(), ModelDb.Encounter<KaiserCrabBoss>()];
+        [ModelDb.Encounter<CrimsonCountessBoss>(), ModelDb.Encounter<EclipseWardenBoss>(), ModelDb.Encounter<ChaliceHierophantBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<LordsBrideElite>();
 }
@@ -202,7 +202,7 @@ public sealed class StarTower() : RequiemActModel(3)
         [ModelDb.Encounter<SorceressIlvarreElite>(), ModelDb.Encounter<RenegadeSummonerElite>(), ModelDb.Encounter<MirrorWardenElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<TheInsatiableBoss>(), ModelDb.Encounter<KnowledgeDemonBoss>(), ModelDb.Encounter<KaiserCrabBoss>()];
+        [ModelDb.Encounter<AstrolabeKeeperBoss>(), ModelDb.Encounter<LeyWyrmBoss>(), ModelDb.Encounter<ArchmageSimulacrumBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<StarExaminerElite>();
 }

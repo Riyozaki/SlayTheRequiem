@@ -1658,3 +1658,20 @@ def kettle_boost(effect: dict) -> dict:
 def barrow_indices(visited: int, count: int, shown: int = 3) -> list:
     return [] if count <= 0 else [(max(0, visited) + i) % count for i in range(min(shown, count))]
 
+
+
+# ───────────── M5: силы боссов актов 2 и 4 (Powers/BossPowers.cs → BossPowerRules) ─────────────
+SUN_STANCE_REDUCTION_PERCENT = 50
+MOON_STANCE_LIGHT_MULTIPLIER = 1.5
+
+
+def oath_multiplier(percent: int, guard_alive: bool) -> float:
+    """Клятва стражи: −N % урона по носителю, пока жива свита."""
+    return (100 - max(0, min(100, percent))) / 100 if guard_alive else 1.0
+
+
+def stance_multiplier(night: bool, damage_type: str) -> float:
+    """Страж Затмения: днём −50 % всего, кроме Света; ночью Свет ×1.5."""
+    if night:
+        return MOON_STANCE_LIGHT_MULTIPLIER if damage_type == "Light" else 1.0
+    return 1.0 if damage_type == "Light" else (100 - SUN_STANCE_REDUCTION_PERCENT) / 100

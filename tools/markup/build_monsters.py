@@ -155,6 +155,23 @@ MOD = {
     "NamelessShadow": ("spirit", 0, 6, "magic", "★ «Тень Без Имени»"),
     "ShadowSoul": ("spirit", 0, 0, "magic", "душа Тени"),
     "EchoKnight": ("spirit", 0, 3, "phys", "элита Безымянного предела «Рыцарь-эхо»"),
+    # ── M5: боссы актов 2 и 4 (11 §6.1) ──
+    "KingUnderBarrow": ("undead", 2, 0, "frost", "босс 2а «Король-под-Курганом»"),
+    "BarrowHuskarl": ("undead", 1, 2, "phys", "хускарл кургана"),
+    "BoneFrostWyrm": ("undead", 0, 0, "frost", "босс 2а «Костяной змей стужи»"),
+    "BarrowWailer": ("spirit", 0, 0, "frost", "босс 2а «Плакальщица курганов»"),
+    "ClockworkColossus": ("construct", 4, 0, "phys", "босс 2б «Заводной колосс»"),
+    "AutomatonArchitect": ("construct", 0, 0, "phys", "босс 2б «Архитектор автоматонов»"),
+    "BrassSentry": ("construct", 2, 0, "shock", "латунный часовой"),
+    "BoilerWyrm": ("construct", 2, 0, "fire", "босс 2б «Котловой змей»"),
+    "CrimsonCountess": ("undead", 0, 0, "phys", "босс 4а «Алая Графиня»"),
+    "EclipseWarden": ("construct", 3, 0, "phys", "босс 4а «Страж Затмения»"),
+    "ChaliceHierophant": ("undead", 0, 0, "magic", "босс 4а «Иерофант Багряной Чаши»"),
+    "ChaliceAcolyte": ("cultist", 0, 0, "phys", "послушник Чаши"),
+    "AstrolabeKeeper": ("cultist", 0, 0, "magic", "босс 4б «Хранитель Астролябии»"),
+    "LeyWyrm": ("spirit", 0, 0, "magic", "босс 4б «Змей лей-линий»"),
+    "ArchmageSimulacrum": ("construct", 0, 0, "magic", "босс 4б «Симулякр Архимага»"),
+    "MirrorShard": ("construct", 0, 0, "magic", "зеркальный осколок"),
 }
 
 SKIP = {"BigDummy", "DeprecatedMonster", "MultiAttackMoveMonster", "SingleAttackMoveMonster", "OneHpMonster",

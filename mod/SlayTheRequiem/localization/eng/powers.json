@@ -328,5 +328,17 @@
   "SLAYTHEREQUIEM-FORGE_HEART_POWER.smartDescription": "Every 3rd Attack you play each turn draws {Amount} card(s).",
   "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.title": "Wind Rhythm",
   "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.description": "Every 3rd card you play each turn draws {Amount} card(s).",
-  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Every 3rd card you play each turn draws {Amount} card(s)."
+  "SLAYTHEREQUIEM-WIND_RHYTHM_POWER.smartDescription": "Every 3rd card you play each turn draws {Amount} card(s).",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.title": "Oath of the Guard",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.description": "While another enemy stands beside it, takes {Amount}% less damage.",
+  "SLAYTHEREQUIEM-OATH_GUARD_POWER.smartDescription": "While another enemy stands beside it, takes {Amount}% less damage.",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.title": "Pressure",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.description": "Builds by 1 each turn; [gold]Frost[/gold] damage vents 1. At the threshold: Pressure Release.",
+  "SLAYTHEREQUIEM-PRESSURE_POWER.smartDescription": "Builds by 1 each turn; [gold]Frost[/gold] damage vents 1. At the threshold: Pressure Release.",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.title": "Sun Stance",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.description": "Day: takes 50% less damage, except [gold]Light[/gold].",
+  "SLAYTHEREQUIEM-SUN_STANCE_POWER.smartDescription": "Day: takes 50% less damage, except [gold]Light[/gold].",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.title": "Moon Stance",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.description": "Night: [gold]Light[/gold] damage against it ×1.5.",
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Night: [gold]Light[/gold] damage against it ×1.5."
 }

@@ -6,6 +6,8 @@
    Наследование строится по объявлениям классов в mod/SlayTheRequiemCode, корни — игровые/BaseLib-базы.
 4. У каждого ключевого слова мода ([CustomEnum] CardKeyword) есть title/description в card_keywords.json, а у подсказок
    интерфейса (MakeTip/TipLoc/TipText и ключи состояний в mod/SlayTheRequiemCode/UI) — в static_hover_tips.json.
+5. У каждого хода монстра (литерал MoveState("ID", …) в теле sealed-класса) есть monsters.json → <id>.moves.<ID>.title:
+   без него намерение в бою показывает сырой ключ.
 3. Имена классов моделей уникальны: id модели = префикс мода + имя класса (без пространства имён), и второй
    одноимённый класс молча затирает первый в ModelDb (ревью R-07).
 
@@ -129,10 +131,33 @@ def check_ui_keys(errors: list) -> int:
     return checked
 
 
+MOVE = re.compile(r'new\s+MoveState\(\s*"([A-Z0-9_]+)"')
+
+
+def check_moves(errors: list) -> int:
+    """Ходы монстров: id хода — ключ заголовка намерения."""
+    table = json.load(open(os.path.join(LOC, "eng", "monsters.json"), encoding="utf-8"))
+    checked = 0
+    for path in sorted(glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True)):
+        src = re.sub(r"//[^\n]*", "", open(path, encoding="utf-8").read())
+        decls = list(DECL.finditer(src))
+        for i, m in enumerate(decls):
+            if "sealed" not in m.group("mods"):
+                continue
+            body = src[m.end():decls[i + 1].start() if i + 1 < len(decls) else len(src)]
+            for move in sorted(set(MOVE.findall(body))):
+                checked += 1
+                key = f"{PREFIX}{snake(m.group('name'))}.moves.{move}.title"
+                if key not in table:
+                    errors.append(f"{os.path.relpath(path, ROOT)}: {m.group('name')} — нет monsters.json → {key}")
+    return checked
+
+
 def main() -> int:
     errors: list = []
     check_parity(errors)
     checked = check_models(errors)
+    checked += check_moves(errors)
     checked += check_ui_keys(errors)
     for e in errors:
         print("✗", e)

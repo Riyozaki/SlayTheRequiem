@@ -491,3 +491,7 @@ relic,OrdinatorBackground,JeweledMask,маска Ординатора
 relic,AshNomadBackground,CharonsAshes,пепел кочевья
 relic,IronBattleaxe,SereTalon,
 relic,HeavyBow,FishingRod,
+power,OathGuardPower,GuardedPower,M5 боссы: Клятва стражи
+power,PressurePower,SteamEruptionPower,M5 боссы: Давление Котлового змея
+power,SunStancePower,RadiancePower,M5 боссы: Солнечная стойка
+power,MoonStancePower,ShadowmeldPower,M5 боссы: Лунная стойка
