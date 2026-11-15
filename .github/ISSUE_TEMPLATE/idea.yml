@@ -1,0 +1,16 @@
+name: 💡 Идея или баланс
+description: Предложение механики, контента или правки чисел
+labels: ["idea"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Идея
+      description: Что предлагаете и зачем. Ссылка на раздел дизайна (docs/design) приветствуется.
+    validations:
+      required: true
+  - type: textarea
+    id: numbers
+    attributes:
+      label: Числа / пример
+      description: Конкретные значения или пример хода боя.

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📘 Дизайн-документация
+    url: https://github.com/Riyozaki/SlayTheRequiem/blob/main/docs/README.md
+    about: Как задумана каждая система мода
+  - name: 🗺 Дорожная карта
+    url: https://github.com/Riyozaki/SlayTheRequiem/blob/main/docs/ROADMAP.md
+    about: Что уже сделано и что дальше
