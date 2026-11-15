@@ -89,8 +89,22 @@ public static class OwnArtAnimator
     private static readonly ConditionalWeakTable<Sprite2D, Tween> Idle = new();
     private static readonly ConditionalWeakTable<Sprite2D, Tween> Action = new();
 
-    public static void Attach(NCreatureVisuals visuals) =>
+    private static readonly StringName OwnArtMeta = "requiem_own_art";
+
+    /// <summary>Подключить код-анимации к узлу из PNG (враг, призыв, облик героя) и пометить его.</summary>
+    public static void Attach(NCreatureVisuals visuals)
+    {
+        visuals.SetMeta(OwnArtMeta, true);
         visuals.TreeEntered += () => { if (Body(visuals) is { } body) StartIdle(body); };
+    }
+
+    /// <summary>Узел построен из PNG и анимируется твинами (у него нет Spine).</summary>
+    public static bool IsOwnArt(NCreatureVisuals? visuals) =>
+        visuals != null && GodotObject.IsInstanceValid(visuals) && visuals.HasMeta(OwnArtMeta);
+
+    /// <summary>Узел-существо со своим спрайтом: триггеры игры переводим в твины.</summary>
+    public static bool Drives(NCreature node) =>
+        !node.HasSpineAnimation && (node.Entity?.Monster is OwnArtMonster || IsOwnArt(node.Visuals));
 
     private static Sprite2D? Body(NCreatureVisuals? visuals) => visuals?.GetNodeOrNull<Sprite2D>("%Visuals");
 
@@ -143,8 +157,8 @@ public static class OwnArtAnimator
                 case "Dead": Die(body); break;
                 case "Revive": Revive(body); break;
                 case "Hit": Hurt(body, towardRight ? -1f : 1f); break;
-                case "Cast": Cast(body); break;
-                case "Idle": break;
+                case "Cast" or "PowerUp" or "summonTrigger" or "sovereignBladeTrigger": Cast(body); break;
+                case "Idle" or "Relaxed": break;
                 default: Lunge(body, towardRight ? -1f : 1f); break; // «Attack» и все прочие ударные анимации
             }
         }
@@ -210,38 +224,54 @@ public static class OwnArtAnimator
         tween.TweenCallback(Callable.From(() => StartIdle(body)));
     }
 
+    /// <summary>Вспышка цветом (обретение формы, Знак Пути) — замена «жидкой» вспышке Spine-моделей.</summary>
+    public static void Flash(NCreatureVisuals? visuals, Color color)
+    {
+        var body = Body(visuals);
+        if (body == null || !body.IsInsideTree()) return;
+        var tween = NewAction(body);
+        body.SelfModulate = new Color(1f + color.R * 1.6f, 1f + color.G * 1.6f, 1f + color.B * 1.6f);
+        tween.TweenProperty(body, "self_modulate", Colors.White, 0.6).SetTrans(Tween.TransitionType.Sine);
+    }
+
     /// <summary>Смена картинки: белая вспышка, на пике — новая текстура, затем «вдох».</summary>
-    public static void Swap(Creature creature, string texturePath)
+    public static void Swap(Creature creature, string texturePath) =>
+        Swap(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals, texturePath);
+
+    /// <summary>true — картинка сменилась (со своей вспышкой); false — та же или узел не готов.</summary>
+    public static bool Swap(NCreatureVisuals? visuals, string texturePath)
     {
         try
         {
-            var body = Body(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals);
-            if (body == null || !body.IsInsideTree()) return;
+            var body = Body(visuals);
+            if (body == null || !body.IsInsideTree()) return false;
             var texture = ResourceLoader.Load<Texture2D>(texturePath, null, ResourceLoader.CacheMode.Reuse);
-            if (texture == null || texture == body.Texture) return;
+            if (texture == null || texture == body.Texture) return false;
             var tween = NewAction(body);
             tween.TweenProperty(body, "self_modulate", new Color(3f, 3f, 3.2f), 0.16);
             tween.TweenCallback(Callable.From(() => { body.Texture = texture; StartIdle(body); }));
             tween.TweenProperty(body, "offset", new Vector2(0f, -10f), 0.12);
             tween.TweenProperty(body, "self_modulate", Colors.White, 0.4);
             tween.Parallel().TweenProperty(body, "offset", Vector2.Zero, 0.4).SetTrans(Tween.TransitionType.Bounce).SetEase(Tween.EaseType.Out);
+            return true;
         }
         catch (Exception e)
         {
             MainFile.Logger.Info($"OwnArtAnimator.Swap: {e.Message}");
+            return false;
         }
     }
 }
 
-/// <summary>У спрайтовых врагов нет Spine-аниматора — триггеры игры переводим в твины.</summary>
+/// <summary>У спрайтовых врагов, призывов и обликов героя нет Spine-аниматора — триггеры игры переводим в твины.</summary>
 [HarmonyPatch(typeof(NCreature), nameof(NCreature.SetAnimationTrigger))]
 public static class OwnArtTriggerPatch
 {
     [HarmonyPostfix]
     public static void Postfix(NCreature __instance, string trigger)
     {
-        if (__instance.Entity?.Monster is OwnArtMonster && !__instance.HasSpineAnimation)
-            OwnArtAnimator.Play(__instance.Visuals, trigger, towardRight: __instance.Entity.Side == CombatSide.Player);
+        if (OwnArtAnimator.Drives(__instance))
+            OwnArtAnimator.Play(__instance.Visuals, trigger, towardRight: __instance.Entity?.Side == CombatSide.Player);
     }
 }
 
@@ -252,7 +282,7 @@ public static class OwnArtDeathPatch
     [HarmonyPrefix]
     public static void Prefix(NCreature __instance)
     {
-        if (__instance.Entity?.Monster is OwnArtMonster && !__instance.HasSpineAnimation)
+        if (OwnArtAnimator.Drives(__instance))
             OwnArtAnimator.Play(__instance.Visuals, "Dead");
     }
 }
@@ -263,7 +293,7 @@ public static class OwnArtRevivePatch
     [HarmonyPostfix]
     public static void Postfix(NCreature __instance)
     {
-        if (__instance.Entity?.Monster is OwnArtMonster && !__instance.HasSpineAnimation)
+        if (OwnArtAnimator.Drives(__instance))
             OwnArtAnimator.Play(__instance.Visuals, "Revive");
     }
 }

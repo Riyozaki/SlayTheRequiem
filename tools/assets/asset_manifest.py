@@ -135,7 +135,14 @@ UI_ASSETS = [
     ("images/ui/doors/clockwork_depths.jpg", "«две двери»: вид на Заводные Глубины (tools/art/scenes)"),
     ("images/ui/doors/blood_court.jpg", "«две двери»: вид на Кровавый Двор (tools/art/scenes)"),
     ("images/ui/doors/star_tower.jpg", "«две двери»: вид на Звёздную Башню (tools/art/scenes)"),
-]
+    # Облики форм и Знаки Путей (M6 п. 3, Transformations/HeroLooks.cs; рисует tools/art/monsters/heroes.py)
+    ("images/monsters/hero_vampire.png", "облик вампира"),
+    ("images/monsters/hero_vampire_lord.png", "облик вампира: Стойка Кровавого лорда"),
+    ("images/monsters/hero_werewolf.png", "облик оборотня"),
+    ("images/monsters/hero_werewolf_beast.png", "облик оборотня: Звериная форма"),
+] + [(f"images/ui/path_signs/{key}.png", f"знамя Знака Пути: {key}") for key in (
+    "paladin", "black_knight", "champion", "barbarian", "monk", "assassin", "blightbringer", "mystic_archer",
+    "element_lord", "battlemage", "reflector", "medium")]
 
 
 def snake(name: str) -> str:

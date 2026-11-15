@@ -1024,5 +1024,83 @@ class M6Summons(unittest.TestCase):
             self.assertIn(f'ArtKey => "{key}"', creatures)
 
 
+class M6HeroLooks(unittest.TestCase):
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def test_looks(self):
+        self.assertEqual(r.hero_look("Lich", False), "Lich")
+        self.assertEqual(r.hero_look("Vampire", False), "Vampire")
+        self.assertEqual(r.hero_look("Werewolf", False), "Werewolf")
+        self.assertEqual(r.hero_look("Righteous", True), "Clockwork")
+        self.assertEqual(r.hero_look("None", True), "Clockwork")
+        self.assertEqual(r.hero_look("Herald", False), "Hero")
+        self.assertEqual(r.hero_look("DarkPact", False), "Hero")
+        self.assertEqual([l for l in r.HERO_LOOKS if r.look_borrows_model(l)], ["Lich", "Clockwork"])
+        self.assertEqual([l for l in r.HERO_LOOKS if r.look_sprite_key(l)], ["Vampire", "Werewolf"])
+        self.assertEqual(r.look_sprite_variant("Werewolf", True, False), "beast")
+        self.assertIsNone(r.look_sprite_variant("Werewolf", False, True))
+        self.assertEqual(r.look_sprite_variant("Vampire", False, True), "lord")
+        self.assertIsNone(r.look_sprite_variant("Lich", True, True))
+        self.assertEqual([l for l in r.HERO_LOOKS if r.look_keeps_tint(l)], ["Hero"])
+        self.assertEqual(r.look_beast_scale("Werewolf"), 1.0)
+        self.assertEqual(r.look_beast_scale("Hero"), r.LOOK_BEAST_SCALE)
+
+    def test_orbs(self):
+        self.assertEqual(r.orb_sequence(1, 1, 1), ["Fire", "Shock", "Frost"])
+        self.assertEqual(r.orb_sequence(0, 5, 0), ["Shock"] * 3)
+        self.assertEqual(r.orb_sequence(-1, 0, 2), ["Frost", "Frost"])
+        self.assertEqual([r.orb_art(e) for e in ("Fire", "Shock", "Frost")], ["PlasmaOrb", "LightningOrb", "FrostOrb"])
+        x, y = r.orb_slot(0, 3, True)
+        self.assertAlmostEqual(x, 194.86, places=1)
+        self.assertAlmostEqual(y, -112.5, places=1)
+        x, y = r.orb_slot(2, 3, True)
+        self.assertAlmostEqual(x, -203.92, places=1)
+        self.assertAlmostEqual(y, -95.09, places=1)
+        x, y = r.orb_slot(0, 3, False)
+        self.assertAlmostEqual(y, -112.5 * 0.75, places=1)
+        self.assertEqual(r.orb_slot(0, 1, True), r.orb_slot(5, 1, True))
+
+    def test_path_signs(self):
+        self.assertEqual(r.path_sign_key("BlackKnight"), "black_knight")
+        self.assertEqual(r.path_sign_key("MysticArcher"), "mystic_archer")
+        self.assertIsNone(r.path_sign_key("None"))
+        self.assertIsNone(r.path_sign_key("Reborn"))
+        import re
+        signs = open(os.path.join(self.CODE, "Transformations", "PathSigns.cs"), encoding="utf-8").read()
+        paths = re.findall(r"HeroPath Path => HeroPath\.(\w+);", signs)
+        self.assertEqual(len(paths), 12)
+        self.assertEqual(len(set(paths)), 12)
+        for path in paths:
+            key = r.path_sign_key(path)
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "art", "ui", "path_signs", key + ".svg")), key)
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "mod", "SlayTheRequiem", "images", "ui", "path_signs", key + ".png")), key)
+
+    def test_sprites_exist(self):
+        for look in r.HERO_LOOKS:
+            key = r.look_sprite_key(look)
+            if not key:
+                continue
+            variants = [None, r.look_sprite_variant(look, True, True)]
+            for v in variants:
+                name = key + (f"_{v}" if v else "")
+                self.assertTrue(os.path.exists(os.path.join(ROOT, "art", "monsters", name + ".svg")), name)
+                self.assertTrue(os.path.exists(os.path.join(ROOT, "mod", "SlayTheRequiem", "images", "monsters", name + ".png")), name)
+
+    def test_matches_csharp(self):
+        import re
+        src = open(os.path.join(self.CODE, "Core", "HeroLookRules.cs"), encoding="utf-8").read()
+        looks = re.search(r"enum HeroLook\s*\{([^}]*)\}", src).group(1)
+        self.assertEqual([k.strip() for k in looks.split(",") if k.strip()], r.HERO_LOOKS)
+        rules = open(os.path.join(self.CODE, "Core", "TransformationRules.cs"), encoding="utf-8").read()
+        paths = re.search(r"enum HeroPath\s*\{([^}]*)\}", rules).group(1)
+        self.assertEqual([k.strip() for k in paths.split(",") if k.strip()], r.HERO_PATHS)
+        self.assertIn(f"MaxOrbs = {r.LOOK_MAX_ORBS};", rules)
+        self.assertIn(f"BeastScale = {r.LOOK_BEAST_SCALE}f;", src)
+        for look in ("Vampire", "Werewolf"):
+            self.assertIn(f'HeroLook.{look} => "{r.look_sprite_key(look)}"', src)
+        for element, art in (("Fire", "PlasmaOrb"), ("Shock", "LightningOrb")):
+            self.assertIn(f'Element.{element} => "{art}"', src)
+
+
 if __name__ == "__main__":
     unittest.main()

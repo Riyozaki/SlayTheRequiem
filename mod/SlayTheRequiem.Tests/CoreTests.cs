@@ -1325,3 +1325,61 @@ public class M6SummonTests
         Assert.Equal(680f, SummonRules.LayoutX(100f, 2, true));
     }
 }
+
+public class M6HeroLookTests
+{
+    [Theory]
+    [InlineData(FormKind.Lich, false, HeroLook.Lich)]
+    [InlineData(FormKind.Vampire, false, HeroLook.Vampire)]
+    [InlineData(FormKind.Werewolf, false, HeroLook.Werewolf)]
+    [InlineData(FormKind.Righteous, true, HeroLook.Clockwork)]
+    [InlineData(FormKind.None, true, HeroLook.Clockwork)]
+    [InlineData(FormKind.Herald, false, HeroLook.Hero)]
+    [InlineData(FormKind.None, false, HeroLook.Hero)]
+    public void LookFor(FormKind worldview, bool clockwork, HeroLook expected) =>
+        Assert.Equal(expected, HeroLookRules.LookFor(worldview, clockwork));
+
+    [Fact]
+    public void SpritesAndModels()
+    {
+        Assert.True(HeroLookRules.BorrowsModel(HeroLook.Lich));
+        Assert.True(HeroLookRules.BorrowsModel(HeroLook.Clockwork));
+        Assert.False(HeroLookRules.BorrowsModel(HeroLook.Vampire));
+        Assert.Equal("hero_vampire", HeroLookRules.SpriteKey(HeroLook.Vampire));
+        Assert.Equal("hero_werewolf", HeroLookRules.SpriteKey(HeroLook.Werewolf));
+        Assert.Null(HeroLookRules.SpriteKey(HeroLook.Lich));
+        Assert.Equal("beast", HeroLookRules.SpriteVariant(HeroLook.Werewolf, true, false));
+        Assert.Equal("lord", HeroLookRules.SpriteVariant(HeroLook.Vampire, false, true));
+        Assert.Null(HeroLookRules.SpriteVariant(HeroLook.Werewolf, false, true));
+        Assert.True(HeroLookRules.KeepsTint(HeroLook.Hero));
+        Assert.False(HeroLookRules.KeepsTint(HeroLook.Lich));
+        Assert.Equal(1f, HeroLookRules.BeastScaleFor(HeroLook.Werewolf));
+        Assert.Equal(HeroLookRules.BeastScale, HeroLookRules.BeastScaleFor(HeroLook.Hero));
+    }
+
+    [Fact]
+    public void PathSigns()
+    {
+        Assert.Equal("black_knight", HeroLookRules.PathSignKey(HeroPath.BlackKnight));
+        Assert.Equal("element_lord", HeroLookRules.PathSignKey(HeroPath.ElementLord));
+        Assert.Null(HeroLookRules.PathSignKey(HeroPath.None));
+        Assert.Null(HeroLookRules.PathSignKey(HeroPath.Reborn));
+        var keys = Enum.GetValues<HeroPath>().Select(HeroLookRules.PathSignKey).Where(k => k != null).ToList();
+        Assert.Equal(12, keys.Distinct().Count());
+    }
+
+    [Fact]
+    public void Orbs()
+    {
+        Assert.Equal(new[] { Element.Fire, Element.Shock, Element.Frost }, HeroLookRules.OrbSequence(1, 1, 1));
+        Assert.Equal(TransformationRules.MaxOrbs, HeroLookRules.OrbSequence(0, 9, 0).Count);
+        Assert.Empty(HeroLookRules.OrbSequence(-1, 0, 0));
+        Assert.Equal("PlasmaOrb", HeroLookRules.OrbArt(Element.Fire));
+        var (x0, y0) = HeroLookRules.OrbSlot(0, 3, true);
+        Assert.InRange(x0, 194.5f, 195.2f);
+        Assert.InRange(y0, -112.8f, -112.2f);
+        var (x2, _) = HeroLookRules.OrbSlot(2, 3, true);
+        Assert.InRange(x2, -204.2f, -203.6f);
+        Assert.Equal(HeroLookRules.OrbSlot(0, 1, true), HeroLookRules.OrbSlot(4, 1, true));
+    }
+}

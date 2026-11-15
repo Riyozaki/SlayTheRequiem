@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Monsters;
 using SlayTheRequiem.SlayTheRequiemCode.Pantheon;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
@@ -20,7 +21,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Transformations;
 /// Сущность формы (docs/design/06): реликвия-статус, которую нельзя продать. Числа — общим путём <see cref="BoonRelic"/>
 /// (♥, пулы, Латы, сопротивления, урон атак, отдых), лечение — <see cref="IHealModifier"/>, иммунитеты —
 /// <see cref="IStatusImmunity"/>. При получении кладёт в колоду особые карты формы, при снятии — забирает.
-/// Визуал MVP — перекраска модели героя (<see cref="FormVisuals"/>).
+/// Визуал — облик формы (<see cref="HeroLooks"/>) и перекраска/накладки (<see cref="FormVisuals"/>).
 /// </summary>
 public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
 {
@@ -136,9 +137,11 @@ public static class Forms
 }
 
 /// <summary>
-/// Визуал форм, MVP (06 §5): hsv-перекраска модели героя (тот же шейдер, что у ванильных врагов-вариантов),
-/// множитель цвета, масштаб (оборотень в форме крупнее) и вспышка-«жидкость» при превращении.
-/// Полные модели (облики Некробиндер/Дефект, модель оборотня) — когда будут спрайты.
+/// Визуал форм (06 §5). Облик (свой спрайт вампира/оборотня, модель Некробиндер/Дефекта) строит <see cref="HeroLooks"/>
+/// при создании модели в бою; здесь — то, что меняется по ходу боя: картинка-вариант спрайта (Звериная форма, Стойка лорда),
+/// вспышка при превращении, накладки (<see cref="HeroOverlays"/>: знамя Знака Пути, Сферы стихий).
+/// На родной модели героя (Праведник, Договор, Вестник; откат без файла облика) — MVP-перекраска: hsv-оттенок, множитель
+/// цвета, масштаб оборотня в Звериной форме и «жидкая» вспышка.
 /// </summary>
 public static class FormVisuals
 {
@@ -152,18 +155,32 @@ public static class FormVisuals
             var node = NCombatRoom.Instance?.GetCreatureNode(player.Creature);
             if (node == null) return;
             var visuals = node.Visuals;
-            var forms = Forms.All(player).ToList();
-            var hue = forms.Select(f => f.Hue).LastOrDefault(h => h != null) ?? 0f;
-            var tint = forms.Select(f => f.Tint).LastOrDefault(t => t != null) ?? new Color(1f, 1f, 1f);
-            if (player.Creature.GetPower<BeastFormPower>() != null)
+            var look = HeroLooks.LookOf(player);
+            if (OwnArtAnimator.IsOwnArt(visuals))
             {
-                scale *= 1.15f;
-                tint = new Color(0.8f, 0.7f, 0.6f);
+                visuals.Modulate = new Color(1f, 1f, 1f);
+                var swapped = HeroLooks.CurrentSprite(player, look) is { } path && OwnArtAnimator.Swap(visuals, path);
+                if (!swapped && flash is { } spriteFlash) OwnArtAnimator.Flash(visuals, spriteFlash);
             }
-            var baseScale = BaseScale.GetValue(visuals, v => new StrongBox<float>(v.DefaultScale)).Value;
-            visuals.SetScaleAndHue(baseScale * scale, hue);
-            visuals.Modulate = tint;
-            if (flash is { } color) visuals.TryApplyLiquidOverlay(color);
+            else
+            {
+                var forms = Forms.All(player).ToList();
+                // Чужая модель (Некробиндер, Дефект) — без перекраски; родная модель героя (в т. ч. откат) — MVP-оттенок.
+                var keepTint = !HeroLooks.IsBorrowed(visuals);
+                var hue = keepTint ? forms.Select(f => f.Hue).LastOrDefault(h => h != null) ?? 0f : 0f;
+                var tint = keepTint ? forms.Select(f => f.Tint).LastOrDefault(t => t != null) ?? new Color(1f, 1f, 1f) : new Color(1f, 1f, 1f);
+                if (player.Creature.GetPower<BeastFormPower>() != null)
+                {
+                    // Звериная форма без своего спрайта: крупнее и бурее.
+                    scale *= HeroLookRules.BeastScale;
+                    tint = new Color(0.8f, 0.7f, 0.6f);
+                }
+                var baseScale = BaseScale.GetValue(visuals, v => new StrongBox<float>(v.DefaultScale)).Value;
+                visuals.SetScaleAndHue(baseScale * scale, hue);
+                visuals.Modulate = tint;
+                if (flash is { } color) visuals.TryApplyLiquidOverlay(color);
+            }
+            HeroOverlays.Refresh(player, node);
         }
         catch (Exception e)
         {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Спрайты боссов актов 2/4, их свиты и призывов героя (summons.py) → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
+"""Спрайты боссов актов 2/4, их свиты, призывов (summons.py) и обликов героя (heroes.py) → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
 
     python3 tools/art/monsters/draw_monsters.py            # все SVG
     python3 tools/art/monsters/draw_monsters.py king_under_barrow   # один (для отладки)
@@ -1020,6 +1020,14 @@ for _key, _fn in SUMMONS.items():
     REGISTRY[_key] = (_fn, ("",))
 
 
+# ═════════════════════════ Облики героя и Знаки Путей (M6 п. 3) — tools/art/monsters/heroes.py ═════════════════════════
+
+from heroes import HEROES, PATH_SIGNS, draw_path_sign  # noqa: E402
+
+REGISTRY.update(HEROES)
+SIGNS_OUT = os.path.join(ROOT, "art", "ui", "path_signs")
+
+
 def main(argv) -> int:
     os.makedirs(OUT, exist_ok=True)
     keys = argv[1:] or sorted(REGISTRY)
@@ -1032,6 +1040,12 @@ def main(argv) -> int:
                 f.write(fn(v).render())
             n += 1
     print(f"SVG: {n} → {os.path.relpath(OUT, ROOT)}")
+    if not argv[1:]:
+        os.makedirs(SIGNS_OUT, exist_ok=True)
+        for key in sorted(PATH_SIGNS):
+            with open(os.path.join(SIGNS_OUT, key + ".svg"), "w", encoding="utf-8") as f:
+                f.write(draw_path_sign(key).render())
+        print(f"SVG: {len(PATH_SIGNS)} → {os.path.relpath(SIGNS_OUT, ROOT)}")
     return 0
 
 

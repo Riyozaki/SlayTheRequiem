@@ -2325,3 +2325,70 @@ def summon_art_key(kind: str) -> str:
 
 def summon_layout_x(hero_half_width: float, index: int, has_osty: bool) -> float:
     return hero_half_width + SUMMON_FIRST_GAP + max(0, index) * SUMMON_SPACING + (SUMMON_OSTY_GAP if has_osty else 0.0)
+
+
+# ───── M6 п. 3: облики форм и Знаки Путей (Core/HeroLookRules) ─────
+
+HERO_LOOKS = ["Hero", "Vampire", "Werewolf", "Lich", "Clockwork"]
+HERO_PATHS = ["None", "Paladin", "BlackKnight", "Champion", "Barbarian", "Monk", "Assassin", "Blightbringer",
+              "MysticArcher", "ElementLord", "Battlemage", "Reflector", "Medium", "Reborn"]
+LOOK_BEAST_SCALE = 1.15
+LOOK_MAX_ORBS = 3
+
+
+def hero_look(worldview: str, clockwork: bool) -> str:
+    """Мировоззрение важнее Заводного сердца."""
+    if worldview in ("Lich", "Vampire", "Werewolf"):
+        return worldview
+    return "Clockwork" if clockwork else "Hero"
+
+
+def look_borrows_model(look: str) -> bool:
+    return look in ("Lich", "Clockwork")
+
+
+def look_sprite_key(look: str) -> str | None:
+    return {"Vampire": "hero_vampire", "Werewolf": "hero_werewolf"}.get(look)
+
+
+def look_sprite_variant(look: str, beast: bool, lord: bool) -> str | None:
+    if look == "Werewolf" and beast:
+        return "beast"
+    if look == "Vampire" and lord:
+        return "lord"
+    return None
+
+
+def look_keeps_tint(look: str) -> bool:
+    return look == "Hero"
+
+
+def look_beast_scale(look: str) -> float:
+    return 1.0 if look_sprite_key(look) else LOOK_BEAST_SCALE
+
+
+def path_sign_key(path: str) -> str | None:
+    if path in ("None", "Reborn"):
+        return None
+    return re.sub(r"(?<!^)([A-Z])", r"_\1", path).lower()
+
+
+def orb_art(element: str) -> str:
+    return {"Fire": "PlasmaOrb", "Shock": "LightningOrb"}.get(element, "FrostOrb")
+
+
+def orb_sequence(steam: int, spark: int, rime: int) -> list[str]:
+    seq = ["Fire"] * max(0, steam) + ["Shock"] * max(0, spark) + ["Frost"] * max(0, rime)
+    return seq[:LOOK_MAX_ORBS]
+
+
+def orb_slot(index: int, capacity: int, is_local: bool) -> tuple[float, float]:
+    """Дуга ванильного NOrbManager.TweenLayout."""
+    capacity = max(1, capacity)
+    index = min(max(index, 0), capacity - 1)
+    radius = 225.0 + 75.0 * ((capacity - 3.0) / 7.0)
+    if not is_local:
+        radius *= 0.75
+    sweep = 0.0 if capacity == 1 else 125.0 - index * (125.0 / (capacity - 1))
+    a = math.radians(-25.0 - sweep)
+    return (-math.cos(a) * radius, math.sin(a) * radius)
