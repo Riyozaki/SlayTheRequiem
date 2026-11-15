@@ -100,4 +100,106 @@ public static class JewelryRules
     public const int ThornsNecklace = 2;
 
     public static bool IronSkinActive(int plating) => plating >= IronSkinPlatingNeeded;
+
+    // ───── кольца §5.2 ─────
+    /// <summary>Кольцо Скорого Дыхания: +1 прирост ◆.</summary>
+    public const int QuickBreathRegen = 1;
+    /// <summary>Кольцо Ясного Ума: +1 прирост ✦.</summary>
+    public const int ClearMindRegen = 1;
+    /// <summary>Кольцо Змеиной Улыбки: +1 карта в первой руке.</summary>
+    public const int SerpentSmileDraw = 1;
+    /// <summary>Кольцо Пиромана: Горение +2 при наложении.</summary>
+    public const int PyromancerBurning = 2;
+    /// <summary>Кольцо Изморози: Озноб +1 при наложении.</summary>
+    public const int FrostbiteChill = 1;
+    /// <summary>Кольцо Громоотвода: сопротивление разряду II, половина урона разрядом — в ✦.</summary>
+    public const int LightningRodResistance = 2;
+    public const int LightningRodAbsorbPercent = 50;
+    /// <summary>Кольцо Охотника на Ведьм: атаки по врагу с намерением-заклинанием +4.</summary>
+    public const int WitchHunterDamage = 4;
+    /// <summary>Кольцо Регенерации: Регенерация 1, пока ♥ ниже половины.</summary>
+    public const int RegenerationHeal = 1;
+    /// <summary>Кольцо Пьяницы: зелья +50 % эффекта; −1 пул ◆.</summary>
+    public const int DrunkardPotionPercent = 50;
+    public const int DrunkardStaminaPool = -1;
+    /// <summary>Кольцо Безликого Вора: кража в лавках и +1 попытка за визит.</summary>
+    public const int FacelessExtraTheft = 1;
+    /// <summary>Кольцо Призывателя: +1 слот призыва.</summary>
+    public const int SummonerSlots = 1;
+
+    // ───── амулеты §5.1 ─────
+    /// <summary>Амулет Ловчего: атаки по зверям +3; Обращение оборотня +1 ход.</summary>
+    public const int HunterBeastDamage = 3;
+    public const int HunterFormTurns = 1;
+    /// <summary>Амулет Матери Очага: после боя лечит 4 ♥.</summary>
+    public const int HearthHeal = 4;
+    /// <summary>Амулет Говорящего с Мёртвыми: призывы-нежить +3 ♥.</summary>
+    public const int NecromancerUndeadHp = 3;
+    /// <summary>Амулет Ткачихи: Подлые атаки накладывают Яд 2.</summary>
+    public const int WeaverPoison = 2;
+    /// <summary>Ожерелье Пустоты: Поглощение заклинаний 1; −1 пул ✦.</summary>
+    public const int VoidAbsorption = 1;
+    public const int VoidManaPool = -1;
+    /// <summary>Ожерелье Звёздного Камня: раз в бой при ✦ = 0 — восстановить 4 ✦.</summary>
+    public const int StarstoneMana = 4;
+
+    // ───── сочетания §5.3 ─────
+    /// <summary>Скорое Дыхание + Ярый Удар: атаки за 0 ◆ +2 урона.</summary>
+    public const int QuickFuryDamage = 2;
+
+    /// <summary>Сила зелья с Кольцом Пьяницы: +50 %, с округлением вверх (отрицательное и 0 не трогаем).</summary>
+    public static int DrunkardPotency(int potency) =>
+        potency <= 0 ? potency : (potency * (100 + DrunkardPotionPercent) + 99) / 100;
+
+    /// <summary>Сколько ✦ даёт Громоотвод за удар разрядом: половина полученного урона (вниз).</summary>
+    public static int LightningRodMana(int shockDamage) => Math.Max(0, shockDamage) * LightningRodAbsorbPercent / 100;
+
+    /// <summary>Кольцо Регенерации работает, пока ♥ строго ниже половины максимума.</summary>
+    public static bool RegenerationActive(int currentHp, int maxHp) => maxHp > 0 && currentHp * 2 < maxHp;
+
+    /// <summary>Ожерелье Звёздного Камня: срабатывает при ✦ = 0, если ещё не срабатывало в этом бою.</summary>
+    public static bool StarstoneTriggers(int mana, bool usedThisCombat) => mana <= 0 && !usedThisCombat;
+
+    /// <summary>Пар (Горение + Озноб на цели): оба снимаются, урон = сумма стаков без сопротивлений (03).</summary>
+    public static int SteamDamage(int burning, int chill) => burning > 0 && chill > 0 ? burning + chill : 0;
+
+    /// <summary>Повторов Кольца Наместника за бой: 1, с Кольцом Ясного Ума — 2 (§5.3).</summary>
+    public static int ViceroyReplays(bool clearMindCombo) => clearMindCombo ? 2 : 1;
+}
+
+/// <summary>Скрытые сочетания колец (07 §5.3): бонус работает, пока надеты оба кольца пары.</summary>
+public enum RingCombo
+{
+    /// <summary>Пироман + Изморозь → реакция «Пар» без модуля реакций.</summary>
+    Steam = 1,
+    /// <summary>Скорое Дыхание + Ярый Удар → атаки за 0 ◆ +2 урона.</summary>
+    QuickFury = 2,
+    /// <summary>Ясный Ум + Наместник → повтор срабатывает дважды за бой.</summary>
+    ClearViceroy = 4,
+}
+
+public static class RingComboRules
+{
+    public static readonly IReadOnlyDictionary<RingCombo, (string A, string B)> Pairs = new Dictionary<RingCombo, (string, string)>
+    {
+        [RingCombo.Steam] = ("RingOfThePyromancer", "RingOfHoarfrost"),
+        [RingCombo.QuickFury] = ("RingOfQuickBreath", "RingOfFuryStrike"),
+        [RingCombo.ClearViceroy] = ("RingOfClearMind", "RingOfTheViceroy"),
+    };
+
+    /// <summary>Сочетания, открытые надетыми кольцами (имена классов).</summary>
+    public static IReadOnlyList<RingCombo> Active(IEnumerable<string> equippedRings)
+    {
+        var set = equippedRings.ToHashSet();
+        return Pairs.Where(p => set.Contains(p.Value.A) && set.Contains(p.Value.B)).Select(p => p.Key).ToList();
+    }
+
+    /// <summary>Сочетания, в которых участвует кольцо.</summary>
+    public static IReadOnlyList<RingCombo> Involving(string ring) =>
+        Pairs.Where(p => p.Value.A == ring || p.Value.B == ring).Select(p => p.Key).ToList();
+
+    /// <summary>Маска открытых сочетаний (сохраняется на кольце — подсказка видна после первого совпадения).</summary>
+    public static int Mark(int mask, IEnumerable<RingCombo> combos) => combos.Aggregate(mask, (m, c) => m | (int)c);
+
+    public static bool Known(int mask, RingCombo combo) => (mask & (int)combo) != 0;
 }

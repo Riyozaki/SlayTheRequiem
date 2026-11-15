@@ -41,9 +41,12 @@ public abstract class RequiemPotion : CustomPotionModel
     public override string? CustomPackedImagePath => ImageName.PotionImagePath(VanillaArt);
     public override string? CustomPackedOutlinePath => ImageName.PotionImagePath(VanillaArt, outline: true);
 
-    protected virtual int Potency => AlchemyRules.PotionPotency(Kind, Tier);
+    /// <summary>Сила по семейству и ступени (на карточке зелья).</summary>
+    protected virtual int BasePotency => AlchemyRules.PotionPotency(Kind, Tier);
+    /// <summary>Сила при применении: Кольцо Пьяницы — +50 % (07 §5.2).</summary>
+    protected int Potency => IsMutable ? Equipment.RingOfTheDrunkard.Potency(Owner, BasePotency) : BasePotency;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DynamicVar("Amount", Potency), new DynamicVar("Turns", AlchemyRules.RestorationTurns)];
+        [new DynamicVar("Amount", BasePotency), new DynamicVar("Turns", AlchemyRules.RestorationTurns)];
 
     protected Creature Hero => Owner.Creature;
 
@@ -73,9 +76,9 @@ public abstract class RequiemPotion : CustomPotionModel
 /// <summary>Яд на оружие: наносится из слота зелий, даёт заряды (<see cref="WeaponPoisonPower"/>).</summary>
 public abstract class RequiemPoison<TPower> : RequiemPotion where TPower : WeaponPoisonPower
 {
-    protected override int Potency => AlchemyRules.PoisonPotency(Kind, Tier);
+    protected override int BasePotency => AlchemyRules.PoisonPotency(Kind, Tier);
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DynamicVar("Amount", Potency), new DynamicVar("Charges", AlchemyRules.BasePoisonCharges)];
+        [new DynamicVar("Amount", BasePotency), new DynamicVar("Charges", AlchemyRules.BasePoisonCharges)];
 
     protected override Task OnUse(PlayerChoiceContext ctx, Creature? target) =>
         WeaponPoisonPower.Coat<TPower>(ctx, Hero, Tier, WeaponPoisonPower.ChargesFor(Owner));

@@ -22,7 +22,7 @@ BlackBlood,Event,Starter,keep,0,,,стартовая
 BlackStar,Event,Ancient,keep,2,,,
 BlessedAntler,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
 BloodSoakedRose,Event,Ancient,rework,2,regen-1,,"энергия: +1 энергия, прирост ◆/✦ −1 (07 §7)"
-BloodVial,Shared,Common,keep,1,,,
+BloodVial,Shared,Common,jewelry,0,,AmuletOfTheHearth,"07 §5.1: лечение у Амулета Матери Очага (после боя 4 ♥, пассивное лечение → бижутерия)"
 BoneFlute,Necrobinder,Common,keep,1,,,
 BoneTea,Event,Event,keep,1,,,
 BookOfFiveRings,Shared,Common,keep,1,,,
@@ -147,7 +147,7 @@ MassiveScroll,Event,Ancient,keep,2,,,
 MawBank,Event,Event,keep,1,,,
 MealTicket,Shared,Common,keep,1,,,
 MeatCleaver,Event,Ancient,keep,2,,,
-MeatOnTheBone,Shared,Rare,keep,2,,,
+MeatOnTheBone,Shared,Rare,jewelry,0,,RingOfRegeneration,07 §5.2: лечение при ♥ < 50 % — у Кольца Регенерации
 MembershipCard,Shared,Shop,keep,1,,,
 MercuryHourglass,Shared,Uncommon,keep,1,,,
 Metronome,Defect,Rare,keep,2,,,

@@ -60,6 +60,7 @@ public sealed class MerchantLedger : RequiemRelic
     private int _orderFloor;     // этаж, где заказ выполняется, + 1; 0 — нигде
     private int _refillsUsed;
     private int _theftFloor;     // этаж последней попытки кражи + 1
+    private int _theftTries;     // попыток на этом этаже (Кольцо Безликого Вора даёт вторую)
 
     /// <summary>Золото, потраченное в лавках каждого вида (индекс = <see cref="ShopType"/>).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -113,6 +114,9 @@ public sealed class MerchantLedger : RequiemRelic
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int TheftFloor { get => _theftFloor; set { AssertMutable(); _theftFloor = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int TheftTries { get => _theftTries; set { AssertMutable(); _theftTries = value; } }
 
     public ShopType CurrentShop => (ShopType)Math.Clamp(_currentShop, 0, ShopRules.ShopTypeCount - 1);
     public int TrustOf(ShopType shop) => ShopRules.Trust(_spent[(int)shop]);
@@ -193,12 +197,16 @@ public sealed class MerchantLedger : RequiemRelic
     public OrderCategory? ActiveOrder(IRunState runState) =>
         _orderFloor > 0 && _orderFloor - 1 == runState.TotalFloor ? (OrderCategory)_orderCategory : null;
 
-    public bool TheftTriedHere(IRunState runState) => _theftFloor == runState.TotalFloor + 1;
+    /// <summary>Попытки кражи на этом этаже исчерпаны (<paramref name="allowed"/> — сколько можно за визит).</summary>
+    public bool TheftTriedHere(IRunState runState, int allowed = 1) =>
+        _theftFloor == runState.TotalFloor + 1 && Math.Max(1, _theftTries) >= Math.Max(1, allowed);
 
     public void MarkTheftAttempt(IRunState runState)
     {
         AssertMutable();
-        _theftFloor = runState.TotalFloor + 1;
+        var floor = runState.TotalFloor + 1;
+        _theftTries = _theftFloor == floor ? Math.Max(1, _theftTries) + 1 : 1;
+        _theftFloor = floor;
     }
 
     // ───── цены ─────

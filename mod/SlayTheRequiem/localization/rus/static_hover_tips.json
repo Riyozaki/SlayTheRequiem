@@ -30,5 +30,11 @@
   "SLAYTHEREQUIEM-RELIC_WEIGHT.title": "Вес",
   "SLAYTHEREQUIEM-RELIC_WEIGHT.description": "Реликвия добавляет {Weight} к [gold]Грузу[/gold].",
   "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.title": "Переработана",
-  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Реликвия энергии: в Реквиеме она ещё и стоит −1 прироста основного ресурса — ◆ у Латоносца и Безмолвной, ✦ у Регента."
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Реликвия энергии: в Реквиеме она ещё и стоит −1 прироста основного ресурса — ◆ у Латоносца и Безмолвной, ✦ у Регента.",
+  "SLAYTHEREQUIEM-RING_COMBO_STEAM.title": "Сочетание: Пар",
+  "SLAYTHEREQUIEM-RING_COMBO_STEAM.description": "Кольца Пиромана и Изморози: когда на цели есть и [gold]Горение[/gold], и [gold]Озноб[/gold], оба снимаются, а цель получает урон, равный их сумме, без сопротивлений.",
+  "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.title": "Сочетание: Скорая ярость",
+  "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.description": "Кольца Скорого Дыхания и Ярого Удара: атаки за 0 ◆ наносят на 2 урона больше.",
+  "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.title": "Сочетание: Ясный приказ",
+  "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.description": "Кольца Ясного Ума и Наместника: повтор Наместника срабатывает дважды за бой."
 }

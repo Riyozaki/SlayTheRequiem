@@ -670,5 +670,23 @@ class VanillaRelics(unittest.TestCase):
         self.assertTrue(all(0 <= int(row["weight"]) <= 3 for row in rows))
 
 
+class Jewelry(unittest.TestCase):
+    def test_numbers(self):
+        self.assertEqual(r.drunkard_potency(2), 3)
+        self.assertEqual(r.drunkard_potency(10), 15)
+        self.assertEqual(r.drunkard_potency(0), 0)
+        self.assertEqual(r.lightning_rod_mana(7), 3)
+        self.assertTrue(r.regeneration_active(19, 40))
+        self.assertFalse(r.regeneration_active(20, 40))
+        self.assertEqual(r.steam_damage(4, 3), 7)
+        self.assertEqual(r.steam_damage(0, 3), 0)
+        self.assertEqual(r.viceroy_replays(True), 2)
+
+    def test_combos(self):
+        self.assertEqual(r.ring_combos(["RingOfHoarfrost", "RingOfThePyromancer"]), ["Steam"])
+        self.assertEqual(r.ring_combos(["RingOfQuickBreath"]), [])
+        self.assertEqual(r.ring_combos(["RingOfQuickBreath", "RingOfFuryStrike"]), ["QuickFury"])
+
+
 if __name__ == "__main__":
     unittest.main()

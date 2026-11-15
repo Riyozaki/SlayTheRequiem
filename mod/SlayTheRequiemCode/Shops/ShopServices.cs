@@ -25,7 +25,13 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 public interface IAilment { }
 
 /// <summary>Источник кражи в лавках (Знамение Ловкача, Кольцо Безликого Вора, Лунная порода-Плут — этапы 4–6).</summary>
-public interface ITheftEnabler { }
+public interface ITheftEnabler
+{
+    /// <summary>Включает ли кражу сейчас (кольцо — только надетое).</summary>
+    bool EnablesTheft => true;
+    /// <summary>Лишние попытки кражи за визит (Кольцо Безликого Вора).</summary>
+    int ExtraTheftAttempts => 0;
+}
 
 // ───────────── карты прилавка (только для показа, в колоду не попадают) ─────────────
 
@@ -335,8 +341,10 @@ public static class ShopServices
     public static bool CanSteal(Player player, MerchantEntry entry)
     {
         if (entry is MerchantCardRemovalEntry || !MerchantLedger.Active(player)) return false;
-        if (MerchantLedger.Of(player) is not { } ledger || ledger.TheftTriedHere(player.RunState)) return false;
-        return RequiemConfig.AllowTheft || player.Relics.Any(r => r is ITheftEnabler);
+        var enablers = player.Relics.OfType<ITheftEnabler>().ToList();
+        var attempts = 1 + enablers.Sum(e => e.ExtraTheftAttempts);
+        if (MerchantLedger.Of(player) is not { } ledger || ledger.TheftTriedHere(player.RunState, attempts)) return false;
+        return RequiemConfig.AllowTheft || enablers.Any(e => e.EnablesTheft);
     }
 
     /// <summary>Сейчас идёт покупка-кража: золото не списывается и «потерял золото» не рассылается.</summary>

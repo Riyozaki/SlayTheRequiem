@@ -27,6 +27,8 @@ public abstract class SummonPower : RequiemPower
     public virtual bool HitsAll => false;
     /// <summary>Спутник («Верный-до-Конца»): слот призыва не занимает, другие призывы его не вытесняют.</summary>
     public virtual bool IsCompanion => false;
+    /// <summary>Нежить («Поднять мертвеца»): +3 ♥ от Амулета Говорящего с Мёртвыми (07 §5.1).</summary>
+    public virtual bool IsUndead => false;
 
     private int _pending;
     private Creature? _pendingAttacker;

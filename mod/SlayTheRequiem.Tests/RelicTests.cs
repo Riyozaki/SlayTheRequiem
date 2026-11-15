@@ -54,4 +54,46 @@ public class VanillaRelicTableTests
         Assert.Equal(1, JewelryRules.FuryStrikeDamage);
         Assert.Equal(2, JewelryRules.ThornsNecklace);
     }
+
+    [Fact]
+    public void JewelryNumbers()
+    {
+        Assert.Equal(3, JewelryRules.DrunkardPotency(2));   // +50 % вверх
+        Assert.Equal(15, JewelryRules.DrunkardPotency(10));
+        Assert.Equal(0, JewelryRules.DrunkardPotency(0));
+        Assert.Equal(-2, JewelryRules.DrunkardPotency(-2));
+        Assert.Equal(3, JewelryRules.LightningRodMana(7));   // половина вниз
+        Assert.Equal(0, JewelryRules.LightningRodMana(-5));
+        Assert.True(JewelryRules.RegenerationActive(19, 40));
+        Assert.False(JewelryRules.RegenerationActive(20, 40));
+        Assert.True(JewelryRules.StarstoneTriggers(0, false));
+        Assert.False(JewelryRules.StarstoneTriggers(0, true));
+        Assert.False(JewelryRules.StarstoneTriggers(1, false));
+        Assert.Equal(7, JewelryRules.SteamDamage(4, 3));
+        Assert.Equal(0, JewelryRules.SteamDamage(4, 0));
+        Assert.Equal(1, JewelryRules.ViceroyReplays(false));
+        Assert.Equal(2, JewelryRules.ViceroyReplays(true));
+    }
+
+    [Fact]
+    public void RingCombos()
+    {
+        Assert.Empty(RingComboRules.Active(["RingOfThePyromancer"]));
+        Assert.Equal(new[] { RingCombo.Steam }, RingComboRules.Active(["RingOfHoarfrost", "RingOfThePyromancer"]));
+        Assert.Equal(new[] { RingCombo.QuickFury }, RingComboRules.Active(["RingOfFuryStrike", "RingOfQuickBreath"]));
+        Assert.Equal(new[] { RingCombo.ClearViceroy }, RingComboRules.Involving("RingOfTheViceroy"));
+        var mask = RingComboRules.Mark(0, [RingCombo.Steam]);
+        Assert.True(RingComboRules.Known(mask, RingCombo.Steam));
+        Assert.False(RingComboRules.Known(mask, RingCombo.QuickFury));
+        Assert.Equal(mask, RingComboRules.Mark(mask, [RingCombo.Steam]));
+    }
+
+    [Fact]
+    public void JewelryReplacementsShipped()
+    {
+        var table = VanillaRelicTable.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "vanilla_relics.csv")));
+        Assert.True(table.IsCut("BloodVial"));
+        Assert.True(table.IsCut("MeatOnTheBone"));
+        Assert.Equal(6, table.CountOf(RelicBucket.Jewelry));
+    }
 }

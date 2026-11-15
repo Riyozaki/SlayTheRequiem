@@ -253,9 +253,9 @@ public sealed class RingOfMagicka : EquipmentRelic
 
 // ───────────── бижутерия вместо ванильных реликвий (07 §5, §7) ─────────────
 
-/// <summary>Кольцо Ярого Удара (вместо Vajra): Оружейные атаки +1 урона.</summary>
+/// <summary>Кольцо Ярого Удара (вместо Vajra): Оружейные атаки +1 урона. Сочетание со Скорым Дыханием — <see cref="RingOfQuickBreath"/>.</summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class RingOfFuryStrike : EquipmentRelic
+public sealed class RingOfFuryStrike : ComboRing
 {
     public override RelicRarity Rarity => RelicRarity.Common;
     public override EquipSlot Slot => EquipSlot.Ring;

@@ -1595,3 +1595,39 @@ def iron_skin_active(plating: int) -> bool:
 def relic_regen_penalty(hero: str, reworked_count: int) -> tuple:
     """(◆, ✦): у Регента режется ✦, у остальных героев Реквиема — ◆ (07 §7 «по типу»)."""
     return (0, reworked_count) if hero == "Regent" else (reworked_count, 0)
+
+
+# ───── бижутерия 07 §5 (M4 п. 3) — зеркало Core/JewelryRules, RingComboRules ─────
+DRUNKARD_POTION_PERCENT = 50
+LIGHTNING_ROD_ABSORB_PERCENT = 50
+RING_COMBOS = {
+    "Steam": ("RingOfThePyromancer", "RingOfHoarfrost"),
+    "QuickFury": ("RingOfQuickBreath", "RingOfFuryStrike"),
+    "ClearViceroy": ("RingOfClearMind", "RingOfTheViceroy"),
+}
+
+
+def drunkard_potency(potency: int) -> int:
+    return potency if potency <= 0 else (potency * (100 + DRUNKARD_POTION_PERCENT) + 99) // 100
+
+
+def lightning_rod_mana(damage: int) -> int:
+    return max(0, damage) * LIGHTNING_ROD_ABSORB_PERCENT // 100
+
+
+def regeneration_active(hp: int, max_hp: int) -> bool:
+    return max_hp > 0 and hp * 2 < max_hp
+
+
+def steam_damage(burning: int, chill: int) -> int:
+    return burning + chill if burning > 0 and chill > 0 else 0
+
+
+def viceroy_replays(clear_mind_combo: bool) -> int:
+    return 2 if clear_mind_combo else 1
+
+
+def ring_combos(rings) -> list:
+    rs = set(rings)
+    return [c for c, (a, b) in RING_COMBOS.items() if a in rs and b in rs]
+

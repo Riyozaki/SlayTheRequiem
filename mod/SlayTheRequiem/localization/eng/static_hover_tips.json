@@ -30,5 +30,11 @@
   "SLAYTHEREQUIEM-RELIC_WEIGHT.title": "Weight",
   "SLAYTHEREQUIEM-RELIC_WEIGHT.description": "This relic adds {Weight} to your [gold]Burden[/gold].",
   "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.title": "Reworked",
-  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Energy relic: in Requiem it also costs −1 regeneration of your main resource — ◆ for the Platebearer and the Silent, ✦ for the Regent."
+  "SLAYTHEREQUIEM-RELIC_REWORK_ENERGY.description": "Energy relic: in Requiem it also costs −1 regeneration of your main resource — ◆ for the Platebearer and the Silent, ✦ for the Regent.",
+  "SLAYTHEREQUIEM-RING_COMBO_STEAM.title": "Combo: Steam",
+  "SLAYTHEREQUIEM-RING_COMBO_STEAM.description": "With the Pyromancer's Ring and the Ring of Hoarfrost: when a target has both [gold]Burning[/gold] and [gold]Chill[/gold], both are removed and it takes their sum as damage, ignoring resistances.",
+  "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.title": "Combo: Quick Fury",
+  "SLAYTHEREQUIEM-RING_COMBO_QUICKFURY.description": "With the Ring of Quick Breath and the Ring of Fury Strike: attacks that cost 0 ◆ deal 2 more damage.",
+  "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.title": "Combo: Clear Command",
+  "SLAYTHEREQUIEM-RING_COMBO_CLEARVICEROY.description": "With the Ring of Clear Mind and the Viceroy's Ring: the Viceroy's replay works twice per combat."
 }

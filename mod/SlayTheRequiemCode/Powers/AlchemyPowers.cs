@@ -278,9 +278,13 @@ public abstract class WeaponPoisonPower : RequiemPower
     public int Tier { get; private set; } = 1;
     protected int Potency => Boosted(AlchemyRules.PoisonPotency(Kind, Tier));
 
-    /// <summary>«Заговорщик» (Дюнные клинки, 04): яды на оружии +25 %.</summary>
-    protected int Boosted(int potency) =>
-        Owner?.Player?.Relics.OfType<Relics.ConspiratorBackground>().Any() == true ? OriginRules.ConspiratorPotency(potency) : potency;
+    /// <summary>«Заговорщик» (Дюнные клинки, 04): яды на оружии +25 %; Кольцо Пьяницы (07 §5.2) — ещё +50 %.</summary>
+    protected int Boosted(int potency)
+    {
+        var player = Owner?.Player;
+        if (player?.Relics.OfType<Relics.ConspiratorBackground>().Any() == true) potency = OriginRules.ConspiratorPotency(potency);
+        return Equipment.RingOfTheDrunkard.Potency(player, potency);
+    }
     protected virtual bool BypassesImmunity => false;
 
     /// <summary>Нанести яд на оружие героя: смыть прежний, наложить заряды, запомнить ступень.</summary>
