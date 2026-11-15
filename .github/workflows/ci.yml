@@ -55,6 +55,11 @@ jobs:
         run: python tools/art/build_vanilla_art.py --check
       - name: Every model has its own or a vanilla image
         run: python tools/assets/asset_manifest.py --check
+      - name: Card audit (card spec §7) and design tables (docs/design 16/17/18/06) match the code
+        run: |
+          python tools/cards/audit_cards.py --check --out docs/plan/card-audit.md
+          python tools/cards/design_tables.py --check
+          python tools/cards/card_catalog.py --check
       - name: Vanilla attacks markup matches the game data (sts2_database)
         run: |
           git clone -q https://github.com/vitechliu/sts2_database /tmp/stsdb

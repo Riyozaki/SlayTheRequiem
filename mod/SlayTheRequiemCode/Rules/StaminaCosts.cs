@@ -40,6 +40,17 @@ public static class StaminaCosts
         return cost;
     }
 
+    /// <summary>
+    /// Атаки, которые не платят ◆ и не слабеют от Устал/Изнурён (card spec §3.4 п. 2, 04 «Кличи», 08):
+    /// заклинания (<see cref="Spells.SpellCard"/>), магические атаки мода с ценой в ✦ и без объявленной ◆ (Кара, Освящение,
+    /// Призменная стрела — «атака платит либо мышцами, либо магией») и Кличи — их цена перезарядка, а не дыхание.
+    /// Гибриды с обеими ценами (Клинок-заклинание Боевого мага: удар оружием + чары) платят и ◆, и ✦.
+    /// Ванильные карты сюда не попадают: их цена — по разметке CSV.
+    /// </summary>
+    public static bool IsStaminaExempt(CardModel card) =>
+        card is Spells.SpellCard || card is Cards.IShoutCard
+        || (card is IRequiemCard custom && card.CanonicalStarCost > 0 && custom.StaminaCost == 0);
+
     /// <summary>Владелец карты или null для канонической модели (без исключения AssertMutable).</summary>
     public static MegaCrit.Sts2.Core.Entities.Players.Player? OwnerOf(CardModel card) => card.IsMutable ? card.Owner : null;
 

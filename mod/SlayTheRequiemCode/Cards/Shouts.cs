@@ -98,7 +98,7 @@ public static class Shouts
 
 // ═════════════ Кличи (04, таблица «Глас») ═════════════
 
-/// <summary>Безжалостная сила: 6 (9) урона + Ошеломление 4. Перезарядка 3.</summary>
+/// <summary>Безжалостная сила: 6 (9) урона + Ошеломление 4. Перезарядка 3. Как все Кличи — без ◆ (04).</summary>
 [Pool(typeof(IroncladCardPool))]
 public sealed class UnrelentingForce : RequiemCard, IShoutCard
 {
@@ -108,7 +108,6 @@ public sealed class UnrelentingForce : RequiemCard, IShoutCard
     {
         WithDamage(6, 3);
         WithPower<StaggerPower>(4);
-        WithStamina(1);
     }
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)

@@ -31,6 +31,7 @@ public abstract class PickCard : RequiemCard
         WithVar(CostVar, 0);
     }
 
+    public override bool IsMenuToken => true;
     public override int MaxUpgradeLevel => 0;
 
     public void SetDisplay(int value, int cost = 0)

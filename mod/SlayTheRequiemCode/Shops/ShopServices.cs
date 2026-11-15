@@ -45,6 +45,7 @@ public abstract class CounterCard : RequiemCard
         WithVar(AmountVar, 0);
     }
 
+    public override bool IsMenuToken => true;
     public override int MaxUpgradeLevel => 0;
 
     public void SetDisplay(int price, int amount)

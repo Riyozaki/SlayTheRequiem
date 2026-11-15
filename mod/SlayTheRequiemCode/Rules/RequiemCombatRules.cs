@@ -30,8 +30,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override async Task BeforeCardPlayed(CardPlay cardPlay)
     {
         var card = cardPlay.Card;
-        // Заклинания платят только ✦ (docs/design/08): ни ◆, ни множителя Устал/Изнурён.
-        if (card.Type != CardType.Attack || card is Spells.SpellCard) return;
+        // Заклинания и магические атаки платят только ✦ (08), Кличи — перезарядкой (04): ни ◆, ни множителя Устал/Изнурён.
+        if (card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return;
         var player = card.Owner;
         if (!RequiemMode.IsInSystem(player)) return;
         // Повторы (Двойной удар, эхо) не платят второй раз и бьют с тем же множителем.
@@ -100,7 +100,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     private static decimal StaminaMultiplier(ValueProp props, CardModel? cardSource)
     {
-        if (cardSource == null || cardSource is Spells.SpellCard || !props.IsPoweredAttack()) return 1m;
+        if (cardSource == null || StaminaCosts.IsStaminaExempt(cardSource) || !props.IsPoweredAttack()) return 1m;
         if (PendingMultiplier.TryGetValue(cardSource, out var box)) return box.Value;
 
         // Предпросмотр урона на карте в руке: показываем, сколько она нанесёт при текущей ◆.

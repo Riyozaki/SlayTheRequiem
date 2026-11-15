@@ -55,6 +55,9 @@ public sealed class EquipmentCombatRules() : CustomSingletonModel(CustomSingleto
         if (card.Type != CardType.Attack || card is Spells.SpellCard) return false;
         if (card is IWeaponCard) return true;
         if (card.Tags.Contains(CardTag.Strike)) return true;
+        // Разметка CSV — только для ванильных карт: у карт мода есть тёзки в игре (Backstab, Pounce, Whirlwind, Rampage),
+        // и без этой проверки они получали бы флаг оружия ванильной карты (аудит M2).
+        if (card is IRequiemCard) return false;
         return RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var e) && e.Weapon;
     }
 }

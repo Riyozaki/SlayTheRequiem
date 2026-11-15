@@ -91,5 +91,8 @@
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_10": "Damned",
   "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.title": "Necrobinder and Defect as heroes",
   "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.title": "Necrobinder and Defect",
-  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "In the mod they are transformation forms (Lich, Clockwork Heart), so they are hidden on the character select screen and their cards never appear in rewards. On — bring them back as vanilla heroes (the mod's systems do not apply to them). Must match in co-op."
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "In the mod they are transformation forms (Lich, Clockwork Heart), so they are hidden on the character select screen and their cards never appear in rewards. On — bring them back as vanilla heroes (the mod's systems do not apply to them). Must match in co-op.",
+  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.title": "Elemental card titles in colour",
+  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.title": "Elemental titles",
+  "SLAYTHEREQUIEM-COLOR_ELEMENTAL_TITLES.hover.desc": "The title of a fire, frost, shock, poison, blight, light or magic card takes the colour of its element. Upgraded cards keep the green outline and the \"+\". Cosmetic only."
 }

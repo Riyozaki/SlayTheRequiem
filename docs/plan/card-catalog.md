@@ -56,7 +56,7 @@
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `UnrelentingForce` | Безжалостная сила | Ironclad | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 6(+3) |  | StaggerPower 4 |  | Нанести {Damage:diff()} урона. Наложить {StaggerPower:diff()} Шаткости. Клич: вернётся в руку через 3 хода. |
+| `UnrelentingForce` | Безжалостная сила | Ironclad | 1 |  |  | Attack | Uncommon | AnyEnemy | 6(+3) |  | StaggerPower 4 |  | Нанести {Damage:diff()} урона. Наложить {StaggerPower:diff()} Шаткости. Клич: вернётся в руку через 3 хода. |
 | `FireBreath` | Огненный выдох | Ironclad | 1 |  |  | Attack | Uncommon | AllEnemies | 4(+2) |  | BurningPower 4(+1) |  | Нанести {Damage:diff()} урона огнём ВСЕМ врагам. Наложить {BurningPower:diff()} Горения ВСЕМ врагам. Клич: вернётся в руку через 3 хода. |
 | `FrostBreath` | Морозный выдох | Ironclad | 1 |  |  | Skill | Uncommon | AllEnemies |  |  | ChillPower 4(+2) |  | Наложить {ChillPower:diff()} Озноба ВСЕМ врагам, уже охлаждённым — вдвое. Клич: вернётся в руку через 3 хода. |
 | `StormCall` | Зов грозы | Ironclad | 2 |  |  | Attack | Rare | AllEnemies | 5(+3) |  | StaggerPower 2 |  | Нанести {Damage:diff()} урона разрядом ВСЕМ врагам. Шок: {StaggerPower:diff()} Шаткости ВСЕМ врагам. Клич: вернётся в руку через 4 хода. |
@@ -74,11 +74,11 @@
 | `Dragonhide` | Драконья кожа | Spell | 2 |  | 6 | Skill | Alteration/Master | Self |  |  | TemporaryPlatingPower 3(+1), SpellAbsorptionPower 1(+1) |  | Получить {TemporaryPlatingPower:diff()} Лат на 3 хода и {SpellAbsorptionPower:diff()} Поглощения заклинаний. |
 | `MassParalysis` | Массовый паралич | Spell | 3(-1) |  | 8 | Skill | Alteration/Master | AllEnemies |  |  |  | Exhaust | ВСЕ враги, кроме боссов, пропускают намерение. Боссы получают 5 Шаткости. |
 | `SpectralBlade` | Призрачный клинок | Spell | 0 | 1 |  | Attack | Token | AnyEnemy | 6(+3) |  |  | Exhaust | Оружейная атака. Нанести {Damage:diff()} урона. |
-| `BoundBlade` | Призванный клинок | Spell | 0 |  | 1 | Skill | Conjuration/Novice | Self |  |  | HpVar hp(+hpUpgrade) |  | Добавить в руку Призрачный клинок. |
-| `ConjureSpiritWolf` | Призыв волка-духа | Spell | 1 |  | 2 | Skill | Conjuration/Novice | Self |  |  | Summon 8♥, удар 4 |  | Призвать Волка-духа ({SummonHp:diff()} ♥). Бьёт на 4 в конце вашего хода. |
-| `ConjureFlameAtronach` | Огненный атронах | Spell | 2 |  | 3 | Skill | Conjuration/Adept | Self |  |  | Summon 14♥, удар 4 |  | Призвать Огненного атронаха ({SummonHp:diff()} ♥; каждый ход 5 урона огнём и 2 Горения). Получить 2 Плаща огня. |
-| `ConjureFrostAtronach` | Ледяной атронах | Spell | 2 |  | 3 | Skill | Conjuration/Adept | Self |  |  | Summon 22♥, удар 6 |  | Призвать Ледяного атронаха ({SummonHp:diff()} ♥). Атакующие его получают 2 Озноба. |
-| `ConjureStormAtronach` | Грозовой атронах | Spell | 2 |  | 4 | Skill | Conjuration/Expert | Self |  |  | Summon 16♥, удар 4 |  | Призвать Грозового атронаха ({SummonHp:diff()} ♥). Каждый ход 6 урона разрядом ВСЕМ врагам. |
+| `BoundBlade` | Призванный клинок | Spell | 0 |  | 1 | Skill | Conjuration/Novice | Self |  |  |  |  | Добавить в руку Призрачный клинок. |
+| `ConjureSpiritWolf` | Призыв волка-духа | Spell | 1 |  | 2 | Skill | Conjuration/Novice | Self |  |  | SummonHp 8(+4) |  | Призвать Волка-духа ({SummonHp:diff()} ♥). Бьёт на 4 в конце вашего хода. |
+| `ConjureFlameAtronach` | Огненный атронах | Spell | 2 |  | 3 | Skill | Conjuration/Adept | Self |  |  | SummonHp 14(+4) |  | Призвать Огненного атронаха ({SummonHp:diff()} ♥; каждый ход 5 урона огнём и 2 Горения). Получить 2 Плаща огня. |
+| `ConjureFrostAtronach` | Ледяной атронах | Spell | 2 |  | 3 | Skill | Conjuration/Adept | Self |  |  | SummonHp 22(+6) |  | Призвать Ледяного атронаха ({SummonHp:diff()} ♥). Атакующие его получают 2 Озноба. |
+| `ConjureStormAtronach` | Грозовой атронах | Spell | 2 |  | 4 | Skill | Conjuration/Expert | Self |  |  | SummonHp 16(+4) |  | Призвать Грозового атронаха ({SummonHp:diff()} ♥). Каждый ход 6 урона разрядом ВСЕМ врагам. |
 | `Banish` | Изгнание | Spell | 1 |  | 3 | Attack | Conjuration/Expert | AnyEnemy | 10(+4) |  |  |  | Уничтожить вражеского прислужника. Иначе — {Damage:diff()} урона магией. |
 | `Sparks` | Искры | Spell | 0 |  | 1 | Attack | Destruction/Novice | AnyEnemy | 3(+1) |  | StaticPower 1 | Retain | Удержание. Нанести {Damage:diff()} урона разрядом. Наложить {StaticPower:diff()} Статики. Пока в руке, +1 урона за каждый ход. |
 | `Firebolt` | Огненная стрела | Spell | 1 |  | 1 | Attack | Destruction/Novice | AnyEnemy | 6(+3) |  | BurningPower 3(+1) |  | Нанести {Damage:diff()} урона огнём. Наложить {BurningPower:diff()} Горения. |
@@ -110,11 +110,11 @@
 
 | Класс | Название | Пул | ⚡ | ◆ | ✦ | Тип | Редкость | Цель | Урон | Блок | Прочее | Ключевые | Текст |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `Windup` | Подзавод | Token | 1(-1) |  |  | Skill | Event | Self |  |  | Max TransformationRules.MaxOrbs |  | Добавить сферу стихии (Пар → Искра → Иней, до {Max}). |
+| `Windup` | Подзавод | Token | 1(-1) |  |  | Skill | Event | Self |  |  | Max 3 |  | Добавить сферу стихии (Пар → Искра → Иней, до {Max}). |
 | `HeraldStanceCard` | Стойка Вестника | Token | 0 |  |  | Skill | Event | Self |  |  |  |  | Сменить Стойку: Чума → Раздор → Распад. |
 | `HolyStrike` | Святой удар | Path | 1 | 2 |  | Attack | Uncommon | AnyEnemy | 9(+3) |  |  |  | Нанести {Damage:diff()} урона светом. |
 | `AegisOfFaith` | Эгида веры | Path | 1 |  |  | Skill | Uncommon | Self |  | 8(+3) | SpellShieldPower 4(+2) |  | Получить {Block:diff()} Блока и {SpellShieldPower:diff()} Оберега. |
-| `Consecrate` | Освящение | Path | 2 |  |  | Attack | Rare | AllEnemies | 6(+3) |  | StaggerPower 4 |  | Нанести {Damage:diff()} урона светом ВСЕМ врагам. Нежити и Бездне — {StaggerPower:diff()} Шаткости. |
+| `Consecrate` | Освящение | Path | 2 |  | 1 | Attack | Rare | AllEnemies | 6(+3) |  | StaggerPower 4 |  | Нанести {Damage:diff()} урона светом ВСЕМ врагам. Нежити и Бездне — {StaggerPower:diff()} Шаткости. |
 | `DreadStrike` | Удар ужаса | Path | 1 | 2 |  | Attack | Uncommon | AnyEnemy | 9(+3) |  | VanillaWeak 1(+1) |  | Нанести {Damage:diff()} урона. Наложить {WeakPower:diff()} Слабости. |
 | `SoulDrain` | Высасывание | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 6(+3) |  |  |  | Нанести {Damage:diff()} урона и вылечить нанесённое. |
 | `DarkAura` | Тёмная аура | Path | 1 |  |  | Skill | Rare | AllEnemies |  |  | Strength 1(+1) | Exhaust | ВСЕ враги теряют {Strength:diff()} Силы. Изгнание. |
@@ -136,13 +136,13 @@
 | `ArcaneShot` | Чародейский выстрел | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 8(+3) |  |  |  | Нанести {Damage:diff()} урона магией. |
 | `ElementalVolley` | Стихийный залп | Path | 2 | 2 |  | Attack | Rare | AllEnemies | 6(+3) |  | BurningPower 2(+1) |  | Нанести {Damage:diff()} урона огнём ВСЕМ врагам. Наложить {BurningPower:diff()} Горения ВСЕМ. |
 | `FocusedAim` | Прицел | Path | 0 |  |  | Skill | Uncommon | Self |  |  | Mana 2(+1) | Exhaust | Получить {Mana:diff()} ✦. Изгнание. |
-| `SpellBlade` | Клинок-заклинание | Path | 1 | 1 |  | Attack | Uncommon | AnyEnemy | 7(+2) |  | Fire 5(+2) |  | Нанести {Damage:diff()} урона, затем {Fire:diff()} урона огнём. |
-| `RuneArmor` | Рунная броня | Path | 1 |  |  | Skill | Uncommon | Self |  | 8(+3) | FrostCloakPower 2(+1) |  | Получить {Block:diff()} Блока и {FrostCloakPower:diff()} Плаща холода. |
+| `SpellBlade` | Клинок-заклинание | Path | 1 | 1 | 1 | Attack | Uncommon | AnyEnemy | 7(+2) |  | Fire 5(+2) |  | Нанести {Damage:diff()} урона, затем {Fire:diff()} урона огнём. |
+| `RuneArmor` | Рунная броня | Path | 1 |  | 1 | Skill | Uncommon | Self |  | 8(+3) | FrostCloakPower 2(+1) |  | Получить {Block:diff()} Блока и {FrostCloakPower:diff()} Плаща холода. |
 | `ArcaneCharge` | Чародейский рывок | Path | 2 | 2 |  | Attack | Rare | AnyEnemy | 13(+4) |  |  |  | Нанести {Damage:diff()} урона разрядом. |
-| `MirrorWard` | Зеркальный оберег | Path | 1 |  |  | Skill | Uncommon | Self |  |  | SpellShieldPower 12(+4) |  | Получить {SpellShieldPower:diff()} Оберега. |
+| `MirrorWard` | Зеркальный оберег | Path | 1 |  | 1 | Skill | Uncommon | Self |  |  | SpellShieldPower 12(+4) |  | Получить {SpellShieldPower:diff()} Оберега. |
 | `Rebound` | Отдача | Path | 1 |  |  | Skill | Uncommon | Self |  | 6(+3) | SpellAbsorptionPower 1 |  | Получить {Block:diff()} Блока и {SpellAbsorptionPower:diff()} Поглощения заклинаний. |
-| `PrismBolt` | Призменная стрела | Path | 1 |  |  | Attack | Rare | AnyEnemy | 6(+3) |  |  |  | Нанести {Damage:diff()} урона магией плюс ваш Оберег. |
-| `SpiritCall` | Зов духов | Path | 1 |  |  | Skill | Uncommon | Self |  |  | Hp 10(+4) |  | Призвать волка-духа с {Hp:diff()} ♥. |
+| `PrismBolt` | Призменная стрела | Path | 1 |  | 2 | Attack | Rare | AnyEnemy | 6(+3) |  |  |  | Нанести {Damage:diff()} урона магией плюс ваш Оберег. |
+| `SpiritCall` | Зов духов | Path | 1 |  | 2 | Skill | Uncommon | Self |  |  | Hp 10(+4) |  | Призвать волка-духа с {Hp:diff()} ♥. |
 | `Seance` | Сеанс | Path | 1 |  |  | Skill | Uncommon | Self |  | 6(+3) | Mana 2 |  | Получить {Block:diff()} Блока и {Mana} ✦. |
 | `EtherealLink` | Эфирная связь | Path | 1 |  |  | Skill | Rare | Self |  |  | Hp 6(+3) |  | Ваши призывы получают {Hp:diff()} ♥. |
 | `PickPathPaladin` | Паладин | Token |  |  |  |  |  |  |  |  |  |  | Путь: Паладин. Латы +1; нежить бьёт вас на 1 слабее за удар; Кара без ✦. |
@@ -158,14 +158,14 @@
 | `PickPathReflector` | Отражатель | Token |  |  |  |  |  |  |  |  |  |  | Путь: Отражатель. Оберег отражает 50 % поглощённого урона заклинаний в заклинателя. |
 | `PickPathMedium` | Медиум | Token |  |  |  |  |  |  |  |  |  |  | Путь: Медиум. +1 слот призыва; призывы +2 урона. |
 | `PickPathReborn` | Перерождённый | Token |  |  |  |  |  |  |  |  |  |  | Путь: Перерождённый. Без бонуса. Единожды: новая предыстория и сброс очков характеристик (распределить заново в лагере). |
-| `Smite` | Кара | Token | 1 |  |  | Attack | Event | AnyEnemy | TransformationRules.SmiteDamage(+TransformationRules.SmiteDamageUpgrade) |  | StaggerPower TransformationRules.SmiteStagger |  | Нанести {Damage:diff()} урона светом. Нежити и Бездне — ещё {StaggerPower:diff()} Шаткости. |
-| `Bite` | Укус | Token | 0 |  |  | Attack | Event | AnyEnemy | TransformationRules.BiteDamage(+TransformationRules.BiteDamageUpgrade) |  |  | Exhaust | Нанести {Damage:diff()} урона и вылечить нанесённое. Кормление: Жажда падает до 0. Изгнание. |
+| `Smite` | Кара | Token | 1 |  | 1 | Attack | Event | AnyEnemy | 8(+3) |  | StaggerPower 5 |  | Нанести {Damage:diff()} урона светом. Нежити и Бездне — ещё {StaggerPower:diff()} Шаткости. |
+| `Bite` | Укус | Token | 0 |  |  | Attack | Event | AnyEnemy | 6(+3) |  |  | Exhaust | Нанести {Damage:diff()} урона и вылечить нанесённое. Кормление: Жажда падает до 0. Изгнание. |
 | `BloodLordStance` | Кровавый лорд | Token | 0 |  |  | Skill | Event | Self |  |  |  |  | Войти в форму Кровавого лорда или выйти из неё: атаки накладывают 1 Хвори и лечат 25 % непогашенного урона. |
-| `MoonCall` | Зов луны | Token | TransformationRules.MoonCallEnergy |  |  | Skill | Event | Self |  |  | Turns TransformationRules.MoonCallTurns | Exhaust | Обращение в зверя на {Turns:diff()} хода. Изгнание. |
-| `Claws` | Когти | Token | 1 | 1 |  | Attack | AnyEnemy |  | 6 |  |  |  | Нанести {Damage:diff()} урона. Эфирная. Изгнание. |
-| `Pounce` | Прыжок | Token | 1 | 2 |  | Attack | AnyEnemy |  | 9 | 5 |  |  | Нанести {Damage:diff()} урона. Получить {Block:diff()} Блока. Эфирная. Изгнание. |
-| `Roar` | Рык | Token | 1 |  |  | Skill | AllEnemies |  |  |  | WeakPower 1, StaggerPower 3 |  | Наложить {WeakPower:diff()} Слабости и {StaggerPower:diff()} Шаткости ВСЕМ врагам. Эфирная. Изгнание. |
-| `Devour` | Пожрать | Token | 1 |  |  | Skill | Self |  |  |  | Heal TransformationRules.DevourHeal |  | Съесть павшего врага: +{Heal} ♥ и +1 ход формы зверя. Эфирная. Изгнание. |
+| `MoonCall` | Зов луны | Token | 2 |  |  | Skill | Event | Self |  |  | Turns 3 | Exhaust | Обращение в зверя на {Turns:diff()} хода. Изгнание. |
+| `Claws` | Когти | Token | 1 | 1 |  | Attack | Token | AnyEnemy | 6 |  |  |  | Нанести {Damage:diff()} урона. Эфирная. Изгнание. |
+| `Pounce` | Прыжок | Token | 1 | 2 |  | Attack | Token | AnyEnemy | 9 | 5 |  |  | Нанести {Damage:diff()} урона. Получить {Block:diff()} Блока. Эфирная. Изгнание. |
+| `Roar` | Рык | Token | 1 |  |  | Skill | Token | AllEnemies |  |  | WeakPower 1, StaggerPower 3 |  | Наложить {WeakPower:diff()} Слабости и {StaggerPower:diff()} Шаткости ВСЕМ врагам. Эфирная. Изгнание. |
+| `Devour` | Пожрать | Token | 1 |  |  | Skill | Token | Self |  |  | Heal 6 |  | Съесть павшего врага: +{Heal} ♥ и +1 ход формы зверя. Эфирная. Изгнание. |
 | `PickBeastHunter` | Охотник | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +2 урона зверя, II звериные атаки — 2 Кровотечения, III ещё +2 урона. |
 | `PickBeastStalker` | Ловчий | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +1 ход формы, II ход за 2 удара вместо 3, III ещё +1 ход. |
 | `PickBeastAlpha` | Альфа | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: при Обращении — волк (8/12/16 ♥); III +1 слот призыва. |

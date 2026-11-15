@@ -205,6 +205,9 @@ public sealed class Bite : RequiemCard
 [Pool(typeof(TokenCardPool))]
 public sealed class BloodLordStance : RequiemCard
 {
+    /// <summary>Карта облика: растёт ступенями формы (06), а не улучшением — решение card spec §3.4 п. 3, док 18.</summary>
+    public override int MaxUpgradeLevel => 0;
+
     public BloodLordStance() : base(0, CardType.Skill, CardRarity.Event, TargetType.Self)
     {
     }

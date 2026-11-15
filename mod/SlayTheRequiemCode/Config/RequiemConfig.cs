@@ -46,6 +46,9 @@ internal class RequiemConfig : SimpleModConfig
     /// </summary>
     public static bool ShowVanillaOnlyHeroes { get; set; } = false;
 
+    /// <summary>Название стихийной карты окрашено в цвет стихии (огонь, холод, разряд, яд…). Только оформление.</summary>
+    public static bool ColorElementalTitles { get; set; } = true;
+
     /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
     /// Меняется до начала забега; в коопе должна совпадать у всех.

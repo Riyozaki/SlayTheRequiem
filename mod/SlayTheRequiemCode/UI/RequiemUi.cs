@@ -144,10 +144,10 @@ public static class RequiemUi
 
     // ───── данные ─────
 
-    /// <summary>Платит ли карта ◆: атака (не заклинание) персонажа в системе мода.</summary>
+    /// <summary>Платит ли карта ◆: атака персонажа в системе мода, кроме заклинаний, магических атак и Кличей.</summary>
     public static bool PaysStamina(CardModel card)
     {
-        if (!RequiemConfig.EnableRequiemSystems || card.Type != CardType.Attack || card is Spells.SpellCard) return false;
+        if (!RequiemConfig.EnableRequiemSystems || card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return false;
         var owner = StaminaCosts.OwnerOf(card);
         return owner != null ? RequiemMode.IsInSystem(owner) : !HiddenHeroes.IsHiddenPool(card.Pool);
     }
@@ -160,6 +160,30 @@ public static class RequiemUi
         var type = StaminaCosts.DamageTypeFor(card);
         return type == DamageType.Physical ? null : type;
     }
+
+    /// <summary>
+    /// Стихия карты для цвета названия: атаки и заклинания — по типу урона, карты мода любого типа — по объявленной
+    /// стихии (навыки Горения, Озноба…), ванильные навыки Яда — по <c>PowerVar&lt;PoisonPower&gt;</c>.
+    /// </summary>
+    public static DamageType? TitleDamageType(CardModel card)
+    {
+        if (!RequiemConfig.EnableRequiemSystems || !RequiemConfig.ColorElementalTitles) return null;
+        if (VisibleDamageType(card) is { } shown) return shown;
+        if (card is IRequiemCard { DamageType: not DamageType.Physical } custom) return custom.DamageType;
+        if (card.Type is CardType.Curse or CardType.Status) return null;
+        return card.DynamicVars.ContainsKey(nameof(MegaCrit.Sts2.Core.Models.Powers.PoisonPower)) ? DamageType.Poison : null;
+    }
+
+    /// <summary>Цвет названия: те же оттенки, что у значков стихии, но светлее — тёмные (Хворь, Магия) иначе не читаются.</summary>
+    public static Color TitleColor(DamageType type) => type switch
+    {
+        DamageType.Blight => new Color("B7C27A"),
+        DamageType.Magic => new Color("D9A6FF"),
+        _ => DamageTypeColor(type),
+    };
+
+    /// <summary>Обводка названия: тёмный оттенок стихии (у улучшенных — ванильная зелёная, «+» в названии остаётся).</summary>
+    public static Color TitleOutline(DamageType type) => DamageTypeColor(type).Darkened(0.72f);
 
     /// <summary>Состояние ◆ при оплате атаки ценой <paramref name="cost"/>; null вне боя.</summary>
     public static (StaminaState state, bool overstrain)? StaminaStateFor(Player? player, int cost)

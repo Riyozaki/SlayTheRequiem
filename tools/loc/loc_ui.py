@@ -188,6 +188,10 @@ UI_SETTINGS = {
         "SHOW_VANILLA_ONLY_HEROES.hover.desc": "In the mod they are transformation forms (Lich, Clockwork Heart), so they are hidden "
                                                "on the character select screen and their cards never appear in rewards. On — bring them "
                                                "back as vanilla heroes (the mod's systems do not apply to them). Must match in co-op.",
+        "COLOR_ELEMENTAL_TITLES.title": "Elemental card titles in colour",
+        "COLOR_ELEMENTAL_TITLES.hover.title": "Elemental titles",
+        "COLOR_ELEMENTAL_TITLES.hover.desc": "The title of a fire, frost, shock, poison, blight, light or magic card takes the "
+                                             "colour of its element. Upgraded cards keep the green outline and the \"+\". Cosmetic only.",
     },
     "rus": {
         "SHOW_VANILLA_ONLY_HEROES.title": "Некробиндер и Дефект как герои",
@@ -195,5 +199,9 @@ UI_SETTINGS = {
         "SHOW_VANILLA_ONLY_HEROES.hover.desc": "В моде это облики превращений (Лич, Заводное сердце), поэтому они скрыты на экране "
                                                "выбора, а их карты не попадают в награды. Вкл — вернуть их как ванильных героев "
                                                "(системы мода на них не действуют). В коопе должна совпадать у всех.",
+        "COLOR_ELEMENTAL_TITLES.title": "Цветные названия стихийных карт",
+        "COLOR_ELEMENTAL_TITLES.hover.title": "Цвет стихии в названии",
+        "COLOR_ELEMENTAL_TITLES.hover.desc": "Название карты огня, холода, разряда, яда, хвори, света или магии окрашено в цвет "
+                                             "стихии. У улучшенных остаются зелёная обводка и «+». Только оформление.",
     },
 }

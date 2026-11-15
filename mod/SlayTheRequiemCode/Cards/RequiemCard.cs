@@ -1,5 +1,8 @@
 using BaseLib.Abstracts;
 using BaseLib.Extensions;
+using Godot;
+using MegaCrit.Sts2.Core.Assets;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -31,9 +34,30 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
 
     public virtual DamageType DamageType => DamageType.Physical;
 
+    // ── Служебный жетон (card spec §4): рамка-«табличка» ──
+    // Жетоны выбора, услуги лавки и Шрамы — «меню», а не карты боя. Они получают ванильную рамку квестовых карт
+    // (рамка, её материал и лента — как у Яйца Бирдониса): свиток вместо рамки героя, без своего арта.
+    /// <summary>Карта — служебный жетон-«меню» (рамка-табличка вместо рамки карты боя).</summary>
+    public virtual bool IsMenuToken => false;
+
+    private const string PlaqueFramePath = "atlases/ui_atlas.sprites/card/card_frame_quest_s.tres";
+    private const string PlaqueFrameMaterialPath = "res://materials/cards/frames/card_frame_quest_mat.tres";
+    private const string PlaqueBannerMaterialPath = "res://materials/cards/banners/card_banner_quest_mat.tres";
+
+    public override Texture2D? CustomFrame => IsMenuToken
+        ? ResourceLoader.Load<Texture2D>(ImageHelper.GetImagePath(PlaqueFramePath), null, ResourceLoader.CacheMode.Reuse)
+        : null;
+
+    public override Material? CreateCustomFrameMaterial => IsMenuToken ? PreloadManager.Cache.GetMaterial(PlaqueFrameMaterialPath) : null;
+
+    public override string? CustomBannerMaterialPath => IsMenuToken ? PlaqueBannerMaterialPath : null;
+
     public int StaminaCost => DynamicVars.TryGetValue(StaminaVar, out var v) ? (int)v.BaseValue : 0;
 
-    /// <summary>Объявить цену ◆ (для атак — обязательно, для навыков-рывков — по желанию).</summary>
+    /// <summary>
+    /// Объявить цену ◆: для атак — обязательно (кроме <see cref="StaminaCosts.IsStaminaExempt"/>: заклинания, магические атаки
+    /// с ✦, Кличи), для навыков-рывков — по желанию. Проверяет tools/cards/audit_cards.py.
+    /// </summary>
     protected RequiemCard WithStamina(int cost, int upgrade = 0)
     {
         WithVar(StaminaVar, cost, upgrade);
