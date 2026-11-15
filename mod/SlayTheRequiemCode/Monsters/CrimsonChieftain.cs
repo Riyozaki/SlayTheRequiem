@@ -24,7 +24,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// <summary>
 /// Элита «Атаманша Багряных Ножей» (Диджа; docs/design/11 акт 1). Сабля с вампиризмом и кинжал (Истощение 3 ◆,
 /// Раскол 1, Кровотечение 2). <b>Шайка</b>: два разбойника пассивны (<see cref="GangPower"/>), пока вы не ударите
-/// их или атаманшу — тогда все встают. При ♥ &lt; 50 % — <b>Адреналин</b>: −50 % физического урона на 1 ход (раз за бой).
+/// их или атаманшу — тогда все встают. Если первым из шайки убит Подлым ударом — остальные паникуют
+/// (<see cref="PanicPower"/>: следующая атака без урона). При ♥ &lt; 50 % — <b>Адреналин</b>: −50 % физического урона на 1 ход (раз за бой).
 /// Облик — ванильные Рубиновые налётчики (своих спрайтов пока нет).
 /// </summary>
 public sealed class CrimsonChieftain : CustomMonsterModel
@@ -46,6 +47,8 @@ public sealed class CrimsonChieftain : CustomMonsterModel
         ModelDb.Monster<AssassinRubyRaider>().GenerateAnimator(controller);
 
     private bool _adrenalineUsed;
+    /// <summary>Первый павший из шайки уже был (паника — только если первым убит Подлым ударом).</summary>
+    private bool _firstBanditDown;
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
@@ -89,7 +92,19 @@ public sealed class CrimsonChieftain : CustomMonsterModel
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Creature || !Creature.IsAlive) return;
+        if (!Creature.IsAlive) return;
+        if (target != Creature)
+        {
+            // Паника: первым из шайки убит Подлым ударом — остальные теряют атаку (docs/design/11).
+            if (!_firstBanditDown && target.Monster is CrimsonBandit && result.WasTargetKilled)
+            {
+                _firstBanditDown = true;
+                if (dealer is { IsPlayer: true } && SneakRules.IsSneak(dealer, target))
+                    foreach (var ally in Creature.CombatState?.Enemies.Where(e => e.IsAlive && e != target).ToList() ?? [])
+                        await PowerCmd.Apply<PanicPower>(choiceContext, ally, 1, Creature, null);
+            }
+            return;
+        }
         if (dealer is { IsPlayer: true }) await GangPower.WakeAll(Creature.CombatState);
         if (!_adrenalineUsed && Creature.CurrentHp * 2 < Creature.MaxHp)
         {

@@ -320,3 +320,67 @@ public class SpellCostDeltaTests
         Assert.Equal(delta, cast.ManaCost - baseCost);
     }
 }
+
+public class Stage3Tests
+{
+    [Theory]
+    [InlineData(30, 32, 0, 0, 0, true)]
+    [InlineData(37, 32, 5, 1, 0, true)]
+    [InlineData(38, 32, 6, 1, 1, true)]
+    [InlineData(43, 32, 11, 1, 1, false)]
+    public void Overload(int weight, int capacity, int excess, int regen, int hand, bool pickUp) =>
+        Assert.Equal(new BurdenRules.Overload(excess, regen, hand, pickUp), BurdenRules.Evaluate(weight, capacity));
+
+    [Fact]
+    public void OriginNumbers()
+    {
+        Assert.Equal(new[] { 0, 0, 2, 4, 0 }, new[] { 80, 40, 39, 19, 0 }.Select(h => OriginRules.MarshbarkHeal(h, 80)));
+        Assert.Equal(new[] { 0, 1, 2, 3 }, new[] { 95, 89, 69, 49 }.Select(h => OriginRules.KnightPlating(h, 100)));
+        Assert.Equal(new[] { 0, 1, 2, 4 }, new[] { 10, 7, 5, 0 }.Select(m => OriginRules.WizardSpellBonus(m, 10)));
+        Assert.Equal(3, OriginRules.FugitiveBonus(5));
+        Assert.Equal(2, OriginRules.WinddancerBonus(7));
+        Assert.Equal((20, 7), OriginRules.BeastSpirit(4));
+    }
+
+    [Fact]
+    public void Brewing()
+    {
+        var pouch = new int[AlchemyRules.ReagentCount];
+        pouch[(int)Reagent.Bloodmoss] = 3;
+        var first = AlchemyRules.Available(pouch)[0];
+        Assert.Equal(Brew.Health, first.Recipe.Brew);
+        Assert.Equal(3, first.Tier);
+
+        pouch = new int[AlchemyRules.ReagentCount];
+        pouch[(int)Reagent.Nightcap] = 2;
+        pouch[(int)Reagent.AshSalt] = 1;
+        var brews = AlchemyRules.Available(pouch).ToDictionary(o => o.Recipe.Brew, o => o.Tier);
+        Assert.Equal(new Dictionary<Brew, int> { [Brew.SnakeBite] = 3, [Brew.Toxin] = 1 }, brews);
+
+        Assert.Equal(3, AlchemyRules.Tier(2, 1));
+        Assert.Equal(5, AlchemyRules.Tier(3, 5));
+        Assert.Empty(AlchemyRules.Available(new int[AlchemyRules.ReagentCount]));
+        Assert.Equal(24, AlchemyRules.Recipes.Count);
+        Assert.Equal(8, AlchemyRules.Recipes.Count(r => r.IsPoison));
+    }
+
+    [Fact]
+    public void DropsAndPoisons()
+    {
+        Assert.Equal(3, AlchemyRules.DropCount(EnemyRank.Boss));
+        Assert.Equal(2, AlchemyRules.Fit(10, 3));
+        Assert.Equal(0, AlchemyRules.Fit(12, 1));
+        Assert.Equal(new[] { 2, 4, 7 }, new[] { 1, 3, 5 }.Select(t => AlchemyRules.PoisonPotency(Brew.Toxin, t)));
+        Assert.Equal(100, AlchemyRules.PoisonPotency(Brew.Paralytic, 5));
+    }
+
+    [Theory]
+    [InlineData(EnemyRank.Elite, 0, 99, 72, 1)]
+    [InlineData(EnemyRank.Elite, 0, 0, 25, 0)]   // свита Атаманши
+    [InlineData(EnemyRank.Normal, 0, 0, 30, 0)]
+    [InlineData(EnemyRank.Normal, 1, 24, 30, 1)]
+    [InlineData(EnemyRank.Normal, 1, 25, 30, 0)]
+    [InlineData(EnemyRank.Boss, 3, 0, 300, 0)]
+    public void AffixCount(EnemyRank rank, int act, int roll, int hp, int expected) =>
+        Assert.Equal(expected, EnemyRules.AffixCount(rank, act, roll, hp));
+}

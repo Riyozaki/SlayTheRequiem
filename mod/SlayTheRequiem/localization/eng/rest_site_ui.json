@@ -1,0 +1,9 @@
+{
+  "OPTION_SLAYTHEREQUIEM_BREW.name": "Brew",
+  "OPTION_SLAYTHEREQUIEM_BREW.description": "Brew one potion or poison from your reagents ({Count} in the pouch). Doesn't end your rest.",
+  "OPTION_SLAYTHEREQUIEM_BREW.descriptionDisabled": "Not enough reagents for any recipe.",
+  "OPTION_SLAYTHEREQUIEM_CHEST.name": "Chest",
+  "OPTION_SLAYTHEREQUIEM_CHEST.description": "Store cards and gear (they stop weighing) or take them back. Burden {Weight}/{Capacity}, in the chest: {Stored}. Doesn't end your rest.",
+  "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Choose cards to put in the chest",
+  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Choose cards to take from the chest"
+}

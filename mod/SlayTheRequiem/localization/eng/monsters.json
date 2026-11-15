@@ -3,5 +3,13 @@
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.RAISE_KNIGHTS.title": "Raise the Knights",
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.RERAISE_KNIGHTS.title": "Call the Fallen",
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.STAFF_DRAIN.title": "Staff of Thirst",
-  "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.SOUL_FLAME.title": "Soul Flame"
+  "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.SOUL_FLAME.title": "Soul Flame",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.name": "Chieftain of the Crimson Knives",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.DAGGER.title": "Dirty Dagger",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.SABER.title": "Thirsting Saber",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.RALLY.title": "To Me, Knives!",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.name": "Crimson Knife",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.LURK.title": "Lurking",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.AMBUSH.title": "Ambush",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.STAB.title": "Stab"
 }

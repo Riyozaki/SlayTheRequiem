@@ -228,3 +228,83 @@ public sealed class RingOfMagicka : EquipmentRelic
     public override Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState) =>
         IsEquipped && side == CombatSide.Player && combatState.RoundNumber > 1 ? Rules.Mana.Gain(Owner, 1) : Task.CompletedTask;
 }
+
+// ───────────── снаряжение Подлых ударов (этап 3, docs/design/07 §3.2–4.3) ─────────────
+
+/// <summary>Чешуйчатый кинжал (III): Подлый; Подлые удары возвращают 1 ✦.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class ScaledDagger : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Rare;
+    public override int Tier => 3;
+    public override WeaponKind Weapon => WeaponKind.Dagger;
+
+    protected override Task OnWeaponHit(PlayerChoiceContext ctx, Creature target, CardModel card) =>
+        Rules.SneakRules.IsSneak(Owner.Creature, target) ? Rules.Mana.Gain(Owner, 1) : Task.CompletedTask;
+}
+
+/// <summary>
+/// Клинок Сумеречной Вдовы (артефакт, кинжал +3): Подлый ×2 вместо ×1.5; убийство Оружейной атакой — Невидимость
+/// до конца хода (переживает саму атаку — <see cref="InvisibilityPower.GrantUntilTurnEnd"/>).
+/// </summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class TwilightWidowBlade : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Rare;
+    public override int Tier => 5;
+    public override WeaponKind Weapon => WeaponKind.Dagger;
+    protected override decimal SneakMultiplier => 2m;
+
+    public override async Task AfterAttack(PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Commands.Builders.AttackCommand command)
+    {
+        await base.AfterAttack(choiceContext, command);
+        if (!IsEquipped || command.Attacker != Owner.Creature || command.ModelSource is not CardModel card
+            || !EquipmentCombatRules.IsWeaponAttack(card)) return;
+        if (command.Results.SelectMany(h => h).Any(r => r.WasTargetKilled))
+            await InvisibilityPower.GrantUntilTurnEnd(choiceContext, Owner.Creature);
+    }
+}
+
+// ───────────── броня: «Кольчуга контрабандиста» (лёг. II) ─────────────
+
+/// <summary>2 части: +1 заряд Уворота; 4 части: после уворота следующая атака — Подлая.</summary>
+public abstract class SmugglerMailPiece : ArmorRelic, IDodgeListener
+{
+    public const string SetName = "SmugglerMail";
+    public override RelicRarity Rarity => RelicRarity.Uncommon;
+    public override int Tier => 2;
+    public override ArmorClass Armor => ArmorClass.Light;
+    public override string? Set => SetName;
+
+    private bool IsSetLeader => Loadout.Equipped(Owner).OfType<SmugglerMailPiece>().FirstOrDefault() == this;
+
+    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (!IsEquipped || !IsSetLeader || side != CombatSide.Player || combatState.RoundNumber != 1) return;
+        if (Loadout.SetPieces(Owner, SetName) >= 2)
+            await PowerCmd.Apply<DodgePower>(new ThrowingPlayerChoiceContext(), Owner.Creature, 1, Owner.Creature, null, silent: true);
+    }
+
+    public async Task AfterDodged(PlayerChoiceContext ctx, Creature? attacker)
+    {
+        if (!IsEquipped || !IsSetLeader || Loadout.SetPieces(Owner, SetName) < 4) return;
+        if (!Owner.Creature.HasPower<SneakNextPower>())
+            await PowerCmd.Apply<SneakNextPower>(ctx, Owner.Creature, 1, Owner.Creature, null);
+    }
+}
+
+[Pool(typeof(SharedRelicPool))] public sealed class SmugglerCoif : SmugglerMailPiece { public override EquipSlot Slot => EquipSlot.Head; }
+[Pool(typeof(SharedRelicPool))] public sealed class SmugglerHauberk : SmugglerMailPiece { public override EquipSlot Slot => EquipSlot.Body; }
+[Pool(typeof(SharedRelicPool))] public sealed class SmugglerBracers : SmugglerMailPiece { public override EquipSlot Slot => EquipSlot.Hands; }
+[Pool(typeof(SharedRelicPool))] public sealed class SmugglerBoots : SmugglerMailPiece { public override EquipSlot Slot => EquipSlot.Feet; }
+
+/// <summary>Сапоги Безмолвия (уник., ноги, лёгкие): атаки не снимают Невидимость (из Невидимости все атаки Подлые).</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class BootsOfSilence : ArmorRelic, IInvisibilityKeeper
+{
+    public override RelicRarity Rarity => RelicRarity.Rare;
+    public override int Tier => 3;
+    public override ArmorClass Armor => ArmorClass.Light;
+    public override EquipSlot Slot => EquipSlot.Feet;
+    public bool KeepsInvisibility => IsEquipped;
+}

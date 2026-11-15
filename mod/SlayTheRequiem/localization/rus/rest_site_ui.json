@@ -1,0 +1,9 @@
+{
+  "OPTION_SLAYTHEREQUIEM_BREW.name": "Варка",
+  "OPTION_SLAYTHEREQUIEM_BREW.description": "Сварить одно зелье или яд из реагентов (в сумке: {Count}). Привал не заканчивается.",
+  "OPTION_SLAYTHEREQUIEM_BREW.descriptionDisabled": "Реагентов не хватает ни на один рецепт.",
+  "OPTION_SLAYTHEREQUIEM_CHEST.name": "Сундук",
+  "OPTION_SLAYTHEREQUIEM_CHEST.description": "Убрать карты и снаряжение (перестают весить) или забрать обратно. Груз {Weight}/{Capacity}, в сундуке: {Stored}. Привал не заканчивается.",
+  "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Выберите карты, которые убрать в сундук",
+  "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Выберите карты, которые забрать из сундука"
+}

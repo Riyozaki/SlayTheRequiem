@@ -3,5 +3,13 @@
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.RAISE_KNIGHTS.title": "Поднять рыцарей",
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.RERAISE_KNIGHTS.title": "Зов павших",
   "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.STAFF_DRAIN.title": "Посох жажды",
-  "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.SOUL_FLAME.title": "Пламя душ"
+  "SLAYTHEREQUIEM-TOMB_GUARDIAN.moves.SOUL_FLAME.title": "Пламя душ",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.name": "Атаманша Багряных Ножей",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.DAGGER.title": "Грязный кинжал",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.SABER.title": "Жаждущая сабля",
+  "SLAYTHEREQUIEM-CRIMSON_CHIEFTAIN.moves.RALLY.title": "Ко мне, ножи!",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.name": "Багряный нож",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.LURK.title": "Затаился",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.AMBUSH.title": "Засада",
+  "SLAYTHEREQUIEM-CRIMSON_BANDIT.moves.STAB.title": "Удар ножом"
 }

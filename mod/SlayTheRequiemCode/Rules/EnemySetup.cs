@@ -72,7 +72,7 @@ public static class EnemySetup
         var state = combatState ?? creature.CombatState;
         if (state?.RunState is { } run)
         {
-            var count = EnemyRules.AffixCount(rank, run.CurrentActIndex, run.Rng.Niche.NextInt(100));
+            var count = EnemyRules.AffixCount(rank, run.CurrentActIndex, run.Rng.Niche.NextInt(100), creature.MaxHp);
             var all = Enum.GetValues<EnemyAffix>();
             for (var i = 0; i < count; i++)
                 await ApplyAffix(ctx, creature, all[run.Rng.Niche.NextInt(all.Length)]);

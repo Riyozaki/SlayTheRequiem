@@ -163,6 +163,8 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
     {
         // «Пёрышко» действует до следующего лагеря.
         if (room.RoomType == RoomType.RestSite && FeatherBonus > 0) FeatherBonus = 0;
+        // Флаг свободного действия мог остаться, если хук прервал другой слушатель раньше нас.
+        _freeActionPending = false;
         Refresh();
         return Task.CompletedTask;
     }

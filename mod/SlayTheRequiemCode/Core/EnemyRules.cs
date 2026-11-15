@@ -103,9 +103,16 @@ public static class StaggerRules
     /// <summary>Шанс аффикса у обычного врага с акта 2, в процентах.</summary>
     public const int NormalAffixChance = 25;
 
-    /// <summary>Сколько аффиксов получает враг: элита — 1, обычный с акта 2 — 0/1 (бросок 0..99), босс — 0.</summary>
-    public static int AffixCount(EnemyRank rank, int actIndex, int roll) => rank switch
+    /// <summary>Свита элиты (разбойники Атаманши, мелочь в элитных боях) — ниже этого ♥ аффиксов не получает.</summary>
+    public const int EliteMinionHp = 40;
+
+    /// <summary>
+    /// Сколько аффиксов получает враг: элита — 1 (свита элиты с ♥ &lt; <see cref="EliteMinionHp"/> — 0),
+    /// обычный с акта 2 — 0/1 (бросок 0..99), босс — 0.
+    /// </summary>
+    public static int AffixCount(EnemyRank rank, int actIndex, int roll, int maxHp = int.MaxValue) => rank switch
     {
+        EnemyRank.Elite when maxHp < EliteMinionHp => 0,
         EnemyRank.Elite => 1,
         EnemyRank.Normal when actIndex >= 1 && roll < NormalAffixChance => 1,
         _ => 0,

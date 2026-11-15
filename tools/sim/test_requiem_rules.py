@@ -136,3 +136,50 @@ class Table(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Stage3(unittest.TestCase):
+    def test_overload(self):
+        self.assertEqual(r.overload(30, 32), (0, 0, 0, True))
+        self.assertEqual(r.overload(37, 32), (5, 1, 0, True))
+        self.assertEqual(r.overload(38, 32), (6, 1, 1, True))
+        self.assertEqual(r.overload(43, 32), (11, 1, 1, False))
+        self.assertEqual([r.card_weight("Rare"), r.card_weight("Common", is_curse=True), r.card_weight("Common", is_status=True)], [2, 2, 0])
+
+    def test_origins(self):
+        self.assertEqual([r.marshbark_heal(h, 80) for h in (80, 40, 39, 19, 0)], [0, 0, 2, 4, 0])
+        self.assertEqual([r.knight_plating(h, 100) for h in (95, 89, 69, 49)], [0, 1, 2, 3])
+        self.assertEqual([r.wizard_spell_bonus(m, 10) for m in (10, 7, 5, 0)], [0, 1, 2, 4])
+        self.assertEqual([r.fugitive_bonus(n) for n in (0, 2, 5)], [0, 2, 3])
+        self.assertEqual([r.winddancer_bonus(n) for n in (2, 3, 7)], [0, 1, 2])
+        self.assertEqual([r.beast_spirit(n) for n in (0, 1, 4)], [(6, 3), (12, 5), (20, 7)])
+
+    def test_brewing(self):
+        pouch = [0] * 10
+        pouch[0] = 3  # Кровяной мох ×3
+        brews = r.available_brews(pouch)
+        self.assertEqual(brews[0], ("Health", 3, [0, 0, 0]))
+        pouch = [0] * 10
+        pouch[6], pouch[3] = 2, 1  # 2 поганки + пепельная соль
+        names = {b[0]: b[1] for b in r.available_brews(pouch)}
+        self.assertEqual(names, {"SnakeBite": 3, "Toxin": 1})
+        self.assertEqual(r.brew_tier(2, 1), 3)
+        self.assertEqual(r.brew_tier(3, 5), 5)
+        self.assertEqual(r.available_brews([0] * 10), [])
+
+    def test_drops_and_poisons(self):
+        self.assertEqual([r.reagent_drop_count(k) for k in ("normal", "elite", "boss")], [1, 2, 3])
+        self.assertEqual([r.pouch_fit(10, 3), r.pouch_fit(12, 1), r.pouch_fit(0, 2)], [2, 0, 2])
+        self.assertEqual([r.poison_potency("Toxin", t) for t in (1, 3, 5)], [2, 4, 7])
+        self.assertEqual(r.poison_potency("Paralytic", 5), 100)
+        self.assertEqual(len(r.RECIPES), 24)
+        self.assertEqual(sum(1 for x in r.RECIPES if x[0] in r.POISONS), 8)
+
+    def test_affixes(self):
+        self.assertEqual(r.affix_count("elite", 0, 99, 72), 1)
+        self.assertEqual(r.affix_count("elite", 0, 0, 25), 0)  # свита Атаманши
+        self.assertEqual(r.affix_count("normal", 0, 0), 0)
+        self.assertEqual(r.affix_count("normal", 1, 24), 1)
+        self.assertEqual(r.affix_count("normal", 1, 25), 0)
+        self.assertEqual(r.affix_count("boss", 3, 0), 0)
+        self.assertEqual([r.control_hp_cap(t) for t in ("novice", "expert", "master")], [20, 120, None])

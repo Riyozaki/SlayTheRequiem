@@ -242,3 +242,168 @@ def reward_share(hero: str, total_mastery: int) -> float:
     if hero == "Silent":
         return 0.20
     return min(0.45, 0.10 + 0.05 * (max(0, total_mastery) // 2))
+
+
+# ───────────── Груз (Core/BurdenRules.cs) ─────────────
+
+def overload(total_weight: int, capacity: int) -> tuple[int, int, int, bool]:
+    """(перегруз, −прирост ◆, −карт в стартовой руке, можно подбирать карты)."""
+    excess = max(0, total_weight - capacity)
+    if excess == 0:
+        return 0, 0, 0, True
+    if excess <= 5:
+        return excess, 1, 0, True
+    if excess <= 10:
+        return excess, 1, 1, True
+    return excess, 1, 1, False
+
+
+def card_weight(rarity: str, is_curse: bool = False, is_status: bool = False) -> int:
+    if is_status:
+        return 0
+    if is_curse:
+        return 2
+    return 2 if rarity in ("Rare", "Ancient") else 1
+
+
+# ───────────── Происхождения и предыстории (Core/OriginRules.cs) ─────────────
+
+def marshbark_heal(hp: int, max_hp: int) -> int:
+    if max_hp <= 0 or hp <= 0:
+        return 0
+    if hp * 4 < max_hp:
+        return 4
+    if hp * 2 < max_hp:
+        return 2
+    return 0
+
+
+def knight_plating(hp: int, max_hp: int) -> int:
+    if max_hp <= 0:
+        return 0
+    if hp * 2 < max_hp:
+        return 3
+    if hp * 10 < max_hp * 7:
+        return 2
+    if hp * 10 < max_hp * 9:
+        return 1
+    return 0
+
+
+def wizard_spell_bonus(mana: int, pool: int) -> int:
+    if pool <= 0:
+        return 0
+    missing = max(0, pool - mana)
+    return min(4, missing * 4 // pool)
+
+
+def fugitive_bonus(zero_cost_cards: int) -> int:
+    return max(0, min(3, zero_cost_cards))
+
+
+def winddancer_bonus(cards_this_turn: int) -> int:
+    return max(0, cards_this_turn) // 3
+
+
+def beast_spirit(elites_defeated: int) -> tuple[int, int]:
+    if elites_defeated <= 0:
+        return 6, 3
+    if elites_defeated == 1:
+        return 12, 5
+    return 20, 7
+
+
+# ───────────── Алхимия (Core/AlchemyRules.cs) ─────────────
+
+REAGENTS = ["Bloodmoss", "Bluebloom", "Yellowsorrel", "AshSalt", "FrostSalt", "StormCrystal", "Nightcap", "GraveDust",
+            "DragonScale", "FragrantTear"]
+ESSENCES = ["Health", "Mana", "Stamina", "Fire", "Frost", "Shock", "Poison", "Blight", "Resistance", "Illusion"]
+# реагент i ↔ свойство i
+POUCH_CAPACITY = 12
+BASE_POISON_CHARGES = 3
+RESTORATION_TURNS = 4
+
+RECIPES = [  # (зелье, свойство A, свойство B) — порядок как в C#
+    ("Health", "Health", "Health"), ("Stamina", "Stamina", "Stamina"), ("Mana", "Mana", "Mana"),
+    ("Rejuvenation", "Health", "Stamina"), ("SecondWind", "Stamina", "Shock"), ("Clarity", "Mana", "Illusion"),
+    ("Giant", "Health", "Resistance"), ("Knight", "Stamina", "Resistance"), ("Sorcerer", "Mana", "Shock"),
+    ("FireWard", "Fire", "Resistance"), ("FrostWard", "Frost", "Resistance"), ("ShockWard", "Shock", "Resistance"),
+    ("Feather", "Stamina", "Illusion"), ("WitchHunter", "Mana", "Resistance"), ("Invisibility", "Illusion", "Illusion"),
+    ("Panacea", "Health", "Blight"),
+    ("SnakeBite", "Poison", "Fire"), ("Toxin", "Poison", "Poison"), ("Rot", "Poison", "Blight"),
+    ("Exhaustion", "Poison", "Frost"), ("Emptybloom", "Poison", "Shock"), ("Weakness", "Poison", "Stamina"),
+    ("Corrosion", "Fire", "Frost"), ("Paralytic", "Poison", "Illusion"),
+]
+POISONS = {"SnakeBite", "Toxin", "Rot", "Exhaustion", "Emptybloom", "Weakness", "Corrosion", "Paralytic"}
+
+
+def brew_tier(reagents_used: int, herbalism_steps: int = 0) -> int:
+    tier = 3 if reagents_used >= 3 else 1
+    return min(5, tier + 2 * max(0, herbalism_steps))
+
+
+def ingredients(recipe: tuple[str, str, str], strong: bool) -> list[int]:
+    _, a, b = recipe
+    result = [ESSENCES.index(a), ESSENCES.index(b)]
+    if strong:
+        result.append(ESSENCES.index(a))
+    return result
+
+
+def can_afford(pouch: list[int], needed: list[int]) -> bool:
+    return all(i < len(pouch) and pouch[i] >= needed.count(i) for i in set(needed))
+
+
+def available_brews(pouch: list[int], herbalism_steps: int = 0) -> list[tuple[str, int, list[int]]]:
+    """(зелье, ступень, реагенты) — сильнейший вариант каждого рецепта; сортировка по ступени (устойчивая)."""
+    result = []
+    for recipe in RECIPES:
+        strong = ingredients(recipe, True)
+        if can_afford(pouch, strong):
+            result.append((recipe[0], brew_tier(3, herbalism_steps), strong))
+            continue
+        weak = ingredients(recipe, False)
+        if can_afford(pouch, weak):
+            result.append((recipe[0], brew_tier(2, herbalism_steps), weak))
+    return sorted(result, key=lambda o: -o[1])
+
+
+def reagent_drop_count(rank: str) -> int:
+    return {"boss": 3, "elite": 2}.get(rank, 1)
+
+
+def pouch_fit(current: int, incoming: int) -> int:
+    return max(0, min(incoming, POUCH_CAPACITY - current))
+
+
+_POISON_POTENCY = {  # (I, III, V)
+    "SnakeBite": (3, 6, 10), "Toxin": (2, 4, 7), "Rot": (1, 2, 3), "Exhaustion": (2, 4, 7), "Emptybloom": (2, 4, 7),
+    "Weakness": (1, 2, 3), "Corrosion": (1, 2, 3), "Paralytic": (10, 25, 100),
+}
+
+
+def poison_potency(brew: str, tier: int) -> int:
+    table = _POISON_POTENCY.get(brew)
+    if table is None:
+        return 0
+    return table[2] if tier >= 5 else table[1] if tier >= 3 else table[0]
+
+
+# ───────────── Аффиксы врагов (Core/EnemyRules.cs) ─────────────
+
+NORMAL_AFFIX_CHANCE = 25
+ELITE_MINION_HP = 40
+
+
+def affix_count(rank: str, act_index: int, roll: int, max_hp: int = 10 ** 9) -> int:
+    if rank == "elite":
+        return 0 if max_hp < ELITE_MINION_HP else 1
+    if rank == "normal" and act_index >= 1 and roll < NORMAL_AFFIX_CHANCE:
+        return 1
+    return 0
+
+
+# ───────────── Иллюзия (Core/SpellAffinity.cs) ─────────────
+
+def control_hp_cap(tier: str) -> int | None:
+    return {"novice": 20, "apprentice": 40, "adept": 70, "expert": 120}.get(tier)

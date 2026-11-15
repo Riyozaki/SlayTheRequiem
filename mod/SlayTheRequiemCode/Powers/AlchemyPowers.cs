@@ -148,19 +148,61 @@ public sealed class InvisibilityPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
+    /// <summary>Выдана посреди атаки (Клинок Сумеречной Вдовы): эта атака её не снимает, спадает в конце хода героя.</summary>
+    private bool _grantedMidAttack;
+    private bool _untilTurnEnd;
+
+    /// <summary>Невидимость до конца хода героя, переживающая текущую атаку (убийство Клинком Вдовы).</summary>
+    public static async Task GrantUntilTurnEnd(PlayerChoiceContext ctx, Creature hero)
+    {
+        var existing = hero.GetPower<InvisibilityPower>();
+        if (existing != null)
+        {
+            existing.AssertMutable();
+            existing._grantedMidAttack = true;
+            return;
+        }
+        var power = await PowerCmd.Apply<InvisibilityPower>(ctx, hero, 1, hero, null);
+        if (power == null) return;
+        power.AssertMutable();
+        power._grantedMidAttack = true;
+        power._untilTurnEnd = true;
+    }
+
+    /// <summary>Сапоги Безмолвия: атаки (а из Невидимости все атаки Подлые) её не снимают.</summary>
+    private bool KeptByGear => Owner.Player?.Relics.OfType<IInvisibilityKeeper>().Any(k => k.KeepsInvisibility) == true;
+
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
         target == Owner && dealer != null && dealer != Owner && props.IsPoweredAttack() ? 0.5m : 1m;
 
     public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (cardPlay.Card.Type == CardType.Attack && cardPlay.Card.Owner?.Creature == Owner && cardPlay.IsLastInSeries)
-            await PowerCmd.Remove(this);
+        if (cardPlay.Card.Type != CardType.Attack || cardPlay.Card.Owner?.Creature != Owner || !cardPlay.IsLastInSeries) return;
+        if (_grantedMidAttack)
+        {
+            AssertMutable();
+            _grantedMidAttack = false;
+            return;
+        }
+        if (KeptByGear) return;
+        await PowerCmd.Remove(this);
+    }
+
+    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    {
+        if (side == CombatSide.Player && _untilTurnEnd) await PowerCmd.Remove(this);
     }
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (player.Creature == Owner) await PowerCmd.Decrement(this);
     }
+}
+
+/// <summary>Снаряжение, при котором атаки не снимают Невидимость (Сапоги Безмолвия).</summary>
+public interface IInvisibilityKeeper
+{
+    bool KeepsInvisibility { get; }
 }
 
 /// <summary>Приглушённые шаги: следующая атака — Подлая (снимается после атаки).</summary>

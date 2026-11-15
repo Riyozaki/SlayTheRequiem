@@ -105,6 +105,21 @@ public sealed class GangPower : RequiemPower
     }
 }
 
+/// <summary>Паника N (шайка Атаманши): следующая атака носителя не наносит урона. −1 в конце хода врагов.</summary>
+public sealed class PanicPower : RequiemPower
+{
+    public override PowerType Type => PowerType.Debuff;
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        dealer == Owner && props.IsPoweredAttack() ? 0m : 1m;
+
+    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    {
+        if (side == CombatSide.Enemy) await PowerCmd.Decrement(this);
+    }
+}
+
 /// <summary>Адреналин N: физический урон по носителю −50 %. −1 в конце хода героев.</summary>
 public sealed class AdrenalinePower : RequiemPower
 {
