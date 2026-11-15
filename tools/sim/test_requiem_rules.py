@@ -1388,5 +1388,75 @@ class M7ActLooks(unittest.TestCase):
             self.assertIn(f'"{key}"', gen)
 
 
+class M7OriginLooks(unittest.TestCase):
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+
+    def classes(self):
+        import re
+        out = []
+        for name in ("Origins.cs", "Backgrounds.cs"):
+            src = open(os.path.join(self.CODE, "Relics", name), encoding="utf-8").read()
+            out += re.findall(r"public sealed class (\w+(?:Origin|Background))\b", src)
+        return out
+
+    @staticmethod
+    def snake(name):
+        import re
+        return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).lower()
+
+    def test_headings(self):
+        self.assertEqual(r.origin_heading(["FrostbornOrigin", "CitadelOrigin"]), "ORIGIN_PICK.clan")
+        self.assertEqual(r.origin_heading(["MoonbornOrigin", "MarshbornOrigin", "ThicketbornOrigin"]), "ORIGIN_PICK.tribe")
+        self.assertEqual(r.origin_heading(["AshbornOrigin"]), "ORIGIN_PICK.dynasty")
+        self.assertEqual(r.origin_heading(["SkaldBackground", "VagrantBackground"]), "ORIGIN_PICK.background")
+        self.assertIsNone(r.origin_heading([]))
+        self.assertIsNone(r.origin_heading(["FrostbornOrigin", "MoonbornOrigin"]))  # разные герои — экран обычный
+        self.assertIsNone(r.origin_heading(["Anchor", "FrostbornOrigin"]))
+        self.assertIsNone(r.origin_heading(["Anchor", "Vajra"]))
+
+    def test_every_origin_and_background_has_icons(self):
+        import struct
+        classes = self.classes()
+        self.assertEqual(len([c for c in classes if c.endswith("Origin")]), 10)
+        self.assertEqual(len([c for c in classes if c.endswith("Background")]), 31)
+        self.assertEqual({c for c in classes if c.endswith("Origin")}, set(r.ORIGIN_CREST))
+        img = os.path.join(self.ROOT, "mod", "SlayTheRequiem", "images", "relics")
+
+        def size(path):
+            with open(path, "rb") as f:
+                return struct.unpack(">II", f.read(24)[16:24])
+        for c in classes:
+            key = self.snake(c)
+            for kind, path in (("icon", os.path.join(img, key + ".png")), ("outline", os.path.join(img, key + "_outline.png")),
+                               ("big", os.path.join(img, "big", key + ".png"))):
+                self.assertTrue(os.path.isfile(path), path)
+                n = r.RELIC_ICON_SIZES[kind]
+                self.assertEqual(size(path), (n, n), path)
+            self.assertTrue(os.path.isfile(os.path.join(self.ROOT, "art", "relics", key + ".svg")), key)
+        gen = open(os.path.join(self.ROOT, "tools", "art", "relics", "draw_origins.py"), encoding="utf-8").read()
+        for c in classes:
+            self.assertIn(f'"{self.snake(c)}":', gen)
+
+    def test_matches_csharp(self):
+        src = open(os.path.join(self.CODE, "Core", "OriginLookRules.cs"), encoding="utf-8").read()
+        origins = open(os.path.join(self.CODE, "Relics", "Origins.cs"), encoding="utf-8").read()
+        for crest, key in r.ORIGIN_HEADING.items():
+            members = [o for o, c in r.ORIGIN_CREST.items() if c == crest]
+            listed = ", ".join(f'"{o}"' for o in members)
+            self.assertIn(f"{crest}Origins = [{listed}]", src)
+            self.assertIn(f'OriginCrest.{crest} => "{key}"' if crest != "Dynasty" else f'_ => "{key}"', src)
+            # тот же состав, что у экрана выбора героя в Origins.cs
+            self.assertIn(", ".join(f"typeof({o})" for o in members), origins)
+        self.assertIn('return "ORIGIN_PICK.background"', src)
+        self.assertIn("NChooseARelicSelection), nameof(NChooseARelicSelection._Ready)",
+                      open(os.path.join(self.CODE, "Relics", "OriginLooks.cs"), encoding="utf-8").read())
+        import sys
+        sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
+        from loc_m7origins import ORIGIN_TIPS
+        for lang in ("eng", "rus"):
+            self.assertEqual(set(ORIGIN_TIPS[lang]), set(r.ORIGIN_HEADING.values()) | {"ORIGIN_PICK.background"})
+
+
 if __name__ == "__main__":
     unittest.main()

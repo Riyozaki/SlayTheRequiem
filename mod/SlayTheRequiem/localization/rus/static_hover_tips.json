@@ -132,5 +132,9 @@
   "SLAYTHEREQUIEM-SHOP_SELL_MORE.title": "…и ещё {Count} (сначала продайте верхние или всё разом)",
   "SLAYTHEREQUIEM-SHOP_SELL_EMPTY.title": "Продавать нечего: рюкзак пуст.",
   "SLAYTHEREQUIEM-SHOP_SELL_REAGENTS.title": "Реагенты ×{Count}",
-  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "К витрине"
+  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "К витрине",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.clan": "Выберите клан",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.tribe": "Выберите племя",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Выберите династию",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Выберите предысторию"
 }

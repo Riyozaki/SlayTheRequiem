@@ -132,5 +132,9 @@
   "SLAYTHEREQUIEM-SHOP_SELL_MORE.title": "…and {Count} more (sell the ones above first or sell all)",
   "SLAYTHEREQUIEM-SHOP_SELL_EMPTY.title": "Nothing to sell: your pack is empty.",
   "SLAYTHEREQUIEM-SHOP_SELL_REAGENTS.title": "Reagents ×{Count}",
-  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "Back to the goods"
+  "SLAYTHEREQUIEM-SHOP_SELL_BACK.title": "Back to the goods",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.clan": "Choose your clan",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.tribe": "Choose your tribe",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Choose your dynasty",
+  "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Choose your background"
 }

@@ -1605,3 +1605,38 @@ public class M7ActLookTests
         Assert.Equal(3072f / 1440f, (r[2] - r[0]) / (r[3] - r[1]), 2);
     }
 }
+
+public class M7OriginLookTests
+{
+    [Theory]
+    [InlineData("FrostbornOrigin", OriginCrest.Clan)]
+    [InlineData("CitadelOrigin", OriginCrest.Clan)]
+    [InlineData("MoonbornOrigin", OriginCrest.Tribe)]
+    [InlineData("MarshbornOrigin", OriginCrest.Tribe)]
+    [InlineData("HighbornOrigin", OriginCrest.Dynasty)]
+    [InlineData("AshbornOrigin", OriginCrest.Dynasty)]
+    public void Crest(string origin, OriginCrest expected) => Assert.Equal(expected, OriginLookRules.CrestOf(origin));
+
+    [Fact]
+    public void CrestUnknown() => Assert.Null(OriginLookRules.CrestOf("SkaldBackground"));
+
+    [Fact]
+    public void EveryOriginHasOneCrest()
+    {
+        var all = OriginLookRules.ClanOrigins.Concat(OriginLookRules.TribeOrigins).Concat(OriginLookRules.DynastyOrigins).ToList();
+        Assert.Equal(10, all.Count);
+        Assert.Equal(10, all.Distinct().Count());
+    }
+
+    [Theory]
+    [InlineData("ORIGIN_PICK.clan", "FrostbornOrigin,ForgebloodOrigin,DunebladeOrigin,CitadelOrigin")]
+    [InlineData("ORIGIN_PICK.tribe", "MoonbornOrigin,ThicketbornOrigin")]
+    [InlineData("ORIGIN_PICK.dynasty", "MistbornOrigin")]
+    [InlineData("ORIGIN_PICK.background", "SkaldBackground,VagrantBackground")]
+    [InlineData(null, "FrostbornOrigin,MoonbornOrigin")]
+    [InlineData(null, "Anchor,SkaldBackground")]
+    public void Heading(string? expected, string relics) => Assert.Equal(expected, OriginLookRules.HeadingKey(relics.Split(',')));
+
+    [Fact]
+    public void HeadingEmpty() => Assert.Null(OriginLookRules.HeadingKey([]));
+}

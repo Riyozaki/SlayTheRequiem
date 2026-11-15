@@ -2592,3 +2592,25 @@ def camp_target(look_id: str) -> str:
 
 def camp_keeps(node: str, target: str) -> bool:
     return node == target or node == "RestSiteLighting" or "Log" in node or node.startswith("light_small")
+
+
+# ───── M7 п. 3: облик выбора происхождения и предыстории (Core/OriginLookRules, Relics/OriginLooks, tools/art/relics) ─────
+
+ORIGIN_CREST = {
+    **{o: "Clan" for o in ("FrostbornOrigin", "ForgebloodOrigin", "DunebladeOrigin", "CitadelOrigin")},
+    **{o: "Tribe" for o in ("MoonbornOrigin", "ThicketbornOrigin", "MarshbornOrigin")},
+    **{o: "Dynasty" for o in ("HighbornOrigin", "MistbornOrigin", "AshbornOrigin")},
+}
+ORIGIN_HEADING = {"Clan": "ORIGIN_PICK.clan", "Tribe": "ORIGIN_PICK.tribe", "Dynasty": "ORIGIN_PICK.dynasty"}
+RELIC_ICON_SIZES = {"icon": 85, "outline": 85, "big": 256}
+
+
+def origin_heading(relic_types: list[str]) -> str | None:
+    if not relic_types:
+        return None
+    if all(t.endswith("Background") for t in relic_types):
+        return "ORIGIN_PICK.background"
+    crests = {ORIGIN_CREST.get(t) for t in relic_types}
+    if len(crests) == 1 and None not in crests:
+        return ORIGIN_HEADING[crests.pop()]
+    return None

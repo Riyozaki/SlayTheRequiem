@@ -62,8 +62,8 @@ ASSETS = {
         ("icon_big", "images/powers/big/{id}.png", "256×256 RGBA, иконка в подсказке"),
     ],
     "relic": [
-        ("icon", "images/relics/{id}.png", "94×94 RGBA, панель реликвий"),
-        ("outline", "images/relics/{id}_outline.png", "94×94 RGBA, белый контур для подсветки"),
+        ("icon", "images/relics/{id}.png", "85×85 RGBA, панель реликвий (как ванильный атлас)"),
+        ("outline", "images/relics/{id}_outline.png", "85×85 RGBA, белый контур для подсветки"),
         ("icon_big", "images/relics/big/{id}.png", "256×256 RGBA, инспекция и награда"),
     ],
     "potion": [
