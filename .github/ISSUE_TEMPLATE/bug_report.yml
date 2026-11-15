@@ -1,0 +1,53 @@
+name: 🐞 Баг / ошибка сборки
+description: Ошибка компиляции, падение игры или неправильное поведение
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Тип
+      options:
+        - Сборка (ошибка компиляции)
+        - Падение / исключение в игре
+        - Неправильное поведение
+        - Текст / локализация
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Система
+      multiple: true
+      options:
+        - Выносливость / мана
+        - Снаряжение / груз
+        - Магия
+        - Алхимия
+        - Пантеон
+        - Трансформации / Пути
+        - Лагерь / прогрессия
+        - Лавки
+        - Камень Памяти
+        - Акты / карта
+        - Враги / супербоссы
+        - Кооператив
+        - Другое
+  - type: textarea
+    id: what
+    attributes:
+      label: Что случилось
+      description: Шаги, ожидаемое и фактическое поведение. Для сборки — вывод `dotnet build`.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Версии
+      placeholder: "StS2 0.107, BaseLib 3.3.0, коммит abc1234"
+  - type: textarea
+    id: log
+    attributes:
+      label: Лог
+      description: godot.log / стек исключения
+      render: text

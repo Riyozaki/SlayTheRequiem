@@ -1,0 +1,26 @@
+# Godot 4+
+.godot/
+.nomedia
+
+
+# godot-spine extension
+bin/
+
+# C# project cache files
+Properties/
+packages/
+
+# C# project local settins
+Directory.Build.props
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+*.sln.DotSettings.user
+
+# локальные пути к игре/MegaDot
+local.props
+bin/
+obj/
