@@ -672,5 +672,11 @@
   "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.title": "Подковать мула",
   "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.description": "[gold]{Price}[/gold] золотых. Вьючный мул несёт ещё +{Amount} груза.",
   "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.title": "Сундук мула",
-  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Бесплатно. Открыть Сундук, который везёт мул (внутри: {Amount}): убрать или забрать карты и вещи."
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Бесплатно. Открыть Сундук, который везёт мул (внутри: {Amount}): убрать или забрать карты и вещи.",
+  "SLAYTHEREQUIEM-RAISE_DEAD.title": "Поднять мертвеца",
+  "SLAYTHEREQUIEM-RAISE_DEAD.description": "Поднять последнего павшего в этом бою врага (не босса) нежитью-призывом с {Percent:diff()} % его макс. ♥. Бьёт на 4 в конце вашего хода.",
+  "SLAYTHEREQUIEM-CONJURE_ABYSS_GUARDIAN.title": "Страж Бездны",
+  "SLAYTHEREQUIEM-CONJURE_ABYSS_GUARDIAN.description": "Призвать [gold]Дремлющего стража[/gold] ({SummonHp:diff()} ♥). Первый ход дремлет, затем каждый ход бьёт на 10 [purple]магией[/purple].",
+  "SLAYTHEREQUIEM-CALL_SPIRIT_KNIGHT.title": "Зов Рыцаря-Духа",
+  "SLAYTHEREQUIEM-CALL_SPIRIT_KNIGHT.description": "Призвать [gold]Призрачного рыцаря[/gold] ({SummonHp:diff()} ♥). Каждый ход бьёт на 5; пока он стоит, ваши атаки наносят на 2 урона больше."
 }

@@ -76,8 +76,11 @@ card,Banish,necrobinder/Graveblast,
 card,BoundBlade,token/SovereignBlade,тип: заклинание призывает клинок — на портрете сам клинок
 card,ConjureFlameAtronach,event/BrightestFlame,
 card,ConjureFrostAtronach,defect/Glacier,
+card,CallSpiritKnight,necrobinder/Eidolon,M6 п. 2: призрачный рыцарь
+card,ConjureAbyssGuardian,necrobinder/GraveWarden,M6 п. 2: дремлющий страж
 card,ConjureSpiritWolf,necrobinder/Reanimate,
 card,ConjureStormAtronach,defect/Voltaic,
+card,RaiseDead,necrobinder/Undeath,M6 п. 2: мертвец из павшего врага
 card,SpectralBlade,necrobinder/Unleash,
 # ── Разрушение ──
 card,BallLightning,defect/BallLightning,
@@ -282,6 +285,10 @@ power,FlameAtronachPower,SpiritOfAshPower,
 power,FrostAtronachPower,HailstormPower,
 power,SpiritWolfPower,SicEmPower,
 power,StormAtronachPower,StormPower,
+power,RaisedDeadPower,NecroMasteryPower,M6 п. 2
+power,AbyssGuardianPower,AsleepPower,M6 п. 2: дремлет
+power,SpectralKnightPower,HauntPower,M6 п. 2
+power,BoneThrallPower,ReaperFormPower,M6 п. 2: прислужник Лича
 power,RimeOrbPower,HailstormPower,
 power,SparkOrbPower,HighVoltagePower,
 power,SteamOrbPower,SteamEruptionPower,

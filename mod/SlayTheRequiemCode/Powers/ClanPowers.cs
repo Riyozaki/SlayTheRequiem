@@ -67,12 +67,13 @@ public sealed class BladeSpiritPower : RequiemPower
 /// <summary>
 /// «Верный-до-Конца» (Посланник Цитадельцев): страж со щитом. Принимает удары по герою первым, как Ости у
 /// Некробиндер, и бьёт в конце хода. Растёт с уровнем героя (<see cref="OriginRules.LoyalGuard"/>). Это спутник, а не
-/// призыв: слот призыва не занимает и другие призывы его не вытесняют. Существом станет с союзниками M6.
+/// призыв: слот призыва не занимает и другие призывы его не вытесняют. С M6 — существо на поле (<see cref="Monsters.LoyalGuardSummon"/>).
 /// </summary>
 public sealed class LoyalGuardPower : SummonPower
 {
     private int _damage = 2;
+    public override SummonKind Kind => SummonKind.LoyalGuard;
     public override int AttackDamage => _damage;
-    public override bool IsCompanion => true;
+    protected override MonsterModel CreatureModel => ModelDb.Monster<Monsters.LoyalGuardSummon>();
     public void SetDamage(int damage) => _damage = Math.Max(0, damage);
 }

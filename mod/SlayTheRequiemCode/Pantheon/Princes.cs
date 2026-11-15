@@ -617,7 +617,9 @@ public sealed class GiftOfDuskStar : AbyssGift, ISummonListener
     public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         // Смерть спутника в коопе или союзного существа на стороне игроков.
-        if (!wasRemovalPrevented && creature != Owner.Creature && creature.Side == CombatSide.Player) AllyDied = true;
+        // Гибель призывов считает AfterSummonDestroyed: развеянный (вытесненный из слота) призыв — не смерть союзника.
+        if (!wasRemovalPrevented && creature != Owner.Creature && creature.Side == CombatSide.Player
+            && creature.Monster is not Monsters.SummonCreature) AllyDied = true;
         return Task.CompletedTask;
     }
 

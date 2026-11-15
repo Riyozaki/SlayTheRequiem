@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import math
+import re
 from dataclasses import dataclass
 
 RESTED, TIRED, EXHAUSTED = "rested", "tired", "exhausted"
@@ -2260,3 +2261,67 @@ def plan_paths(g: Graph, kind: str, valves, nxt):
             edges.append(("ValveClose", a, old, v))
             switched.add(a)
     return edges, pockets, last[0]
+
+
+# ───── M6 п. 2: настоящие призывы (Core/SummonRules) ─────
+
+SUMMON_KINDS = ["SpiritWolf", "BeastWolf", "BeastSabertooth", "BeastBear", "FlameAtronach", "FrostAtronach",
+                "StormAtronach", "RaisedDead", "AbyssGuardian", "SpectralKnight", "LoyalGuard", "BoneThrall"]
+SUMMON_BASE_SLOTS = 1
+RAISE_DEAD_PERCENT, RAISE_DEAD_PERCENT_UPGRADE, RAISED_DEAD_DAMAGE = 50, 15, 4
+ABYSS_GUARDIAN_HP, ABYSS_GUARDIAN_HP_UPGRADE, ABYSS_GUARDIAN_DAMAGE, ABYSS_GUARDIAN_SLUMBER_TURNS = 30, 8, 10, 1
+SPECTRAL_KNIGHT_HP, SPECTRAL_KNIGHT_HP_UPGRADE, SPECTRAL_KNIGHT_DAMAGE, SPECTRAL_KNIGHT_ATTACK_BONUS = 25, 7, 5, 2
+BONE_THRALL_HP, BONE_THRALL_DAMAGE = 10, 3
+SUMMON_FIRST_GAP, SUMMON_SPACING, SUMMON_OSTY_GAP = 60.0, 150.0, 220.0
+
+
+def summon_slots(bonus: int) -> int:
+    return SUMMON_BASE_SLOTS + max(0, bonus)
+
+
+def summon_dismissals(other_summons: int, slots: int) -> int:
+    return max(0, other_summons - (max(1, slots) - 1))
+
+
+def summon_absorb(incoming: int, summon_hp: int, pending: int) -> int:
+    return max(0, min(incoming, summon_hp - pending))
+
+
+def summon_scaled_loss(taken: int, percent: int) -> int:
+    if taken <= 0:
+        return 0
+    if percent <= 0:
+        return taken
+    return (taken * (100 + percent) + 99) // 100
+
+
+def raised_dead_hp(max_hp: int, percent: int) -> int:
+    return 0 if max_hp <= 0 or percent <= 0 else max(1, max_hp * percent // 100)
+
+
+def can_raise(is_enemy: bool, is_boss: bool) -> bool:
+    return is_enemy and not is_boss
+
+
+def beast_kind(elites_defeated: int) -> str:
+    return "BeastWolf" if elites_defeated <= 0 else "BeastSabertooth" if elites_defeated == 1 else "BeastBear"
+
+
+def summon_move(kind: str, turns_on_field: int) -> str:
+    return "Slumber" if kind == "AbyssGuardian" and turns_on_field < ABYSS_GUARDIAN_SLUMBER_TURNS else "Strike"
+
+
+def summon_is_undead(kind: str) -> bool:
+    return kind in ("RaisedDead", "BoneThrall")
+
+
+def summon_is_companion(kind: str) -> bool:
+    return kind == "LoyalGuard"
+
+
+def summon_art_key(kind: str) -> str:
+    return "summon_" + re.sub(r"(?<!^)([A-Z])", r"_\1", kind).lower()
+
+
+def summon_layout_x(hero_half_width: float, index: int, has_osty: bool) -> float:
+    return hero_half_width + SUMMON_FIRST_GAP + max(0, index) * SUMMON_SPACING + (SUMMON_OSTY_GAP if has_osty else 0.0)

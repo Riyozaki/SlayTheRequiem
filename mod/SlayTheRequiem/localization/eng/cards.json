@@ -672,5 +672,11 @@
   "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.title": "Shoe the Mule",
   "SLAYTHEREQUIEM-COUNTER_SHOE_MULE.description": "[gold]{Price}[/gold] gold. Your Pack Mule carries +{Amount} more Burden.",
   "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.title": "Mule's Chest",
-  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Free. Open the camp chest carried by your mule ({Amount} stored): move cards and gear in or out."
+  "SLAYTHEREQUIEM-COUNTER_MULE_CHEST.description": "Free. Open the camp chest carried by your mule ({Amount} stored): move cards and gear in or out.",
+  "SLAYTHEREQUIEM-RAISE_DEAD.title": "Raise Dead",
+  "SLAYTHEREQUIEM-RAISE_DEAD.description": "Raise the last enemy that fell this combat (not a boss) as an undead summon with {Percent:diff()}% of its max HP. It deals 4 damage at the end of your turn.",
+  "SLAYTHEREQUIEM-CONJURE_ABYSS_GUARDIAN.title": "Abyss Guardian",
+  "SLAYTHEREQUIEM-CONJURE_ABYSS_GUARDIAN.description": "Summon a [gold]Slumbering Guardian[/gold] with {SummonHp:diff()} HP. It slumbers on its first turn, then deals 10 [purple]magic[/purple] damage each turn.",
+  "SLAYTHEREQUIEM-CALL_SPIRIT_KNIGHT.title": "Call the Spirit Knight",
+  "SLAYTHEREQUIEM-CALL_SPIRIT_KNIGHT.description": "Summon a [gold]Spectral Knight[/gold] with {SummonHp:diff()} HP. It deals 5 damage each turn; while it stands, your attacks deal 2 more damage."
 }

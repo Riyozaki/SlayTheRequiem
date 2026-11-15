@@ -957,5 +957,72 @@ class ActDoors(unittest.TestCase):
         self.assertEqual(r.door_tie_break("SEED", 3), 0)
 
 
+class M6Summons(unittest.TestCase):
+    def test_slots_and_dismissals(self):
+        self.assertEqual(r.summon_slots(0), 1)
+        self.assertEqual(r.summon_slots(2), 3)
+        self.assertEqual(r.summon_slots(-3), 1)
+        self.assertEqual(r.summon_dismissals(1, 1), 1)
+        self.assertEqual(r.summon_dismissals(1, 2), 0)
+        self.assertEqual(r.summon_dismissals(3, 2), 2)
+        self.assertEqual(r.summon_dismissals(0, 0), 0)
+
+    def test_absorb_and_loss(self):
+        self.assertEqual(r.summon_absorb(10, 8, 0), 8)
+        self.assertEqual(r.summon_absorb(5, 8, 0), 5)
+        self.assertEqual(r.summon_absorb(5, 8, 6), 2)
+        self.assertEqual(r.summon_absorb(5, 8, 9), 0)
+        self.assertEqual(r.summon_scaled_loss(10, 0), 10)
+        self.assertEqual(r.summon_scaled_loss(10, 50), 15)
+        self.assertEqual(r.summon_scaled_loss(3, 50), 5)
+        self.assertEqual(r.summon_scaled_loss(0, 50), 0)
+
+    def test_raise_dead(self):
+        self.assertEqual(r.raised_dead_hp(40, 50), 20)
+        self.assertEqual(r.raised_dead_hp(40, 65), 26)
+        self.assertEqual(r.raised_dead_hp(1, 50), 1)
+        self.assertEqual(r.raised_dead_hp(0, 50), 0)
+        self.assertTrue(r.can_raise(True, False))
+        self.assertFalse(r.can_raise(True, True))
+        self.assertFalse(r.can_raise(False, False))
+
+    def test_kinds_moves_art(self):
+        self.assertEqual([r.beast_kind(n) for n in (-1, 0, 1, 2, 5)], ["BeastWolf", "BeastWolf", "BeastSabertooth", "BeastBear", "BeastBear"])
+        self.assertEqual(r.summon_move("AbyssGuardian", 0), "Slumber")
+        self.assertEqual(r.summon_move("AbyssGuardian", 1), "Strike")
+        self.assertEqual(r.summon_move("SpiritWolf", 0), "Strike")
+        self.assertEqual([k for k in r.SUMMON_KINDS if r.summon_is_undead(k)], ["RaisedDead", "BoneThrall"])
+        self.assertEqual([k for k in r.SUMMON_KINDS if r.summon_is_companion(k)], ["LoyalGuard"])
+        self.assertEqual(r.summon_art_key("BeastSabertooth"), "summon_beast_sabertooth")
+        self.assertEqual(r.summon_layout_x(100, 0, False), 160)
+        self.assertEqual(r.summon_layout_x(100, 2, True), 680)
+
+    def test_matches_csharp(self):
+        import re
+        src = open(os.path.join(ROOT, "mod", "SlayTheRequiemCode", "Core", "SummonRules.cs"), encoding="utf-8").read()
+        consts = {k: int(v) for k, v in re.findall(r"public const int (\w+) = (\d+);", src)}
+        self.assertEqual(consts["BaseSlots"], r.SUMMON_BASE_SLOTS)
+        self.assertEqual((consts["RaiseDeadPercent"], consts["RaiseDeadPercentUpgrade"], consts["RaisedDeadDamage"]),
+                         (r.RAISE_DEAD_PERCENT, r.RAISE_DEAD_PERCENT_UPGRADE, r.RAISED_DEAD_DAMAGE))
+        self.assertEqual((consts["AbyssGuardianHp"], consts["AbyssGuardianHpUpgrade"], consts["AbyssGuardianDamage"], consts["AbyssGuardianSlumberTurns"]),
+                         (r.ABYSS_GUARDIAN_HP, r.ABYSS_GUARDIAN_HP_UPGRADE, r.ABYSS_GUARDIAN_DAMAGE, r.ABYSS_GUARDIAN_SLUMBER_TURNS))
+        self.assertEqual((consts["SpectralKnightHp"], consts["SpectralKnightHpUpgrade"], consts["SpectralKnightDamage"], consts["SpectralKnightAttackBonus"]),
+                         (r.SPECTRAL_KNIGHT_HP, r.SPECTRAL_KNIGHT_HP_UPGRADE, r.SPECTRAL_KNIGHT_DAMAGE, r.SPECTRAL_KNIGHT_ATTACK_BONUS))
+        self.assertEqual((consts["BoneThrallHp"], consts["BoneThrallDamage"]), (r.BONE_THRALL_HP, r.BONE_THRALL_DAMAGE))
+        kinds = re.search(r"enum SummonKind\s*\{([^}]*)\}", src).group(1)
+        self.assertEqual([k.strip() for k in kinds.split(",") if k.strip()], r.SUMMON_KINDS)
+        for kind in r.SUMMON_KINDS:
+            self.assertIn(f'SummonKind.{kind} => "{r.summon_art_key(kind)}"' if kind != "BoneThrall" else '_ => "summon_bone_thrall"', src)
+
+    def test_every_kind_has_sprite_and_creature(self):
+        creatures = open(os.path.join(ROOT, "mod", "SlayTheRequiemCode", "Monsters", "SummonCreatures.cs"), encoding="utf-8").read()
+        for kind in r.SUMMON_KINDS:
+            key = r.summon_art_key(kind)
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "art", "monsters", key + ".svg")), key)
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "mod", "SlayTheRequiem", "images", "monsters", key + ".png")), key)
+            self.assertIn(f"public sealed class {kind}Summon : SummonCreature", creatures)
+            self.assertIn(f'ArtKey => "{key}"', creatures)
+
+
 if __name__ == "__main__":
     unittest.main()

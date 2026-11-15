@@ -32,7 +32,7 @@ public static class EnemySetup
 
     public static async Task Ensure(Creature creature, ICombatState? combatState)
     {
-        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive) return;
+        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return;
         if (Done.TryGetValue(creature, out _)) return;
         Done.Add(creature, new object());
 

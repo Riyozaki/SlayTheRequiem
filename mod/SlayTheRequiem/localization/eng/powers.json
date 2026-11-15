@@ -340,5 +340,17 @@
   "SLAYTHEREQUIEM-SUN_STANCE_POWER.smartDescription": "Day: takes 50% less damage, except [gold]Light[/gold].",
   "SLAYTHEREQUIEM-MOON_STANCE_POWER.title": "Moon Stance",
   "SLAYTHEREQUIEM-MOON_STANCE_POWER.description": "Night: [gold]Light[/gold] damage against it ×1.5.",
-  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Night: [gold]Light[/gold] damage against it ×1.5."
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Night: [gold]Light[/gold] damage against it ×1.5.",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.title": "Raised Dead",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.description": "Undead summon with {Amount} HP: takes enemy attacks first, deals 4 damage at the end of your turn.",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.smartDescription": "Undead summon with {Amount} HP: takes enemy attacks first, deals 4 damage at the end of your turn.",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.title": "Slumbering Guardian",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.description": "Summon with {Amount} HP: takes attacks first. Slumbers on its first turn, then deals 10 [purple]magic[/purple] damage at the end of your turn.",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.smartDescription": "Summon with {Amount} HP: takes attacks first. Slumbers on its first turn, then deals 10 [purple]magic[/purple] damage at the end of your turn.",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.title": "Spectral Knight",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.description": "Summon with {Amount} HP: takes attacks first, deals 5 damage at the end of your turn. While it stands, your attacks deal 2 more damage.",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.smartDescription": "Summon with {Amount} HP: takes attacks first, deals 5 damage at the end of your turn. While it stands, your attacks deal 2 more damage.",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.title": "Bone Thrall",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.description": "The Lich's undead with {Amount} HP: takes attacks first, deals 3 [purple]magic[/purple] damage at the end of your turn. Its fall triggers Death Blast.",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.smartDescription": "The Lich's undead with {Amount} HP: takes attacks first, deals 3 [purple]magic[/purple] damage at the end of your turn. Its fall triggers Death Blast."
 }

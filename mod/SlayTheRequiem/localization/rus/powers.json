@@ -340,5 +340,17 @@
   "SLAYTHEREQUIEM-SUN_STANCE_POWER.smartDescription": "День: получает на 50 % меньше урона, кроме [gold]Света[/gold].",
   "SLAYTHEREQUIEM-MOON_STANCE_POWER.title": "Лунная стойка",
   "SLAYTHEREQUIEM-MOON_STANCE_POWER.description": "Ночь: урон [gold]Светом[/gold] по нему ×1,5.",
-  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Ночь: урон [gold]Светом[/gold] по нему ×1,5."
+  "SLAYTHEREQUIEM-MOON_STANCE_POWER.smartDescription": "Ночь: урон [gold]Светом[/gold] по нему ×1,5.",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.title": "Поднятый мертвец",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.description": "Призыв-нежить ({Amount} ♥): первым принимает атаки врагов, бьёт на 4 в конце вашего хода.",
+  "SLAYTHEREQUIEM-RAISED_DEAD_POWER.smartDescription": "Призыв-нежить ({Amount} ♥): первым принимает атаки врагов, бьёт на 4 в конце вашего хода.",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.title": "Дремлющий страж",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.description": "Призыв ({Amount} ♥): первым принимает атаки. Первый ход дремлет, затем в конце вашего хода бьёт на 10 [purple]магией[/purple].",
+  "SLAYTHEREQUIEM-ABYSS_GUARDIAN_POWER.smartDescription": "Призыв ({Amount} ♥): первым принимает атаки. Первый ход дремлет, затем в конце вашего хода бьёт на 10 [purple]магией[/purple].",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.title": "Призрачный рыцарь",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.description": "Призыв ({Amount} ♥): первым принимает атаки, бьёт на 5 в конце вашего хода. Пока он стоит, ваши атаки наносят на 2 урона больше.",
+  "SLAYTHEREQUIEM-SPECTRAL_KNIGHT_POWER.smartDescription": "Призыв ({Amount} ♥): первым принимает атаки, бьёт на 5 в конце вашего хода. Пока он стоит, ваши атаки наносят на 2 урона больше.",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.title": "Костяной прислужник",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.description": "Нежить Лича ({Amount} ♥): первой принимает атаки, в конце вашего хода бьёт на 3 [purple]магией[/purple]. Её гибель — Взрыв смерти.",
+  "SLAYTHEREQUIEM-BONE_THRALL_POWER.smartDescription": "Нежить Лича ({Amount} ♥): первой принимает атаки, в конце вашего хода бьёт на 3 [purple]магией[/purple]. Её гибель — Взрыв смерти."
 }

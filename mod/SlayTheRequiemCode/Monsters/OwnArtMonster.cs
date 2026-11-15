@@ -4,6 +4,7 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Animation;
 using MegaCrit.Sts2.Core.Bindings.MegaSpine;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -127,8 +128,11 @@ public static class OwnArtAnimator
         return tween;
     }
 
-    /// <summary>Триггер анимации от игры («Attack», «Cast», «Hit», «Dead», «Revive» и свои имена ходов).</summary>
-    public static void Play(NCreatureVisuals visuals, string trigger)
+    /// <summary>
+    /// Триггер анимации от игры («Attack», «Cast», «Hit», «Dead», «Revive» и свои имена ходов). <paramref name="towardRight"/> —
+    /// существо на стороне героев (призыв): выпад вправо, к врагам, отдача — влево.
+    /// </summary>
+    public static void Play(NCreatureVisuals visuals, string trigger, bool towardRight = false)
     {
         var body = Body(visuals);
         if (body == null || !body.IsInsideTree()) return;
@@ -138,10 +142,10 @@ public static class OwnArtAnimator
             {
                 case "Dead": Die(body); break;
                 case "Revive": Revive(body); break;
-                case "Hit": Hurt(body); break;
+                case "Hit": Hurt(body, towardRight ? -1f : 1f); break;
                 case "Cast": Cast(body); break;
                 case "Idle": break;
-                default: Lunge(body); break; // «Attack» и все прочие ударные анимации
+                default: Lunge(body, towardRight ? -1f : 1f); break; // «Attack» и все прочие ударные анимации
             }
         }
         catch (Exception e)
@@ -150,13 +154,13 @@ public static class OwnArtAnimator
         }
     }
 
-    /// <summary>Выпад к героям (враги стоят справа — влево), затем возврат.</summary>
-    private static void Lunge(Sprite2D body)
+    /// <summary>Выпад к противнику (враги стоят справа — влево, <paramref name="back"/> = 1; призывы — вправо, −1), затем возврат.</summary>
+    private static void Lunge(Sprite2D body, float back = 1f)
     {
         var tween = NewAction(body);
-        tween.TweenProperty(body, "offset", new Vector2(18f, 4f), 0.08).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
-        tween.TweenProperty(body, "offset", new Vector2(-LungeDistance, 0f), 0.10).SetTrans(Tween.TransitionType.Expo).SetEase(Tween.EaseType.In);
-        tween.Parallel().TweenProperty(body, "rotation", -0.06f, 0.10);
+        tween.TweenProperty(body, "offset", new Vector2(18f * back, 4f), 0.08).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(body, "offset", new Vector2(-LungeDistance * back, 0f), 0.10).SetTrans(Tween.TransitionType.Expo).SetEase(Tween.EaseType.In);
+        tween.Parallel().TweenProperty(body, "rotation", -0.06f * back, 0.10);
         tween.TweenInterval(0.06);
         tween.TweenProperty(body, "offset", Vector2.Zero, 0.30).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
         tween.Parallel().TweenProperty(body, "rotation", 0f, 0.30);
@@ -173,14 +177,14 @@ public static class OwnArtAnimator
         tween.Parallel().TweenProperty(body, "offset", Vector2.Zero, 0.35).SetTrans(Tween.TransitionType.Bounce).SetEase(Tween.EaseType.Out);
     }
 
-    /// <summary>Получил удар: красно-белая вспышка и тряска назад.</summary>
-    private static void Hurt(Sprite2D body)
+    /// <summary>Получил удар: красно-белая вспышка и тряска назад (<paramref name="back"/> — знак «назад» по X).</summary>
+    private static void Hurt(Sprite2D body, float back = 1f)
     {
         var tween = NewAction(body);
         body.SelfModulate = new Color(2.2f, 1.5f, 1.5f);
-        tween.TweenProperty(body, "offset", new Vector2(16f, 0f), 0.05);
-        tween.TweenProperty(body, "offset", new Vector2(-8f, 0f), 0.06);
-        tween.TweenProperty(body, "offset", new Vector2(4f, 0f), 0.05);
+        tween.TweenProperty(body, "offset", new Vector2(16f * back, 0f), 0.05);
+        tween.TweenProperty(body, "offset", new Vector2(-8f * back, 0f), 0.06);
+        tween.TweenProperty(body, "offset", new Vector2(4f * back, 0f), 0.05);
         tween.TweenProperty(body, "offset", Vector2.Zero, 0.06);
         tween.Parallel().TweenProperty(body, "self_modulate", Colors.White, 0.22);
     }
@@ -237,7 +241,7 @@ public static class OwnArtTriggerPatch
     public static void Postfix(NCreature __instance, string trigger)
     {
         if (__instance.Entity?.Monster is OwnArtMonster && !__instance.HasSpineAnimation)
-            OwnArtAnimator.Play(__instance.Visuals, trigger);
+            OwnArtAnimator.Play(__instance.Visuals, trigger, towardRight: __instance.Entity.Side == CombatSide.Player);
     }
 }
 

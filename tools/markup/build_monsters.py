@@ -172,6 +172,19 @@ MOD = {
     "LeyWyrm": ("spirit", 0, 0, "magic", "босс 4б «Змей лей-линий»"),
     "ArchmageSimulacrum": ("construct", 0, 0, "magic", "босс 4б «Симулякр Архимага»"),
     "MirrorShard": ("construct", 0, 0, "magic", "зеркальный осколок"),
+    # ── M6 п. 2: тела призывов героя (питомцы; Латы/Стойкость им не ставятся — правила врагов их не трогают) ──
+    "SpiritWolfSummon": ("spirit", 0, 0, "phys", "призыв «Волк-дух»"),
+    "BeastWolfSummon": ("spirit", 0, 0, "phys", "призыв «Дух зверя: волк»"),
+    "BeastSabertoothSummon": ("spirit", 0, 0, "phys", "призыв «Дух зверя: саблезуб»"),
+    "BeastBearSummon": ("spirit", 0, 0, "phys", "призыв «Дух зверя: медведь»"),
+    "FlameAtronachSummon": ("abyss", 0, 0, "fire", "призыв «Огненный атронах»"),
+    "FrostAtronachSummon": ("construct", 0, 0, "frost", "призыв «Ледяной атронах»"),
+    "StormAtronachSummon": ("construct", 0, 0, "shock", "призыв «Грозовой атронах»"),
+    "RaisedDeadSummon": ("undead", 0, 0, "phys", "призыв «Поднятый мертвец»"),
+    "AbyssGuardianSummon": ("abyss", 0, 0, "magic", "призыв «Дремлющий страж»"),
+    "SpectralKnightSummon": ("spirit", 0, 0, "phys", "призыв «Призрачный рыцарь»"),
+    "LoyalGuardSummon": ("humanoid", 0, 0, "phys", "призыв «Верный-до-Конца»"),
+    "BoneThrallSummon": ("undead", 0, 0, "magic", "призыв «Костяной прислужник» (Лич)"),
 }
 
 SKIP = {"BigDummy", "DeprecatedMonster", "MultiAttackMoveMonster", "SingleAttackMoveMonster", "OneHpMonster",

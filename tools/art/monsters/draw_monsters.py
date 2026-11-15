@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Спрайты боссов актов 2/4 и их свиты → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
+"""Спрайты боссов актов 2/4, их свиты и призывов героя (summons.py) → art/monsters/*.svg (рендер: tools/art/render_ui_icons.mjs, группа monsters).
 
     python3 tools/art/monsters/draw_monsters.py            # все SVG
     python3 tools/art/monsters/draw_monsters.py king_under_barrow   # один (для отладки)
@@ -1010,6 +1010,14 @@ def draw_shop_guard(v=""):
     s.circle(cx - 69, 172, 12, s.rad([(0, "#fff0b0"), (1, "#b07a1e")]), INK, 3)
     s.close()
     return s
+
+
+# ═════════════════════════ Призывы героя (M6 п. 2) — tools/art/monsters/summons.py ═════════════════════════
+
+from summons import SUMMONS  # noqa: E402
+
+for _key, _fn in SUMMONS.items():
+    REGISTRY[_key] = (_fn, ("",))
 
 
 def main(argv) -> int:

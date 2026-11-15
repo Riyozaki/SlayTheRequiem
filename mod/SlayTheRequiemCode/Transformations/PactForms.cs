@@ -3,6 +3,7 @@ using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -185,7 +186,8 @@ public sealed class HeraldStanceCard : RequiemCard
 /// <summary>
 /// Лич (событие «Филактерия», акт 4–5; 10 побед Вестником). ♥ — «кость»: макс. ♥ −30 %, физический урон по вам −25 %,
 /// иммунитет к Яду/Хвори/Кровотечению; лечение — только поглощением/вампиризмом. Взрыв смерти: гибель призыва —
-/// 5 урона магией всем врагам. Вместе с формой — Филактерия.
+/// 5 урона магией всем врагам. Вместе с формой — Филактерия. Нежить Лича (M6 п. 2): в начале каждого боя встаёт Костяной
+/// прислужник (<see cref="BoneThrallPower"/>, 10 ♥, бьёт 3 магией) — первый, чья гибель даст Взрыв смерти.
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class LichForm : PactStage, ISummonListener
@@ -230,6 +232,13 @@ public sealed class LichForm : PactStage, ISummonListener
         return DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Physical
             ? TransformationRules.LichPhysicalTakenMultiplier
             : 1m;
+    }
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (!Owned || player != Owner || Owner.Creature.CombatState is not { RoundNumber: 1 }) return;
+        Flash();
+        await SummonPower.Summon<BoneThrallPower>(choiceContext, Owner.Creature, SummonRules.BoneThrallHp, null);
     }
 
     public async Task AfterSummonDestroyed(SummonPower summon)

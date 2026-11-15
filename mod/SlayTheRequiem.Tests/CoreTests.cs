@@ -1259,3 +1259,69 @@ public class M6MapGraphTests
         Assert.Equal(NodeSubtype.Shrine, NodeRules.FromMark(MapMark.CelestialBanner));
     }
 }
+
+public class M6SummonTests
+{
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(2, 3)]
+    [InlineData(-3, 1)]
+    public void Slots(int bonus, int expected) => Assert.Equal(expected, SummonRules.Slots(bonus));
+
+    [Theory]
+    [InlineData(1, 1, 1)]
+    [InlineData(1, 2, 0)]
+    [InlineData(3, 2, 2)]
+    [InlineData(0, 0, 0)]
+    public void Dismissals(int others, int slots, int expected) => Assert.Equal(expected, SummonRules.Dismissals(others, slots));
+
+    [Theory]
+    [InlineData(10, 8, 0, 8)]
+    [InlineData(5, 8, 0, 5)]
+    [InlineData(5, 8, 6, 2)]
+    [InlineData(5, 8, 9, 0)]
+    public void Absorb(int incoming, int hp, int pending, int expected) => Assert.Equal(expected, SummonRules.Absorb(incoming, hp, pending));
+
+    [Theory]
+    [InlineData(10, 0, 10)]
+    [InlineData(10, 50, 15)]
+    [InlineData(3, 50, 5)]
+    [InlineData(0, 50, 0)]
+    public void ScaledLoss(int taken, int percent, int expected) => Assert.Equal(expected, SummonRules.ScaledLoss(taken, percent));
+
+    [Fact]
+    public void RaiseDead()
+    {
+        Assert.Equal(20, SummonRules.RaisedDeadHp(40, SummonRules.RaiseDeadPercent));
+        Assert.Equal(26, SummonRules.RaisedDeadHp(40, SummonRules.RaiseDeadPercent + SummonRules.RaiseDeadPercentUpgrade));
+        Assert.Equal(1, SummonRules.RaisedDeadHp(1, 50));
+        Assert.Equal(0, SummonRules.RaisedDeadHp(0, 50));
+        Assert.True(SummonRules.CanRaise(isEnemy: true, isBoss: false));
+        Assert.False(SummonRules.CanRaise(isEnemy: true, isBoss: true));
+        Assert.False(SummonRules.CanRaise(isEnemy: false, isBoss: false));
+    }
+
+    [Fact]
+    public void KindsAndMoves()
+    {
+        Assert.Equal(SummonKind.BeastWolf, SummonRules.BeastKind(0));
+        Assert.Equal(SummonKind.BeastSabertooth, SummonRules.BeastKind(1));
+        Assert.Equal(SummonKind.BeastBear, SummonRules.BeastKind(4));
+        Assert.Equal(SummonMove.Slumber, SummonRules.MoveFor(SummonKind.AbyssGuardian, 0));
+        Assert.Equal(SummonMove.Strike, SummonRules.MoveFor(SummonKind.AbyssGuardian, 1));
+        Assert.Equal(SummonMove.Strike, SummonRules.MoveFor(SummonKind.SpiritWolf, 0));
+        Assert.True(SummonRules.IsUndead(SummonKind.BoneThrall));
+        Assert.False(SummonRules.IsUndead(SummonKind.SpectralKnight));
+        Assert.True(SummonRules.IsCompanion(SummonKind.LoyalGuard));
+        var keys = Enum.GetValues<SummonKind>().Select(SummonRules.ArtKey).ToList();
+        Assert.Equal(keys.Count, keys.Distinct().Count());
+        Assert.All(keys, k => Assert.StartsWith("summon_", k));
+    }
+
+    [Fact]
+    public void Layout()
+    {
+        Assert.Equal(160f, SummonRules.LayoutX(100f, 0, false));
+        Assert.Equal(680f, SummonRules.LayoutX(100f, 2, true));
+    }
+}

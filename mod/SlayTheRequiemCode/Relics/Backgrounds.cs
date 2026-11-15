@@ -181,8 +181,8 @@ public sealed class BeastSpeakerBackground : BackgroundRelic
     {
         if (!IsFirstTurnOf(player, Owner)) return;
         var (hp, damage) = OriginRules.BeastSpirit(ElitesDefeated);
-        await SummonPower.Summon<BeastSpiritPower>(choiceContext, Owner.Creature, hp, null);
-        Owner.Creature.GetPower<BeastSpiritPower>()?.SetDamage(damage);
+        var elites = ElitesDefeated;
+        await SummonPower.Summon<BeastSpiritPower>(choiceContext, Owner.Creature, hp, null, p => p.SetStage(elites, damage));
         Flash();
     }
 
@@ -312,8 +312,7 @@ public sealed class EnvoyBackground : BackgroundRelic
     {
         if (!IsFirstTurnOf(player, Owner)) return;
         var (hp, damage) = OriginRules.LoyalGuard(Progression.HeroRecord.Of(Owner)?.Level ?? 1);
-        await SummonPower.Summon<LoyalGuardPower>(choiceContext, Owner.Creature, hp, null);
-        Owner.Creature.GetPower<LoyalGuardPower>()?.SetDamage(damage);
+        await SummonPower.Summon<LoyalGuardPower>(choiceContext, Owner.Creature, hp, null, p => p.SetDamage(damage));
         Flash();
     }
 }

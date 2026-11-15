@@ -431,7 +431,7 @@
   "SLAYTHEREQUIEM-HERALD_FORM.description": "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. [gold]Stance[/gold]: your spells apply Plague (2 [gold]Blight[/gold]), Discord (−1 [gold]Strength[/gold]) or Decay (1 [gold]Sunder[/gold]). Wins as Herald: {Wins}/{Required} (the Phylactery event — Lich). While you have this form, you are an [gold]Apostate[/gold].",
   "SLAYTHEREQUIEM-HERALD_FORM.flavor": "Three voices, one mouth.",
   "SLAYTHEREQUIEM-LICH_FORM.title": "Lich",
-  "SLAYTHEREQUIEM-LICH_FORM.description": "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. Bone: −30% max HP, physical damage taken −25%, immune to Poison, Blight and Bleed; heal only by absorption and lifesteal. Death Blast: when your summon falls — 5 magic damage to ALL enemies. While you have this form, you are an [gold]Apostate[/gold].",
+  "SLAYTHEREQUIEM-LICH_FORM.description": "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. Bone: −30% max HP, physical damage taken −25%, immune to Poison, Blight and Bleed; heal only by absorption and lifesteal. Death Blast: when your summon falls — 5 magic damage to ALL enemies. Each combat a Bone Thrall (10 HP) rises at your side. While you have this form, you are an [gold]Apostate[/gold].",
   "SLAYTHEREQUIEM-LICH_FORM.flavor": "Death is a door. You kept the key.",
   "SLAYTHEREQUIEM-PHYLACTERY.title": "Phylactery",
   "SLAYTHEREQUIEM-PHYLACTERY.description": "Weight 3. When you would die — revive with {Percent}% HP, once per run; then it shatters.",

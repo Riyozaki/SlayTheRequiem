@@ -196,7 +196,15 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     public override async Task AfterCreatureAddedToCombat(Creature creature)
     {
-        if (creature.Monster != null) await EnemySetup.Ensure(creature, creature.CombatState);
+        // Призывы героя — тоже монстры, но им не нужны ◆/Стойкость/аффиксы врагов.
+        if (creature.Monster != null && creature.IsEnemy) await EnemySetup.Ensure(creature, creature.CombatState);
+    }
+
+    /// <summary>Павший враг — кандидат для «Поднять мертвеца».</summary>
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    {
+        if (!wasRemovalPrevented) Graveyard.Note(creature.CombatState, creature);
+        return Task.CompletedTask;
     }
 }
 
