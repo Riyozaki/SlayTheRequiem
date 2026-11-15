@@ -637,3 +637,89 @@ DEFAULT_SCAR = "Purse"
 
 def map_rng_name(act_index: int, rollbacks: int) -> str:
     return f"act_{act_index + 1}_map_requiem_{rollbacks}"
+
+
+# ───────────── этап 4: Пантеон (docs/design/05, Core/PantheonRules.cs) ─────────────
+
+RIGHTEOUS, TAINTED, APOSTATE = 0, 1, 2
+BLESSING_NONE, BLESSING_DIMMED, BLESSING_FULL = 0, 1, 2
+OMEN_COUNT, OMEN_CHOICES, ALL_OMENS_LEVEL = 10, 3, 8
+SHRINE_PERCENT, DARK_SHRINE_PERCENT, EBB_STONES_PERCENT = 14, 8, 8
+
+
+def piety_sin(p: int) -> int:
+    return TAINTED if p == RIGHTEOUS else APOSTATE
+
+
+def piety_redeem(p: int) -> int:
+    return TAINTED if p == APOSTATE else RIGHTEOUS
+
+
+def piety_effective(recorded: int, holds_abyssal: bool, transformed: bool, permanent_apostate: bool) -> int:
+    p = recorded
+    if holds_abyssal and p < TAINTED:
+        p = TAINTED
+    if transformed or permanent_apostate:
+        p = APOSTATE
+    return p
+
+
+def blessing_strength(effective: int, forbidden: bool) -> int:
+    if forbidden:
+        return BLESSING_NONE
+    return {RIGHTEOUS: BLESSING_FULL, TAINTED: BLESSING_DIMMED}.get(effective, BLESSING_NONE)
+
+
+def redemption_cost(act_index: int) -> int:
+    return 50 + 25 * max(0, act_index)
+
+
+def robbery_gold(act_index: int) -> int:
+    return 40 + 20 * max(0, act_index)
+
+
+def can_redeem(recorded: int, last_redeemed_act: int, act_index: int, forbidden: bool) -> bool:
+    return not forbidden and recorded != RIGHTEOUS and last_redeemed_act != act_index
+
+
+def unknown_room_roll(act_index: int, roll: int) -> int:
+    """0 — обычное «?», 1 — Святилище, 2 — Тёмное святилище, 3 — Шесть камней (акты 2–3)."""
+    if act_index < 1:
+        return 0
+    if roll < SHRINE_PERCENT:
+        return 1
+    if roll < SHRINE_PERCENT + DARK_SHRINE_PERCENT:
+        return 2
+    if act_index <= 2 and roll < SHRINE_PERCENT + DARK_SHRINE_PERCENT + EBB_STONES_PERCENT:
+        return 3
+    return 0
+
+
+def omen_offer_count(requiem_level: int) -> int:
+    return OMEN_COUNT if requiem_level >= ALL_OMENS_LEVEL else OMEN_CHOICES
+
+
+def pick_distinct(total: int, count: int, next_int, exclude=None) -> list[int]:
+    pool = [i for i in range(max(0, total)) if not exclude or i not in exclude]
+    count = max(0, min(count, len(pool)))
+    for i in range(count):
+        j = i + max(0, min(next_int(len(pool) - i), len(pool) - i - 1))
+        pool[i], pool[j] = pool[j], pool[i]
+    return pool[:count]
+
+
+def has_divine_spirit(strength: int, amulet: bool, robe: bool, heavenly_shield: bool) -> bool:
+    return strength == BLESSING_FULL and amulet and robe and heavenly_shield
+
+
+def outcast_after_combat_heal(vow_done: bool) -> int:
+    return 2 * (2 if vow_done else 1)
+
+
+def below_half(hp: int, max_hp: int) -> bool:
+    return max_hp > 0 and hp * 2 < max_hp
+
+
+def star_marks_after_act(marks: int, vow_done: bool) -> int:
+    return 0 if vow_done else marks + 1
+

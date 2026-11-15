@@ -526,3 +526,114 @@ public class Stage36Tests
         Assert.Equal(Scar.Purse, MemoryStoneRules.DefaultScar);
     }
 }
+
+public class Stage4Tests
+{
+    [Fact]
+    public void PietySteps()
+    {
+        Assert.Equal(Piety.Tainted, PietyRules.Sin(Piety.Righteous));
+        Assert.Equal(Piety.Apostate, PietyRules.Sin(Piety.Tainted));
+        Assert.Equal(Piety.Apostate, PietyRules.GraveSin(Piety.Righteous));
+        Assert.Equal(Piety.Tainted, PietyRules.Redeem(Piety.Apostate));
+        Assert.Equal(Piety.Righteous, PietyRules.Redeem(Piety.Tainted));
+    }
+
+    [Fact]
+    public void EffectivePietyAndStrength()
+    {
+        Assert.Equal(Piety.Tainted, PietyRules.Effective(Piety.Righteous, true, false, false));
+        Assert.Equal(Piety.Apostate, PietyRules.Effective(Piety.Righteous, false, true, false));
+        Assert.Equal(Piety.Apostate, PietyRules.Effective(Piety.Tainted, false, false, true));
+        Assert.Equal(BlessingStrength.Full, PietyRules.Strength(Piety.Righteous, false));
+        Assert.Equal(BlessingStrength.Dimmed, PietyRules.Strength(Piety.Tainted, false));
+        Assert.Equal(BlessingStrength.None, PietyRules.Strength(Piety.Apostate, false));
+        Assert.Equal(BlessingStrength.None, PietyRules.Strength(Piety.Righteous, true));
+    }
+
+    [Fact]
+    public void Redemption()
+    {
+        Assert.Equal(75, PietyRules.RedemptionCost(1));
+        Assert.Equal(60, PietyRules.RobberyGold(1));
+        Assert.True(PietyRules.CanRedeem(Piety.Tainted, -1, 1, false));
+        Assert.False(PietyRules.CanRedeem(Piety.Tainted, 1, 1, false));
+        Assert.False(PietyRules.CanRedeem(Piety.Righteous, -1, 1, false));
+        Assert.False(PietyRules.CanRedeem(Piety.Apostate, -1, 1, true));
+    }
+
+    [Fact]
+    public void UnknownRooms()
+    {
+        Assert.Equal(0, PantheonRules.UnknownRoomRoll(0, 0));
+        Assert.Equal(1, PantheonRules.UnknownRoomRoll(1, 13));
+        Assert.Equal(2, PantheonRules.UnknownRoomRoll(1, 14));
+        Assert.Equal(3, PantheonRules.UnknownRoomRoll(2, 29));
+        Assert.Equal(0, PantheonRules.UnknownRoomRoll(3, 25));
+        Assert.Equal(0, PantheonRules.UnknownRoomRoll(1, 30));
+    }
+
+    [Fact]
+    public void OmensAndShards()
+    {
+        Assert.Equal(3, OmenRules.OmenOfferCount(0));
+        Assert.Equal(10, OmenRules.OmenOfferCount(OmenRules.AllOmensLevel));
+        Assert.Equal(6, OmenRules.OmenBoon(Omen.Blade).MaxHp);
+        Assert.Equal(-1, OmenRules.OmenBoon(Omen.Sponge).ManaRegen);
+        Assert.Equal(-1, OmenRules.ShardBoon(EbbShard.Wind).Plating);
+        Assert.Equal(1, OmenRules.ShardBoon(EbbShard.Beast).Pierce);
+        var picks = OmenRules.PickDistinct(10, 3, n => n - 1);
+        Assert.Equal(3, picks.Distinct().Count());
+        Assert.DoesNotContain(4, OmenRules.PickDistinct(6, 5, _ => 0, new List<int> { 4 }));
+    }
+
+    [Fact]
+    public void BoonAlgebra()
+    {
+        var sum = new Boon { MaxHp = 6, Plating = 1 } + new Boon { MaxHp = -5, ImmuneFrozen = true };
+        Assert.Equal(1, sum.MaxHp);
+        Assert.Equal(1, sum.Plating);
+        Assert.True(sum.ImmuneFrozen);
+        Assert.Equal(12, new Boon { MaxHp = 6 }.Scaled(2).MaxHp);
+    }
+
+    [Fact]
+    public void CelestialSet()
+    {
+        var dimmed = PantheonRules.CelestialTotal(Celestial.AnvilFather, BlessingStrength.Dimmed, true, true);
+        Assert.Equal(6, dimmed.MaxHp);
+        Assert.Equal(0, dimmed.Plating);                       // тусклое — только первый бонус
+        var full = PantheonRules.CelestialTotal(Celestial.AnvilFather, BlessingStrength.Full, true, true);
+        Assert.Equal(1, full.Plating);
+        Assert.Equal(2, full.HeavyAttackDamage);
+        Assert.Equal(Boon.None, PantheonRules.CelestialTotal(Celestial.AnvilFather, BlessingStrength.None, true, true));
+        Assert.True(PantheonRules.HasDivineSpirit(BlessingStrength.Full, true, true, true));
+        Assert.False(PantheonRules.HasDivineSpirit(BlessingStrength.Full, true, true, false));
+        Assert.True(PantheonRules.ForbidsNecromancy(Celestial.MercyShield));
+    }
+
+    [Fact]
+    public void PrincesAndDiseases()
+    {
+        Assert.True(PantheonRules.IsTribunal(AbyssPrince.DuskStar));
+        Assert.False(PantheonRules.IsTribunal(AbyssPrince.GateBreaker));
+        Assert.Equal(3, PantheonRules.VowTarget(AbyssPrince.PlagueLord));
+        Assert.Equal(-5, PantheonRules.Gift(AbyssPrince.TwilightWidow).MaxHp);
+        Assert.Equal(4, PantheonRules.OutcastAfterCombatHeal(true));
+        var before = PantheonRules.Diseases(new[] { (int)Disease.StoneGout, (int)Disease.StoneGout }, false);
+        Assert.Equal(-2, before.AttackDamage);
+        Assert.Equal(0, before.Plating);
+        var after = PantheonRules.Diseases(new[] { (int)Disease.StoneGout }, true);
+        Assert.Equal(1, after.Plating);
+        Assert.Equal(2, PantheonRules.Count(new[] { 4, 4, 1 }, Disease.Bonebreak));
+        Assert.Equal(0, PantheonRules.StarMarksAfterAct(3, true));
+    }
+
+    [Fact]
+    public void Pierce()
+    {
+        Assert.Equal(5, CombatMath.ApplyPlating(6, 2, pierce: 1));
+        Assert.Equal(6, CombatMath.ApplyPlating(6, 1, pierce: 1));
+        Assert.Equal(7, CombatMath.ApplyPlating(6, -1));
+    }
+}

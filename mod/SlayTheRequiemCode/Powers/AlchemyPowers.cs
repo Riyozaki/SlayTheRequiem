@@ -199,6 +199,12 @@ public sealed class InvisibilityPower : RequiemPower
     }
 }
 
+/// <summary>Лишние заряды яда на оружии (Знамение Змея: +2).</summary>
+public interface IPoisonChargeSource
+{
+    int ExtraPoisonCharges { get; }
+}
+
 /// <summary>Снаряжение, при котором атаки не снимают Невидимость (Сапоги Безмолвия).</summary>
 public interface IInvisibilityKeeper
 {
@@ -282,7 +288,8 @@ public abstract class WeaponPoisonPower : RequiemPower
         if (hero.GetPower<T>() is { } power) power.Tier = Math.Max(power.Tier, tier);
     }
 
-    public static int ChargesFor(Player player) => AlchemyRules.BasePoisonCharges;
+    public static int ChargesFor(Player player) =>
+        AlchemyRules.BasePoisonCharges + player.Relics.OfType<IPoisonChargeSource>().Sum(s => s.ExtraPoisonCharges);
 
     public static bool IsImmune(Creature target) =>
         target.Monster != null && RequiemData.MonsterEntry(target.Monster.GetType().Name).Faction is "undead" or "construct";

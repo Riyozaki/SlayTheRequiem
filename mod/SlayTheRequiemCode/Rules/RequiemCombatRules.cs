@@ -51,7 +51,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
                 stamina.ModifyAmount(-payment.Spent);
         }
 
-        PendingMultiplier.AddOrUpdate(card, new StrongBox<decimal>(payment.DamageMultiplier));
+        var multiplier = payment.State == StaminaState.Tired && IsTireless(player) ? 1m : payment.DamageMultiplier;
+        PendingMultiplier.AddOrUpdate(card, new StrongBox<decimal>(multiplier));
 
         if (payment.HpLoss > 0 && RequiemConfig.EnableOverstrain)
         {
@@ -93,8 +94,13 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         var stamina = RequiemResource.Of<StaminaResource>(player);
         if (stamina == null) return 1m;
         var state = StaminaRules.StateFor(stamina.Amount, stamina.Pool, StaminaCosts.CostFor(cardSource));
+        if (state == StaminaState.Tired && IsTireless(player)) return 1m;
         return StaminaRules.DamageMultiplier(state);
     }
+
+    /// <summary>«Устал» не снижает урон (Знамение Клинка).</summary>
+    public static bool IsTireless(MegaCrit.Sts2.Core.Entities.Players.Player? player) =>
+        player != null && player.Relics.OfType<ITirelessSource>().Any(t => t.IgnoresWeariness);
 
     private static decimal ResistanceMultiplier(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
@@ -176,4 +182,10 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     {
         if (creature.Monster != null) await EnemySetup.Ensure(creature, creature.CombatState);
     }
+}
+
+/// <summary>Источник «Устал не снижает урон» (Знамение Клинка). Изнурение (◆ не хватает) по-прежнему режет урон вдвое.</summary>
+public interface ITirelessSource
+{
+    bool IgnoresWeariness { get; }
 }

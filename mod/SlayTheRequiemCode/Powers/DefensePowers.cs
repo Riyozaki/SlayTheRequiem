@@ -17,15 +17,27 @@ public sealed class PlatingPower : RequiemPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
+    /// <summary>Латы могут уйти в минус (Осколок Ветра) — тогда каждый удар по носителю сильнее.</summary>
+    public override bool AllowNegative => true;
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || !props.IsPoweredAttack()) return 1m;
         if (DamageTyping.Resolve(props, dealer, cardSource) == DamageType.True) return 1m;
         var sunder = Owner.GetPowerAmount<SunderPower>();
-        var reduced = CombatMath.ApplyPlating((int)amount, Amount, pierce: 0, sunder: sunder);
+        var reduced = CombatMath.ApplyPlating((int)amount, Amount, pierce: PierceOf(dealer), sunder: sunder);
         return reduced / amount;
     }
+
+    /// <summary>Пробитие атакующего героя (Осколок Зверя, дар Князя Измены).</summary>
+    public static int PierceOf(Creature? dealer) =>
+        dealer?.Player == null ? 0 : Math.Max(0, dealer.Player.Relics.OfType<IPierceSource>().Sum(p => p.Pierce));
+}
+
+/// <summary>Источник Пробития N у героя: его атаки игнорируют N Лат цели.</summary>
+public interface IPierceSource
+{
+    int Pierce { get; }
 }
 
 /// <summary>

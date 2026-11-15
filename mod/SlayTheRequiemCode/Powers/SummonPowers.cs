@@ -14,7 +14,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 /// <summary>
 /// Призыв (docs/design/08 §1, §5) — MVP без отдельного существа на поле: сила на герое, Amount = ♥ призыва.
 /// Призыв «стоит между героем и врагами»: урон атак врагов по ♥ героя сначала идёт в ♥ призыва; в конце хода героя
-/// призыв бьёт. Слот призыва один — новый призыв прогоняет прежний (<see cref="Summon{T}"/>).
+/// призыв бьёт. Слот призыва один (+бонусы <see cref="ISummonModifier"/>) — новый призыв прогоняет самый старый (<see cref="Summon{T}"/>).
 /// TODO(этап 6): настоящие существа через BaseLib CustomPetModel, когда будут спрайты.
 /// </summary>
 public abstract class SummonPower : RequiemPower
@@ -31,9 +31,25 @@ public abstract class SummonPower : RequiemPower
 
     public static async Task Summon<T>(PlayerChoiceContext ctx, Creature hero, int hp, CardModel? source) where T : SummonPower
     {
-        foreach (var other in hero.Powers.OfType<SummonPower>().Where(p => p is not T).ToList())
+        // Слотов призыва 1 (+Знамение Обряда и др.): лишние — самые старые — уходят.
+        var others = hero.Powers.OfType<SummonPower>().Where(p => p is not T).ToList();
+        var excess = others.Count - (Slots(hero) - 1);
+        foreach (var other in others.Take(Math.Max(0, excess)).ToList())
             await PowerCmd.Remove(other);
         await PowerCmd.Apply<T>(ctx, hero, hp, hero, source);
+    }
+
+    /// <summary>Слоты призыва героя.</summary>
+    public static int Slots(Creature hero) => 1 + Math.Max(0, Modifiers(hero).Sum(m => m.SummonSlotBonus));
+
+    private static IEnumerable<ISummonModifier> Modifiers(Creature? hero) =>
+        hero?.Player?.Relics.OfType<ISummonModifier>() ?? Enumerable.Empty<ISummonModifier>();
+
+    /// <summary>Сколько ♥ призыва снимает удар: Цена Князя Измены — +50 %.</summary>
+    private int ScaledLoss(int taken)
+    {
+        var percent = Modifiers(Owner).Sum(m => m.SummonDamageTakenPercent);
+        return percent <= 0 ? taken : (int)Math.Ceiling(taken * (100 + percent) / 100m);
     }
 
     public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
@@ -55,8 +71,16 @@ public abstract class SummonPower : RequiemPower
         _pendingAttacker = null;
         Flash();
         if (attacker != null && attacker.IsAlive) await OnStruck(choiceContext, attacker);
-        if (taken >= Amount) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(choiceContext, this, -taken, null, null, silent: true);
+        var loss = ScaledLoss(taken);
+        if (loss >= Amount)
+        {
+            await PowerCmd.Remove(this);
+            // Призыв пал — для Обета Сумеречной Звезды («акт без смерти союзников»).
+            if (Owner.Player != null)
+                foreach (var listener in Owner.Player.Relics.OfType<ISummonListener>().ToList())
+                    await listener.AfterSummonDestroyed(this);
+        }
+        else await PowerCmd.ModifyAmount(choiceContext, this, -loss, null, null, silent: true);
     }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
@@ -73,12 +97,27 @@ public abstract class SummonPower : RequiemPower
         }
     }
 
-    /// <summary>Надбавка урона призывов («Призыватель» у Туманных).</summary>
-    public int SummonBonusDamage => Owner.Player?.Relics.OfType<Relics.SummonerBackground>().Any() == true
-        ? Relics.SummonerBackground.BonusDamage : 0;
+    /// <summary>Надбавка урона призывов («Призыватель» у Туманных, дар Разрушителя Врат).</summary>
+    public int SummonBonusDamage => (Owner.Player?.Relics.OfType<Relics.SummonerBackground>().Any() == true
+        ? Relics.SummonerBackground.BonusDamage : 0) + Modifiers(Owner).Sum(m => m.SummonBonusDamage);
 
     protected virtual Task OnHit(PlayerChoiceContext ctx, Creature enemy) => Task.CompletedTask;
     protected virtual Task OnStruck(PlayerChoiceContext ctx, Creature attacker) => Task.CompletedTask;
+}
+
+/// <summary>Реликвия, меняющая призывы: слоты, урон, получаемый урон (Знамение Обряда, дары Князей).</summary>
+public interface ISummonModifier
+{
+    int SummonSlotBonus { get; }
+    int SummonBonusDamage { get; }
+    /// <summary>+N % урона по ♥ призыва.</summary>
+    int SummonDamageTakenPercent { get; }
+}
+
+/// <summary>Реакция на гибель призыва.</summary>
+public interface ISummonListener
+{
+    Task AfterSummonDestroyed(SummonPower summon);
 }
 
 /// <summary>Волк-дух: бьёт на 4.</summary>

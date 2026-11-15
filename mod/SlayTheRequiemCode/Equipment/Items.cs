@@ -244,11 +244,11 @@ public sealed class ScaledDagger : WeaponRelic
 }
 
 /// <summary>
-/// Клинок Сумеречной Вдовы (артефакт, кинжал +3): Подлый ×2 вместо ×1.5; убийство Оружейной атакой — Невидимость
+/// Клинок Сумеречной Вдовы (артефакт Князя Бездны — праведность не выше «Запятнанного», кинжал +3): Подлый ×2 вместо ×1.5; убийство Оружейной атакой — Невидимость
 /// до конца хода (переживает саму атаку — <see cref="InvisibilityPower.GrantUntilTurnEnd"/>).
 /// </summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class TwilightWidowBlade : WeaponRelic
+public sealed class TwilightWidowBlade : WeaponRelic, IAbyssalItem
 {
     public override RelicRarity Rarity => RelicRarity.Rare;
     public override int Tier => 5;

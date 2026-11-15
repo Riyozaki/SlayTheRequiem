@@ -42,6 +42,7 @@ public static class Loadout
         var relics = player.Relics.Sum(r => r switch
         {
             EquipmentRelic e => e.Weight,
+            IWeightless => 0,
             _ when r.Rarity is MegaCrit.Sts2.Core.Entities.Relics.RelicRarity.Starter => 0,
             _ => 1,
         });
@@ -55,6 +56,9 @@ public static class Loadout
 
     public static BurdenRules.Overload Overload(Player? player) => BurdenRules.Evaluate(TotalWeight(player), Capacity(player));
 }
+
+/// <summary>Реликвия без веса Груза: дары и благословения (не вещи).</summary>
+public interface IWeightless { }
 
 /// <summary>Штрафы Груза для ресурсов и руки.</summary>
 public static class BurdenPenalty

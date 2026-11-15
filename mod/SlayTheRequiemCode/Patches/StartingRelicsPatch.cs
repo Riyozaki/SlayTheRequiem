@@ -7,7 +7,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Spells;
 namespace SlayTheRequiem.SlayTheRequiemCode.Patches;
 
 /// <summary>Герою в системе Реквиема к стартовым реликвиям добавляются Гримуар (владение школами), Сумка травника, Походный мешок,
-/// Книга торговца и Свечи Реквиема.</summary>
+/// Книга торговца, Свечи Реквиема и Знак веры.</summary>
 [HarmonyPatch(typeof(Player), "PopulateStartingRelics")]
 public static class StartingRelicsPatch
 {
@@ -40,6 +40,13 @@ public static class StartingRelicsPatch
             var stone = ModelDb.Relic<Rollback.MemoryStoneRelic>().ToMutable();
             stone.FloorAddedToDeck = 1;
             __instance.AddRelicInternal(stone, silent: true);
+        }
+        // Знак веры — праведность и Святилища (docs/design/05 §2). «Реквием 10» начинает Запятнанным — этап 7.
+        if (!__instance.Relics.OfType<Pantheon.FaithSigil>().Any())
+        {
+            var sigil = ModelDb.Relic<Pantheon.FaithSigil>().ToMutable();
+            sigil.FloorAddedToDeck = 1;
+            __instance.AddRelicInternal(sigil, silent: true);
         }
         if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();

@@ -277,3 +277,59 @@ class Stage36(unittest.TestCase):
         self.assertEqual(r.shared_candles_left([]), 0)
         self.assertEqual(r.shared_candles_used([0, 2, 1]), 2)
         self.assertEqual(r.map_rng_name(0, 1), "act_1_map_requiem_1")
+
+
+class Pantheon(unittest.TestCase):
+    def test_piety_steps(self):
+        self.assertEqual(r.piety_sin(r.RIGHTEOUS), r.TAINTED)
+        self.assertEqual(r.piety_sin(r.TAINTED), r.APOSTATE)
+        self.assertEqual(r.piety_sin(r.APOSTATE), r.APOSTATE)
+        self.assertEqual(r.piety_redeem(r.APOSTATE), r.TAINTED)
+        self.assertEqual(r.piety_redeem(r.TAINTED), r.RIGHTEOUS)
+
+    def test_effective(self):
+        self.assertEqual(r.piety_effective(r.RIGHTEOUS, True, False, False), r.TAINTED)
+        self.assertEqual(r.piety_effective(r.APOSTATE, True, False, False), r.APOSTATE)
+        self.assertEqual(r.piety_effective(r.RIGHTEOUS, False, True, False), r.APOSTATE)
+        self.assertEqual(r.piety_effective(r.RIGHTEOUS, False, False, True), r.APOSTATE)
+        self.assertEqual(r.blessing_strength(r.RIGHTEOUS, False), r.BLESSING_FULL)
+        self.assertEqual(r.blessing_strength(r.TAINTED, False), r.BLESSING_DIMMED)
+        self.assertEqual(r.blessing_strength(r.APOSTATE, False), r.BLESSING_NONE)
+        self.assertEqual(r.blessing_strength(r.RIGHTEOUS, True), r.BLESSING_NONE)
+
+    def test_redemption(self):
+        self.assertEqual([r.redemption_cost(a) for a in (0, 1, 2)], [50, 75, 100])
+        self.assertEqual([r.robbery_gold(a) for a in (0, 1, 4)], [40, 60, 120])
+        self.assertTrue(r.can_redeem(r.TAINTED, -1, 1, False))
+        self.assertFalse(r.can_redeem(r.TAINTED, 1, 1, False))   # раз в акт
+        self.assertFalse(r.can_redeem(r.RIGHTEOUS, -1, 1, False))
+        self.assertFalse(r.can_redeem(r.APOSTATE, -1, 1, True))   # Отверженный
+
+    def test_unknown_rooms(self):
+        self.assertEqual(r.unknown_room_roll(0, 0), 0)
+        self.assertEqual([r.unknown_room_roll(1, x) for x in (0, 13, 14, 21, 22, 29, 30)], [1, 1, 2, 2, 3, 3, 0])
+        self.assertEqual(r.unknown_room_roll(3, 25), 0)            # Камни — только акты 2–3
+        self.assertEqual(r.unknown_room_roll(3, 5), 1)
+
+    def test_omen_offer(self):
+        self.assertEqual(r.omen_offer_count(0), 3)
+        self.assertEqual(r.omen_offer_count(8), 10)
+        picks = r.pick_distinct(10, 3, lambda n: n - 1)
+        self.assertEqual(len(set(picks)), 3)
+        self.assertNotIn(4, r.pick_distinct(6, 5, lambda n: 0, exclude={4}))
+        self.assertEqual(sorted(r.pick_distinct(10, 10, lambda n: 0)), list(range(10)))
+
+    def test_prince_helpers(self):
+        self.assertTrue(r.has_divine_spirit(r.BLESSING_FULL, True, True, True))
+        self.assertFalse(r.has_divine_spirit(r.BLESSING_DIMMED, True, True, True))
+        self.assertEqual(r.outcast_after_combat_heal(False), 2)
+        self.assertEqual(r.outcast_after_combat_heal(True), 4)
+        self.assertTrue(r.below_half(9, 20))
+        self.assertFalse(r.below_half(10, 20))
+        self.assertEqual(r.star_marks_after_act(2, False), 3)
+        self.assertEqual(r.star_marks_after_act(2, True), 0)
+
+    def test_pierce(self):
+        self.assertEqual(r.apply_plating(6, 2, pierce=1), 5)
+        self.assertEqual(r.apply_plating(6, 1, pierce=1), 6)
+        self.assertEqual(r.apply_plating(6, -1), 7)   # Осколок Ветра: Латы −1

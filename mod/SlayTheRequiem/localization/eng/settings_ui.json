@@ -56,5 +56,8 @@
   "SLAYTHEREQUIEM-MEMORY_STONE_CANDLES.hover.desc": "Returns per run. −1 — by level (0: unlimited, 1–4: 3, 5–7: 2, 8–9: 1, 10: none). 0 — classic roguelike.",
   "SLAYTHEREQUIEM-ALLOW_THEFT.title": "Theft in shops",
   "SLAYTHEREQUIEM-ALLOW_THEFT.hover.title": "Theft in shops",
-  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.desc": "Click an item you can't afford to try stealing it (80% −10% per 50 gold, once per shop). Later theft will come from relics and origins; this switch allows it without them. Must match in co-op."
+  "SLAYTHEREQUIEM-ALLOW_THEFT.hover.desc": "Click an item you can't afford to try stealing it (80% −10% per 50 gold, once per shop). Later theft will come from relics and origins; this switch allows it without them. Must match in co-op.",
+  "SLAYTHEREQUIEM-ENABLE_PANTHEON.title": "Pantheon",
+  "SLAYTHEREQUIEM-ENABLE_PANTHEON.hover.title": "Pantheon",
+  "SLAYTHEREQUIEM-ENABLE_PANTHEON.hover.desc": "An Omen at Neow; from act 2 some «?» become Shrines, Dark Shrines and Six Stones by the Water. Must match in co-op."
 }

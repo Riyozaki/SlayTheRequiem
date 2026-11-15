@@ -55,3 +55,10 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
         ? CreatureCmd.GainBlock(Owner.Creature, a, MegaCrit.Sts2.Core.ValueProps.ValueProp.Move, play)
         : CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, play);
 }
+
+/// <summary>
+/// Клич (docs/design/04 «Глас»): карта, усиливаемая Знамением Гласа и Громовым Венценосцем (+урон).
+/// Перезарядка Кличей — с системой Кличей (этап 5), до тех пор Кличи — обычные карты.
+/// </summary>
+public interface IShoutCard { }
+

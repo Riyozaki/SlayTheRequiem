@@ -52,6 +52,12 @@ internal class RequiemConfig : SimpleModConfig
     /// </summary>
     public static bool AllowTheft { get; set; } = false;
 
+    /// <summary>
+    /// Пантеон (docs/design/05): Знамение у Нео, Святилища, Тёмные святилища и Камни отлива вместо части «?» в актах 2+.
+    /// В коопе должен совпадать у всех.
+    /// </summary>
+    public static bool EnablePantheon { get; set; } = true;
+
     /// <summary>Камень Памяти (docs/design/15): Отпечаток в начале акта и возврат с экрана поражения.</summary>
     [ConfigSection("DeathSection")]
     public static bool EnableMemoryStone { get; set; } = true;

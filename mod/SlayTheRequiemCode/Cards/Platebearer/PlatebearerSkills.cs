@@ -86,7 +86,7 @@ public sealed class SmotherFlames : RequiemCard
 
 /// <summary>Боевой клич: Слабость и Шаткость всем врагам. Сжигается.</summary>
 [Pool(typeof(IroncladCardPool))]
-public sealed class BattleCry : RequiemCard
+public sealed class BattleCry : RequiemCard, IShoutCard
 {
     public BattleCry() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.AllEnemies)
     {

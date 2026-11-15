@@ -129,6 +129,13 @@ public static class EnemySetup
     public static bool IsUndead(Creature creature) =>
         creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "spirit";
 
+    /// <summary>Порождения Бездны (даэдра).</summary>
+    public static bool IsAbyss(Creature creature) =>
+        creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction == "abyss";
+
+    /// <summary>Нежить, духи и Бездна — цели Сияния и бонусов Небесных (docs/design/05).</summary>
+    public static bool IsUndeadOrAbyss(Creature creature) => IsUndead(creature) || IsAbyss(creature);
+
     /// <summary>Иммунитет к Хвори: нежить, конструкты, Бездна (docs/design/03).</summary>
     public static bool IsBlightImmune(Creature creature) =>
         creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "construct" or "abyss";

@@ -151,6 +151,8 @@ public static class ShopActions
                 }
                 case ShopAction.TheftAttempt:
                     ledger?.MarkTheftAttempt(player.RunState);
+                    // Кража — грех, удачная или нет: −1 ступень праведности (docs/design/05 §2).
+                    Pantheon.Faith.Sin(player);
                     break;
 
                 case ShopAction.TheftFailed:
