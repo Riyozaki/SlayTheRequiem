@@ -56,6 +56,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
         if (payment.HpLoss > 0 && RequiemConfig.EnableOverstrain)
         {
+            UI.RequiemUiEvents.RaiseOverstrained(player);
             using var _ = DamageTyping.As(DamageType.True);
             await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), player.Creature, payment.HpLoss,
                 ValueProp.Unblockable | ValueProp.Unpowered, null, null);

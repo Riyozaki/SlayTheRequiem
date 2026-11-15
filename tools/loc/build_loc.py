@@ -20,6 +20,7 @@ from loc_stage5 import STAGE5_CARDS, STAGE5_POWERS, STAGE5_REST_SITE, STAGE5_REL
 from loc_stage6 import (STAGE6_BADGES, STAGE6_CARDS, STAGE6_ENCHANTMENTS, STAGE6_EVENTS, STAGE6_POWERS,  # noqa: E402
                         STAGE6_EQUIPMENT, STAGE6_RELICS, STAGE6_REST_SITE, STAGE6_SETTINGS)
 from loc_flavor import FLAVOR  # noqa: E402
+from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
 
@@ -228,7 +229,7 @@ def main() -> None:
             for move, title in data["moves"].items():
                 monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
         encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS}.items()}
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang]}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang]}.items()}
         potions = {}
         for cls, et, ed, rt, rd in STAGE3_POTIONS:
             k = PREFIX + snake(cls)
@@ -240,6 +241,10 @@ def main() -> None:
         n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
         n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
+        # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
+        n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in UI_TIPS[lang].items()})
+        n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 
 

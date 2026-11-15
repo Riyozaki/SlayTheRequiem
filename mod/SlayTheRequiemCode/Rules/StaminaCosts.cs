@@ -28,15 +28,24 @@ public static class StaminaCosts
         var cost = BaseCostFor(card, play);
         // Чары «Дыхательная» (07 §6.2): −1 ◆.
         cost = TransformationRules.StaminaAfter(cost, Progression.RequiemCardEnchantment.Has(card, CardEnchant.Breathing));
+        // Канонические карты (библиотека, превью наград) владельца не имеют: CardModel.Owner на них бросает исключение.
+        var player = OwnerOf(card);
         if (Equipment.EquipmentCombatRules.IsWeaponAttack(card))
-            cost = EquipmentRules.WeaponAttackCost(cost, Equipment.Loadout.Bonuses(card.Owner));
-        var owner = card.Owner?.Creature;
+            cost = EquipmentRules.WeaponAttackCost(cost, Equipment.Loadout.Bonuses(player));
+        var owner = player?.Creature;
         if (owner != null && owner.HasPower<GripPower>()) cost = 0;
-        if (card.Owner != null)
-            foreach (var modifier in card.Owner.Relics.OfType<IAttackStaminaModifier>())
+        if (player != null)
+            foreach (var modifier in player.Relics.OfType<IAttackStaminaModifier>())
                 cost = Math.Max(0, modifier.ModifyAttackStamina(card, cost));
         return cost;
     }
+
+    /// <summary>Владелец карты или null для канонической модели (без исключения AssertMutable).</summary>
+    public static MegaCrit.Sts2.Core.Entities.Players.Player? OwnerOf(CardModel card) => card.IsMutable ? card.Owner : null;
+
+    /// <summary>X-атака: ◆ = потраченная энергия (на карте показываем «X»).</summary>
+    public static bool IsX(CardModel card) =>
+        card is not IRequiemCard && RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var e) && e.IsX;
 
     public static DamageType DamageTypeFor(CardModel card)
     {

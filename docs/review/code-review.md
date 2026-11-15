@@ -28,6 +28,9 @@
 | R-04 | ✅ | `ActIndexShim.ReplaceActIndex` считает замены и пишет предупреждение при 0. У `CardFactory.RollForUpgrade` две перегрузки — патч уточнён типами (без этого `PatchAll` бросил бы `AmbiguousMatchException`). Новая проверка `tools/ci/check_harmony_targets.py` в CI. ⏳ Smoke-тест цен в акте 4 — после сборки. |
 | R-06 | ✅ | `*.csv.import` (`importer="keep"`), `include_filter`, `exclude_filter="SlayTheRequiem.Tests/*"`; плюс CSV встроены в DLL, `RequiemData` берёт их, если в паке нет. |
 | R-07 | ✅ | Карта Пути — `PathGarrote`; восстановлена строка «Подлый: Слабость» у карты Безмолвной; `check_loc.py` и `build_loc.py` ловят дубли. |
+| R-10 | ✅ (код) | Цена ◆ видна на карте: `UI/NStaminaCostBadge` через `ExtraCardUi` (цифра/«X», цвет Устал/Изнурён/надрыв); `StaminaCosts.CostFor` больше не обращается к `Owner` канонических карт. ⏳ Проверка в игре. |
+| R-11 | ✅ (код) | `characters.json` мода (`SLAYTHEREQUIEM-PLATEBEARER.*`) + постфиксы `CharacterModel.Title/TitleObject/CharacterSelectTitle/CharacterSelectDesc` при включённых системах; ванильные строки не перезаписываются. |
+| R-23 | ✅ (код) | `UI/HeroPatches.cs`: кнопки выбора, «случайный герой», `UnlockState.CharacterCardPools`, Морское стекло Оробаса; настройка `ShowVanillaOnlyHeroes`. |
 | R-15 | ⏳ | Без изменений (M4). |
 | R-18 | ⏳ | Решение: у обычных врагов остаются ванильные облики (art spec §0), свои — только у супербоссов (M7). |
 | R-21 | ✅ | Поиск картинки кэшируется по пути, в лог — один раз. Цепочка «свой → ванильный → заглушка». |

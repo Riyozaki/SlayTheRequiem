@@ -88,5 +88,8 @@
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_7": "Legend",
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_8": "Doomed",
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_9": "Forsaken",
-  "SLAYTHEREQUIEM-REQUIEM_LEVEL_10": "Damned"
+  "SLAYTHEREQUIEM-REQUIEM_LEVEL_10": "Damned",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.title": "Necrobinder and Defect as heroes",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.title": "Necrobinder and Defect",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "In the mod they are transformation forms (Lich, Clockwork Heart), so they are hidden on the character select screen and their cards never appear in rewards. On — bring them back as vanilla heroes (the mod's systems do not apply to them). Must match in co-op."
 }

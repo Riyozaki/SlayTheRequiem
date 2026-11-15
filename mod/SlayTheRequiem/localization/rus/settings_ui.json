@@ -88,5 +88,8 @@
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_7": "Легенда",
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_8": "Обречённый",
   "SLAYTHEREQUIEM-REQUIEM_LEVEL_9": "Отверженный",
-  "SLAYTHEREQUIEM-REQUIEM_LEVEL_10": "Проклятый"
+  "SLAYTHEREQUIEM-REQUIEM_LEVEL_10": "Проклятый",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.title": "Некробиндер и Дефект как герои",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.title": "Некробиндер и Дефект",
+  "SLAYTHEREQUIEM-SHOW_VANILLA_ONLY_HEROES.hover.desc": "В моде это облики превращений (Лич, Заводное сердце), поэтому они скрыты на экране выбора, а их карты не попадают в награды. Вкл — вернуть их как ванильных героев (системы мода на них не действуют). В коопе должна совпадать у всех."
 }

@@ -4,6 +4,8 @@
 1. eng и rus содержат одинаковые ключи, пустых строк нет, JSON читается.
 2. У каждой конкретной (sealed) модели — карты, силы, реликвии, зелья, монстра, встречи, чары — есть заголовок.
    Наследование строится по объявлениям классов в mod/SlayTheRequiemCode, корни — игровые/BaseLib-базы.
+4. У каждого ключевого слова мода ([CustomEnum] CardKeyword) есть title/description в card_keywords.json, а у подсказок
+   интерфейса (MakeTip/TipLoc/TipText и ключи состояний в mod/SlayTheRequiemCode/UI) — в static_hover_tips.json.
 3. Имена классов моделей уникальны: id модели = префикс мода + имя класса (без пространства имён), и второй
    одноимённый класс молча затирает первый в ModelDb (ревью R-07).
 
@@ -101,10 +103,37 @@ def check_models(errors: list) -> int:
     return checked
 
 
+KEYWORD = re.compile(r"\[CustomEnum[^\]]*\](?:\s*\[[^\]]*\])*\s*public\s+static\s+CardKeyword\s+(\w+)\s*;")
+UI_TIP = re.compile(r'(?:MakeTip|TipLoc|TipText)\(\$?"([A-Z][A-Z_]*)[.{"]|(?:=>|return)\s+"([A-Z][A-Z_]+)"')
+
+
+def check_ui_keys(errors: list) -> int:
+    """Ключевые слова BaseLib и подсказки UI: ключ без текста в игре показывается как сам ключ."""
+    checked = 0
+    tables = {}
+    for lang in ("eng", "rus"):
+        for file in ("card_keywords.json", "static_hover_tips.json"):
+            p = os.path.join(LOC, lang, file)
+            tables[(lang, file)] = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+    for path in glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True):
+        src = open(path, encoding="utf-8-sig").read()
+        wanted = [("card_keywords.json", name.upper()) for name in KEYWORD.findall(src)]
+        if os.sep + "UI" + os.sep in path:
+            wanted += [("static_hover_tips.json", a or b) for a, b in UI_TIP.findall(src)]
+        for file, key in wanted:
+            checked += 1
+            for lang in ("eng", "rus"):
+                for field in ("title", "description"):
+                    if f"{PREFIX}{key}.{field}" not in tables[(lang, file)]:
+                        errors.append(f"{os.path.relpath(path, ROOT)}: нет {lang}/{file} → {PREFIX}{key}.{field}")
+    return checked
+
+
 def main() -> int:
     errors: list = []
     check_parity(errors)
     checked = check_models(errors)
+    checked += check_ui_keys(errors)
     for e in errors:
         print("✗", e)
     print(f"Моделей проверено: {checked}; ошибок: {len(errors)}")

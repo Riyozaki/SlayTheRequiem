@@ -40,6 +40,13 @@ internal class RequiemConfig : SimpleModConfig
     public static BackgroundChoice Background { get; set; } = BackgroundChoice.Random;
 
     /// <summary>
+    /// Некробиндер и Дефект (docs/design/06 §4): в моде это облики превращений, а не герои, поэтому на экране выбора
+    /// скрыты, а их карты не попадают в награды и случайную генерацию. Вкл — вернуть их как ванильных героев
+    /// (системы мода на них не действуют). В коопе должна совпадать у всех.
+    /// </summary>
+    public static bool ShowVanillaOnlyHeroes { get; set; } = false;
+
+    /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
     /// Меняется до начала забега; в коопе должна совпадать у всех.
     /// </summary>
