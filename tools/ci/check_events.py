@@ -45,21 +45,28 @@ def main() -> int:
                 registered.setdefault(cls, set()).add(arm.group(1))
 
     events: dict[str, str] = {}
+    node_events: list[str] = []
     for path, text in src.items():
-        for cm in re.finditer(r"public (sealed )?class (\w+) : RequiemEvent\b(.*?)(?=\npublic |\Z)", text, re.S):
-            sealed, name, body = cm.group(1), cm.group(2), cm.group(3)
+        for cm in re.finditer(r"public (sealed )?class (\w+) : (RequiemEvent|NodeEvent)\b(.*?)(?=\npublic |\Z)", text, re.S):
+            sealed, name, kind, body = cm.group(1), cm.group(2), cm.group(3), cm.group(4)
             where = f"{os.path.basename(path)}:{name}"
             if not sealed:
                 errors.append(f"{where}: класс события должен быть sealed (манифест картинок)")
-            act = re.search(r"HomeAct => ActKind\.(\w+);", body)
-            if not act:
-                errors.append(f"{where}: нет HomeAct")
-                continue
-            events[name] = act.group(1)
-            also = re.search(r"AlsoIn => \[(.*?)\];", body)
-            homes = {act.group(1)} | (set(re.findall(r"ActKind\.(\w+)", also.group(1))) if also else set())
-            if registered.get(name, set()) != homes:
-                errors.append(f"{where}: HomeAct/AlsoIn = {sorted(homes)}, а в ActEvents.For — {sorted(registered.get(name, set()))}")
+            if kind == "NodeEvent":
+                # Событие подтипа узла (Библиотека, M5): в пулы актов не входит — подставляется ModifyNextEvent.
+                node_events.append(name)
+                if name in registered:
+                    errors.append(f"{where}: событие узла не должно быть в ActEvents.For")
+            else:
+                act = re.search(r"HomeAct => ActKind\.(\w+);", body)
+                if not act:
+                    errors.append(f"{where}: нет HomeAct")
+                    continue
+                events[name] = act.group(1)
+                also = re.search(r"AlsoIn\s*=>\s*\[(.*?)\];", body, re.S)
+                homes = {act.group(1)} | (set(re.findall(r"ActKind\.(\w+)", also.group(1))) if also else set())
+                if registered.get(name, set()) != homes:
+                    errors.append(f"{where}: HomeAct/AlsoIn = {sorted(homes)}, а в ActEvents.For — {sorted(registered.get(name, set()))}")
             eid = PREFIX + snake(name)
             keys = set(re.findall(r'Choice\("(\w+)"', body))
             if "PASS_{school" in body:
@@ -96,7 +103,7 @@ def main() -> int:
     for e in errors:
         print("✗", e)
     by_act = ", ".join(f"{a} {sum(1 for x in events.values() if x == a)}" for a in MIN_EVENTS)
-    print(f"событий актов: {len(events)} ({by_act}); ошибок: {len(errors)}")
+    print(f"событий актов: {len(events)} ({by_act}); событий узлов: {len(node_events)}; ошибок: {len(errors)}")
     return 1 if errors else 0
 
 

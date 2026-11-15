@@ -207,6 +207,67 @@ class M5Camp(unittest.TestCase):
         self.assertEqual(r.camp_cost("Forge", False), 2)
 
 
+class M5Rollback(unittest.TestCase):
+    def test_crypt_candle(self):
+        self.assertTrue(r.can_take_crypt_candle(True, True, True, 2, 0))
+        self.assertFalse(r.can_take_crypt_candle(True, True, True, 2, 1))
+        self.assertFalse(r.can_take_crypt_candle(True, True, True, r.INFINITE, 0))
+        self.assertFalse(r.can_take_crypt_candle(False, True, True, 2, 0))
+        self.assertFalse(r.can_take_crypt_candle(True, True, False, 0, 0))
+        share = sum(r.crypt_candle_in_pool(r.fnv1a(f"seed{i}|crypt_candle", 1)) for i in range(1000)) / 1000
+        self.assertTrue(0.2 < share < 0.4, share)
+
+    def test_rejoin(self):
+        self.assertEqual([r.rejoin_delay_ms(a) for a in (-1, 0, 1, 2, 3, 4, 9)], [0, 2000, 2500, 3500, 5000, 6000, 6000])
+        self.assertEqual(r.rejoin_total_ms(), 49000)
+        self.assertTrue(r.should_retry_rejoin(0, False, True))
+        self.assertFalse(r.should_retry_rejoin(r.REJOIN_ATTEMPTS, False, True))
+        self.assertFalse(r.should_retry_rejoin(1, True, True))
+        self.assertFalse(r.should_retry_rejoin(1, False, False))
+
+
+FULL_RUN = [("Foothills", 0), ("FrozenBarrows", 1), ("ClockworkDepths", 1), ("Hive", 2), ("BloodCourt", 3), ("StarTower", 3),
+            ("Glory", 4)]
+
+
+class M5Nodes(unittest.TestCase):
+    def test_twenty_subtypes_have_icons_and_acts(self):
+        self.assertEqual(len(r.NODE_SUBTYPES), 20)
+        self.assertEqual(len(set(r.NODE_ICONS.values())), 20)
+        root = os.path.join(os.path.dirname(__file__), "..", "..", "mod", "SlayTheRequiem", "images", "map", "icons")
+        for sub in r.NODE_SUBTYPES:
+            self.assertTrue(os.path.exists(os.path.join(root, r.NODE_ICONS[sub] + ".png")), sub)
+            self.assertTrue(any(r.node_available(sub, k, slot) for k, slot in FULL_RUN), sub)
+            r.node_base(sub)
+
+    def test_every_subtype_has_a_generator(self):
+        marks = {r.node_from_mark(m) for m in ("AbyssGate", "LockedVault", "Valve", "Lair", "Trial", "Cache", "Ambush")}
+        shops = {r.node_from_shop(t) for t in ("Wanderer", "Armorer", "Arcanist", "Herbalist", "Jeweler", "Temple", "Fence",
+                                               "Caravan")} - {None}
+        unknown = {r.node_from_unknown_roll(p, lib) for p in (0, 1, 2, 3) for lib in (False, True)} - {None}
+        fixed = {s for s in r.NODE_SUBTYPES if r.node_reveal(s) == "Fixed"}
+        self.assertEqual(marks | shops | unknown | fixed | {"Tavern"}, set(r.NODE_SUBTYPES))
+        self.assertEqual(r.node_reveal("Ambush"), "Hidden")
+
+    def test_all_seven_shop_types_roll(self):
+        seen = set()
+        for kind, slot in FULL_RUN:
+            for h in range(400):
+                for n in (0, 1, 2):
+                    seen.add(r.roll_shop_type_kind(r.fnv1a("s", h), kind, min(slot, 2), n, None))
+        self.assertEqual(seen - {"Wanderer"}, {"Armorer", "Arcanist", "Herbalist", "Jeweler", "Temple", "Fence", "Caravan"})
+
+    def test_counts_and_numbers(self):
+        self.assertEqual([r.lair_count(s) for s in range(5)], [1, 1, 0, 0, 0])
+        self.assertEqual([r.trial_count(0, 3), r.trial_count(1, 3), r.trial_count(1, 4)], [0, 2, 1])
+        self.assertEqual([r.ambush_count(0, 1), r.ambush_count(2, 1), r.ambush_count(2, 2)], [0, 2, 1])
+        self.assertEqual([r.lair_hp(100), r.lair_hp(10), r.lair_hp(41), r.lair_hp(1)], [70, 7, 29, 1])
+        self.assertFalse(r.roll_library(0, 0))
+        self.assertTrue(r.roll_library(1, 8))
+        self.assertFalse(r.roll_library(1, 9))
+        self.assertEqual([r.cache_gold(0), r.cache_trap(4), r.ambush_gold(4), r.trial_strength(3)], [30, 12, 55, 2])
+
+
 class M5Shops(unittest.TestCase):
     def test_placement(self):
         self.assertEqual(r.guaranteed_shop("BloodCourt", 0), "Fence")

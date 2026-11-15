@@ -227,32 +227,36 @@ public static class ActEvents
         [
             ModelDb.Event<FrozenPilgrimEvent>(), ModelDb.Event<BarrowSealEvent>(), ModelDb.Event<FrostAltarEvent>(),
             ModelDb.Event<DraugrWakeEvent>(), ModelDb.Event<BurialUrnsEvent>(), ModelDb.Event<SnowboundSledEvent>(),
-            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(),
+            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(), ModelDb.Event<CryptCandleEvent>(),
         ],
         ActKind.ClockworkDepths =>
         [
             ModelDb.Event<BrokenGolemEvent>(), ModelDb.Event<SteamValveEvent>(), ModelDb.Event<BrassArchiveEvent>(),
             ModelDb.Event<CoastRaidersEvent>(), ModelDb.Event<AutomatonForgeEvent>(), ModelDb.Event<ClockworkOracleEvent>(),
-            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(),
+            ModelDb.Event<AbandonedMuleEvent>(), ModelDb.Event<MuleAmbushEvent>(), ModelDb.Event<CryptCandleEvent>(),
         ],
         ActKind.BloodCourt =>
         [
             ModelDb.Event<MasqueradeEvent>(), ModelDb.Event<BloodFountainEvent>(), ModelDb.Event<CountsDiceEvent>(),
             ModelDb.Event<ThrallMarketEvent>(), ModelDb.Event<BlindMirrorEvent>(), ModelDb.Event<NightCarriageEvent>(),
-            ModelDb.Event<MuleAmbushEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(), ModelDb.Event<CryptCandleEvent>(),
         ],
         ActKind.StarTower =>
         [
             ModelDb.Event<StarExamEvent>(), ModelDb.Event<LeyWellEvent>(), ModelDb.Event<BrokenOrreryEvent>(),
             ModelDb.Event<RenegadeApprenticeEvent>(), ModelDb.Event<MirrorLibraryEvent>(), ModelDb.Event<StarCartographerEvent>(),
-            ModelDb.Event<MuleAmbushEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(), ModelDb.Event<CryptCandleEvent>(),
         ],
         ActKind.Hive =>
         [
             ModelDb.Event<WhisperingRiftEvent>(), ModelDb.Event<HiveAmberEvent>(), ModelDb.Event<AshPilgrimEvent>(),
-            ModelDb.Event<MuleAmbushEvent>(),
+            ModelDb.Event<MuleAmbushEvent>(), ModelDb.Event<CryptCandleEvent>(),
         ],
-        ActKind.Glory => [ModelDb.Event<FallenHeraldEvent>(), ModelDb.Event<VoidMerchantEvent>(), ModelDb.Event<LastCampfireEvent>()],
+        ActKind.Glory =>
+        [
+            ModelDb.Event<FallenHeraldEvent>(), ModelDb.Event<VoidMerchantEvent>(), ModelDb.Event<LastCampfireEvent>(),
+            ModelDb.Event<CryptCandleEvent>(),
+        ],
         _ => [],
     };
 }

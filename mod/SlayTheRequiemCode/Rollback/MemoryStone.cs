@@ -236,6 +236,7 @@ public static class MemoryStone
 
                 stone.CandlesUsed = candlesUsed;
                 stone.BonusCandles = deadStone.BonusCandles;
+                stone.CryptCandles = deadStone.CryptCandles;
                 stone.Rollbacks = rollbacks;
                 stone.FleshScars = deadStone.FleshScars + (scar == Scar.Flesh ? 1 : 0);
                 stone.SoulScars = deadStone.SoulScars + (scar == Scar.Soul ? 1 : 0);

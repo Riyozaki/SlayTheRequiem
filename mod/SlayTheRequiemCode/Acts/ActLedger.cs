@@ -3,12 +3,14 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Map;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.Commands;
+using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Monsters;
@@ -16,6 +18,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Progression;
 using SlayTheRequiem.SlayTheRequiemCode.Relics;
 using SlayTheRequiem.SlayTheRequiemCode.Rollback;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
+using SlayTheRequiem.SlayTheRequiemCode.Shops;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 
@@ -157,6 +160,19 @@ public sealed class ActLedger : RequiemRelic
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 📖 Библиотека (M5, 13 §4.2): часть «?» в актах 2–5 — Библиотека. Бросок от зерна и этажа (одинаков у всех),
+    /// подменяет событие только Дорожная карта первого игрока; Святилища, Камни отлива и события форм не трогает.
+    /// </summary>
+    public override EventModel ModifyNextEvent(EventModel currentEvent)
+    {
+        if (!RequiemConfig.EnableRequiemSystems || !IsMutable || Owner?.RunState is not { } run) return currentEvent;
+        if (run.Players.FirstOrDefault() != Owner) return currentEvent;
+        if (currentEvent is Pantheon.PantheonEvent or Transformations.FormEvent or Events.NodeEvent) return currentEvent;
+        var roll = (int)(ShopRules.Fnv1a((run.Rng.StringSeed ?? string.Empty) + "|library", run.TotalFloor * 13 + run.CurrentActIndex) % 100u);
+        return NodeRules.RollLibrary(ActKinds.Slot(run), roll) ? ModelDb.Event<Events.LibraryEvent>() : currentEvent;
+    }
+
     public override async Task AfterRoomEntered(AbstractRoom room)
     {
         if (Owner?.RunState is not { } run || !RequiemConfig.EnableRequiemSystems || run.CurrentMapCoord is not { } coord) return;
@@ -173,6 +189,9 @@ public sealed class ActLedger : RequiemRelic
                 OpenVault(code);
                 Flash();
                 await PlayerCmd.GainGold(ActRules.VaultGold, Owner);
+                break;
+            case MapMark.Cache when !Has(_openedVaults, code):
+                await OpenCache(run, code);
                 break;
         }
         if (ActMarks.NewGate(run, coord) is { } gate)
@@ -195,8 +214,65 @@ public sealed class ActLedger : RequiemRelic
                 room.AddExtraReward(Owner, new GoldReward(ActRules.NightGoldBonus, Owner));
             if (run.Map != null && run.CurrentMapCoord is { } at && ActMarks.At(run, at) == MapMark.AbyssGate)
                 ActMarks.Hide(run.Map, MapMarks.Encode(run.CurrentActIndex, at.col, at.row));
+            await NodeVictory(run, room);
         }
         await SuperbossVictory(room);
+    }
+
+    // ───── подтипы узлов (M5, 13 §4.2) ─────
+
+    /// <summary>
+    /// ⚿ Тайник: без выбора (одинаково у всех в коопе) — запертый сундук открывается Когтистым ключом (золото + зелье),
+    /// без ключа остаётся только обычный сундук; сундук с ловушкой бьёт и отдаёт золото. Вид — от зерна узла.
+    /// </summary>
+    private async Task OpenCache(IRunState run, int code)
+    {
+        if (Owner == null) return;
+        var slot = ActKinds.Slot(run);
+        var trapped = NodeRules.CacheTrapped((int)(ShopRules.Fnv1a(run.Rng.StringSeed ?? string.Empty, code) % 100u));
+        if (trapped)
+        {
+            OpenVault(code);
+            Flash();
+            await CreatureCmd.Damage(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), Owner.Creature,
+                NodeRules.CacheTrap(slot), MegaCrit.Sts2.Core.ValueProps.ValueProp.Unblockable | MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered,
+                null, null);
+            await PlayerCmd.GainGold(NodeRules.CacheGold(slot), Owner);
+            return;
+        }
+        if (_clawKeys <= 0) return;
+        ClawKeys--;
+        OpenVault(code);
+        Flash();
+        await PlayerCmd.GainGold(NodeRules.CacheGold(slot), Owner);
+        await RewardsCmd.OfferCustom(Owner, [new PotionReward(Owner)]);
+    }
+
+    /// <summary>Награды Логова (реагенты, броня из шкуры), Испытания (реликвия) и Засады (золото).</summary>
+    private async Task NodeVictory(IRunState run, CombatRoom room)
+    {
+        if (Owner == null || run.CurrentMapCoord is not { } at) return;
+        var slot = ActKinds.Slot(run);
+        switch (ActMarks.SubtypeAt(run, at))
+        {
+            case NodeSubtype.Lair when room.RoomType == RoomType.Elite:
+                if (HerbalistPouch.Of(Owner) is { } pouch)
+                {
+                    pouch.Add(Reagent.Bloodmoss, NodeRules.LairReagents(slot));
+                    pouch.Add(Reagent.DragonScale, 1);
+                }
+                var (min, max) = NodeRules.LairHideTiers(slot);
+                var hide = ShopStock.PickEquipment(Owner, min, max, e => e.Slot is EquipSlot.Body or EquipSlot.Head or EquipSlot.Hands
+                    or EquipSlot.Feet, new HashSet<Type>());
+                if (hide != null) await RelicCmd.Obtain(hide.ToMutable(), Owner);
+                break;
+            case NodeSubtype.Trial when room.RoomType == RoomType.Elite:
+                room.AddExtraReward(Owner, new RelicReward(slot >= 3 ? RelicRarity.Rare : RelicRarity.Uncommon, Owner));
+                break;
+            case NodeSubtype.Ambush when room.RoomType == RoomType.Monster:
+                room.AddExtraReward(Owner, new GoldReward(NodeRules.AmbushGold(slot), Owner));
+                break;
+        }
     }
 
     private async Task SuperbossVictory(CombatRoom room)

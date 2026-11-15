@@ -54,6 +54,16 @@ public static class ActMarks
                 Pick(points.Where(p => p.PointType == MapPointType.Monster).ToList(), ActRules.LeyLineCount(rng.NextInt(100)), MapMark.LeyLine);
                 break;
         }
+        // Подтипы узлов (M5, 13 §4.2): Логово, Испытание, Тайник, Засада — свой поток ГСЧ, чтобы отметки правил акта
+        // (склепы, вентили, лей-линии) остались прежними. Один узел — одна отметка.
+        var slot = ActRules.SlotOf(actIndex, run.Acts.Count);
+        var nodeRng = new Rng(run.Rng.Seed, $"requiem_nodes_{actIndex}");
+        var elites = points.Where(p => p.PointType == MapPointType.Elite).ToList();
+        PickFree(elites, NodeRules.LairCount(slot), MapMark.Lair, nodeRng);
+        PickFree(elites, NodeRules.TrialCount(slot, nodeRng.NextInt(100)), MapMark.Trial, nodeRng);
+        PickFree(points.Where(p => p.PointType == MapPointType.Treasure).ToList(), NodeRules.CacheCount(slot), MapMark.Cache, nodeRng);
+        PickFree(points.Where(p => p.PointType == MapPointType.Monster).ToList(), NodeRules.AmbushCount(slot, nodeRng.NextInt(100)),
+            MapMark.Ambush, nodeRng);
         foreach (var ledger in ActRunState.Records(run))
             foreach (var code in ledger.Gates)
                 if (MapMarks.Decode(code).Act == actIndex) marks[code] = MapMark.AbyssGate;
@@ -66,7 +76,18 @@ public static class ActMarks
             foreach (var i in ActRules.PickDistinct(candidates.Count, count, rolls))
                 marks[MapMarks.Encode(actIndex, candidates[i].coord.col, candidates[i].coord.row)] = mark;
         }
+
+        void PickFree(List<MapPoint> candidates, int count, MapMark mark, Rng source)
+        {
+            var free = candidates.Where(p => !marks.ContainsKey(MapMarks.Encode(actIndex, p.coord.col, p.coord.row))).ToList();
+            var rolls = Enumerable.Range(0, Math.Max(0, count) * 4).Select(_ => source.NextInt(1000)).ToList();
+            foreach (var i in ActRules.PickDistinct(free.Count, count, rolls))
+                marks[MapMarks.Encode(actIndex, free[i].coord.col, free[i].coord.row)] = mark;
+        }
     }
+
+    /// <summary>Подтип узла по отметке (<see cref="NodeRules.FromMark"/>); null — обычный узел или решается при входе.</summary>
+    public static NodeSubtype? SubtypeAt(IRunState? run, MapCoord? coord) => NodeRules.FromMark(At(run, coord));
 
     public static MapMark At(IRunState? run, MapCoord? coord)
     {
@@ -77,6 +98,8 @@ public static class ActMarks
     /// <summary>Значок отметки — маркер «задания» на узле карты (ванильная иконка; своя — этап 8).</summary>
     public static void Show(ActMap map, int code)
     {
+        if (_cache is { } c && c.Marks.TryGetValue(code, out var mark) && NodeRules.FromMark(mark) is { } sub
+            && NodeRules.RevealOf(sub) == NodeReveal.Hidden) return; // Засада не видна (Ночное зрение — M6)
         var (_, col, row) = MapMarks.Decode(code);
         var point = map.GetPoint(col, row);
         var model = ModelDb.Relic<ActLedger>();
@@ -147,6 +170,7 @@ public sealed class ActCombatRules() : CustomSingletonModel(CustomSingletonModel
         var rule = ActKinds.CurrentRule(run);
         var ctx = new ThrowingPlayerChoiceContext();
         var round = combatState.RoundNumber;
+        if (round == 1) await ApplyNodeSubtype(run, combatState, ctx);
 
         foreach (var player in combatState.Players)
         {
@@ -163,6 +187,35 @@ public sealed class ActCombatRules() : CustomSingletonModel(CustomSingletonModel
                     break;
                 case ActRule.LeyLines when round == 1 && ActMarks.At(run, run.CurrentMapCoord) == MapMark.LeyLine:
                     await Mana.Gain(player, ActRules.LeyLineMana);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Подтипы боевых узлов (M5, 13 §4.2): 🐾 Логово — враги с 70 % ♥ (облегчённая элита-зверь), ⚔ Испытание — элита
+    /// с Силой, ! Засада — враги бьют первыми (Сила). Отметка узла одинакова у всех — эффект тоже.
+    /// </summary>
+    private static async Task ApplyNodeSubtype(IRunState run, ICombatState combatState, ThrowingPlayerChoiceContext ctx)
+    {
+        var subtype = ActMarks.SubtypeAt(run, run.CurrentMapCoord);
+        if (subtype is not (NodeSubtype.Lair or NodeSubtype.Trial or NodeSubtype.Ambush)) return;
+        var roomType = run.CurrentRoom?.RoomType;
+        if (subtype == NodeSubtype.Ambush ? roomType != RoomType.Monster : roomType != RoomType.Elite) return;
+        var slot = ActKinds.Slot(run);
+        foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive).ToList())
+        {
+            switch (subtype)
+            {
+                case NodeSubtype.Lair:
+                    await CreatureCmd.SetMaxHp(enemy, NodeRules.LairHp(enemy.MaxHp));
+                    if (enemy.CurrentHp > enemy.MaxHp) await CreatureCmd.SetCurrentHp(enemy, enemy.MaxHp);
+                    break;
+                case NodeSubtype.Trial:
+                    await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(ctx, enemy, NodeRules.TrialStrength(slot), null, null);
+                    break;
+                case NodeSubtype.Ambush:
+                    await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(ctx, enemy, NodeRules.AmbushStrength(slot), null, null);
                     break;
             }
         }

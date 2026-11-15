@@ -46,6 +46,7 @@ public sealed class MemoryStoneRelic : RequiemRelic
 
     private int _candlesUsed;
     private int _bonusCandles;
+    private int _cryptCandles;
     private int _rollbacks;
     private int _fleshScars;
     private int _soulScars;
@@ -63,6 +64,25 @@ public sealed class MemoryStoneRelic : RequiemRelic
     /// <summary>Дополнительные Свечи (супербосс, «Свеча в склепе» — этапы 4–6).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int BonusCandles { get => _bonusCandles; set { AssertMutable(); _bonusCandles = value; SyncVars(); } }
+
+    /// <summary>Свечей из «Свечи в склепе» (M5 п. 6): не больше <see cref="MemoryStoneRules.MaxCryptCandles"/> за забег.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int CryptCandles { get => _cryptCandles; set { AssertMutable(); _cryptCandles = Math.Max(0, value); } }
+
+    /// <summary>Можно ли зажечь Свечу в склепе (Камень включён, Свечи конечны, не «Проклятый», ещё не брали).</summary>
+    public bool CanTakeCryptCandle =>
+        MemoryStoneRules.CanTakeCryptCandle(MemoryStone.Enabled, true, RequiemLevelRules.CandlesAllowed(RequiemLevel), CandlesLeft,
+            _cryptCandles);
+
+    /// <summary>+1 Свеча из склепа.</summary>
+    public void TakeCryptCandle()
+    {
+        if (!CanTakeCryptCandle) return;
+        CryptCandles++;
+        BonusCandles++;
+        Flash();
+        InvokeDisplayAmountChanged();
+    }
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int Rollbacks { get => _rollbacks; set { AssertMutable(); _rollbacks = value; SyncVars(); } }

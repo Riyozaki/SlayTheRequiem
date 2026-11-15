@@ -1870,3 +1870,151 @@ def door_tie_break(seed: str, act_index: int) -> int:
         h ^= ord(ch)
         h = (h * 16777619) & 0xFFFFFFFF
     return h % 2
+
+
+# ───── M5 п. 6: «Свеча в склепе», автопереподключение (Core/MemoryStoneRules) ─────
+
+CRYPT_CANDLE_CHANCE = 30
+MAX_CRYPT_CANDLES = 1
+REJOIN_ATTEMPTS = 10
+
+
+def crypt_candle_in_pool(hash_: int) -> bool:
+    return hash_ % 100 < CRYPT_CANDLE_CHANCE
+
+
+def can_take_crypt_candle(stone_enabled: bool, has_stone: bool, candles_allowed: bool, candles_left: int, taken: int) -> bool:
+    return stone_enabled and has_stone and candles_allowed and candles_left != INFINITE and taken < MAX_CRYPT_CANDLES
+
+
+def rejoin_delay_ms(attempt: int) -> int:
+    if attempt < 0:
+        return 0
+    return [2000, 2500, 3500, 5000][attempt] if attempt < 4 else 6000
+
+
+def rejoin_total_ms() -> int:
+    return sum(rejoin_delay_ms(a) for a in range(REJOIN_ATTEMPTS))
+
+
+def should_retry_rejoin(attempt: int, connected: bool, screen_open: bool) -> bool:
+    return attempt < REJOIN_ATTEMPTS and not connected and screen_open
+
+
+# ───── M5: 20 подтипов узлов (Core/NodeRules, 13 §4.2) ─────
+
+NODE_SUBTYPES = ["Shrine", "DarkAltar", "Armorer", "Arcanist", "Herbalist", "Jeweler", "Caravan", "Fence", "Tavern", "Library",
+                 "Lair", "Trial", "Cache", "LockedGate", "Valve", "AbyssGate", "CrimsonPortal", "MemoryStone", "EbbStones", "Ambush"]
+
+NODE_ICONS = {"Shrine": "shrine", "DarkAltar": "dark_altar", "Armorer": "armorer", "Arcanist": "enchanter", "Herbalist": "herbalist",
+              "Jeweler": "jeweler", "Caravan": "caravan", "Fence": "fence", "Tavern": "tavern", "Library": "library", "Lair": "lair",
+              "Trial": "trial", "Cache": "cache", "LockedGate": "locked_gate", "Valve": "valve", "AbyssGate": "abyss_gate",
+              "CrimsonPortal": "crimson_portal", "MemoryStone": "memory_stone", "EbbStones": "ebb_stones", "Ambush": "ambush"}
+
+
+def node_base(sub: str) -> str:
+    if sub in ("Shrine", "DarkAltar", "Library", "Valve", "EbbStones"):
+        return "Unknown"
+    if sub in ("Armorer", "Arcanist", "Herbalist", "Jeweler", "Caravan", "Fence"):
+        return "Shop"
+    return {"Tavern": "RestSite", "Lair": "Elite", "Trial": "Elite", "Cache": "Treasure", "AbyssGate": "Monster",
+            "Ambush": "Monster", "CrimsonPortal": "Boss", "LockedGate": "Edge", "MemoryStone": "ActStart"}[sub]
+
+
+def node_reveal(sub: str) -> str:
+    if sub in ("Lair", "Trial", "Cache", "LockedGate", "Valve", "AbyssGate"):
+        return "Marked"
+    if sub == "Ambush":
+        return "Hidden"
+    if sub in ("CrimsonPortal", "MemoryStone"):
+        return "Fixed"
+    return "OnEnter"
+
+
+NODE_SHOPS = {"Armorer": "Armorer", "Arcanist": "Arcanist", "Herbalist": "Herbalist", "Jeweler": "Jeweler",
+              "Caravan": "Caravan", "Fence": "Fence"}
+
+
+def node_from_shop(shop: str) -> str | None:
+    return "Shrine" if shop == "Temple" else NODE_SHOPS.get(shop)
+
+
+def node_from_mark(mark: str) -> str | None:
+    return {"AbyssGate": "AbyssGate", "LockedVault": "LockedGate", "Valve": "Valve", "Lair": "Lair", "Trial": "Trial",
+            "Cache": "Cache", "Ambush": "Ambush"}.get(mark)
+
+
+def node_from_unknown_roll(pantheon_roll: int, library: bool) -> str | None:
+    return {1: "Shrine", 2: "DarkAltar", 3: "EbbStones"}.get(pantheon_roll, "Library" if library else None)
+
+
+def node_available(sub: str, kind: str, slot: int) -> bool:
+    if sub in ("Shrine", "DarkAltar", "Library", "Trial", "Ambush", "EbbStones"):
+        return slot >= 1
+    if sub == "Lair":
+        return slot <= 1
+    if sub in ("Armorer", "Herbalist", "Tavern", "Cache", "CrimsonPortal", "MemoryStone", "Fence"):
+        return True
+    if sub in ("Arcanist", "Jeweler", "Caravan"):
+        return NODE_SHOPS[sub] in shop_act_pool_kind(kind, slot)
+    return {"LockedGate": kind == "FrozenBarrows", "Valve": kind == "ClockworkDepths",
+            "AbyssGate": kind in ("Hive", "Glory")}.get(sub, False)
+
+
+def lair_count(slot: int) -> int:
+    return 1 if slot <= 1 else 0
+
+
+def trial_count(slot: int, roll: int) -> int:
+    return 0 if slot < 1 else 1 + (1 if abs(roll) % 3 == 0 else 0)
+
+
+def cache_count(slot: int) -> int:
+    return 1
+
+
+def ambush_count(slot: int, roll: int) -> int:
+    return 0 if slot < 1 else 1 + abs(roll) % 2
+
+
+LIBRARY_PERCENT = 9
+
+
+def roll_library(slot: int, roll: int) -> bool:
+    return slot >= 1 and 0 <= roll < LIBRARY_PERCENT
+
+
+def lair_hp(max_hp: int) -> int:
+    return max(1, (max(0, max_hp) * 70 + 99) // 100)
+
+
+def lair_reagents(slot: int) -> int:
+    return 2 if slot <= 0 else 3
+
+
+def lair_hide_tiers(slot: int) -> tuple[int, int]:
+    return (1, 1) if slot <= 0 else (1, 2)
+
+
+def trial_strength(slot: int) -> int:
+    return 2 if slot >= 3 else 1
+
+
+def cache_trapped(roll: int) -> bool:
+    return abs(roll) % 100 < 50
+
+
+def cache_gold(slot: int) -> int:
+    return 30 + 15 * max(0, slot)
+
+
+def cache_trap(slot: int) -> int:
+    return 4 + 2 * max(0, slot)
+
+
+def ambush_strength(slot: int) -> int:
+    return 2 if slot >= 3 else 1
+
+
+def ambush_gold(slot: int) -> int:
+    return 15 + 10 * max(0, slot)

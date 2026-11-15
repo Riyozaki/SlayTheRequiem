@@ -299,6 +299,35 @@ EVENTS = [
                  "Главарь взвешивает кошель, ухмыляется и свистит. Стрелы стихают."),
       "ABANDONED": ("You run. Behind you, the mule's cry and the sound of tearing sacks.",
                     "Вы бежите. Позади — крик мула и треск рвущихся мешков.")}),
+    # ───── Камень Памяти (15 §2, M5 п. 6) ─────
+    ("CryptCandleEvent",
+     ("Candle in the Crypt", "Deep in a sealed crypt a single candle burns on a grave slab. Its flame does not flicker — "
+      "and in it you see the grey face of your Memory Stone."),
+     ("Свеча в склепе", "В глубине запечатанного склепа на надгробной плите горит одна свеча. Пламя не дрожит — "
+      "и в нём проступает серый лик вашего Камня Памяти."),
+     {"LIGHT": ("Carry the flame", "Gain [gold]{Candles}[/gold] Requiem Candle (once per run).",
+                "Унести пламя", "+[gold]{Candles}[/gold] Свеча Реквиема (раз за забег)."),
+      "WAX": ("Take the wax", "Gain [gold]{Gold}[/gold] gold.", "Забрать воск", "+[gold]{Gold}[/gold] золота.")},
+     {"LIT": ("You cup the flame in your palms. Far away, at the start of the act, the Stone grows a little warmer.",
+              "Вы прикрываете пламя ладонями. Далеко, в начале акта, Камень становится чуть теплее."),
+      "MELTED": ("The candle gutters out. Old grave wax still fetches a fair price.",
+                 "Свеча гаснет. Старый погребальный воск всё ещё хорошо продаётся.")}),
+    # ───── подтипы узлов (13 §4.2, M5): события «?», которые подставляет Дорожная карта ─────
+    ("LibraryEvent",
+     ("Library", "Dusty shelves climb into the dark. A blind archivist dips his quill and waits for your request."),
+     ("Библиотека", "Пыльные полки уходят во тьму. Слепой архивариус обмакивает перо и ждёт вашей просьбы."),
+     {"STUDY": ("Study", "Learn [gold]1[/gold] of [gold]{Spells}[/gold] spells your mastery allows.",
+                "Изучить", "Выучить [gold]1[/gold] из [gold]{Spells}[/gold] заклинаний, доступных по владению."),
+      "COPY": ("Copy a scroll", "Pay [gold]{Copy}[/gold] gold: the spell of your first scroll goes into your deck for good.",
+               "Переписать свиток", "Заплатить [gold]{Copy}[/gold] золота: заклинание первого свитка навсегда в колоду."),
+      "TREATISE": ("Buy a treatise", "Pay [gold]{Treatise}[/gold] gold for a mastery treatise.",
+                   "Купить трактат", "Заплатить [gold]{Treatise}[/gold] золота за трактат владения.")},
+     {"STUDIED": ("Hours pass in silence. The words of the spell now live behind your eyes.",
+                  "Часы проходят в тишине. Слова заклинания теперь живут у вас за глазами."),
+      "COPIED": ("The archivist's quill scratches the scroll's words into your memory. The parchment crumbles.",
+                 "Перо архивариуса переносит слова свитка в вашу память. Пергамент рассыпается."),
+      "BOUGHT": ("The archivist wraps the treatise in oilcloth. \"Read it twice,\" he says.",
+                 "Архивариус заворачивает трактат в вощёную ткань. «Прочтите дважды», — говорит он.")}),
 ]
 
 

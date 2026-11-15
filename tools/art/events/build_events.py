@@ -1106,6 +1106,91 @@ def ev_mule_ambush(s, rnd):
     glow_at(s, CX + 40, GY - 200, 300, "#ff5030", 0.2)
 
 
+# ═══════════════════════════ Камень Памяти и подтипы узлов (M5 п. 6) ═══════════════════════════
+
+def candle(s: Svg, x, y, h, w=22, wax="#efe4c8", flame="#ffd27a"):
+    """Свеча с подтёками воска и пламенем; y — низ свечи."""
+    s.path(f"M{x - w / 2},{y} V{y - h} H{x + w / 2} V{y} Z", s.lin([(0, wax), (1, _tint(wax, -0.35))], 0, 0, 1, 0), INK, 3)
+    for dx, dl in ((-w * 0.3, h * 0.35), (w * 0.2, h * 0.22)):
+        s.path(f"M{x + dx - 3},{y - h} v{dl} q3,8 6,0 v{-dl} Z", wax, INK, 2)
+    s.path(f"M{x},{y - h} v-8", "none", stroke=INK, sw=2)
+    s.path(f"M{x},{y - h - 6} q-{w * 0.55},-{w * 0.9} 0,-{w * 2.2} q{w * 0.55},{w * 1.3} 0,{w * 2.2} Z", flame, stroke=None,
+           extra=f'filter="{s.glow(w * 0.4)}"')
+    s.path(f"M{x},{y - h - 8} q-{w * 0.22},-{w * 0.5} 0,-{w * 1.1} q{w * 0.22},{w * 0.6} 0,{w * 1.1} Z", "#ffffff", stroke=None)
+
+
+@event("crypt_candle_event", "barrows")
+def ev_crypt_candle(s, rnd):
+    # Вход в склеп: каменная арка, в проёме — тьма и надгробная плита со свечой.
+    ax, aw, ah = CX, 560, 470
+    s.path(f"M{ax - aw / 2 - 70},{GY + 20} V{GY - ah + 120} Q{ax},{GY - ah - 110} {ax + aw / 2 + 70},{GY - ah + 120} V{GY + 20} Z",
+           s.lin([(0, "#6a7884"), (1, "#26303a")]), INK, 8)
+    s.path(f"M{ax - aw / 2},{GY + 20} V{GY - ah + 150} Q{ax},{GY - ah - 40} {ax + aw / 2},{GY - ah + 150} V{GY + 20} Z",
+           s.lin([(0, "#05080c"), (1, "#0e161e")]), INK, 6)
+    for k in range(-3, 4):
+        s.path(f"M{ax + k * 92},{GY - ah + 100 + abs(k) * abs(k) * 9} v-46", "none", stroke=INK, sw=4)
+    glow_at(s, ax, GY - 200, 300, "#ffb860", 0.35)
+    # Призрачный лик Камня Памяти в свете пламени.
+    s.path(poly([(ax - 70, GY - 150), (ax - 52, GY - 360), (ax, GY - 400), (ax + 54, GY - 352), (ax + 72, GY - 150)]),
+           "#9fb4c8", stroke="#cfe6ff", sw=3, extra='opacity="0.22"')
+    for k in range(3):
+        y = GY - 330 + k * 52
+        s.path(f"M{ax - 18},{y} l18,-22 l18,22 M{ax},{y - 22} v-12", "none", stroke="#9ff0ff", sw=4,
+               extra=f'opacity="0.5" filter="{s.glow(5)}"')
+    # Плита и свеча.
+    s.path(f"M{ax - 210},{GY + 20} L{ax - 190},{GY - 90} H{ax + 190} L{ax + 210},{GY + 20} Z", s.lin([(0, "#8a96a0"), (1, "#3a444e")]), INK, 6)
+    s.path(f"M{ax - 230},{GY - 90} H{ax + 230} V{GY - 120} H{ax - 230} Z", s.lin([(0, "#a8b4be"), (1, "#56626c")]), INK, 6)
+    for k in range(-2, 3):
+        s.path(f"M{ax + k * 56 - 10},{GY - 30} l10,-18 l10,18", "none", stroke="#2a343e", sw=4)
+    s.ellipse(ax, GY - 122, 46, 10, "#e8dcc0", INK, 3)
+    candle(s, ax, GY - 124, 120, 26)
+    glow_at(s, ax, GY - 290, 120, "#fff0c0", 0.55)
+    # Кости и паутина у входа.
+    for x, y, r in ((ax - 320, GY + 30, -20), (ax + 300, GY + 36, 15)):
+        s.path(f"M{x - 40},{y} L{x + 40},{y - 8}", "none", stroke=INK, sw=12, extra=f'transform="rotate({r} {x} {y})"')
+        s.path(f"M{x - 40},{y} L{x + 40},{y - 8}", "none", stroke="#e8e0cc", sw=7, extra=f'transform="rotate({r} {x} {y})"')
+    s.circle(ax + 360, GY + 10, 26, "#e8e0cc", INK, 4)
+    s.circle(ax + 352, GY + 6, 6, INK)
+    s.circle(ax + 368, GY + 6, 6, INK)
+
+
+@event("library_event", "tower")
+def ev_library(s, rnd):
+    # Высокие полки по сторонам.
+    for side in (-1, 1):
+        for d in range(3):
+            x = CX + side * (300 + d * 190)
+            h = 580 - d * 50
+            s.path(f"M{x - 85},{GY + 10} V{GY - h} H{x + 85} V{GY + 10} Z", s.lin([(0, "#4a3220"), (1, "#140a06")]), INK, 5)
+            for r in range(7):
+                y = GY - h + 24 + r * (h - 30) / 7
+                s.path(f"M{x - 85},{y + 62} H{x + 85}", "none", stroke=INK, sw=5)
+                xx = x - 78
+                while xx < x + 70:
+                    bw = rnd.randint(9, 17)
+                    col = rnd.choice(("#7a3a2a", "#2a4a6a", "#5a2a4a", "#3a5a3a", "#8a6a2a", "#4a3a6a"))
+                    top = y + 12 + rnd.randint(0, 14)
+                    s.path(f"M{xx},{y + 60} V{top} H{xx + bw} V{y + 60} Z", col, INK, 1.5)
+                    s.path(f"M{xx + 2},{top + 8} H{xx + bw - 2}", "none", stroke="#d4b45a", sw=1.5)
+                    xx += bw + 2
+    # Пюпитр с раскрытой книгой и слепой архивариус.
+    s.path(f"M{CX - 30},{GY + 10} L{CX - 18},{GY - 170} H{CX + 18} L{CX + 30},{GY + 10} Z", "#5a3a22", INK, 5)
+    s.path(f"M{CX - 140},{GY - 160} L{CX + 140},{GY - 200} L{CX + 128},{GY - 226} L{CX - 152},{GY - 186} Z", "#6a4428", INK, 5)
+    s.path(f"M{CX - 128},{GY - 192} L{CX},{GY - 178} L{CX + 120},{GY - 214} L{CX + 120},{GY - 262} L{CX},{GY - 228} "
+           f"L{CX - 128},{GY - 242} Z", "#f2e6c8", INK, 3)
+    for k in range(5):
+        s.path(f"M{CX - 112},{GY - 228 + k * 9} L{CX - 18},{GY - 216 + k * 9}", "none", stroke="#8a7a60", sw=2)
+        s.path(f"M{CX + 18},{GY - 220 + k * 9} L{CX + 104},{GY - 246 + k * 9}", "none", stroke="#8a7a60", sw=2)
+    hx, top, hr, w = figure(s, CX + 250, GY + 20, 400, robe=("#4a4a5a", "#14141e"), lean=-18)
+    s.path(f"M{hx - hr * 0.6},{top + hr * 1.05} H{hx + hr * 0.6}", "none", stroke="#d8d0c0", sw=hr * 0.28)
+    s.path(f"M{hx - w * 0.5},{top + 190} L{CX + 120},{GY - 236}", "none", stroke=INK, sw=6)
+    s.path(f"M{CX + 120},{GY - 236} l-30,-60", "none", stroke="#f0f0f0", sw=4)
+    for x in (CX - 210, CX - 160):
+        candle(s, x, GY - 186 + (x - CX + 210) * 0.12, 54, 16)
+    glow_at(s, CX - 180, GY - 290, 200, "#ffcf80", 0.3)
+    specks(s, rnd, 40, "#ffe8b0", 1, 2.4, GY - 520, GY - 120, CX - 360, CX + 360, glow=2)
+
+
 # ═══════════════════════════ запуск ═══════════════════════════
 
 def build(key) -> Svg:

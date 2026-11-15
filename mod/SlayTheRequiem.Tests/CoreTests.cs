@@ -1038,3 +1038,75 @@ public class Stage6Tests
         Assert.Equal(0.0, MemoryStoneRules.ScoreMultiplier(9), 3);
     }
 }
+
+public class M5RollbackAndNodeTests
+{
+    [Fact]
+    public void CryptCandleAndRejoin()
+    {
+        Assert.True(MemoryStoneRules.CanTakeCryptCandle(true, true, true, 2, 0));
+        Assert.False(MemoryStoneRules.CanTakeCryptCandle(true, true, true, 2, 1));
+        Assert.False(MemoryStoneRules.CanTakeCryptCandle(true, true, true, MemoryStoneRules.Infinite, 0));
+        Assert.False(MemoryStoneRules.CanTakeCryptCandle(false, true, true, 2, 0));
+        Assert.False(MemoryStoneRules.CanTakeCryptCandle(true, true, false, 0, 0));
+        Assert.Equal(new[] { 0, 2000, 2500, 3500, 5000, 6000, 6000 }, new[] { -1, 0, 1, 2, 3, 4, 9 }.Select(MemoryStoneRules.RejoinDelayMs));
+        Assert.Equal(49000, MemoryStoneRules.RejoinTotalMs());
+        Assert.True(MemoryStoneRules.ShouldRetryRejoin(0, false, true));
+        Assert.False(MemoryStoneRules.ShouldRetryRejoin(MemoryStoneRules.RejoinAttempts, false, true));
+        Assert.False(MemoryStoneRules.ShouldRetryRejoin(1, true, true));
+        Assert.False(MemoryStoneRules.ShouldRetryRejoin(1, false, false));
+    }
+
+    private static readonly (ActKind Kind, int Slot)[] FullRun =
+    [
+        (ActKind.Foothills, 0), (ActKind.FrozenBarrows, 1), (ActKind.ClockworkDepths, 1), (ActKind.Hive, 2),
+        (ActKind.BloodCourt, 3), (ActKind.StarTower, 3), (ActKind.Glory, 4),
+    ];
+
+    [Fact]
+    public void TwentySubtypesAllGenerated()
+    {
+        Assert.Equal(NodeRules.SubtypeCount, NodeRules.All.Count);
+        Assert.Equal(20, NodeRules.All.Select(NodeRules.IconName).Distinct().Count());
+        foreach (var sub in NodeRules.All)
+            Assert.True(FullRun.Any(a => NodeRules.AvailableIn(sub, a.Kind, a.Slot)), sub.ToString());
+
+        var generated = new HashSet<NodeSubtype>();
+        foreach (var mark in Enum.GetValues<MapMark>())
+            if (NodeRules.FromMark(mark) is { } m) generated.Add(m);
+        foreach (var shop in Enum.GetValues<ShopType>())
+            if (NodeRules.FromShop(shop) is { } s) generated.Add(s);
+        foreach (var roll in new[] { 0, 1, 2, 3 })
+            foreach (var lib in new[] { false, true })
+                if (NodeRules.FromUnknownRoll(roll, lib) is { } u) generated.Add(u);
+        generated.UnionWith(NodeRules.All.Where(s => NodeRules.RevealOf(s) == NodeReveal.Fixed));
+        generated.Add(NodeSubtype.Tavern);
+        Assert.Equal(NodeRules.All.ToHashSet(), generated);
+        Assert.Equal(NodeReveal.Hidden, NodeRules.RevealOf(NodeSubtype.Ambush));
+    }
+
+    [Fact]
+    public void AllSevenShopTypesRoll()
+    {
+        var seen = new HashSet<ShopType>();
+        foreach (var (kind, slot) in FullRun)
+            for (var h = 0; h < 400; h++)
+                for (var n = 0; n < 3; n++)
+                    seen.Add(ShopRules.RollShopType(ShopRules.Fnv1a("s", h), kind, Math.Min(slot, 2), n, null));
+        seen.Remove(ShopType.Wanderer);
+        Assert.Equal(7, seen.Count);
+    }
+
+    [Fact]
+    public void NodeNumbers()
+    {
+        Assert.Equal(new[] { 1, 1, 0, 0, 0 }, Enumerable.Range(0, 5).Select(NodeRules.LairCount));
+        Assert.Equal(new[] { 0, 2, 1 }, new[] { NodeRules.TrialCount(0, 3), NodeRules.TrialCount(1, 3), NodeRules.TrialCount(1, 4) });
+        Assert.Equal(new[] { 0, 2, 1 }, new[] { NodeRules.AmbushCount(0, 1), NodeRules.AmbushCount(2, 1), NodeRules.AmbushCount(2, 2) });
+        Assert.Equal(new[] { 70, 7, 29, 1 }, new[] { 100, 10, 41, 1 }.Select(NodeRules.LairHp));
+        Assert.False(NodeRules.RollLibrary(0, 0));
+        Assert.True(NodeRules.RollLibrary(1, 8));
+        Assert.False(NodeRules.RollLibrary(1, 9));
+        Assert.Equal(new[] { 30, 12, 55, 2 }, new[] { NodeRules.CacheGold(0), NodeRules.CacheTrap(4), NodeRules.AmbushGold(4), NodeRules.TrialStrength(3) });
+    }
+}
