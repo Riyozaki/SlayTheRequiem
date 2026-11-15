@@ -2741,3 +2741,33 @@ def sfx_parse(text: str) -> dict[str, list[tuple[str, str, float]]]:
             raise ValueError(f"громкость {vol} вне 0…{SFX_MAX_VOLUME} (строка {n})")
         layers.setdefault(ev, []).append((src, sound, vol))
     return layers
+
+
+# ───── M7 п. 6: свои значки реликвий и портреты карт (tools/art/art_fit.py, relics/draw_relics.py, cards/draw_portraits.py) ─────
+
+CARD_PORTRAIT_SIZES = {"small": (250, 190), "big": (1000, 760)}
+HIDDEN_RELIC_POOLS = {"Defect", "Necrobinder"}
+VISIBLE_RELIC_BUCKETS = {"keep", "rework"}
+
+
+def vanilla_relic_visible(pool: str, bucket: str) -> bool:
+    """Ванильная реликвия выпадает героям Реквиема: оставлена/переделана и не только у скрытых героев (Дефект, Некробиндер)."""
+    return bucket in VISIBLE_RELIC_BUCKETS and not set(pool.split("+")) & HIDDEN_RELIC_POOLS
+
+
+def relic_icon_conflicts(borrowed: dict[str, str | None], visible: set[str], notes: dict[str, str] | None = None):
+    """borrowed: реликвия мода → ванильный значок (None — свой файл). Возвращает (ошибки, исключения) — списки реликвий.
+
+    Ошибка — значок у 2+ реликвий мода или значок видимой ванильной реликвии; исключение — note «дубль: …»."""
+    notes = notes or {}
+    by_icon: dict[str, list[str]] = {}
+    for relic, icon in borrowed.items():
+        if icon:
+            by_icon.setdefault(icon, []).append(relic)
+    errors, allowed = [], []
+    for icon, relics in by_icon.items():
+        if len(relics) < 2 and icon not in visible:
+            continue
+        for relic in relics:
+            (allowed if notes.get(relic, "").startswith("дубль:") else errors).append(relic)
+    return sorted(errors), sorted(allowed)

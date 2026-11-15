@@ -1640,5 +1640,63 @@ class M7SfxRules(unittest.TestCase):
                                                  for src, snd, _ in ls if src == "own"})
 
 
+class M7OwnRelicAndCardArt(unittest.TestCase):
+    """M7 п. 6: свои значки реликвий и портреты карт там, где ванильная замена сбивает с толку."""
+    ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    RES = os.path.join(ROOT, "mod", "SlayTheRequiem")
+    CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
+    PORTRAITS = ["blade_spirit", "call_spirit_knight", "conjure_abyss_guardian", "lesser_ward", "raise_dead", "blood_lord_stance",
+                 "storm_call", "toxic_coating", "bound_blade", "sparks", "firebolt", "blizzard", "terror", "poison_spray",
+                 "herald_stance_card", "whirlwind", "miasma", "focused_aim", "rebound", "devour"]
+
+    @staticmethod
+    def size(path):
+        import struct
+        with open(path, "rb") as f:
+            return struct.unpack(">II", f.read(24)[16:24])
+
+    def test_visibility(self):
+        self.assertTrue(r.vanilla_relic_visible("Shared", "keep"))
+        self.assertTrue(r.vanilla_relic_visible("Event", "rework"))
+        self.assertTrue(r.vanilla_relic_visible("Shared+Event", "keep"))
+        self.assertFalse(r.vanilla_relic_visible("Defect", "keep"))
+        self.assertFalse(r.vanilla_relic_visible("Necrobinder", "keep"))
+        self.assertFalse(r.vanilla_relic_visible("Shared", "jewelry"))  # заменена украшением Реквиема — не выпадает
+
+    def test_conflicts(self):
+        borrowed = {"A": "prismatic_gem", "B": "prismatic_gem", "C": "akabeko", "D": "lantern", "E": None, "F": "clockwork"}
+        errors, allowed = r.relic_icon_conflicts(borrowed, visible={"akabeko"})
+        self.assertEqual(errors, ["A", "B", "C"])  # дубль внутри мода + видимая ванильная
+        self.assertEqual(allowed, [])
+        errors, allowed = r.relic_icon_conflicts(borrowed, {"akabeko"}, {"C": "дубль: тот же предмет", "A": "просто заметка"})
+        self.assertEqual((errors, allowed), (["A", "B"], ["C"]))
+        self.assertEqual(r.relic_icon_conflicts({"X": None, "Y": None}, {"any"}), ([], []))  # свои файлы не спорят
+
+    def test_repo_has_no_conflicts(self):
+        import sys
+        sys.path.insert(0, os.path.join(self.ROOT, "tools", "art"))
+        import art_fit
+        errors, allowed, own = art_fit.audit_relics()
+        self.assertEqual(errors, [])
+        self.assertGreaterEqual(own, 197)
+        self.assertEqual(art_fit.audit()[0], [])
+        self.assertEqual(art_fit.VISIBLE_RELIC_BUCKETS, r.VISIBLE_RELIC_BUCKETS)
+        self.assertEqual(art_fit.HIDDEN_RELIC_POOLS, r.HIDDEN_RELIC_POOLS)
+
+    def test_card_portraits(self):
+        for key in self.PORTRAITS:
+            self.assertEqual(self.size(os.path.join(self.RES, "images", "card_portraits", key + ".png")), r.CARD_PORTRAIT_SIZES["small"], key)
+            self.assertEqual(self.size(os.path.join(self.RES, "images", "card_portraits", "big", key + ".png")), r.CARD_PORTRAIT_SIZES["big"], key)
+            self.assertTrue(os.path.isfile(os.path.join(self.ROOT, "art", "cards", key + ".svg")), key)
+
+    def test_own_file_wins_in_code(self):
+        ext = open(os.path.join(self.CODE, "Extensions", "StringExtensions.cs"), encoding="utf-8").read()
+        self.assertIn('Res("card_portraits", "big", path), Res("card_portraits", path), borrowed', ext)
+        self.assertIn('Res("relics", path), borrowed', ext)
+        self.assertIn('Res("relics", "big", path), borrowed', ext)
+        relic = open(os.path.join(self.CODE, "Relics", "RequiemRelic.cs"), encoding="utf-8").read()
+        self.assertIn("Id.Entry.RemovePrefix().ToLowerInvariant()", relic)
+
+
 if __name__ == "__main__":
     unittest.main()
