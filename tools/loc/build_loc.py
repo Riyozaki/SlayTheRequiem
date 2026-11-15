@@ -19,6 +19,7 @@ from loc_stage4 import STAGE4_ANCIENTS, STAGE4_EVENTS, STAGE4_RELICS, STAGE4_SET
 from loc_stage5 import STAGE5_CARDS, STAGE5_POWERS, STAGE5_REST_SITE, STAGE5_RELICS  # noqa: E402
 from loc_stage6 import (STAGE6_BADGES, STAGE6_CARDS, STAGE6_ENCHANTMENTS, STAGE6_EVENTS, STAGE6_POWERS,  # noqa: E402
                         STAGE6_EQUIPMENT, STAGE6_RELICS, STAGE6_REST_SITE, STAGE6_SETTINGS)
+from loc_flavor import FLAVOR  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
 
@@ -197,6 +198,9 @@ def main() -> None:
             relics[f"{k}.description"] = (ed, rd)[li]
             relics[f"{k}.flavor"] = (fe, fr)[li]
         relics.update({f"{PREFIX}{key}": text for key, text in {**STAGE35_RELIC_EXTRA[lang], **STAGE36_RELIC_EXTRA[lang], **STAGE7_RELIC_EXTRA[lang]}.items()})
+        for key, texts in FLAVOR.items():  # цитаты для реликвий без своей (этап 8)
+            if not relics.get(f"{PREFIX}{key}.flavor"):
+                relics[f"{PREFIX}{key}.flavor"] = texts[li]
         monsters = {}
         for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS}.items():
             data = langs[lang]

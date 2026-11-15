@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: Core · xUnit (.NET 9)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: dotnet test
+        run: dotnet test mod/SlayTheRequiem.Tests --logger "console;verbosity=normal"
+
+  sim:
+    name: Rules sim · Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: unittest
+        run: python -m unittest discover -s tools/sim -v
+
+  content:
+    name: Localization & C# syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tree-sitter
+        run: pip install tree-sitter tree-sitter-c-sharp
+      - name: Localization is up to date
+        run: |
+          python tools/loc/build_loc.py
+          git diff --exit-code -- mod/SlayTheRequiem/localization || (echo "::error::Run python3 tools/loc/build_loc.py and commit the result" && exit 1)
+      - name: Localization coverage (eng = rus, every model has a title)
+        run: python tools/ci/check_loc.py
+      - name: C# syntax (all mod files)
+        run: python tools/ci/check_csharp_syntax.py
