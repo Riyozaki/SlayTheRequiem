@@ -29,7 +29,7 @@ public static class DamageNumberColors
         [HarmonyPostfix]
         public static void Postfix(Creature? dealer, DamageResult result, CardModel? cardSource)
         {
-            if (!RequiemConfig.EnableRequiemSystems || result == null) return;
+            if (!RunSettings.EnableRequiemSystems || result == null) return;
             var type = DamageTyping.Resolve(result.Props, dealer, cardSource);
             if (type != DamageType.Physical) ByResult.AddOrUpdate(result, new StrongBox<DamageType>(type));
         }

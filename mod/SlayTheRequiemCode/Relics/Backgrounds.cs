@@ -113,7 +113,7 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     /// <summary>Предыстория: экран выбора при настройке «На выбор» (готовые предыстории происхождения + Бродяга).</summary>
     public static async Task<BackgroundRelic?> Pick(Player player, OriginRelic? origin)
     {
-        if (RequiemConfig.Background == BackgroundChoice.Choose)
+        if (RunSettings.Background(player) == BackgroundChoice.Choose)
         {
             var options = Options(origin).Where(t => t != null).Append(typeof(VagrantBackground)).Distinct()
                 .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable()).ToList();
@@ -124,7 +124,7 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
 
     public static BackgroundRelic? For(Player player, OriginRelic? origin)
     {
-        var choice = RequiemConfig.Background;
+        var choice = RunSettings.Background(player);
         if (choice == BackgroundChoice.None) return null;
         var options = Options(origin);
         Type? type = choice switch
@@ -138,7 +138,7 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
         {
             // Случайно (или выбранная ещё не готова): среди готовых предысторий происхождения; без происхождения — Бродяга.
             var ready = options.Where(t => t != null).ToList();
-            type = ready.Count == 0 ? typeof(VagrantBackground) : ready[player.PlayerRng.Rewards.NextInt(ready.Count)];
+            type = ready.Count == 0 ? typeof(VagrantBackground) : ready[OriginRelic.OriginRng(player, "background").NextInt(ready.Count)];
         }
         return (BackgroundRelic)ModelDb.GetById<RelicModel>(ModelDb.GetId(type!)).ToMutable();
     }

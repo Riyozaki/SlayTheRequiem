@@ -86,7 +86,7 @@ public static class ActDoors
         var run = RequiemNet.State;
         var index = PendingIndex(run);
         if (run == null || index < 0 || LocalVoted(index)) return true;
-        if (RequiemConfig.ActVariant == ActVariantMode.Random)
+        if (RunSettings.ActVariant == ActVariantMode.Random)
         {
             Cast(index, ActDoorRules.Abstain);
             return true;
@@ -202,7 +202,7 @@ public static class ActDoors
         var act = ModelOf(want).ToMutable();
         if (SharedAncients?.GetValue(old) is List<AncientEventModel> shared) act.SetSharedAncientSubset(shared);
         act.GenerateRooms(new Rng(state.Rng.Seed, $"requiem_door_{actIndex}"), state.UnlockState, state.Players.Count > 1);
-        if (RequiemConfig.EnableRequiemSystems && RequiemConfig.Superbosses != SuperbossMode.Off && ActRules.SuperbossFor(want) is { } boss)
+        if (RunSettings.EnableRequiemSystems && RunSettings.Superbosses != SuperbossMode.Off && ActRules.SuperbossFor(want) is { } boss)
             act.SetSecondBossEncounter(SuperbossEncounter.For(boss));
 
         var acts = state.Acts.ToList();

@@ -135,3 +135,52 @@ public sealed class ActDoorMessage : ICustomMessage
 
     public void HandleMessage(ulong senderId) => ActDoors.OnMessage((DoorPhase)phase, act, value, senderId);
 }
+
+/// <summary>
+/// Хост → клиенты в лобби: снимок игровых настроек забега (ревью F-03, <see cref="Config.RunSettings"/>). Отправляется до
+/// <c>LobbyBeginRunMessage</c> и обрабатывается сразу (без буфера): клиент должен знать правила до генерации актов.
+/// </summary>
+public sealed class RunSettingsMessage : ICustomMessage
+{
+    public string data = string.Empty;
+
+    public bool ShouldBroadcast => false;
+    public bool ShouldBuffer => false;
+
+    public void Serialize(PacketWriter writer) => writer.WriteString(data ?? string.Empty);
+
+    public void Deserialize(PacketReader reader) => data = reader.ReadString();
+
+    public void HandleMessage(ulong senderId) => Config.RunSettings.OnHostSettings(data, senderId);
+}
+
+/// <summary>Клиент → хост в лобби: личный выбор (происхождения трёх героев и предыстория) — при нажатии «Готов».</summary>
+public sealed class PersonalChoicesMessage : ICustomMessage
+{
+    public int platebearer;
+    public int silent;
+    public int regent;
+    public int background;
+
+    public bool ShouldBroadcast => false;
+    public bool ShouldBuffer => false;
+
+    public void Serialize(PacketWriter writer)
+    {
+        writer.WriteInt(platebearer, 8);
+        writer.WriteInt(silent, 8);
+        writer.WriteInt(regent, 8);
+        writer.WriteInt(background, 8);
+    }
+
+    public void Deserialize(PacketReader reader)
+    {
+        platebearer = reader.ReadInt(8);
+        silent = reader.ReadInt(8);
+        regent = reader.ReadInt(8);
+        background = reader.ReadInt(8);
+    }
+
+    public void HandleMessage(ulong senderId) =>
+        Config.RunSettings.OnPersonalChoices(senderId, new Core.PersonalChoices(platebearer, silent, regent, background));
+}

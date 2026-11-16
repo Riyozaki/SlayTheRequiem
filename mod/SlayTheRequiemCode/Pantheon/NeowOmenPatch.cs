@@ -33,7 +33,7 @@ public static class NeowOmenPatch
         try
         {
             var player = __instance.Owner;
-            if (player == null || !RequiemConfig.EnablePantheon || !RequiemMode.IsInSystem(player)) return;
+            if (player == null || !RunSettings.EnablePantheon || !RequiemMode.IsInSystem(player)) return;
             if (OmenRelic.Of(player) != null || __result.Count < 3 || SetEventState == null || Done == null) return;
             var list = __result.ToList();
             var option = new EventOption(__instance, () => ShowOmens(__instance, player),

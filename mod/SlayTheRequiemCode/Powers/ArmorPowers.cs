@@ -28,7 +28,7 @@ public sealed class DodgePower : RequiemPower
     public int Remaining => Math.Max(0, Amount - _usedThisTurn);
 
     private bool CanDodge(Creature target, ValueProp props, Creature? dealer) =>
-        Config.RequiemConfig.AutoDodge && target == Owner && Remaining > 0 && dealer != null && dealer != Owner && props.IsPoweredAttack()
+        Config.RunSettings.AutoDodge && target == Owner && Remaining > 0 && dealer != null && dealer != Owner && props.IsPoweredAttack()
         && (RequiemResource.Of<StaminaResource>(Owner.Player)?.Amount ?? 0) >= StaminaCost;
 
     public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)

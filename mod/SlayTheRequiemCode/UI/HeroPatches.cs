@@ -15,14 +15,14 @@ namespace SlayTheRequiem.SlayTheRequiemCode.UI;
 
 /// <summary>
 /// Некробиндер и Дефект — облики превращений, а не герои мода (docs/design/06 §4, ревью R-23). При включённых системах
-/// мода (и выключенной настройке <see cref="RequiemConfig.ShowVanillaOnlyHeroes"/>) они скрыты на экране выбора,
+/// мода (и выключенной настройке <see cref="RunSettings.ShowVanillaOnlyHeroes"/>) они скрыты на экране выбора,
 /// не выпадают «случайным героем», а их карты не попадают в награды и случайную генерацию (Калейдоскоп, Призматический
 /// самоцвет, Разноцветные философы, Брызги, Морское стекло Оробаса). Их пулы реликвий доступны только им самим —
 /// без героя они не выпадают и отдельного фильтра не требуют.
 /// </summary>
 public static class HiddenHeroes
 {
-    public static bool Active => RequiemConfig.EnableRequiemSystems && !RequiemConfig.ShowVanillaOnlyHeroes;
+    public static bool Active => RunSettings.EnableRequiemSystems && !RunSettings.ShowVanillaOnlyHeroes;
 
     public static bool IsHidden(CharacterModel? character) => Active && character is Necrobinder or Defect;
 
@@ -103,7 +103,7 @@ public static class PlatebearerNames
 {
     public const string Key = "SLAYTHEREQUIEM-PLATEBEARER";
 
-    private static bool Applies(CharacterModel model) => RequiemConfig.EnableRequiemSystems && model is Ironclad;
+    private static bool Applies(CharacterModel model) => RunSettings.EnableRequiemSystems && model is Ironclad;
 
     [HarmonyPatch(typeof(CharacterModel), nameof(CharacterModel.Title), MethodType.Getter)]
     public static class Title

@@ -98,7 +98,7 @@ public sealed class ForgeHeart : RequiemCard
 
 /// <summary>Танец дюн: ◆ не тратит; если вы Устали — сильнее и возвращает 1 ◆.</summary>
 [Pool(typeof(IroncladCardPool))]
-public sealed class DuneDance : RequiemCard
+public sealed class DuneDance : RequiemCard, IWearyPayoff
 {
     public const string WearyBonusVar = "WearyBonus";
     public const int StaminaBack = 1;
@@ -113,7 +113,7 @@ public sealed class DuneDance : RequiemCard
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
     {
         ArgumentNullException.ThrowIfNull(play.Target);
-        var weary = RequiemCombatRules.IsOwnerWeary(Owner);
+        var weary = RequiemCombatRules.IsOwnerWeary(Owner, this);
         await Hit(ctx, play.Target, "vfx/vfx_flying_slash", DynamicVars.Damage.BaseValue + (weary ? Var(WearyBonusVar) : 0));
         if (weary) RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount(StaminaBack);
     }
@@ -131,7 +131,7 @@ public sealed class DesertPatience : RequiemCard
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
     {
-        var weary = RequiemCombatRules.IsOwnerWeary(Owner);
+        var weary = RequiemCombatRules.IsOwnerWeary(Owner, this);
         await Block(play);
         if (weary) RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount((int)Var(CatchBreath.GainVar));
     }

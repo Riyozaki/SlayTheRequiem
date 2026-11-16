@@ -139,7 +139,7 @@ public sealed class FaithSigil : RequiemRelic, IWeightless
     /// </summary>
     public override EventModel ModifyNextEvent(EventModel currentEvent)
     {
-        if (!RequiemConfig.EnablePantheon || !IsMutable || Owner == null || !RequiemMode.IsInSystem(Owner)) return currentEvent;
+        if (!RunSettings.EnablePantheon || !IsMutable || Owner == null || !RequiemMode.IsInSystem(Owner)) return currentEvent;
         if (currentEvent is ShrineEvent or DarkShrineEvent or EbbStonesEvent or Transformations.FormEvent or Events.NodeEvent) return currentEvent;
         var run = Owner.RunState;
         if (run.Players.FirstOrDefault() != Owner) return currentEvent;

@@ -120,6 +120,9 @@ public static class ShopServices
 
     private static bool _open;
 
+    /// <summary>Сброс при новом забеге (ревью F-06).</summary>
+    internal static void ResetForNewRun() => _open = false;
+
     // ───── что можно сделать ─────
 
     public static AlchemyRules.BrewOption? BestBrew(Player player, bool poison)
@@ -341,7 +344,7 @@ public static class ShopServices
             case ShopType.Temple:
             {
                 var god = MerchantLedger.TempleGod(player.RunState);
-                if (RequiemConfig.EnablePantheon && Pantheon.CelestialBlessing.Of(player)?.God != god)
+                if (RunSettings.EnablePantheon && Pantheon.CelestialBlessing.Of(player)?.God != god)
                 {
                     var price = Price(ShopRules.BlessingChangePrice);
                     Paid<CounterChangeBlessing>(price, (int)god, () => ShopActions.Perform(player, ShopAction.ChangeBlessing, price, (int)god));
@@ -519,7 +522,7 @@ public static class ShopServices
         var enablers = player.Relics.OfType<ITheftEnabler>().ToList();
         var attempts = 1 + enablers.Sum(e => e.ExtraTheftAttempts);
         if (MerchantLedger.Of(player) is not { } ledger || ledger.TheftTriedHere(player.RunState, attempts)) return false;
-        return RequiemConfig.AllowTheft || enablers.Any(e => e.EnablesTheft);
+        return RunSettings.AllowTheft || enablers.Any(e => e.EnablesTheft);
     }
 
     /// <summary>Сейчас идёт покупка-кража: золото не списывается и «потерял золото» не рассылается.</summary>

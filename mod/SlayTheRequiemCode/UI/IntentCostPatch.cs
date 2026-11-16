@@ -35,11 +35,11 @@ public static class IntentCostPatch
             var owner = OwnerRef(__instance);
             if (intent == null || owner == null) return;
             var sprite = SpriteRef(__instance);
-            var rest = RequiemConfig.EnableRequiemSystems && intent is StunIntent
+            var rest = RunSettings.EnableRequiemSystems && intent is StunIntent
                 ? EnemyResponses.RestingAs(owner)
                 : EnemyResponses.RestKind.None;
             SetOverlay(sprite, rest);
-            if (!RequiemConfig.EnableRequiemSystems || intent is not AttackIntent attack) return;
+            if (!RunSettings.EnableRequiemSystems || intent is not AttackIntent attack) return;
 
             var caster = owner.HasPower<EnemyManaPower>();
             if (!caster && !owner.HasPower<EnemyStaminaPower>()) return;

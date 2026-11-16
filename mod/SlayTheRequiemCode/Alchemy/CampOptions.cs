@@ -142,7 +142,7 @@ public static class Camp
             options.Add(new CardEnchantRestSiteOption(player));
         }
         if (hero != null) options.Add(new MeditateRestSiteOption(player));
-        if (RequiemConfig.EnablePantheon && HasAltar(player)) options.Add(new PrayRestSiteOption(player));
+        if (RunSettings.EnablePantheon && HasAltar(player)) options.Add(new PrayRestSiteOption(player));
         options.Add(new ChestRestSiteOption(player));
         if (Acts.WarmRestSiteOption.Offered(player)) options.Add(new Acts.WarmRestSiteOption(player));
         if (hero != null && hero.HasUnspentPoints) options.Add(new TrainRestSiteOption(player));

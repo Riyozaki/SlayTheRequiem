@@ -44,7 +44,7 @@ public partial class NWeightBadge : Control
 
     public void Refresh(NCard card, CardModel? model)
     {
-        if (model == null || card.Visibility != ModelVisibility.Visible || !RequiemConfig.EnableRequiemSystems)
+        if (model == null || card.Visibility != ModelVisibility.Visible || !RunSettings.EnableRequiemSystems)
         {
             Visible = false;
             return;

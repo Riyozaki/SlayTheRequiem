@@ -167,7 +167,7 @@ public static class AbyssGatePatch
     [HarmonyPostfix]
     public static void Postfix(RoomType roomType, ref EncounterModel __result)
     {
-        if (roomType != RoomType.Monster || !RequiemConfig.EnableRequiemSystems) return;
+        if (roomType != RoomType.Monster || !RunSettings.EnableRequiemSystems) return;
         var run = RequiemNet.State;
         if (ActMarks.At(run, run?.CurrentMapCoord) == MapMark.AbyssGate) __result = ModelDb.Encounter<AbyssRiftNormal>();
     }
@@ -178,7 +178,7 @@ public sealed class ActCombatRules() : CustomSingletonModel(CustomSingletonModel
 {
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
-        if (side != CombatSide.Player || !RequiemConfig.EnableRequiemSystems) return;
+        if (side != CombatSide.Player || !RunSettings.EnableRequiemSystems) return;
         var run = RequiemNet.State;
         if (run == null) return;
         var rule = ActKinds.CurrentRule(run);
@@ -257,7 +257,7 @@ public sealed class WarmRestSiteOption(Player owner) : RequiemRestSiteOption(own
     public override CampAction Action => CampAction.Warm;
 
     public static bool Offered(Player player) =>
-        RequiemConfig.EnableRequiemSystems && ActKinds.CurrentRule(player.RunState) == ActRule.Frost && ActLedger.Of(player) != null;
+        RunSettings.EnableRequiemSystems && ActKinds.CurrentRule(player.RunState) == ActRule.Frost && ActLedger.Of(player) != null;
 
     protected override bool Available => ActLedger.Of(Owner) is { WarmthFights: < ActRules.WarmthFights };
 

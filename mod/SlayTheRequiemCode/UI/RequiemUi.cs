@@ -138,7 +138,7 @@ public static class RequiemUi
     /// <summary>Платит ли карта ◆: атака персонажа в системе мода, кроме заклинаний, магических атак и Кличей.</summary>
     public static bool PaysStamina(CardModel card)
     {
-        if (!RequiemConfig.EnableRequiemSystems || card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return false;
+        if (!RunSettings.EnableRequiemSystems || card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return false;
         var owner = StaminaCosts.OwnerOf(card);
         return owner != null ? RequiemMode.IsInSystem(owner) : !HiddenHeroes.IsHiddenPool(card.Pool);
     }
@@ -146,7 +146,7 @@ public static class RequiemUi
     /// <summary>Наносит ли карта урон определённого типа (для значка стихии).</summary>
     public static DamageType? VisibleDamageType(CardModel card)
     {
-        if (!RequiemConfig.EnableRequiemSystems) return null;
+        if (!RunSettings.EnableRequiemSystems) return null;
         if (card.Type != CardType.Attack && card is not Spells.SpellCard) return null;
         var type = StaminaCosts.DamageTypeFor(card);
         return type == DamageType.Physical ? null : type;
@@ -158,7 +158,7 @@ public static class RequiemUi
     /// </summary>
     public static DamageType? TitleDamageType(CardModel card)
     {
-        if (!RequiemConfig.EnableRequiemSystems || !RequiemConfig.ColorElementalTitles) return null;
+        if (!RunSettings.EnableRequiemSystems || !RequiemConfig.ColorElementalTitles) return null;
         if (VisibleDamageType(card) is { } shown) return shown;
         if (card is IRequiemCard { DamageType: not DamageType.Physical } custom) return custom.DamageType;
         if (card.Type is CardType.Curse or CardType.Status) return null;
@@ -183,7 +183,7 @@ public static class RequiemUi
         if (stamina == null) return null;
         var state = StaminaRules.StateFor(stamina.Amount, stamina.Pool, cost);
         if (state == StaminaState.Tired && RequiemCombatRules.IsTireless(player)) state = StaminaState.Rested;
-        return (state, cost > stamina.Amount && RequiemConfig.EnableOverstrain);
+        return (state, cost > stamina.Amount && RunSettings.EnableOverstrain);
     }
 
     /// <summary>Цвет ступени перегруза: норма / 1–5 / 6–10 / больше 10 (02 §3).</summary>

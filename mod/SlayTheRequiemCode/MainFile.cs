@@ -27,11 +27,17 @@ public partial class MainFile : Node
         ModConfigRegistry.Register(ModId, new RequiemConfig());
         RequiemData.Load();
 
-        Harmony harmony = new(ModId);
-        harmony.PatchAll(assembly);
-        RunLifecycle.Hook();
-        UI.RequiemUi.Register();
+        // По одному классу, а не PatchAll: сломанная обновлением игры цель не срывает остальные патчи (ревью F-02).
+        PatchReport.PatchAll(new Harmony(ModId), assembly);
+        Safe("RunLifecycle.Hook", RunLifecycle.Hook);
+        Safe("RequiemUi.Register", UI.RequiemUi.Register);
 
         Logger.Info("Slay the Requiem loaded.");
+    }
+
+    private static void Safe(string what, Action action)
+    {
+        try { action(); }
+        catch (Exception e) { Logger.Error($"{what}: {e}"); }
     }
 }

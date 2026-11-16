@@ -29,7 +29,7 @@ public static class HitFxPatch
     [HarmonyPostfix]
     public static void Postfix(Creature receiver, Creature? dealer, DamageResult result, CardModel? cardSource)
     {
-        if (!RequiemConfig.EnableRequiemSystems || RequiemVfx.IsQuiet || result == null || receiver == null) return;
+        if (!RunSettings.EnableRequiemSystems || RequiemVfx.IsQuiet || result == null || receiver == null) return;
         if (!RequiemVfx.Enabled && !RequiemSfx.Enabled) return;
         var type = DamageTyping.Resolve(result.Props, dealer, cardSource);
         var powered = result.Props.IsPoweredAttack();

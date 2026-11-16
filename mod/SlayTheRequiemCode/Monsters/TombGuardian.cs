@@ -91,7 +91,7 @@ public sealed class TombGuardian : CustomMonsterModel
 /// </summary>
 public sealed class TombGuardianElite() : CustomEncounterModel(RoomType.Elite)
 {
-    public override bool IsValidForAct(ActModel act) => act is Hive && !Config.RequiemConfig.FiveActs;
+    public override bool IsValidForAct(ActModel act) => act is Hive && !Config.RunSettings.FiveActs;
 
     public override IEnumerable<MonsterModel> AllPossibleMonsters => [ModelDb.Monster<TombGuardian>()];
 

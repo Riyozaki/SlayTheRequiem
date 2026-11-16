@@ -1,6 +1,8 @@
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Acts;
 using SlayTheRequiem.SlayTheRequiemCode.Rollback;
+using SlayTheRequiem.SlayTheRequiemCode.Shops;
+using SlayTheRequiem.SlayTheRequiemCode.UI;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 
@@ -29,6 +31,11 @@ public static class RunLifecycle
             MapGraph.Reset();
             ActDoors.Reset();
             CoopMemoryStone.ResetForNewRun();
+            // Флаги незакрытых окон прошлого забега (ревью F-06): иначе, например, «Дальше» на наградах босса молчит.
+            PortalPromptPatch.ResetForNewRun();
+            ShopServices.ResetForNewRun();
+            OverloadWarningPatch.ResetForNewRun();
+            MapVisuals.ResetForNewRun();
         }
         catch (Exception e)
         {

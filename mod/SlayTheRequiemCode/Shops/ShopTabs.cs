@@ -434,6 +434,9 @@ public static class OverloadWarningPatch
 
     private static bool _confirmed;
 
+    /// <summary>Сброс при новом забеге (ревью F-06).</summary>
+    internal static void ResetForNewRun() => _confirmed = false;
+
     [HarmonyPrefix]
     public static bool WarnAboutOverload(MerchantEntry __instance, MerchantInventory? inventory, bool ignoreCost, ref Task<bool> __result)
     {

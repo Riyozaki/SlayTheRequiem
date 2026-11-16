@@ -212,7 +212,7 @@ public sealed class ActLedger : RequiemRelic
 
     public override Task AfterMapGenerated(ActMap map, int actIndex)
     {
-        if (Owner?.RunState is not { } run || !RequiemConfig.EnableRequiemSystems || actIndex >= run.Acts.Count) return Task.CompletedTask;
+        if (Owner?.RunState is not { } run || !RunSettings.EnableRequiemSystems || actIndex >= run.Acts.Count) return Task.CompletedTask;
         // Вариации путей (M6 п. 1): план строится один раз для карты, каждый герой хранит его копию.
         var plan = MapGraph.Prepare(run, map, actIndex);
         MapPlanAct = actIndex + 1;
@@ -228,11 +228,11 @@ public sealed class ActLedger : RequiemRelic
     /// </summary>
     public override EventModel ModifyNextEvent(EventModel currentEvent)
     {
-        if (!RequiemConfig.EnableRequiemSystems || !IsMutable || Owner?.RunState is not { } run) return currentEvent;
+        if (!RunSettings.EnableRequiemSystems || !IsMutable || Owner?.RunState is not { } run) return currentEvent;
         if (run.Players.FirstOrDefault() != Owner) return currentEvent;
         if (currentEvent is Pantheon.PantheonEvent or Transformations.FormEvent or Events.NodeEvent) return currentEvent;
         // Знамя Небесных (Слава) — всегда Святилище.
-        if (ActMarks.At(run, run.CurrentMapCoord) == MapMark.CelestialBanner && RequiemConfig.EnablePantheon)
+        if (ActMarks.At(run, run.CurrentMapCoord) == MapMark.CelestialBanner && RunSettings.EnablePantheon)
             return ModelDb.Event<Pantheon.ShrineEvent>();
         var roll = (int)(ShopRules.Fnv1a((run.Rng.StringSeed ?? string.Empty) + "|library", run.TotalFloor * 13 + run.CurrentActIndex) % 100u);
         return NodeRules.RollLibrary(ActKinds.Slot(run), roll) ? ModelDb.Event<Events.LibraryEvent>() : currentEvent;
@@ -240,7 +240,7 @@ public sealed class ActLedger : RequiemRelic
 
     public override async Task AfterRoomEntered(AbstractRoom room)
     {
-        if (Owner?.RunState is not { } run || !RequiemConfig.EnableRequiemSystems || run.CurrentMapCoord is not { } coord) return;
+        if (Owner?.RunState is not { } run || !RunSettings.EnableRequiemSystems || run.CurrentMapCoord is not { } coord) return;
         var code = MapMarks.Encode(run.CurrentActIndex, coord.col, coord.row);
         switch (ActMarks.At(run, coord))
         {
@@ -291,7 +291,7 @@ public sealed class ActLedger : RequiemRelic
     public override async Task AfterCombatVictory(CombatRoom room)
     {
         if (Owner?.RunState is not { } run) return;
-        if (RequiemConfig.EnableRequiemSystems)
+        if (RunSettings.EnableRequiemSystems)
         {
             var rule = ActKinds.CurrentRule(run);
             if (rule == ActRule.Frost && _warmthFights > 0) WarmthFights--;

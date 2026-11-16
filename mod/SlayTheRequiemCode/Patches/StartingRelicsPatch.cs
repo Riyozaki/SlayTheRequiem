@@ -9,6 +9,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Patches;
 
 /// <summary>Герою в системе Реквиема к стартовым реликвиям добавляются Гримуар (владение школами), Сумка травника, Походный мешок,
 /// Книга торговца, Свечи Реквиема и Знак веры.</summary>
+[CriticalPatch]
 [HarmonyPatch(typeof(Player), "PopulateStartingRelics")]
 public static class StartingRelicsPatch
 {
@@ -68,6 +69,7 @@ public static class StartingRelicsPatch
         if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();
         grimoire.InitFor(__instance.Character.GetType().Name);
+        grimoire.RunSettingsCode = Config.RunSettings.CodeForNewRun();
         grimoire.FloorAddedToDeck = 1;
         __instance.AddRelicInternal(grimoire, silent: true);
         // Происхождение выдаёт сам Гримуар при входе в первую комнату: здесь ГСЧ игрока ещё не засеян,

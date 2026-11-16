@@ -87,7 +87,7 @@ public static class SharedRelicGrabBagPatch
     {
         try
         {
-            if (RequiemConfig.EnableRequiemSystems) VanillaRelicRework.Strip(__instance);
+            if (RunSettings.EnableRequiemSystems) VanillaRelicRework.Strip(__instance);
         }
         catch (Exception e)
         {
@@ -103,7 +103,7 @@ public static class VanillaRelicHoverTipsPatch
     [HarmonyPostfix]
     public static void Postfix(RelicModel __instance, ref IEnumerable<IHoverTip> __result)
     {
-        if (!RequiemConfig.EnableRequiemSystems) return;
+        if (!RunSettings.EnableRequiemSystems) return;
         try
         {
             if (VanillaRelicRework.EntryOf(__instance) is not { } entry) return;
