@@ -19,12 +19,28 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
 // Супербоссы Багрового портала (docs/design/11 §6). ♥ — ActRules.SuperbossHp; Непоколебимость/Слом даёт EnemySetup (ранг Boss).
 // Механики со своими картами в руке («Нести штандарт», «Сорвать крыло», «Солнечный луч») упрощены до правил на поле — этап 8.
+// Облик (M7 п. 1) — свой PNG (OwnArtMonster, tools/art/monsters/superbosses.py), вариант по состоянию — SuperbossLookRules;
+// LookOf остаётся откатом, если картинки нет. Свита — ванильные модели с перекраской фракции (CourtTintPatch ниже).
 
-/// <summary>Супербосс: ♥ из таблицы, вид — для награды и Безымянного предела.</summary>
-public abstract class SuperbossMonster : RequiemMonster
+/// <summary>Супербосс: ♥ из таблицы, вид — для награды и Безымянного предела; свой спрайт и картинка по состоянию.</summary>
+public abstract class SuperbossMonster : OwnArtMonster
 {
     public abstract Superboss Kind { get; }
     protected override int Hp => ActRules.SuperbossHp(Kind);
+
+    public override string ArtKey => SuperbossLookRules.ArtKey(Kind);
+
+    protected override IReadOnlyList<string> ArtVariants => SuperbossLookRules.Variants(Kind);
+
+    /// <summary>Стойка блока Чёрного Странника (видна, пока герои снова не атакуют).</summary>
+    protected bool Guarding { get; set; }
+
+    /// <summary>Показать картинку по текущему состоянию (Стойка, Неуязвимость, Полёт); та же — без вспышки.</summary>
+    protected void RefreshLook()
+    {
+        if (!Creature.IsAlive) return;
+        ShowArt(SuperbossLookRules.Variant(Kind, Guarding, Creature.HasPower<InvulnerablePower>(), Creature.HasPower<FlightPower>()));
+    }
 
     protected int Turn { get; private set; }
 
@@ -105,7 +121,13 @@ public sealed class BlackWanderer : SuperbossMonster
 
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (cardPlay.Card.Type == CardType.Attack) _heroesAttacked = true;
+        if (cardPlay.Card.Type != CardType.Attack) return Task.CompletedTask;
+        _heroesAttacked = true;
+        if (Guarding)
+        {
+            Guarding = false;
+            RefreshLook();
+        }
         return Task.CompletedTask;
     }
 
@@ -113,6 +135,8 @@ public sealed class BlackWanderer : SuperbossMonster
     {
         if (side != MegaCrit.Sts2.Core.Combat.CombatSide.Player || !Creature.IsAlive) return;
         if (!_heroesAttacked) await PowerCmd.Apply<PlatingPower>(choiceContext, Creature, GuardPlating, Creature, null);
+        Guarding = !_heroesAttacked;
+        RefreshLook();
         _heroesAttacked = false;
     }
 }
@@ -382,7 +406,10 @@ public sealed class BloodCourtLord : SuperbossMonster
         if (side != MegaCrit.Sts2.Core.Combat.CombatSide.Enemy || !Creature.IsAlive) return;
         if (!Creature.HasPower<BurningPower>()) await Heal(Regeneration);
         if (Creature.GetPower<InvulnerablePower>() is { } cocoon && !Allies.Any(a => a.Monster is GargoyleServant))
+        {
             await PowerCmd.Remove(cocoon);
+            RefreshLook();
+        }
     }
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
@@ -391,6 +418,7 @@ public sealed class BloodCourtLord : SuperbossMonster
         _cocoons++;
         for (var i = 0; i < 3; i++) await Summon<GargoyleServant>();
         await PowerCmd.Apply<InvulnerablePower>(choiceContext, Creature, 1, Creature, null);
+        RefreshLook();
     }
 }
 
@@ -530,12 +558,13 @@ public sealed class WorldEater : SuperbossMonster
         new MoveState("METEOR_RAIN", _ => Blast(MeteorDamage, DamageType.Fire), Atk(MeteorDamage)),
         new MoveState("LAND", Land, new StunIntent()),
         new MoveState("DEVOURING_BITE", _ => Hit(BiteDamage), Atk(BiteDamage)),
-        new MoveState("TAKE_WING", async _ => await PowerCmd.Apply<FlightPower>(Ctx, Creature, 1, Creature, null), new BuffIntent()),
+        new MoveState("TAKE_WING", async _ => { await PowerCmd.Apply<FlightPower>(Ctx, Creature, 1, Creature, null); RefreshLook(); }, new BuffIntent()),
     ];
 
     private async Task Land(IReadOnlyList<Creature> targets)
     {
         if (Creature.GetPower<FlightPower>() is { } flight) await PowerCmd.Remove(flight);
+        RefreshLook();
     }
 
     public override async Task AfterSideTurnStart(MegaCrit.Sts2.Core.Combat.CombatSide side, IReadOnlyList<Creature> participants, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
@@ -628,13 +657,17 @@ public sealed class NamelessShadow : SuperbossMonster
         if (creature == Creature || creature.Monster is not ShadowSoul || wasRemovalPrevented || !Creature.IsAlive) return;
         _exposedTurns = 1;
         if (Creature.GetPower<InvulnerablePower>() is { } inv) await PowerCmd.Remove(inv);
+        RefreshLook();
     }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Combat.CombatSide side, IEnumerable<Creature> participants)
     {
         if (side != MegaCrit.Sts2.Core.Combat.CombatSide.Player || !Creature.IsAlive) return;
         if (_exposedTurns > 0 && --_exposedTurns == 0 && !Creature.HasPower<InvulnerablePower>())
+        {
             await PowerCmd.Apply<InvulnerablePower>(choiceContext, Creature, 1, Creature, null);
+            RefreshLook();
+        }
     }
 }
 
@@ -676,9 +709,10 @@ public sealed class NamelessShadowBoss() : SuperbossEncounter
     protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<NamelessShadow>()];
 }
 
-/// <summary>Элита-эхо Безымянного предела: отзвук Чёрного Странника (150 ♥).</summary>
-public sealed class EchoKnight : RequiemMonster
+/// <summary>Элита-эхо Безымянного предела: отзвук Чёрного Странника (150 ♥), свой спрайт — призрачный двойник Странника.</summary>
+public sealed class EchoKnight : OwnArtMonster
 {
+    public override string ArtKey => SuperbossLookRules.EchoKnightArt;
     public const int EchoDamage = 12;
     public const int EchoHits = 2;
     protected override int Hp => 150;

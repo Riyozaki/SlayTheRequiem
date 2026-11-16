@@ -57,8 +57,8 @@ PATH_CARDS = [
     ("InnerCalm", "Inner Calm", "Gain {Block:diff()} [gold]Block[/gold] and {DodgePower:diff()} [gold]Dodge[/gold].",
      "Внутренний покой", "Получить {Block:diff()} [gold]Блока[/gold] и {DodgePower:diff()} [gold]Уворота[/gold]."),
     # Ассасин
-    ("Garrote", "Garrote", "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].",
-     "Удавка", "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold]."),
+    ("PathGarrote", "Assassin's Garrote", "Deal {Damage:diff()} damage. Apply {BleedPower:diff()} [gold]Bleed[/gold].",
+     "Удавка ассасина", "Нанести {Damage:diff()} урона. Наложить {BleedPower:diff()} [gold]Кровотечения[/gold]."),
     ("Vanish", "Vanish", "Gain {DodgePower:diff()} [gold]Dodge[/gold].\nExhaust.", "Исчезновение", "Получить {DodgePower:diff()} [gold]Уворота[/gold].\nИзгнание."),
     ("DeathMark", "Death Mark", "Apply {VulnerablePower:diff()} [gold]Vulnerable[/gold] and [gold]Broken[/gold].",
      "Метка смерти", "Наложить {VulnerablePower:diff()} [gold]Уязвимости[/gold] и [gold]Сломлен[/gold]."),
@@ -228,10 +228,10 @@ FORM_RELICS = [
      "Three voices, one mouth.", "Три голоса, одни уста."),
     ("LichForm", "Lich",
      "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. Bone: −30% max HP, physical damage taken −25%, immune to Poison, Blight and Bleed; "
-     "heal only by absorption and lifesteal. Death Blast: when your summon falls — 5 magic damage to ALL enemies." + _APOSTATE["eng"],
+     "heal only by absorption and lifesteal. Death Blast: when your summon falls — 5 magic damage to ALL enemies. Each combat a Bone Thrall (10 HP) rises at your side." + _APOSTATE["eng"],
      "Лич",
      "Договор: +4 пул ✦, призыв −1 ✦, −8 макс. ♥. Кость: −30 % макс. ♥, физический урон по вам −25 %, иммунитет к Яду, Хвори и Кровотечению; "
-     "лечение только поглощением и вампиризмом. Взрыв смерти: гибель призыва — 5 урона магией ВСЕМ врагам." + _APOSTATE["rus"],
+     "лечение только поглощением и вампиризмом. Взрыв смерти: гибель призыва — 5 урона магией ВСЕМ врагам. В каждом бою рядом встаёт Костяной прислужник (10 ♥)." + _APOSTATE["rus"],
      "Death is a door. You kept the key.", "Смерть — дверь. Ключ остался у тебя."),
     ("Phylactery", "Phylactery",
      "Weight 3. When you would die — revive with {Percent}% HP, once per run; then it shatters.",

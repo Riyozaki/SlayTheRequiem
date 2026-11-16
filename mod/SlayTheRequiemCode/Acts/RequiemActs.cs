@@ -32,9 +32,10 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     /// <summary>Ванильный акт, чьи фоны карты, лагеря и боя используются, пока нет своих (этап 8).</summary>
     protected abstract string LookId { get; }
 
-    protected override string CustomMapTopBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_top_{LookId}.png");
-    protected override string CustomMapMidBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_middle_{LookId}.png");
-    protected override string CustomMapBotBgPath => ImageHelper.GetImagePath($"packed/map/map_bgs/{LookId}/map_bottom_{LookId}.png");
+    // свой пергамент акта (M7 п. 2, ActLooks), без файла — ванильный акта-основы
+    protected override string CustomMapTopBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapTop, LookId);
+    protected override string CustomMapMidBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapMiddle, LookId);
+    protected override string CustomMapBotBgPath => ActLooks.MapPiece(Kind, ActLookRules.MapBottom, LookId);
     protected override string CustomRestSiteBackgroundPath => SceneHelper.GetScenePath($"rest_site/{LookId}_rest_site");
     protected override BackgroundAssets CustomGenerateBackgroundAssets(Rng rng) => new(LookId, rng);
     protected override string CustomBackgroundScenePath => SceneHelper.GetScenePath($"backgrounds/{LookId}/{LookId}_background");
@@ -51,7 +52,7 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     /// <summary>Свои элиты (редкая — отдельно, <see cref="RareElite"/>).</summary>
     protected abstract IEnumerable<EncounterModel> OwnElites { get; }
 
-    /// <summary>Пул боссов (ванильные; повторы с прошлыми актами забега отсеиваются).</summary>
+    /// <summary>Пул боссов: свои боссы варианта акта (docs/design/11 §6.1, Monsters/*Bosses.cs).</summary>
     protected abstract IEnumerable<EncounterModel> BossPool { get; }
 
     /// <summary>Редкая элита акта (15 %, <see cref="ActRules.RareEliteChancePercent"/>).</summary>
@@ -60,8 +61,8 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     public override IEnumerable<EncounterModel> GenerateAllEncounters() =>
         BorrowedEncounters.Concat(OwnElites).Concat(BossPool).ToList();
 
-    /// <summary>Свои события актов — этап 8; пока общие события игры и мода (BaseLib добавит события с Acts = [этот акт]).</summary>
-    public override IEnumerable<EventModel> AllEvents => [];
+    /// <summary>Свои события «?» акта (13 §5) — по 6 на акт, см. <see cref="global::SlayTheRequiem.SlayTheRequiemCode.Events.ActEvents"/>.</summary>
+    public override IEnumerable<EventModel> AllEvents => global::SlayTheRequiem.SlayTheRequiemCode.Events.ActEvents.For(Kind);
 
     public override MapPointTypeCounts GetMapPointTypes(Rng mapRng)
     {
@@ -104,7 +105,7 @@ public sealed class FrozenBarrows() : RequiemActModel(1)
         [ModelDb.Encounter<TombGuardianElite>(), ModelDb.Encounter<GlacierGiantElite>(), ModelDb.Encounter<PhantomBladeElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<LagavulinMatriarchBoss>(), ModelDb.Encounter<SoulFyshBoss>(), ModelDb.Encounter<VantomBoss>()];
+        [ModelDb.Encounter<KingUnderBarrowBoss>(), ModelDb.Encounter<BoneFrostWyrmBoss>(), ModelDb.Encounter<BarrowWailerBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<FirstSnowPrinceElite>();
 }
@@ -142,7 +143,7 @@ public sealed class ClockworkDepths() : RequiemActModel(1)
         [ModelDb.Encounter<DeepCenturionElite>(), ModelDb.Encounter<SpiderMatriarchElite>(), ModelDb.Encounter<RenegadeMechanicElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<WaterfallGiantBoss>(), ModelDb.Encounter<CeremonialBeastBoss>(), ModelDb.Encounter<TheKinBoss>()];
+        [ModelDb.Encounter<ClockworkColossusBoss>(), ModelDb.Encounter<AutomatonArchitectBoss>(), ModelDb.Encounter<BoilerWyrmBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<ReactorHeartElite>();
 }
@@ -172,7 +173,7 @@ public sealed class BloodCourt() : RequiemActModel(3)
         [ModelDb.Encounter<BloodNobleElite>(), ModelDb.Encounter<GargoyleWardenElite>(), ModelDb.Encounter<VampireHunterElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<TheInsatiableBoss>(), ModelDb.Encounter<KnowledgeDemonBoss>(), ModelDb.Encounter<KaiserCrabBoss>()];
+        [ModelDb.Encounter<CrimsonCountessBoss>(), ModelDb.Encounter<EclipseWardenBoss>(), ModelDb.Encounter<ChaliceHierophantBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<LordsBrideElite>();
 }
@@ -202,7 +203,7 @@ public sealed class StarTower() : RequiemActModel(3)
         [ModelDb.Encounter<SorceressIlvarreElite>(), ModelDb.Encounter<RenegadeSummonerElite>(), ModelDb.Encounter<MirrorWardenElite>()];
 
     protected override IEnumerable<EncounterModel> BossPool =>
-        [ModelDb.Encounter<TheInsatiableBoss>(), ModelDb.Encounter<KnowledgeDemonBoss>(), ModelDb.Encounter<KaiserCrabBoss>()];
+        [ModelDb.Encounter<AstrolabeKeeperBoss>(), ModelDb.Encounter<LeyWyrmBoss>(), ModelDb.Encounter<ArchmageSimulacrumBoss>()];
 
     public override EncounterModel RareElite => ModelDb.Encounter<StarExaminerElite>();
 }
@@ -213,9 +214,9 @@ public sealed class StarTower() : RequiemActModel(3)
 /// </summary>
 public sealed class NamelessLimit() : CustomActModel(-1)
 {
-    protected override string CustomMapTopBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_top_glory.png");
-    protected override string CustomMapMidBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_middle_glory.png");
-    protected override string CustomMapBotBgPath => ImageHelper.GetImagePath("packed/map/map_bgs/glory/map_bottom_glory.png");
+    protected override string CustomMapTopBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapTop, "glory");
+    protected override string CustomMapMidBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapMiddle, "glory");
+    protected override string CustomMapBotBgPath => ActLooks.MapPiece(ActKind.NamelessLimit, ActLookRules.MapBottom, "glory");
     protected override string CustomRestSiteBackgroundPath => SceneHelper.GetScenePath("rest_site/glory_rest_site");
 
     public override Color MapTraveledColor => new("0A0A0F");

@@ -59,7 +59,7 @@ STAGE35_CARDS = [
 STAGE35_SETTINGS = {
     "eng": {
         "SHOP_VARIETY.title": "Requiem shops", "SHOP_VARIETY.hover.title": "Requiem shops",
-        "SHOP_VARIETY.hover.desc": "Each shop is a Wanderer, Armorer, Arcanist or Herbalist with its own stock; trust discounts; "
+        "SHOP_VARIETY.hover.desc": "Each shop is a Wanderer, Armorer, Arcanist, Herbalist, Jeweler, Temple, Fence or Caravan with its own stock; trust discounts; "
                                    "selling backpack gear; combat gold ×1.3. Off — vanilla shops.",
         "DEATH_SECTION.title": "Death and the Memory Stone",
         "ENABLE_MEMORY_STONE.title": "Memory Stone", "ENABLE_MEMORY_STONE.hover.title": "Memory Stone",
@@ -69,7 +69,7 @@ STAGE35_SETTINGS = {
     },
     "rus": {
         "SHOP_VARIETY.title": "Лавки Реквиема", "SHOP_VARIETY.hover.title": "Лавки Реквиема",
-        "SHOP_VARIETY.hover.desc": "Каждая лавка — Странник, Оружейник, Чародейская или Травница со своей витриной; скидки доверия; "
+        "SHOP_VARIETY.hover.desc": "Каждая лавка — Странник, Оружейник, Чародейская, Травница, Ювелир, Храм, Скупщик краденого или Караван со своей витриной; скидки доверия; "
                                    "продажа вещей из рюкзака; золото за бои ×1.3. Выкл — ванильные магазины.",
         "DEATH_SECTION.title": "Смерть и Камень Памяти",
         "ENABLE_MEMORY_STONE.title": "Камень Памяти", "ENABLE_MEMORY_STONE.hover.title": "Камень Памяти",

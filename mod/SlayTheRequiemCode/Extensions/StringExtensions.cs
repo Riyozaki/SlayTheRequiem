@@ -1,89 +1,60 @@
-﻿using Godot;
+using SlayTheRequiem.SlayTheRequiemCode.Art;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Extensions;
 
-//Mostly utilities to get asset paths.
+/// <summary>
+/// Пути к картинкам моделей. Порядок поиска везде один: свой файл мода → ванильный арт по таблице
+/// (<paramref name="borrowed"/>, см. <see cref="VanillaArt"/>) → заглушка шаблона.
+/// </summary>
 public static class StringExtensions
 {
-    public static string ImagePath(this string path)
+    private static string Res(params string[] parts)
     {
-        return Path.Join(MainFile.ResPath, "images", path);
+        var all = new string[parts.Length + 2];
+        all[0] = MainFile.ResPath;
+        all[1] = "images";
+        parts.CopyTo(all, 2);
+        return Path.Join(all);
     }
 
-    public static string CardImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "card_portraits", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find card image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "card_portraits", "card.png");
-    }
+    public static string ImagePath(this string path) => Res(path);
 
-    public static string BigCardImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "card_portraits", "big", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find big card image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "card_portraits", "big", "card.png");
-    }
+    /// <summary>Малый портрет карты: свой малый → свой большой → ванильный → заглушка.</summary>
+    public static string CardImagePath(this string path, string? borrowed = null) =>
+        VanillaArt.FirstExisting(Res("card_portraits", "card.png"),
+            Res("card_portraits", path), Res("card_portraits", "big", path), borrowed);
 
-    public static string PowerImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "powers", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find power image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "powers", "power.png");
-    }
+    /// <summary>Основной арт карты: свой большой → свой малый → ванильный → заглушка.</summary>
+    public static string BigCardImagePath(this string path, string? borrowed = null) =>
+        VanillaArt.FirstExisting(Res("card_portraits", "big", "card.png"),
+            Res("card_portraits", "big", path), Res("card_portraits", path), borrowed);
 
-    public static string BigPowerImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "powers", "big", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find big power image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "powers", "big", "power.png");
-    }
+    public static string PowerImagePath(this string path, string? borrowed = null) =>
+        VanillaArt.FirstExisting(Res("powers", "power.png"), Res("powers", path), borrowed);
 
-    public static string RelicImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "relics", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find relic image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "relics", "relic.png");
-    }
+    /// <summary>Большой значок силы: свой большой → ванильный большой → ванильный малый → заглушка.</summary>
+    public static string BigPowerImagePath(this string path, string? borrowed = null, string? borrowedSmall = null) =>
+        VanillaArt.FirstExisting(Res("powers", "big", "power.png"), Res("powers", "big", path), borrowed, borrowedSmall);
 
-    public static string BigRelicImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "relics", "big", path);
-        if (ResourceLoader.Exists(path)) return path;
-        
-        MainFile.Logger.Info("Could not find big relic image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "relics", "big", "relic.png");
-    }
+    public static string RelicImagePath(this string path, string? borrowed = null) =>
+        VanillaArt.FirstExisting(Res("relics", "relic.png"), Res("relics", path), borrowed);
 
-    /// <summary>Портрет события; пока своих нет — большая иконка реликвии-заглушки.</summary>
-    public static string EventImagePath(this string path)
-    {
-        path = Path.Join(MainFile.ResPath, "images", "events", path);
-        if (ResourceLoader.Exists(path)) return path;
+    /// <summary>Большая картинка реликвии: своя большая → ванильная большая → ванильный значок → заглушка.</summary>
+    public static string BigRelicImagePath(this string path, string? borrowed = null, string? borrowedSmall = null) =>
+        VanillaArt.FirstExisting(Res("relics", "big", "relic.png"), Res("relics", "big", path), borrowed, borrowedSmall);
 
-        MainFile.Logger.Info("Could not find event image path: " + path);
-        return Path.Join(MainFile.ResPath, "images", "relics", "big", "relic.png");
-    }
+    /// <summary>Портрет события: свой → ванильный → большая заглушка реликвии.</summary>
+    public static string EventImagePath(this string path, string? borrowed = null) =>
+        VanillaArt.FirstExisting(Res("relics", "big", "relic.png"), Res("events", path), borrowed);
 
-    public static string CharacterUiPath(this string path)
-    {
-        return Path.Join(MainFile.ResPath, "images", "charui", path);
-    }
+    public static string CharacterUiPath(this string path) => Res("charui", path);
 
     /// <summary>Картинка зелья мода; если её нет — ванильная из атласа (<paramref name="vanillaFallback"/>, напр. "blood_potion").</summary>
     public static string PotionImagePath(this string path, string vanillaFallback, bool outline = false)
     {
-        path = Path.Join(MainFile.ResPath, "images", "potions", outline ? "outline" : "", path);
-        if (ResourceLoader.Exists(path)) return path;
-        return $"res://images/atlases/{(outline ? "potion_outline_atlas" : "potion_atlas")}.sprites/{vanillaFallback}.tres";
+        var own = outline ? Res("potions", "outline", path) : Res("potions", path);
+        return VanillaArt.Exists(own)
+            ? own
+            : $"res://images/atlases/{(outline ? "potion_outline_atlas" : "potion_atlas")}.sprites/{vanillaFallback}.tres";
     }
 }

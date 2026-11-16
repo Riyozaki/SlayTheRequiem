@@ -101,6 +101,25 @@ public abstract class ElementOrbPower : RequiemPower
 
     protected abstract Task Pulse(PlayerChoiceContext ctx, Creature enemy);
 
+    // Сферы видны над героем как сферы Дефекта (M6 п. 3, HeroOverlays).
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
+    {
+        HeroOverlays.RefreshOrbs(Owner);
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
+    {
+        if (power == this) HeroOverlays.RefreshOrbs(Owner);
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterRemoved(Creature oldOwner)
+    {
+        HeroOverlays.RefreshOrbs(oldOwner);
+        return Task.CompletedTask;
+    }
+
     public override async Task BeforeSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
         if (!participants.Contains(Owner) || Owner.CombatState == null || Owner.Player == null) return;

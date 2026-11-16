@@ -43,7 +43,7 @@ STAGE36_RELIC_EXTRA = {
     "eng": {
         "MERCHANT_LEDGER.theftHeader": "Steal it?",
         "MERCHANT_LEDGER.theftBody": "You can't afford it ({Gold} gold). Chance to slip away: {Chance}%. "
-                                     "If caught — the guards beat you (−20% max HP) and this kind of shop stops trusting you.",
+                                     "If caught — the shop guard steps in (a fight; in co-op −20% max HP instead) and this kind of shop stops trusting you.",
         "MERCHANT_LEDGER.theftYes": "Steal",
         "MERCHANT_LEDGER.theftNo": "Don't",
         "MEMORY_STONE_RELIC.coopOfferHeader": "Offer a return to the Memory Stone?",
@@ -60,7 +60,7 @@ STAGE36_RELIC_EXTRA = {
     "rus": {
         "MERCHANT_LEDGER.theftHeader": "Украсть?",
         "MERCHANT_LEDGER.theftBody": "Золота не хватает ({Gold}). Шанс уйти незамеченным: {Chance}%. "
-                                     "Если поймают — стража побьёт (−20% макс. ♥), а лавки этого вида перестанут вам доверять.",
+                                     "Если поймают — выйдет стража лавки (бой; в коопе вместо него −20% макс. ♥), а лавки этого вида перестанут вам доверять.",
         "MERCHANT_LEDGER.theftYes": "Украсть",
         "MERCHANT_LEDGER.theftNo": "Не стоит",
         "MEMORY_STONE_RELIC.coopOfferHeader": "Предложить вернуться к Камню Памяти?",

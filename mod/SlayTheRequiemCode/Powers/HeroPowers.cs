@@ -60,3 +60,70 @@ public sealed class UnbreakablePower : RequiemPower
         return true;
     }
 }
+
+// ═════════════ M4 п. 7: силы новых карт героев (16 §3, 17 §3) ═════════════
+
+/// <summary>Строй легиона (Цитадельцы): в начале хода, если надет щит, +N Блока.</summary>
+public sealed class LegionDrillPower : RequiemPower
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Entities.Players.Player player)
+    {
+        if (player.Creature != Owner || Progression.HeroRecord.Of(player) is not { HasShield: true }) return;
+        Flash();
+        await CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null);
+    }
+}
+
+/// <summary>Сердце горна (Горнокровные): каждая 3-я атака за ход тянет N карт.</summary>
+public sealed class ForgeHeartPower : RequiemPower
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    private int _attacksThisTurn;
+
+    public override Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Entities.Players.Player player)
+    {
+        if (player.Creature == Owner) _attacksThisTurn = 0;
+        return Task.CompletedTask;
+    }
+
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        var player = cardPlay.Card.Owner;
+        if (player?.Creature != Owner || !cardPlay.IsLastInSeries || cardPlay.Card.Type != CardType.Attack
+            || cardPlay.Card is Spells.SpellCard) return;
+        _attacksThisTurn++;
+        if (_attacksThisTurn % 3 != 0) return;
+        Flash();
+        await CardPileCmd.Draw(choiceContext, Amount, player);
+    }
+}
+
+/// <summary>Ритм ветра (Ветроплясун): каждая 3-я карта за ход тянет N карт.</summary>
+public sealed class WindRhythmPower : RequiemPower
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    private int _cardsThisTurn;
+
+    public override Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, MegaCrit.Sts2.Core.Entities.Players.Player player)
+    {
+        if (player.Creature == Owner) _cardsThisTurn = 0;
+        return Task.CompletedTask;
+    }
+
+    public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        var player = cardPlay.Card.Owner;
+        if (player?.Creature != Owner || !cardPlay.IsLastInSeries) return;
+        _cardsThisTurn++;
+        if (_cardsThisTurn % 3 != 0) return;
+        Flash();
+        await CardPileCmd.Draw(choiceContext, Amount, player);
+    }
+}

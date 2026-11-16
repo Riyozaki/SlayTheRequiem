@@ -28,6 +28,11 @@ public abstract class EquipmentRelic : RequiemRelic
     public virtual string? Set => null;
     /// <summary>Покров N (одеяния).</summary>
     public virtual int Ward => 0;
+    /// <summary>Материал (07 §2), если он не следует из ступени (чешуйчатая сталь, драконья кость). None — по ступени.</summary>
+    public virtual ItemMaterial Material => ItemMaterial.None;
+
+    /// <summary>Материал для куклы (07 §8): свой, иначе Бездонное или по базовой ступени.</summary>
+    public ItemMaterial EffectiveMaterial => PaperDollRules.MaterialFor(Tier, this is IAbyssalItem, Material);
 
     private bool _isStowed;
 
@@ -80,6 +85,9 @@ public abstract class EquipmentRelic : RequiemRelic
     }
 
     public List<EnchantSlot> EnchantSlots => EnchantRules.Parse(_enchants);
+
+    /// <summary>Чары «Паралич» уже сработали в этом бою (07 §6.1: раз в бой). Не сохраняется — сбрасывается в начале боя.</summary>
+    public bool ParalysisSpent { get; set; }
 
     public void SetEnchants(IEnumerable<EnchantSlot> slots)
     {
@@ -147,6 +155,7 @@ public abstract class WeaponRelic : EquipmentRelic
     public override Task BeforeCombatStart()
     {
         _weaponAttacksThisCombat = 0;
+        ParalysisSpent = false;
         return Task.CompletedTask;
     }
 

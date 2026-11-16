@@ -41,9 +41,12 @@ public abstract class RequiemPotion : CustomPotionModel
     public override string? CustomPackedImagePath => ImageName.PotionImagePath(VanillaArt);
     public override string? CustomPackedOutlinePath => ImageName.PotionImagePath(VanillaArt, outline: true);
 
-    protected virtual int Potency => AlchemyRules.PotionPotency(Kind, Tier);
+    /// <summary>Сила по семейству и ступени (на карточке зелья).</summary>
+    protected virtual int BasePotency => AlchemyRules.PotionPotency(Kind, Tier);
+    /// <summary>Сила при применении: Кольцо Пьяницы — +50 % (07 §5.2).</summary>
+    protected int Potency => IsMutable ? Equipment.RingOfTheDrunkard.Potency(Owner, BasePotency) : BasePotency;
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DynamicVar("Amount", Potency), new DynamicVar("Turns", AlchemyRules.RestorationTurns)];
+        [new DynamicVar("Amount", BasePotency), new DynamicVar("Turns", AlchemyRules.RestorationTurns)];
 
     protected Creature Hero => Owner.Creature;
 
@@ -73,9 +76,9 @@ public abstract class RequiemPotion : CustomPotionModel
 /// <summary>Яд на оружие: наносится из слота зелий, даёт заряды (<see cref="WeaponPoisonPower"/>).</summary>
 public abstract class RequiemPoison<TPower> : RequiemPotion where TPower : WeaponPoisonPower
 {
-    protected override int Potency => AlchemyRules.PoisonPotency(Kind, Tier);
+    protected override int BasePotency => AlchemyRules.PoisonPotency(Kind, Tier);
     protected override IEnumerable<DynamicVar> CanonicalVars =>
-        [new DynamicVar("Amount", Potency), new DynamicVar("Charges", AlchemyRules.BasePoisonCharges)];
+        [new DynamicVar("Amount", BasePotency), new DynamicVar("Charges", AlchemyRules.BasePoisonCharges)];
 
     protected override Task OnUse(PlayerChoiceContext ctx, Creature? target) =>
         WeaponPoisonPower.Coat<TPower>(ctx, Hero, Tier, WeaponPoisonPower.ChargesFor(Owner));
@@ -782,6 +785,16 @@ public sealed class SnakeBitePoisonV : RequiemPoison<SnakeBitePoisonPower>
     protected override string VanillaArt => "orobic_acid";
 }
 
+// ───── яд: Комбинированный (09 §4: Токсин + Истощение; дорогой, старт «Заговорщика» 04) ─────
+
+[Pool(typeof(TokenPotionPool))]
+public sealed class CombinedPoisonI : RequiemPoison<CombinedPoisonPower>
+{
+    public override Brew Kind => Brew.Toxin;
+    public override int Tier => 1;
+    protected override string VanillaArt => "poison_potion";
+}
+
 // ───── яд: Toxin ─────
 
 [Pool(typeof(TokenPotionPool))]
@@ -1020,3 +1033,48 @@ public sealed class HearthMotherTears : RequiemPotion
     public override Task AfterPreventingDeath(Creature creature) =>
         OnUseWrapper(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), creature);
 }
+
+/// <summary>
+/// «Похмелье?» (Бутыль Хмельного, 07 §7): бесплатное зелье на один бой со случайным эффектом —
+/// лечение, ◆, ✦, Сила или «головная боль» (Слабость 1 себе, добор 2). Само не выпадает.
+/// </summary>
+[Pool(typeof(TokenPotionPool))]
+public sealed class HangoverPotion : RequiemPotion
+{
+    public override Brew Kind => Brew.Health;
+    public override int Tier => 1;
+    public override bool CanBeGeneratedInCombat => false;
+    protected override string VanillaArt => "gamblers_brew";
+
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new DynamicVar("Heal", BackpackRules.HangoverHeal), new DynamicVar("Stamina", BackpackRules.HangoverStamina),
+        new DynamicVar("Mana", BackpackRules.HangoverMana), new DynamicVar("Strength", BackpackRules.HangoverStrength),
+        new DynamicVar("Draw", BackpackRules.HangoverDraw),
+    ];
+
+    protected override async Task OnUse(PlayerChoiceContext ctx, Creature? target)
+    {
+        var roll = Owner.RunState.Rng.CombatTargets.NextInt(BackpackRules.Outcomes.Length);
+        switch (BackpackRules.Roll(roll))
+        {
+            case Hangover.Heal:
+                await CreatureCmd.Heal(Hero, Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverHeal));
+                break;
+            case Hangover.Stamina:
+                RestoreStamina(Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverStamina));
+                break;
+            case Hangover.Mana:
+                await Mana.Gain(Owner, Equipment.RingOfTheDrunkard.Potency(Owner, BackpackRules.HangoverMana));
+                break;
+            case Hangover.Strength:
+                await PowerCmd.Apply<StrengthPower>(ctx, Hero, BackpackRules.HangoverStrength, Hero, null);
+                break;
+            default:
+                await PowerCmd.Apply<WeakPower>(ctx, Hero, BackpackRules.HangoverWeak, Hero, null);
+                await CardPileCmd.Draw(ctx, BackpackRules.HangoverDraw, Owner);
+                break;
+        }
+    }
+}
+

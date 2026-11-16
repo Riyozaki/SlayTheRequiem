@@ -1,5 +1,6 @@
 ﻿using BaseLib.Abstracts;
 using BaseLib.Extensions;
+using SlayTheRequiem.SlayTheRequiemCode.Art;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 using MegaCrit.Sts2.Core.Entities.Powers;
 
@@ -13,9 +14,12 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 /// </summary>
 public abstract class RequiemPower : CustomPowerModel
 {
-    //Loads from SlayTheRequiem/images/powers/your_power.png
-    public override string CustomPackedIconPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".PowerImagePath();
-    public override string CustomBigIconPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".BigPowerImagePath();
+    // Свой значок: images/powers/<id>.png (64x64) и images/powers/big/<id>.png (256x256);
+    // пока своего нет — ванильный по таблице tools/art/vanilla_art.csv (Art/VanillaArt).
+    private string ArtFile => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png";
+    public override string CustomPackedIconPath => ArtFile.PowerImagePath(VanillaArt.PowerIcon(GetType().Name));
+    public override string CustomBigIconPath =>
+        ArtFile.BigPowerImagePath(VanillaArt.PowerBigIcon(GetType().Name), VanillaArt.PowerIcon(GetType().Name));
 
     /// <summary>
     /// Whether this power is a buff or debuff.

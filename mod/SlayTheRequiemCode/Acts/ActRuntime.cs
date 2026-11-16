@@ -21,8 +21,8 @@ using SlayTheRequiem.SlayTheRequiemCode.Rules;
 namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 
 // Правила актов (docs/design/13 §3): отметки на карте и их действие, боевые правила акта, «Отогреться».
-// Отложено на этап 8 (нужен свой интерфейс карты): Тьма курганов (скрытые узлы), переключение рёбер вентилями,
-// порталы Звёздной Башни, святилища «Небесный щит», ночные бонусы героя-вампира, карта «Закрыть клапан».
+// Карта (M6 п. 1): вариации путей — Acts/MapGraph.cs, вид — UI/MapVisuals.cs. Отложено: ночные бонусы героя-вампира,
+// карта «Закрыть клапан».
 
 /// <summary>
 /// Постоянные отметки акта — склепы (2а), вентили (2б), лей-линии (4б): выбираются от сида забега и индекса акта,
@@ -32,18 +32,31 @@ public static class ActMarks
 {
     private static (ActMap Map, Dictionary<int, MapMark> Marks)? _cache;
 
+    /// <summary>Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31).</summary>
+    internal static void Reset() => _cache = null;
+
     public static Dictionary<int, MapMark> For(IRunState run, ActMap map, int actIndex)
     {
         if (_cache is { } c && ReferenceEquals(c.Map, map)) return c.Marks;
         var marks = new Dictionary<int, MapMark>();
-        var points = map.GetAllMapPoints().OrderBy(p => p.coord.row).ThenBy(p => p.coord.col).ToList();
+        // Карманы плана путей (M6) — не кандидаты отметок: отметки считаются по базовой карте, одинаково до и после загрузки.
+        var plan = MapGraph.PlanOf(map);
+        var pockets = plan.Pockets.ToHashSet();
+        var points = map.GetAllMapPoints().Where(p => !pockets.Contains(MapGraph.CellOf(p)))
+            .OrderBy(p => p.coord.row).ThenBy(p => p.coord.col).ToList();
         var rule = ActRules.RuleOf(ActKinds.Of(run.Acts[actIndex]));
         var rng = new Rng(run.Rng.Seed, $"requiem_marks_{actIndex}");
         switch (rule)
         {
             case ActRule.Frost:
-                Pick(points.Where(p => p.PointType == MapPointType.Unknown).ToList(), ActRules.LockedVaultCount(rng.NextInt(100)), MapMark.LockedVault);
+            {
+                // Запертые врата — только на ответвлениях (у каждого родителя есть другой путь): закрытые без ключа,
+                // они не отрезают дорогу к боссу (13 §4.1).
+                var view = MapGraph.ViewOf(map, plan);
+                Pick(points.Where(p => p.PointType == MapPointType.Unknown && MapGraphRules.IsBranchNode(view, MapGraph.CellOf(p))).ToList(),
+                    ActRules.LockedVaultCount(rng.NextInt(100)), MapMark.LockedVault);
                 break;
+            }
             case ActRule.Steam:
                 Pick(points.Where(p => p.PointType == MapPointType.Unknown).ToList(), ActRules.ValveCount(rng.NextInt(100)), MapMark.Valve);
                 break;
@@ -51,6 +64,20 @@ public static class ActMarks
                 Pick(points.Where(p => p.PointType == MapPointType.Monster).ToList(), ActRules.LeyLineCount(rng.NextInt(100)), MapMark.LeyLine);
                 break;
         }
+        // Подтипы узлов (M5, 13 §4.2): Логово, Испытание, Тайник, Засада — свой поток ГСЧ, чтобы отметки правил акта
+        // (склепы, вентили, лей-линии) остались прежними. Один узел — одна отметка.
+        var slot = ActRules.SlotOf(actIndex, run.Acts.Count);
+        var nodeRng = new Rng(run.Rng.Seed, $"requiem_nodes_{actIndex}");
+        var elites = points.Where(p => p.PointType == MapPointType.Elite).ToList();
+        PickFree(elites, NodeRules.LairCount(slot), MapMark.Lair, nodeRng);
+        PickFree(elites, NodeRules.TrialCount(slot, nodeRng.NextInt(100)), MapMark.Trial, nodeRng);
+        PickFree(points.Where(p => p.PointType == MapPointType.Treasure).ToList(), NodeRules.CacheCount(slot), MapMark.Cache, nodeRng);
+        PickFree(points.Where(p => p.PointType == MapPointType.Monster).ToList(), NodeRules.AmbushCount(slot, nodeRng.NextInt(100)),
+            MapMark.Ambush, nodeRng);
+        // Знамёна Небесных (Слава, 13 §3): два Святилища «Небесного щита» среди «?» от 3-го ряда.
+        if (rule == ActRule.AbyssInvasion)
+            PickFree(points.Where(p => p.PointType == MapPointType.Unknown && p.coord.row >= 3).ToList(), MapGraphRules.CelestialBannerCount,
+                MapMark.CelestialBanner, nodeRng);
         foreach (var ledger in ActRunState.Records(run))
             foreach (var code in ledger.Gates)
                 if (MapMarks.Decode(code).Act == actIndex) marks[code] = MapMark.AbyssGate;
@@ -63,7 +90,18 @@ public static class ActMarks
             foreach (var i in ActRules.PickDistinct(candidates.Count, count, rolls))
                 marks[MapMarks.Encode(actIndex, candidates[i].coord.col, candidates[i].coord.row)] = mark;
         }
+
+        void PickFree(List<MapPoint> candidates, int count, MapMark mark, Rng source)
+        {
+            var free = candidates.Where(p => !marks.ContainsKey(MapMarks.Encode(actIndex, p.coord.col, p.coord.row))).ToList();
+            var rolls = Enumerable.Range(0, Math.Max(0, count) * 4).Select(_ => source.NextInt(1000)).ToList();
+            foreach (var i in ActRules.PickDistinct(free.Count, count, rolls))
+                marks[MapMarks.Encode(actIndex, free[i].coord.col, free[i].coord.row)] = mark;
+        }
     }
+
+    /// <summary>Подтип узла по отметке (<see cref="NodeRules.FromMark"/>); null — обычный узел или решается при входе.</summary>
+    public static NodeSubtype? SubtypeAt(IRunState? run, MapCoord? coord) => NodeRules.FromMark(At(run, coord));
 
     public static MapMark At(IRunState? run, MapCoord? coord)
     {
@@ -74,6 +112,8 @@ public static class ActMarks
     /// <summary>Значок отметки — маркер «задания» на узле карты (ванильная иконка; своя — этап 8).</summary>
     public static void Show(ActMap map, int code)
     {
+        // Отметки с подтипом узла рисуются своим значком на узле (MapVisuals, M6) — ванильный маркер только у лей-линий.
+        if (_cache is { } c && c.Marks.TryGetValue(code, out var mark) && NodeRules.FromMark(mark) != null) return;
         var (_, col, row) = MapMarks.Decode(code);
         var point = map.GetPoint(col, row);
         var model = ModelDb.Relic<ActLedger>();
@@ -144,6 +184,7 @@ public sealed class ActCombatRules() : CustomSingletonModel(CustomSingletonModel
         var rule = ActKinds.CurrentRule(run);
         var ctx = new ThrowingPlayerChoiceContext();
         var round = combatState.RoundNumber;
+        if (round == 1) await ApplyNodeSubtype(run, combatState, ctx);
 
         foreach (var player in combatState.Players)
         {
@@ -160,6 +201,44 @@ public sealed class ActCombatRules() : CustomSingletonModel(CustomSingletonModel
                     break;
                 case ActRule.LeyLines when round == 1 && ActMarks.At(run, run.CurrentMapCoord) == MapMark.LeyLine:
                     await Mana.Gain(player, ActRules.LeyLineMana);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Подтипы боевых узлов (M5, 13 §4.2): 🐾 Логово — враги с 70 % ♥ (облегчённая элита-зверь), ⚔ Испытание — элита
+    /// с Силой, ! Засада — враги бьют первыми (Сила). Отметка узла одинакова у всех — эффект тоже.
+    /// </summary>
+    private static async Task ApplyNodeSubtype(IRunState run, ICombatState combatState, ThrowingPlayerChoiceContext ctx)
+    {
+        var roomType = run.CurrentRoom?.RoomType;
+        // «Последний привал» (M6, 13 §4.1): босс акта получает +10 % ♥.
+        if (roomType == RoomType.Boss && ActRunState.Records(run).Any(r => r.LastRestAct == run.CurrentActIndex + 1))
+            foreach (var boss in combatState.Enemies.Where(e => e.IsAlive).ToList())
+            {
+                await CreatureCmd.SetMaxHp(boss, MapGraphRules.LastRestBossHp(boss.MaxHp));
+                await CreatureCmd.SetCurrentHp(boss, boss.MaxHp);
+            }
+        var subtype = ActMarks.SubtypeAt(run, run.CurrentMapCoord);
+        // Конец Опасной тропы (M6): обычный бой там — как Засада.
+        if (subtype == null && roomType == RoomType.Monster && MapGraph.IsDangerEnd(run, run.CurrentMapCoord)) subtype = NodeSubtype.Ambush;
+        if (subtype is not (NodeSubtype.Lair or NodeSubtype.Trial or NodeSubtype.Ambush)) return;
+        if (subtype == NodeSubtype.Ambush ? roomType != RoomType.Monster : roomType != RoomType.Elite) return;
+        var slot = ActKinds.Slot(run);
+        foreach (var enemy in combatState.Enemies.Where(e => e.IsAlive).ToList())
+        {
+            switch (subtype)
+            {
+                case NodeSubtype.Lair:
+                    await CreatureCmd.SetMaxHp(enemy, NodeRules.LairHp(enemy.MaxHp));
+                    if (enemy.CurrentHp > enemy.MaxHp) await CreatureCmd.SetCurrentHp(enemy, enemy.MaxHp);
+                    break;
+                case NodeSubtype.Trial:
+                    await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(ctx, enemy, NodeRules.TrialStrength(slot), null, null);
+                    break;
+                case NodeSubtype.Ambush:
+                    await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.StrengthPower>(ctx, enemy, NodeRules.AmbushStrength(slot), null, null);
                     break;
             }
         }

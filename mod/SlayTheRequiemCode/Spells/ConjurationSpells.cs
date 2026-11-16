@@ -7,12 +7,13 @@ using SlayTheRequiem.SlayTheRequiemCode.Cards;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using VanillaMinion = MegaCrit.Sts2.Core.Models.Powers.MinionPower;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Spells;
 
-// Колдовство (docs/design/08 §5): призванное оружие и призывы. Призыв — сила на герое (см. SummonPower),
-// слот один: новый призыв прогоняет прежний.
+// Колдовство (docs/design/08 §5): призванное оружие и призывы. Призыв — сила на герое плюс существо на поле
+// (см. SummonPower, Monsters/SummonCreatures.cs); слот один: новый призыв прогоняет прежний.
 
 /// <summary>Призрачный клинок (жетон): 0⚡, Оружейная атака 6, Изгнание. Бьёт и бесплотных.</summary>
 [Pool(typeof(SpellCardPool))]
@@ -94,6 +95,42 @@ public sealed class ConjureFrostAtronach : SummonSpell<FrostAtronachPower>
 public sealed class ConjureStormAtronach : SummonSpell<StormAtronachPower>
 {
     public ConjureStormAtronach() : base(2, 4, SpellTier.Expert, 16, 4) => Init();
+}
+
+/// <summary>Поднять мертвеца: 1⚡ 2✦, нежить из последнего павшего врага боя — 50 % (65 %) его макс. ♥ (не боссы), бьёт на 4.</summary>
+[Pool(typeof(SpellCardPool))]
+public sealed class RaiseDead : SpellCard
+{
+    public const string PercentVar = "Percent";
+
+    public RaiseDead() : base(1, 2, SpellSchool.Conjuration, SpellTier.Apprentice, CardType.Skill, TargetType.Self)
+    {
+        WithVar(PercentVar, SummonRules.RaiseDeadPercent, SummonRules.RaiseDeadPercentUpgrade);
+    }
+
+    private int CorpseMaxHp => Graveyard.LastFallenMaxHp(Owner?.Creature.CombatState);
+
+    protected override bool IsPlayable => base.IsPlayable && (Owner?.Creature.CombatState == null || CorpseMaxHp > 0);
+
+    protected override Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
+    {
+        var hp = Eff(SummonRules.RaisedDeadHp(CorpseMaxHp, (int)DynamicVars[PercentVar].BaseValue));
+        return hp <= 0 ? Task.CompletedTask : SummonPower.Summon<RaisedDeadPower>(ctx, Owner.Creature, hp, this);
+    }
+}
+
+/// <summary>Страж Бездны: 3⚡ 6✦, «Дремлющий страж» 30 ♥ (+8) — первый ход дремлет, затем бьёт 10 магией.</summary>
+[Pool(typeof(SpellCardPool))]
+public sealed class ConjureAbyssGuardian : SummonSpell<AbyssGuardianPower>
+{
+    public ConjureAbyssGuardian() : base(3, 6, SpellTier.Master, SummonRules.AbyssGuardianHp, SummonRules.AbyssGuardianHpUpgrade) => Init();
+}
+
+/// <summary>Зов Рыцаря-Духа: 3⚡ 6✦, Призрачный рыцарь 25 ♥ (+7) — бьёт на 5; пока стоит — ваши атаки +2.</summary>
+[Pool(typeof(SpellCardPool))]
+public sealed class CallSpiritKnight : SummonSpell<SpectralKnightPower>
+{
+    public CallSpiritKnight() : base(3, 6, SpellTier.Master, SummonRules.SpectralKnightHp, SummonRules.SpectralKnightHpUpgrade) => Init();
 }
 
 /// <summary>Изгнание: 1⚡ 3✦, уничтожить вражеского прислужника (призыв, атронах); прочим — 10 магией.</summary>

@@ -2,37 +2,78 @@ using SlayTheRequiem.SlayTheRequiemCode.Core;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 
-/// <summary>Загрузка таблиц из res://SlayTheRequiem/data (попадают в .pck вместе с ресурсами мода).</summary>
+/// <summary>
+/// Загрузка таблиц правил. Порядок: файл в .pck (<c>res://SlayTheRequiem/data</c> — его можно заменить, не пересобирая DLL)
+/// → копия, встроенная в DLL (<c>EmbeddedResource</c> в SlayTheRequiem.csproj). Встроенная копия страхует от экспорта,
+/// который теряет CSV или принимает его за таблицу переводов (ревью R-06).
+/// </summary>
 public static class RequiemData
 {
     public static StaminaTable? Attacks { get; private set; }
     public static MonsterTable? Monsters { get; private set; }
+    public static PoolTable? Pools { get; private set; }
+    public static VanillaRelicTable? Relics { get; private set; }
+    public static SfxTable? Sfx { get; private set; }
 
     public static void Load()
     {
         Attacks = Read("vanilla_attacks_stamina.csv", StaminaTable.Parse);
         Monsters = Read("monsters_requiem.csv", MonsterTable.Parse);
-        MainFile.Logger.Info($"Requiem data: {Attacks?.Count ?? 0} attacks, {Monsters?.Count ?? 0} monsters.");
+        Pools = Read("requiem_pools.csv", PoolTable.Parse);
+        Relics = Read("vanilla_relics.csv", VanillaRelicTable.Parse);
+        Sfx = Read("sfx.csv", SfxTable.Parse);
+        MainFile.Logger.Info($"Requiem data: {Attacks?.Count ?? 0} attacks, {Monsters?.Count ?? 0} monsters, " +
+                             $"pools: {Pools?.CutCount ?? 0} cut, {Pools?.GatedCount ?? 0} gated, " +
+                             $"vanilla relics: {Relics?.Count ?? 0} ({Relics?.CountOf(RelicBucket.Jewelry) ?? 0} → jewelry, " +
+                             $"{Relics?.CountOf(RelicBucket.Rework) ?? 0} reworked), " +
+                             $"sounds: {Sfx?.EventCount ?? 0} events / {Sfx?.LayerCount ?? 0} layers.");
     }
 
     private static T? Read<T>(string fileName, Func<string, T> parse) where T : class
     {
-        var path = $"{MainFile.ResPath}/data/{fileName}";
+        var text = ReadPck(fileName) ?? ReadEmbedded(fileName);
+        if (text == null)
+        {
+            MainFile.Logger.Error($"Requiem data: {fileName} не найден ни в .pck, ни в DLL — правила работают по умолчаниям.");
+            return null;
+        }
         try
         {
-            using var file = Godot.FileAccess.Open(path, Godot.FileAccess.ModeFlags.Read);
-            if (file == null)
-            {
-                MainFile.Logger.Error($"Cannot open {path}: {Godot.FileAccess.GetOpenError()}");
-                return null;
-            }
-            return parse(file.GetAsText());
+            return parse(text);
         }
         catch (Exception e)
         {
-            MainFile.Logger.Error($"Failed to load {path}: {e}");
+            MainFile.Logger.Error($"Requiem data: не удалось разобрать {fileName}: {e}");
             return null;
         }
+    }
+
+    private static string? ReadPck(string fileName)
+    {
+        var path = $"{MainFile.ResPath}/data/{fileName}";
+        try
+        {
+            if (!Godot.FileAccess.FileExists(path)) return null;
+            using var file = Godot.FileAccess.Open(path, Godot.FileAccess.ModeFlags.Read);
+            if (file == null) return null;
+            var text = file.GetAsText();
+            return string.IsNullOrWhiteSpace(text) ? null : text;
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Warn($"Requiem data: {path} не читается ({e.Message}) — беру копию из DLL.");
+            return null;
+        }
+    }
+
+    private static string? ReadEmbedded(string fileName)
+    {
+        var assembly = typeof(RequiemData).Assembly;
+        using var stream = assembly.GetManifestResourceStream($"{MainFile.ModId}.data.{fileName}");
+        if (stream == null) return null;
+        using var reader = new StreamReader(stream);
+        MainFile.Logger.Info($"Requiem data: {fileName} — встроенная копия из DLL.");
+        return reader.ReadToEnd();
     }
 
     public static MonsterTable.Entry MonsterEntry(string key) => Monsters?.Get(key) ?? MonsterTable.Default;

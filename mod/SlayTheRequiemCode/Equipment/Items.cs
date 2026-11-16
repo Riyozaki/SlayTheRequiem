@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
+using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Resources;
@@ -62,6 +63,27 @@ public sealed class SteelWarhammer : WeaponRelic
     public override int Tier => 2;
     public override WeaponKind Weapon => WeaponKind.TwoHanded;
     public override WeaponKind PropertyKind => WeaponKind.Mace;
+}
+
+/// <summary>Двуручный боевой топор (I): старт «Берсерка» Горнокровных (04) — Рубящий ×2 и Шаткость 2.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class IronBattleaxe : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override WeaponKind Weapon => WeaponKind.TwoHanded;
+    public override WeaponKind PropertyKind => WeaponKind.Axe;
+}
+
+/// <summary>Тяжёлый лук (I): старт «Браконьера» Горнокровных (04). Тяжелее обычного лука (вес 3), бьёт на +1 сильнее.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class HeavyBow : WeaponRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override WeaponKind Weapon => WeaponKind.Bow;
+    public override int Weight => 3;
+
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        base.ModifyDamageAdditive(target, amount, props, dealer, cardSource) + (target != null && IsMyWeaponAttack(dealer, props, cardSource) ? 1m : 0m);
 }
 
 [Pool(typeof(SharedRelicPool))]
@@ -229,12 +251,63 @@ public sealed class RingOfMagicka : EquipmentRelic
         IsEquipped && side == CombatSide.Player && combatState.RoundNumber > 1 ? Rules.Mana.Gain(Owner, 1) : Task.CompletedTask;
 }
 
+// ───────────── бижутерия вместо ванильных реликвий (07 §5, §7) ─────────────
+
+/// <summary>Кольцо Ярого Удара (вместо Vajra): Оружейные атаки +1 урона. Сочетание со Скорым Дыханием — <see cref="RingOfQuickBreath"/>.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class RingOfFuryStrike : ComboRing
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override EquipSlot Slot => EquipSlot.Ring;
+    public override int Weight => 0;
+
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props,
+        Creature? dealer, CardModel? cardSource) =>
+        IsEquipped && target != null && cardSource != null && dealer == Owner.Creature && props.IsPoweredAttack()
+        && EquipmentCombatRules.IsWeaponAttack(cardSource)
+            ? JewelryRules.FuryStrikeDamage
+            : 0m;
+}
+
+/// <summary>Кольцо Железной Кожи (вместо Anchor и Orichalcum): +3 Блока в начале каждого хода, пока Латы ≥ 1.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class RingOfIronSkin : EquipmentRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Uncommon;
+    public override EquipSlot Slot => EquipSlot.Ring;
+    public override int Weight => 1;
+
+    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (!IsEquipped || side != CombatSide.Player || !JewelryRules.IronSkinActive(Owner.Creature.GetPowerAmount<PlatingPower>())) return;
+        Flash();
+        await CreatureCmd.GainBlock(Owner.Creature, JewelryRules.IronSkinBlock, MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered, null);
+    }
+}
+
+/// <summary>Ожерелье Колючих Шипов (вместо Bronze Scales): Шипы 2 с начала боя.</summary>
+[Pool(typeof(SharedRelicPool))]
+public sealed class NecklaceOfThorns : EquipmentRelic
+{
+    public override RelicRarity Rarity => RelicRarity.Common;
+    public override EquipSlot Slot => EquipSlot.Amulet;
+    public override int Weight => 1;
+
+    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
+    {
+        if (!IsEquipped || side != CombatSide.Player || combatState.RoundNumber != 1) return;
+        await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.ThornsPower>(new ThrowingPlayerChoiceContext(), Owner.Creature,
+            JewelryRules.ThornsNecklace, Owner.Creature, null, silent: true);
+    }
+}
+
 // ───────────── снаряжение Подлых ударов (этап 3, docs/design/07 §3.2–4.3) ─────────────
 
 /// <summary>Чешуйчатый кинжал (III): Подлый; Подлые удары возвращают 1 ✦.</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class ScaledDagger : WeaponRelic
 {
+    public override ItemMaterial Material => ItemMaterial.ScaledSteel;
     public override RelicRarity Rarity => RelicRarity.Rare;
     public override int Tier => 3;
     public override WeaponKind Weapon => WeaponKind.Dagger;

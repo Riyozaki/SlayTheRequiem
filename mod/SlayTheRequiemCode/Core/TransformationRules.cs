@@ -81,12 +81,16 @@ public static class TransformationRules
     public static bool CanTakeWorldview(FormKind current, FormKind next, bool righteousPiety, bool ordinator, bool clockwork)
     {
         if (!IsWorldview(next)) return false;
-        if (ordinator && next != FormKind.Righteous) return false;
+        if (ordinator && OrdinatorForbids(next)) return false;
         if (clockwork && next != FormKind.Righteous) return false;
         if (next is FormKind.Herald or FormKind.Lich) return IsChainStep(current, next);
         if (current != FormKind.None) return false;
         return next != FormKind.Righteous || righteousPiety;
     }
+
+    /// <summary>Ординатор (04, 06 §3): запрещены Праведник, вампиризм, ликантропия и лич. Договор и Вестник — не запрещены.</summary>
+    public static bool OrdinatorForbids(FormKind form) =>
+        form is FormKind.Righteous or FormKind.Vampire or FormKind.Werewolf or FormKind.Lich;
 
     /// <summary>Заводное сердце совместимо только с Праведником (06 §1.5).</summary>
     public static bool CanTakeClockwork(FormKind worldview, bool hasClockwork) =>
@@ -289,22 +293,25 @@ public static class TransformationRules
     public static bool PathOfferDue(int level, int bossActIndex, int totalActs, bool hasPath) =>
         !hasPath && level >= PathLevelGate && bossActIndex >= PathOfferActIndex(totalActs);
 
-    /// <summary>Требования Пути: Паладин — форма Праведника; Чёрный рыцарь — Отступник; Монах — без оружия.</summary>
-    public static bool PathAllowed(HeroPath path, FormKind worldview, bool apostate, bool unarmed) => path switch
+    /// <summary>
+    /// Требования Пути: Паладин — форма Праведника (или Ординатор, 06 §3); Чёрный рыцарь — Отступник (Ординатору закрыт);
+    /// Монах — без оружия.
+    /// </summary>
+    public static bool PathAllowed(HeroPath path, FormKind worldview, bool apostate, bool unarmed, bool ordinator = false) => path switch
     {
         HeroPath.None => false,
-        HeroPath.Paladin => worldview == FormKind.Righteous,
-        HeroPath.BlackKnight => apostate && worldview != FormKind.Righteous,
+        HeroPath.Paladin => worldview == FormKind.Righteous || ordinator,
+        HeroPath.BlackKnight => !ordinator && apostate && worldview != FormKind.Righteous,
         HeroPath.Monk => unarmed,
         _ => true,
     };
 
     /// <summary>«Свои» Пути героя (колонка «Для кого»).</summary>
-    public static IReadOnlyList<HeroPath> NativePaths(string? heroKey, FormKind worldview, bool apostate, bool unarmed)
+    public static IReadOnlyList<HeroPath> NativePaths(string? heroKey, FormKind worldview, bool apostate, bool unarmed, bool ordinator = false)
     {
         var list = new List<HeroPath>();
-        if (worldview == FormKind.Righteous) list.Add(HeroPath.Paladin);
-        if (apostate && worldview != FormKind.Righteous) list.Add(HeroPath.BlackKnight);
+        if (worldview == FormKind.Righteous || ordinator) list.Add(HeroPath.Paladin);
+        if (!ordinator && apostate && worldview != FormKind.Righteous) list.Add(HeroPath.BlackKnight);
         switch (heroKey)
         {
             case "Ironclad":
@@ -328,10 +335,11 @@ public static class TransformationRules
     /// Предложение: 2 «своих» (разных) + 1 случайный чужой из допустимых. Если своих меньше — добор чужими.
     /// <paramref name="next"/>(n) — случайное в [0, n).
     /// </summary>
-    public static List<HeroPath> OfferPaths(string? heroKey, FormKind worldview, bool apostate, bool unarmed, Func<int, int> next)
+    public static List<HeroPath> OfferPaths(string? heroKey, FormKind worldview, bool apostate, bool unarmed, Func<int, int> next,
+        bool ordinator = false)
     {
-        var native = NativePaths(heroKey, worldview, apostate, unarmed).ToList();
-        var foreign = AllPaths.Where(p => !native.Contains(p) && PathAllowed(p, worldview, apostate, unarmed)).ToList();
+        var native = NativePaths(heroKey, worldview, apostate, unarmed, ordinator).ToList();
+        var foreign = AllPaths.Where(p => !native.Contains(p) && PathAllowed(p, worldview, apostate, unarmed, ordinator)).ToList();
         var result = new List<HeroPath>();
         for (var i = 0; i < 2 && native.Count > 0; i++)
         {

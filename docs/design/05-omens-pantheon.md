@@ -112,7 +112,7 @@
   `ModifyNextEvent` по зерну и этажу — одинаково у всех игроков). Знамение у Нео — Harmony-постфикс `NeowOmenPatch`.
 - **Новые точки расширения:** `IPierceSource` (Пробитие в `PlatingPower`), `ISummonModifier`/`ISummonListener` (слоты и урон
   призывов), `ITirelessSource` («Устал» без штрафа), `IPoisonChargeSource`, `IShoutCard`, `IAbyssalItem`, `IWeightless`,
-  `ITransformationForm`/`IPietyForbidder`/`IPermanentApostasy`, `ITribunalHeir` (для Пеплорождённых — когда появятся их предыстории).
+  `ITransformationForm`/`IPietyForbidder`/`IPermanentApostasy`, `ITribunalHeir` (Пеплорождённые), `ITribunalOrdinator` и `ITribunalAdept` (Ординатор и Пепельный кочевник — 04 «Статус M4 п. 2»).
 - **Решения по ходу:**
   - Бастион: «ко всем стихиям» = огонь, холод, разряд.
   - Цена Сумеречной Звезды: ванильные Аффликции без своих сил ничего не делают, поэтому «звёздная метка» — карта, которая в бою

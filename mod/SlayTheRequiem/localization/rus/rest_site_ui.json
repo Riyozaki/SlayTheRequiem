@@ -7,7 +7,7 @@
   "SLAYTHEREQUIEM_CHEST_STORE_PROMPT": "Выберите карты, которые убрать в сундук",
   "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT": "Выберите карты, которые забрать из сундука",
   "OPTION_SLAYTHEREQUIEM_FORGE.name": "Кузня",
-  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3). Цена: {Cost} очк. лагеря, есть {Points}.",
+  "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3) или подковать вьючного зверя. Цена: {Cost} очк. лагеря, есть {Points}.",
   "OPTION_SLAYTHEREQUIEM_FORGE.descriptionDisabled": "Ни одну надетую вещь нельзя улучшить дальше.",
   "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Короткий привал",
   "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Вылечить {Percent} % макс. ♥ ({Heal}). Цена: {Cost} очк. лагеря, есть {Points}.",
@@ -47,5 +47,10 @@
   "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT": "Выберите чары",
   "OPTION_SLAYTHEREQUIEM_WARM.name": "Отогреться",
   "OPTION_SLAYTHEREQUIEM_WARM.description": "Следующие {Fights} боя Стужа не накладывает [gold]Озноб[/gold]. Бесплатно.",
-  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "Вы уже согрелись."
+  "OPTION_SLAYTHEREQUIEM_WARM.descriptionDisabled": "Вы уже согрелись.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.name": "Таверна",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.description": "Здесь пьёт Наставник. Узел навыка — [gold]{SkillPrice}[/gold] золотых (куплено {Bought}/3), урок владения оружием — [gold]{LessonPrice}[/gold]. Очков лагеря не тратит.",
+  "OPTION_SLAYTHEREQUIEM_TAVERN.descriptionDisabled": "Наставнику нечего вам предложить по карману.",
+  "SLAYTHEREQUIEM_TAVERN_PROMPT": "Чему научит Наставник? (закройте, чтобы уйти)",
+  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Выберите узел навыка"
 }

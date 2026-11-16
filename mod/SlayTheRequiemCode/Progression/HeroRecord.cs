@@ -66,6 +66,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _stoneSmall, _stoneLarge, _stoneBlack;
     private int _campPoints;
     private bool _artisanUsed;
+    private int _mentorPoints;
+    private int _weaponLessons;
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int Renown { get => _renown; set { AssertMutable(); _renown = Math.Max(0, value); } }
@@ -134,12 +136,39 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public bool ArtisanUsed { get => _artisanUsed; set { AssertMutable(); _artisanUsed = value; } }
 
+    /// <summary>Очки навыков, купленные у Наставника (14 §2.9, не больше 3 за забег).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int MentorPoints { get => _mentorPoints; set { AssertMutable(); _mentorPoints = Math.Clamp(value, 0, ShopRules.MentorMaxSkillPoints); } }
+
+    /// <summary>Уроки владения оружием у Наставника — бит на <see cref="WeaponKind"/> (<see cref="ProgressionRules.HasLesson"/>).</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int WeaponLessons { get => _weaponLessons; set { AssertMutable(); _weaponLessons = value; } }
+
+    public bool HasLesson(WeaponKind kind) => ProgressionRules.HasLesson(_weaponLessons, kind);
+
+    /// <summary>Уроки, которые Наставник может дать этому герою: класс с «Неумелым хватом», ещё не изученный.</summary>
+    public List<WeaponKind> LessonsAvailable() => Has(Skill.WeaponTraining)
+        ? []
+        : ProgressionRules.LessonKinds(HeroName).Where(k => !HasLesson(k)).ToList();
+
+    /// <summary>Узлы, которые Наставник может преподать: доступные с одним дополнительным очком навыка.</summary>
+    public List<SkillNode> MentorLearnable() => _mentorPoints >= ShopRules.MentorMaxSkillPoints
+        ? []
+        : SkillTree.Learnable(HeroName, Learned.ToList(), UnspentSkillPoints + 1, IsNative);
+
+    /// <summary>Узел «родной» для цены Наставника: не школа магии или родная школа героя.</summary>
+    public bool IsNativeNode(SkillNode node) => SkillTree.SchoolOf(node.Branch) is not { } school || IsNative(school);
+
     // ═════════════ уровень и очки ═════════════
 
     public int Level => ProgressionRules.LevelFor(_renown);
     public int StatPointsSpent => _statHealth + _statStamina + _statMana + _statBurden + _statMastery;
-    public int UnspentStatPoints => Math.Max(0, ProgressionRules.StatPointsFor(Level) - StatPointsSpent);
-    public int UnspentSkillPoints => Math.Max(0, ProgressionRules.SkillPointsFor(Level) - _skillPointsSpent);
+    public int UnspentStatPoints => Math.Max(0, ProgressionRules.StatPointsFor(Level) + BonusStatPoints - StatPointsSpent);
+
+    /// <summary>«Выучка» Цитадельцев (04): +1 очко характеристик за каждые 3 уровня.</summary>
+    public int BonusStatPoints => IsMutable && Owner?.Relics.OfType<CitadelOrigin>().Any() == true
+        ? OriginRules.TrainingBonusPoints(Level) : 0;
+    public int UnspentSkillPoints => Math.Max(0, ProgressionRules.SkillPointsFor(Level) + _mentorPoints - _skillPointsSpent);
     public bool HasUnspentPoints => UnspentStatPoints > 0 || UnspentSkillPoints > 0;
 
     private string HeroName => Owner.Character.GetType().Name;
@@ -267,7 +296,9 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     public List<Meal> MealList => FoodRules.Parse(_meals);
     public bool HasRevel => Owner.Relics.OfType<GiftOfRevel>().Any();
-    public DishEffect Food => FoodRules.Total(MealList, _mushroomFights);
+    public DishEffect Food => IsMutable && Owner?.Relics.OfType<CampKettle>().Any() == true
+        ? FoodRules.Boosted(FoodRules.Total(MealList, _mushroomFights))
+        : FoodRules.Total(MealList, _mushroomFights);
 
     public async Task Eat(Dish dish)
     {
@@ -380,7 +411,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     /// <summary>Неумелый хват (08 §8.5): +1 ◆ и −25 % урона «Оружейных» атак.</summary>
     public bool Clumsy => Owned && RequiemMode.IsInSystem(Owner)
-                          && ProgressionRules.IsClumsy(HeroName, MainHand, HeavyShield, Has(Skill.WeaponTraining));
+                          && ProgressionRules.IsClumsy(HeroName, MainHand, HeavyShield, Has(Skill.WeaponTraining), _weaponLessons);
 
     private bool IsMyWeaponAttack(CardModel? card) =>
         card != null && card.Owner == Owner && EquipmentCombatRules.IsWeaponAttack(card);
@@ -390,12 +421,24 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _attacksThisTurn, _spellsThisTurn, _illusionsThisTurn, _twoHandedThisTurn, _rangedThisTurn;
     private int _weaponAttacksThisCombat;
     private bool _bashThisTurn, _secondBreathUsed, _againstAllOddsUsed;
+    // Заклинаний каждой школы за ход — для «Ремесла школы» (07 §6.1). Создаётся в бою: каноническая модель его не делит.
+    private int[]? _schoolSpellsThisTurn;
+    private int _cardsThisTurn, _zeroCostThisTurn;
+
+    /// <summary>Сколько атак (не заклинаний) герой уже сыграл в этом ходу — для карт «3+ атаки» (16 §3, Горнокровные).</summary>
+    public int AttacksThisTurn => _attacksThisTurn;
+    /// <summary>Сколько карт сыграно в этом ходу (Ветроплясун, 17 §3).</summary>
+    public int CardsThisTurn => _cardsThisTurn;
+    /// <summary>Сколько 0-энергетических карт сыграно в этом ходу (Беглец, 17 §3).</summary>
+    public int ZeroCostThisTurn => _zeroCostThisTurn;
 
     public override Task BeforeCombatStart()
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
+        _cardsThisTurn = _zeroCostThisTurn = 0;
         _weaponAttacksThisCombat = 0;
         _bashThisTurn = _secondBreathUsed = _againstAllOddsUsed = false;
+        _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
         return base.BeforeCombatStart();
     }
 
@@ -419,7 +462,9 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     protected override async Task OnTurnStarted(PlayerChoiceContext ctx)
     {
         _attacksThisTurn = _spellsThisTurn = _illusionsThisTurn = _twoHandedThisTurn = _rangedThisTurn = 0;
+        _cardsThisTurn = _zeroCostThisTurn = 0;
         _bashThisTurn = false;
+        _schoolSpellsThisTurn = new int[Enum.GetValues<SpellSchool>().Length];
         var hero = Owner.Creature;
         var round = hero.CombatState?.RoundNumber ?? 1;
 
@@ -444,6 +489,10 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     {
         var card = cardPlay.Card;
         if (card.Owner != Owner || !cardPlay.IsLastInSeries) return;
+        _cardsThisTurn++;
+        if (cardPlay.Resources.EnergyValue == 0) _zeroCostThisTurn++;
+        if (card is IShoutCard)
+            UI.RequiemVfx.Shout(Owner.Creature, VfxRules.ShoutOf(card.Type == CardType.Attack, card.Type == CardType.Power));
         // Клич — на полку (карта снимается со стола, но остаётся в бою; вернётся в руку через N ходов).
         if (card is RequiemCard { ShelvedByThisPlay: true } shoutCard && card is IShoutCard shout)
         {
@@ -454,6 +503,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         {
             _spellsThisTurn++;
             if (spell.School == SpellSchool.Illusion) _illusionsThisTurn++;
+            if (_schoolSpellsThisTurn != null) _schoolSpellsThisTurn[(int)spell.School]++;
             return;
         }
         if (card.Type != CardType.Attack) return;
@@ -489,6 +539,8 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         var discount = 0;
         if (_spellsThisTurn == 0) discount += Tiers.FirstSpellDiscount;
         if (Has(Skill.Phantasm) && spell.School == SpellSchool.Illusion && _illusionsThisTurn == 0) discount++;
+        // Ремесло школы (чары головы/амулета, 07 §6.1): −1 ✦ первым N заклинаниям школы за ход.
+        discount += EnchantRules.CraftDiscount(Enchanting.CraftPerTurn(Owner, spell.School), _schoolSpellsThisTurn?[(int)spell.School] ?? 0);
         if (discount == 0) return false;
         modifiedCost = Math.Max(0, originalCost - discount);
         return true;

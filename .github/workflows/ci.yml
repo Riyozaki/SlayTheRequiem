@@ -34,7 +34,7 @@ jobs:
         run: python -m unittest discover -s tools/sim -v
 
   content:
-    name: Localization & C# syntax
+    name: Localization, art, Harmony targets & C# syntax
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +47,52 @@ jobs:
         run: |
           python tools/loc/build_loc.py
           git diff --exit-code -- mod/SlayTheRequiem/localization || (echo "::error::Run python3 tools/loc/build_loc.py and commit the result" && exit 1)
-      - name: Localization coverage (eng = rus, every model has a title)
+      - name: Localization coverage (eng = rus, every model has a title, model ids are unique)
         run: python tools/ci/check_loc.py
       - name: C# syntax (all mod files)
         run: python tools/ci/check_csharp_syntax.py
+      - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)
+        run: |
+          python tools/art/build_vanilla_art.py --check
+          python tools/art/art_fit.py --check
+      - name: Own art (M5, M7) — SVG sources match the generators, PNG present and sized (bosses, scenes, acts, relics, card portraits)
+        run: |
+          pip install pillow numpy
+          python tools/art/monsters/draw_monsters.py
+          git diff --exit-code -- art/monsters || (echo "::error::Run python3 tools/art/monsters/draw_monsters.py and commit the result" && exit 1)
+          python tools/art/monsters/build_boss_icons.py --check
+          python tools/art/scenes/build_scenes.py --check
+          python tools/art/events/build_events.py --check
+          python tools/art/acts/build_acts.py --check
+          python tools/art/relics/draw_origins.py --check
+          python tools/art/relics/draw_relics.py --check
+          python tools/art/cards/draw_portraits.py --check
+      - name: Requiem sounds (M7) — data/sfx.csv events and vanilla FMOD paths, own WAVs match the synth
+        run: python tools/audio/build_sfx.py --check
+      - name: Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures
+        run: python tools/ci/check_events.py
+      - name: Every model has its own or a vanilla image
+        run: python tools/assets/asset_manifest.py --check
+      - name: Card audit (card spec §7), design tables (docs/design 16/17/18/06) and card pools (19) match the code
+        run: |
+          python tools/cards/audit_cards.py --check --out docs/plan/card-audit.md
+          python tools/cards/design_tables.py --check
+          python tools/cards/card_catalog.py --check
+          python tools/pools/build_pools.py --check
+      - name: Vanilla attacks markup matches the game data (sts2_database)
+        run: |
+          git clone -q https://github.com/vitechliu/sts2_database /tmp/stsdb
+          git -C /tmp/stsdb checkout -q 2a26a96fa4d4808c2532291f70163af2b0361beb
+          python tools/markup/build_vanilla_attacks.py /tmp/stsdb /tmp/vanilla_attacks.csv
+          cmp mod/SlayTheRequiem/data/vanilla_attacks_stamina.csv /tmp/vanilla_attacks.csv || (echo "::error::vanilla_attacks_stamina.csv differs from tools/markup output" && exit 1)
+      - name: Harmony patch targets exist in the game (decompiled v0.107.1)
+        run: |
+          git clone -q --filter=blob:none --no-checkout https://github.com/zhiyue/sts2-rl-agent /tmp/rl
+          git -C /tmp/rl sparse-checkout set --no-cone '/decompiled/**'
+          git -C /tmp/rl checkout -q 5d874e855ae1d0550d5c30416fadd7dbb0d133b7
+          python tools/ci/check_harmony_targets.py /tmp/rl/decompiled
+      - name: Vanilla relic rework covers every relic of the game (07 §7, data/vanilla_relics.csv)
+        run: |
+          python tools/art/snapshot_vanilla.py /tmp/rl/decompiled 0.107.1
+          git diff --exit-code -- tools/art/vanilla_models.txt tools/art/vanilla_card_types.txt tools/relics/vanilla_relics_snapshot.txt || (echo "::error::Vanilla snapshot is stale: run tools/art/snapshot_vanilla.py" && exit 1)
+          python tools/relics/build_relics.py --check

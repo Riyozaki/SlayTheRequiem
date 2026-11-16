@@ -23,8 +23,18 @@ using VanillaPoison = MegaCrit.Sts2.Core.Models.Powers.PoisonPower;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Pantheon;
 
-/// <summary>Предыстория Пеплорождённых «Наследники Тройственных» (docs/design/04): дары Тройственных без потери праведности.</summary>
+/// <summary>
+/// Пассив Пеплорождённых «Наследники Тройственных» (docs/design/04): дары Тройственных (Измена, Паутина, Сумеречная Звезда)
+/// без потери праведности, «без условий» (Тёмное святилище всегда предлагает одного из них) и с ослабленной Ценой
+/// (<see cref="PantheonRules.HeirPriceRelief"/>).
+/// </summary>
 public interface ITribunalHeir { }
+
+/// <summary>Предыстория Ординатора: держит все три дара Тройственных, чужих Князей не принимает.</summary>
+public interface ITribunalOrdinator { }
+
+/// <summary>Предыстория Пепельного кочевника: дары Тройственных на ступень сильнее (<see cref="PantheonRules.TribunalTierUp"/>).</summary>
+public interface ITribunalAdept { }
 
 /// <summary>
 /// Дар Князя Бездны (docs/design/05 §4): Дар и Цена сразу, Обет — условие, после которого дар усиливается.
@@ -67,11 +77,21 @@ public abstract class AbyssGift : BoonRelic, IAbyssalItem
     public override int DisplayAmount => _vowDone ? VowTarget : _vowProgress;
 
     /// <summary>Тройственный дар у Наследника — не марает праведность.</summary>
-    public bool IsExempt => PantheonRules.IsTribunal(Prince) && Owner != null && Owner.Relics.Any(r => r is ITribunalHeir);
+    public bool IsExempt => PantheonRules.IsTribunal(Prince) && IsHeir(Owner);
+
+    /// <summary>Цена ослаблена: Тройственный дар у Пеплорождённого.</summary>
+    protected bool HeirPrice => IsExempt;
+
+    /// <summary>Ступень вверх: Тройственный дар у Пепельного кочевника.</summary>
+    protected bool TierUp => PantheonRules.IsTribunal(Prince) && Owner != null && Owner.Relics.Any(r => r is ITribunalAdept);
+
+    public static bool IsHeir(Player? player) => player != null && player.Relics.Any(r => r is ITribunalHeir);
+
+    public static bool IsOrdinator(Player? player) => player != null && player.Relics.Any(r => r is ITribunalOrdinator);
 
     protected override Boon ComputeBoon()
     {
-        var boon = PantheonRules.Gift(Prince);
+        var boon = PantheonRules.TribunalGift(Prince, HeirPrice, TierUp);
         if (_vowDone) boon += PantheonRules.VowReward(Prince);
         return boon;
     }
@@ -93,7 +113,14 @@ public abstract class AbyssGift : BoonRelic, IAbyssalItem
 
     protected virtual Task OnVowFulfilled() => Task.CompletedTask;
 
+    /// <summary>Дар Князя (у Ординатора — первый из трёх Тройственных; все — <see cref="AllOf"/>).</summary>
     public static AbyssGift? Of(Player? player) => player?.Relics.OfType<AbyssGift>().FirstOrDefault();
+
+    public static IEnumerable<AbyssGift> AllOf(Player? player) => player?.Relics.OfType<AbyssGift>() ?? Enumerable.Empty<AbyssGift>();
+
+    /// <summary>Можно ли принять дар: Ординатор принимает только Тройственных (и держит их все разом).</summary>
+    public static bool MayAccept(Player player, AbyssPrince prince) =>
+        !IsOrdinator(player) || PantheonRules.OrdinatorMayAccept(prince);
 
     public static readonly Type[] All =
     [
@@ -103,13 +130,18 @@ public abstract class AbyssGift : BoonRelic, IAbyssalItem
 
     public static RelicModel Create(AbyssPrince prince) => ModelDb.GetById<RelicModel>(ModelDb.GetId(All[(int)prince])).ToMutable();
 
-    /// <summary>Принять дар Князя: прежний дар уходит, праведность падает до Отступника (кроме Тройственных у Наследника).</summary>
+    /// <summary>
+    /// Принять дар Князя: прежний дар уходит, праведность падает до Отступника (кроме Тройственных у Наследника).
+    /// Ординатор держит все три Тройственных разом — у него прежние дары не уходят.
+    /// </summary>
     public static async Task Accept(Player player, AbyssPrince prince)
     {
-        var old = Of(player);
-        if (old != null && old.Prince == prince) return;
-        if (old != null) await old.RemoveSelf();
-        var tribunalHeir = PantheonRules.IsTribunal(prince) && player.Relics.Any(r => r is ITribunalHeir);
+        if (!MayAccept(player, prince)) return;
+        if (AllOf(player).Any(g => g.Prince == prince)) return;
+        if (!IsOrdinator(player))
+            foreach (var old in AllOf(player).ToList())
+                await old.RemoveSelf();
+        var tribunalHeir = PantheonRules.IsTribunal(prince) && IsHeir(player);
         if (!tribunalHeir) Faith.GraveSin(player);
         await RelicCmd.Obtain(Create(prince), player);
         // Благословение Небесного могло угаснуть — пересчитать его ♥.
@@ -294,8 +326,6 @@ public sealed class GiftOfTwilightWidow : AbyssGift
 [Pool(typeof(SharedRelicPool))]
 public sealed class GiftOfWebWeaver : AbyssGift
 {
-    public const int BelowHalfBonus = 2;
-
     public override AbyssPrince Prince => AbyssPrince.WebWeaver;
 
     private int _leechedThisTurn;
@@ -316,7 +346,7 @@ public sealed class GiftOfWebWeaver : AbyssGift
     public override async Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer, DamageResult result, ValueProp props, Creature target, CardModel? cardSource)
     {
         if (!IsOwnAttack(dealer, props, cardSource) || !target.HasPower<VanillaPoison>()) return;
-        if (_leechedThisTurn >= PantheonRules.WebLeechPerTurnCap || Owner.Creature.CurrentHp >= Owner.Creature.MaxHp) return;
+        if (_leechedThisTurn >= PantheonRules.WebLeechCap(TierUp) || Owner.Creature.CurrentHp >= Owner.Creature.MaxHp) return;
         _leechedThisTurn++;
         await CreatureCmd.Heal(Owner.Creature, 1);
     }
@@ -330,7 +360,7 @@ public sealed class GiftOfWebWeaver : AbyssGift
 
     protected override decimal ExtraDamage(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource) =>
         VowDone && target != null && IsOwnAttack(dealer, props, cardSource) && PantheonRules.BelowHalf(target.CurrentHp, target.MaxHp)
-            ? BelowHalfBonus : 0m;
+            ? PantheonRules.WebBelowHalfBonus(TierUp) : 0m;
 }
 
 // ───────────── Разрушитель Врат ─────────────
@@ -587,17 +617,20 @@ public sealed class GiftOfDuskStar : AbyssGift, ISummonListener
     public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         // Смерть спутника в коопе или союзного существа на стороне игроков.
-        if (!wasRemovalPrevented && creature != Owner.Creature && creature.Side == CombatSide.Player) AllyDied = true;
+        // Гибель призывов считает AfterSummonDestroyed: развеянный (вытесненный из слота) призыв — не смерть союзника.
+        if (!wasRemovalPrevented && creature != Owner.Creature && creature.Side == CombatSide.Player
+            && creature.Monster is not Monsters.SummonCreature) AllyDied = true;
         return Task.CompletedTask;
     }
 
     protected override Task OnCombatStarted(ICombatState combatState)
     {
         _marked.Clear();
-        if (VowDone || _marks <= 0) return Task.CompletedTask;
+        var marks = HeirPrice ? PantheonRules.HeirStarMarks(_marks) : _marks;
+        if (VowDone || marks <= 0) return Task.CompletedTask;
         var pool = PileType.Draw.GetPile(Owner).Cards.Concat(PileType.Hand.GetPile(Owner).Cards)
             .Where(c => c.Type is CardType.Attack or CardType.Skill or CardType.Power).ToList();
-        for (var i = 0; i < _marks && pool.Count > 0; i++)
+        for (var i = 0; i < marks && pool.Count > 0; i++)
         {
             var pick = pool[Roll(100 + i, pool.Count)];
             pool.Remove(pick);

@@ -276,7 +276,15 @@ public abstract class WeaponPoisonPower : RequiemPower
 
     public abstract Brew Kind { get; }
     public int Tier { get; private set; } = 1;
-    protected int Potency => AlchemyRules.PoisonPotency(Kind, Tier);
+    protected int Potency => Boosted(AlchemyRules.PoisonPotency(Kind, Tier));
+
+    /// <summary>«Заговорщик» (Дюнные клинки, 04): яды на оружии +25 %; Кольцо Пьяницы (07 §5.2) — ещё +50 %.</summary>
+    protected int Boosted(int potency)
+    {
+        var player = Owner?.Player;
+        if (player?.Relics.OfType<Relics.ConspiratorBackground>().Any() == true) potency = OriginRules.ConspiratorPotency(potency);
+        return Equipment.RingOfTheDrunkard.Potency(player, potency);
+    }
     protected virtual bool BypassesImmunity => false;
 
     /// <summary>Нанести яд на оружие героя: смыть прежний, наложить заряды, запомнить ступень.</summary>
@@ -405,7 +413,7 @@ public sealed class CombinedPoisonPower : WeaponPoisonPower
     protected override async Task ApplyEffect(PlayerChoiceContext ctx, Creature target, int potency)
     {
         await PowerCmd.Apply<VanillaPoison>(ctx, target, potency, Owner, null);
-        var drain = AlchemyRules.PoisonPotency(Brew.Exhaustion, Tier);
+        var drain = Boosted(AlchemyRules.PoisonPotency(Brew.Exhaustion, Tier));
         if (target.GetPower<EnemyStaminaPower>() is { } stamina) await stamina.Drain(drain);
     }
 }

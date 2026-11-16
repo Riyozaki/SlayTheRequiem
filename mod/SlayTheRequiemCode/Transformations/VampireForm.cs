@@ -205,6 +205,9 @@ public sealed class Bite : RequiemCard
 [Pool(typeof(TokenCardPool))]
 public sealed class BloodLordStance : RequiemCard
 {
+    /// <summary>Карта облика: растёт ступенями формы (06), а не улучшением — решение card spec §3.4 п. 3, док 18.</summary>
+    public override int MaxUpgradeLevel => 0;
+
     public BloodLordStance() : base(0, CardType.Skill, CardRarity.Event, TargetType.Self)
     {
     }
@@ -221,4 +224,17 @@ public sealed class BloodLordStancePower : RequiemPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
+
+    // Облик «Кровавый лорд»: спрайт вампира с крыльями (M6 п. 3).
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
+    {
+        FormVisuals.Refresh(Owner.Player, flash: new Color(0.9f, 0.1f, 0.2f));
+        return Task.CompletedTask;
+    }
+
+    public override Task AfterRemoved(Creature oldOwner)
+    {
+        FormVisuals.Refresh(oldOwner.Player);
+        return Task.CompletedTask;
+    }
 }

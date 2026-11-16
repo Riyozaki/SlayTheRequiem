@@ -23,8 +23,9 @@ public abstract class PantheonEvent : CustomEventModel
 {
     public override bool IsAllowed(IRunState runState) => false;
 
+    /// <summary>Свой портрет images/events/&lt;id&gt;.png, иначе ванильный по таблице tools/art/vanilla_art.csv.</summary>
     public override string? CustomInitialPortraitPath =>
-        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".EventImagePath();
+        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".EventImagePath(Art.VanillaArt.EventPortrait(GetType().Name));
 
     protected LocString Text(string key) => L10NLookup($"{Id.Entry}.{key}");
 
@@ -227,14 +228,18 @@ public sealed class DarkShrineEvent : PantheonEvent
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions()
     {
-        var current = AbyssGift.Of(Owner);
-        var exclude = current == null ? null : new List<int> { (int)current.Prince };
-        var picks = OmenRules.PickDistinct(PantheonRules.PrinceCount, Offers, Next, exclude);
+        var held = AbyssGift.AllOf(Owner).Select(g => (int)g.Prince).ToList();
+        var picks = OmenRules.PickDistinct(PantheonRules.PrinceCount, Offers, Next, held.Count == 0 ? null : held);
+        // Наследники Тройственных: один из Тройственных — всегда среди вариантов («без условий»).
+        if (AbyssGift.IsHeir(Owner) && !AbyssGift.IsOrdinator(Owner))
+            picks = PantheonRules.HeirShrinePicks(picks, held.Count == 0 ? null : held[0], Next);
         var options = new List<EventOption>();
         foreach (var index in picks)
         {
             var prince = (AbyssPrince)index;
-            options.Add(RelicOption(AbyssGift.Create(prince), () => Accept(prince)));
+            // Ординатор: клятва Трибуналу — чужие Князи закрыты.
+            if (!AbyssGift.MayAccept(Owner!, prince)) options.Add(Locked("ORDINATOR_OATH"));
+            else options.Add(RelicOption(AbyssGift.Create(prince), () => Accept(prince)));
         }
         options.Add(Choice(Leave, "REFUSE"));
         return options;

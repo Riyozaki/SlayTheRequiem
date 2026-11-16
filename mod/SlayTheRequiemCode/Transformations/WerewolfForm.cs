@@ -128,6 +128,9 @@ public interface IBeastCard { }
 [Pool(typeof(TokenCardPool))]
 public sealed class MoonCall : RequiemCard
 {
+    /// <summary>Карта облика: длительность растёт узлами Ловчего (06), а не улучшением — card spec §3.4 п. 3, док 18.</summary>
+    public override int MaxUpgradeLevel => 0;
+
     public MoonCall() : base(TransformationRules.MoonCallEnergy, CardType.Skill, CardRarity.Event, TargetType.Self)
     {
         WithKeyword(CardKeyword.Exhaust);

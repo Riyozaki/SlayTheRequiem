@@ -142,8 +142,12 @@ MAGIC_RELICS = [
     ("MistbornOrigin", "Mistborn", "Max ◆ +1. [gold]Magic resistance I[/gold]. The first enemy spell each combat is absorbed.",
      "Туманные", "Пул ◆ +1. [gold]Сопротивление магии I[/gold]. Первое вражеское заклинание в бою поглощается.",
      "The fog remembers every oath.", "Туман помнит каждую клятву."),
-    ("AshbornOrigin", "Ashborn", "Max HP +5. [gold]Fire resistance I[/gold].",
-     "Пеплорождённые", "♥ +5. [gold]Сопротивление огню I[/gold].",
+    ("AshbornOrigin", "Ashborn", "Max HP +5. [gold]Fire resistance I[/gold]. [gold]Heirs of the Tribunal[/gold]: gifts of Treachery, the Web Weaver "
+     "and the Dusk Star cost no righteousness, one of them is always offered at the Dark Shrine, and their Price is halved "
+     "(summons take +25% damage, resting heals 15% less, one star mark fewer).",
+     "Пеплорождённые", "♥ +5. [gold]Сопротивление огню I[/gold]. [gold]Наследники Тройственных[/gold]: дары Измены, Паутины и Сумеречной Звезды "
+     "не стоят праведности, один из них всегда есть в Тёмном святилище, а их Цена вдвое мягче "
+     "(призывы получают +25 % урона, отдых лечит на 15 % меньше, звёздных меток на одну меньше).",
      "Born under a red mountain, raised on its ash.", "Рождены под красной горой, вскормлены её пеплом."),
 ]
 

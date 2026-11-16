@@ -29,6 +29,8 @@ public partial class MainFile : Node
 
         Harmony harmony = new(ModId);
         harmony.PatchAll(assembly);
+        RunLifecycle.Hook();
+        UI.RequiemUi.Register();
 
         Logger.Info("Slay the Requiem loaded.");
     }

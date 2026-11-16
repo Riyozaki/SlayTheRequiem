@@ -236,6 +236,7 @@ public static class MemoryStone
 
                 stone.CandlesUsed = candlesUsed;
                 stone.BonusCandles = deadStone.BonusCandles;
+                stone.CryptCandles = deadStone.CryptCandles;
                 stone.Rollbacks = rollbacks;
                 stone.FleshScars = deadStone.FleshScars + (scar == Scar.Flesh ? 1 : 0);
                 stone.SoulScars = deadStone.SoulScars + (scar == Scar.Soul ? 1 : 0);
@@ -280,6 +281,7 @@ public static class MemoryStone
         Restoring = true;
         try
         {
+            await UI.RequiemVfx.Rewind(save.GetHashCode());
             await NGame.Instance.Transition.FadeOut();
             RunManager.Instance.CleanUp();
             // Штатный путь «Продолжить» (NMainMenu.OnContinueButtonPressedAsync).

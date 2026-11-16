@@ -9,8 +9,9 @@ https://github.com/vitechliu/sts2_database (MIT, game_version 0.107.1).
 который мод читает при загрузке.
 
 Использование:
-    git clone --depth 1 https://github.com/vitechliu/sts2_database /tmp/stsdb
-    python3 tools/markup/build_vanilla_attacks.py /tmp/stsdb
+    git clone https://github.com/vitechliu/sts2_database /tmp/stsdb     # полный клон: --depth 1 отдаёт неполную базу
+    git -C /tmp/stsdb checkout 2a26a96fa4d4808c2532291f70163af2b0361beb  # закреплённая версия (как в CI)
+    python3 tools/markup/build_vanilla_attacks.py /tmp/stsdb mod/SlayTheRequiem/data/vanilla_attacks_stamina.csv
 
 Скрипт падает, если в базе есть атака из нашего пула без разметки
 (или разметка ссылается на несуществующую карту) — так новые карты
@@ -100,7 +101,7 @@ MARKUP: dict[str, tuple] = {
     "MementoMori":      (1,   "N", "phys",  "Y", ""),
     "Murder":           (3,   "H", "phys",  "Y", ""),
     "Pinpoint":         (2,   "N", "phys",  "Y", "дешевеет по энергии — ◆ ставим средним"),
-    "PoisonedStab":     (1,   "N", "phys",  "Y", ""),
+    "PoisonedStab":     (1,   "N", "phys",  "Y", "яд — статус, удар клинка физический (иначе нежить, иммунная к яду, не получала бы урона)"),
     "Pounce":           (2,   "N", "phys",  "Y", ""),
     "PreciseCut":       (1,   "L", "phys",  "Y", ""),
     "Predator":         (2,   "N", "phys",  "Y", ""),
@@ -173,7 +174,7 @@ MARKUP: dict[str, tuple] = {
     "Clash":            (1,   "N", "phys",  "Y", ""),
     "Exterminate":      (2,   "N", "phys",  "N", "4 удара по всем"),
     "Maul":             (1,   "N", "phys",  "N", ""),
-    "NeowsFury":        (1,   "N", "magic", "N", ""),
+    "NeowsFury":        (1,   "N", "magic", "N", "сила Древней — магия"),
     "Peck":             (1,   "L", "phys",  "N", ""),
     "Rebound":          (1,   "N", "phys",  "Y", ""),
     "RipAndTear":       (1,   "N", "phys",  "N", ""),
@@ -232,6 +233,8 @@ def main(db: str, out: str) -> int:
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8", newline="") as f:
         f.write(f"# Slay the Requiem: stamina markup of vanilla attacks. Card facts from sts2_database, game {', '.join(sorted(versions))}\n")
+        f.write("# Necrobinder and Defect attacks are intentionally not marked: in the mod they are transformation forms, "
+                "not heroes (docs/design/06 §4)\n")
         w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)

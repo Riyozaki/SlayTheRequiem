@@ -20,6 +20,9 @@ public abstract class EnemyResourcePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
+    /// <summary>В ряду статусов не показываем: ◆/✦ врага видны точками под полоской ♥ (UI/NEnemyResourcePips, art spec 4.4).</summary>
+    protected override bool IsVisibleInternal => false;
+
     public int Pool => Math.Max(1, Amount);
     public int Current { get; private set; } = -1;
     public override int DisplayAmount => Current < 0 ? Pool : Current;
@@ -161,6 +164,12 @@ public sealed class BrokenPower : RequiemPower
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
         target == Owner ? EnemyRules.BrokenDamageTakenMultiplier : 1m;
+
+    public override Task AfterApplied(Creature? applier, CardModel? cardSource)
+    {
+        UI.RequiemVfx.Broken(Owner);
+        return Task.CompletedTask;
+    }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {

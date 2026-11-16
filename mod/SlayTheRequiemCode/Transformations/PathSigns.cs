@@ -16,7 +16,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Transformations;
 
 /// <summary>
 /// Знак Пути (docs/design/06 §2) — снаряжение-реликвия, выдаётся вместе с Сущностью. Ступень 4 (не продаётся, не выпадает).
-/// Визуал MVP: в начале боя короткая вспышка цвета Пути на модели героя; спрайт-накладки (знамя, маска, обмотки) — со спрайтами.
+/// Визуал (M6 п. 3): знамя Пути за спиной героя в бою (<see cref="HeroOverlays"/>, images/ui/path_signs/*.png) и вспышка цвета Пути в начале боя.
 /// </summary>
 public abstract class PathSign : EquipmentRelic, IResourceSource
 {
@@ -165,6 +165,7 @@ public sealed class MirrorShield : PathSign
     public override HeroPath Path => HeroPath.Reflector;
     public override EquipSlot Slot => EquipSlot.OffHand;
     public override WeaponKind Weapon => WeaponKind.Shield;
+    public override ItemMaterial Material => ItemMaterial.Silver;
     public override int Weight => 2;
     protected override Color Glow => new(0.8f, 0.95f, 1f);
     protected override Task OnCombatOpened() => ApplySelf<SpellShieldPower>(6);

@@ -177,6 +177,27 @@ PICK_CARDS += [
      "Ледяное клеймо", "Оружейные атаки накладывают {Value} [gold]Озноба[/gold]. Зарядов: {Cost}."),
     ("PickEnchantShockBrand", "Shock Brand", "Weapon attacks burn {Value} enemy ✦. {Cost} charges.",
      "Грозовое клеймо", "Оружейные атаки выжигают {Value} ✦ врага. Зарядов: {Cost}."),
+    # отложенные чары 07 §6.1 (M4 п. 6)
+    ("PickEnchantCraftDestruction", "Destruction Craft", "Your first {Value} Destruction spells each turn cost 1 less ✦.",
+     "Ремесло Разрушения", "Первые {Value} заклинания Разрушения за ход стоят на 1 ✦ меньше."),
+    ("PickEnchantCraftRestoration", "Restoration Craft", "Your first {Value} Restoration spells each turn cost 1 less ✦.",
+     "Ремесло Восстановления", "Первые {Value} заклинания Восстановления за ход стоят на 1 ✦ меньше."),
+    ("PickEnchantCraftAlteration", "Alteration Craft", "Your first {Value} Alteration spells each turn cost 1 less ✦.",
+     "Ремесло Изменения", "Первые {Value} заклинания Изменения за ход стоят на 1 ✦ меньше."),
+    ("PickEnchantCraftConjuration", "Conjuration Craft", "Your first {Value} Conjuration spells each turn cost 1 less ✦.",
+     "Ремесло Колдовства", "Первые {Value} заклинания Колдовства за ход стоят на 1 ✦ меньше."),
+    ("PickEnchantCraftIllusion", "Illusion Craft", "Your first {Value} Illusion spells each turn cost 1 less ✦.",
+     "Ремесло Иллюзии", "Первые {Value} заклинания Иллюзии за ход стоят на 1 ✦ меньше."),
+    ("PickEnchantAbsorbHealth", "Absorb Health", "Weapon attacks heal you {Value} HP per target. {Cost} charges.",
+     "Поглощение здоровья", "Оружейные атаки лечат вас на {Value} ♥ за каждую цель. Зарядов: {Cost}."),
+    ("PickEnchantAbsorbStamina", "Absorb Stamina", "Weapon attacks drain {Value} enemy ◆ and give you {Value} ◆. {Cost} charges.",
+     "Поглощение выносливости", "Оружейные атаки отнимают у врага {Value} ◆ и дают вам {Value} ◆. Зарядов: {Cost}."),
+    ("PickEnchantAbsorbMagic", "Absorb Magicka", "Weapon attacks burn {Value} enemy ✦ and give you {Value} ✦. {Cost} charges.",
+     "Поглощение магии", "Оружейные атаки выжигают у врага {Value} ✦ и дают вам {Value} ✦. Зарядов: {Cost}."),
+    ("PickEnchantBanish", "Banish", "Weapon attacks instantly kill summoned enemies. A charge is spent only on a kill. {Cost} charges.",
+     "Изгнание", "Оружейные атаки мгновенно убивают призванных врагов. Заряд тратится только на убийство. Зарядов: {Cost}."),
+    ("PickEnchantParalysis", "Paralysis", "Once per combat, a weapon attack paralyzes the target (power {Value}; bosses are Staggered instead). {Cost} charges.",
+     "Паралич", "Раз в бой Оружейная атака парализует цель (сила {Value}; боссы вместо этого получают Шаткость). Зарядов: {Cost}."),
     # камни: Value — сколько есть, Cost — сила
     ("PickStoneSmall", "Lesser Soul Stone", "Enchantment power {Cost}. You have {Value}.", "Малый камень душ", "Сила чар {Cost}. Есть: {Value}."),
     ("PickStoneLarge", "Greater Soul Stone", "Enchantment power {Cost}. You have {Value}.", "Большой камень душ", "Сила чар {Cost}. Есть: {Value}."),
@@ -192,7 +213,12 @@ PICK_CARDS += [
 ]
 
 # ───────────── Кличи ─────────────
-SHOUT_NOTE = {"eng": "\n[gold]Shout[/gold]: returns to your hand in {turns} turns.", "rus": "\n[gold]Клич[/gold]: вернётся в руку через {turns} хода."}
+SHOUT_NOTE = {"eng": "\n[gold]Shout[/gold]: returns to your hand in {turns} turns.", "rus": "\n[gold]Клич[/gold]: вернётся в руку через {turns} {word}."}
+
+
+def _turns_ru(n: int) -> str:
+    """1 ход, 2–4 хода, 5–20 ходов."""
+    return "ход" if n % 10 == 1 and n % 100 != 11 else "хода" if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14 else "ходов"
 
 SHOUT_CARDS = [
     ("BattleCry", 4, "Battle Cry", "Apply {WeakPower:diff()} [gold]Weak[/gold] and {StaggerPower:diff()} [gold]Stagger[/gold] to ALL enemies.",
@@ -211,7 +237,7 @@ SHOUT_CARDS = [
 
 
 def _shout_cards():
-    return [(cls, et, ed + SHOUT_NOTE["eng"].format(turns=t), rt, rd + SHOUT_NOTE["rus"].format(turns=t))
+    return [(cls, et, ed + SHOUT_NOTE["eng"].format(turns=t), rt, rd + SHOUT_NOTE["rus"].format(turns=t, word=_turns_ru(t)))
             for cls, t, et, ed, rt, rd in SHOUT_CARDS]
 
 
@@ -240,7 +266,7 @@ STAGE5_REST_SITE = {
     "eng": {
         "OPTION_SLAYTHEREQUIEM_BREW.description": "Brew one potion or poison from your reagents ({Count} in the pouch)." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_CHEST.description": "Store cards and gear (they stop weighing) or take them back. Burden {Weight}/{Capacity}, in the chest: {Stored}. Free.",
-        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Improve one equipped item by +1 (up to +2, [gold]Smithing[/gold] — +3)." + _COST["eng"],
+        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Improve one equipped item by +1 (up to +2, [gold]Smithing[/gold] — +3) or shoe your pack animal." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Short Rest",
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Heal {Percent}% of max HP ({Heal})." + _COST["eng"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.descriptionDisabled": "Not enough camp points.",
@@ -270,7 +296,7 @@ STAGE5_REST_SITE = {
     "rus": {
         "OPTION_SLAYTHEREQUIEM_BREW.description": "Сварить одно зелье или яд из реагентов (в сумке: {Count})." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_CHEST.description": "Убрать карты и снаряжение (перестают весить) или забрать обратно. Груз {Weight}/{Capacity}, в сундуке: {Stored}. Бесплатно.",
-        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3)." + _COST["rus"],
+        "OPTION_SLAYTHEREQUIEM_FORGE.description": "Улучшить одну надетую вещь на +1 (до +2, с [gold]Кузнечным делом[/gold] — до +3) или подковать вьючного зверя." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.name": "Короткий привал",
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.description": "Вылечить {Percent} % макс. ♥ ({Heal})." + _COST["rus"],
         "OPTION_SLAYTHEREQUIEM_SHORT_REST.descriptionDisabled": "Не хватает очков лагеря.",

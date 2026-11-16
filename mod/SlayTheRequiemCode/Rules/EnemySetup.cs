@@ -32,7 +32,7 @@ public static class EnemySetup
 
     public static async Task Ensure(Creature creature, ICombatState? combatState)
     {
-        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive) return;
+        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return;
         if (Done.TryGetValue(creature, out _)) return;
         Done.Add(creature, new object());
 
@@ -169,6 +169,10 @@ public static class EnemySetup
     /// <summary>Нежить и духи — цели «Изгнания нежити» и двойного урона светом.</summary>
     public static bool IsUndead(Creature creature) =>
         creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction is "undead" or "spirit";
+
+    /// <summary>Звери — цели Амулета Ловчего (07 §5.1).</summary>
+    public static bool IsBeast(Creature creature) =>
+        creature.Monster != null && RequiemData.MonsterEntry(creature.Monster.GetType().Name).Faction == "beast";
 
     /// <summary>Порождения Бездны (даэдра).</summary>
     public static bool IsAbyss(Creature creature) =>

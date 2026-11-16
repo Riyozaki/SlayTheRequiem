@@ -45,6 +45,7 @@ public sealed class DodgePower : RequiemPower
         _usedThisTurn++;
         RequiemResource.Of<StaminaResource>(Owner.Player)?.ModifyAmount(-StaminaCost);
         Flash();
+        UI.RequiemVfx.Dodge(Owner);
         foreach (var listener in Owner.Powers.OfType<IDodgeListener>().ToList())
             await listener.AfterDodged(choiceContext, dealer);
         if (Owner.Player != null)

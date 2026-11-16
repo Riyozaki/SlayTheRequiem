@@ -1,0 +1,28 @@
+# Звуки Реквиема (M7 п. 5): событие → звук. Таблица правится вручную, без пересборки кода (файл в .pck можно заменить).
+# source: fmod — событие банков игры (event:/...); game — файл игры res://debug_audio/…; own — свой звук audio/sfx/…
+#         (синтез tools/audio/build_sfx.py). Несколько строк одного события играют вместе. volume — 0…2 (1 — как в игре).
+# Проверка: python3 tools/audio/build_sfx.py --check (события — из Core/SfxRules.cs, FMOD — из tools/audio/vanilla_fmod_events.txt).
+event,source,sound,volume,note
+hit.fire,fmod,event:/sfx/characters/attack_fire,0.8,огонь — вспышка пламени
+hit.frost,fmod,event:/sfx/characters/defect/defect_frost_channel,0.7,холод — иней
+hit.shock,fmod,event:/sfx/characters/defect/defect_lightning_evoke,0.7,разряд — молния
+hit.poison,game,hiss.mp3,0.8,яд — шипение
+hit.blight,fmod,event:/sfx/characters/defect/defect_dark_channel,0.7,хворь — тёмный гул
+hit.light,fmod,event:/sfx/characters/regent/regent_guiding_star,0.7,свет — звёздный звон
+hit.magic,fmod,event:/sfx/characters/defect/defect_plasma_channel,0.7,магия — плазма
+hit.true,fmod,event:/sfx/characters/defect/defect_glass_channel,0.6,чистый — стеклянный звон
+overstrain,own,heartbeat.wav,1.0,надрыв — удары сердца
+overstrain,fmod,event:/sfx/characters/ironclad/ironclad_bloodwall,0.4,надрыв — кровь
+broken,fmod,event:/sfx/block_break,1.0,Слом — броня разбита
+broken,own,armor_crack.wav,0.8,Слом — треск и звон
+dodge,own,whoosh.wav,1.0,Уворот — свист
+shout.war,fmod,event:/sfx/npcs/tanx/tanx_roar,0.8,Клич-атака — рёв
+shout.guard,own,war_drum.wav,1.0,Клич-навык — боевой барабан
+shout.rally,own,war_horn.wav,0.7,Клич-сила — боевой рог
+summon,fmod,event:/sfx/characters/necrobinder/necrobinder_summon,0.9,призыв
+rewind,own,rewind.wav,1.0,откат — треск стекла и «втягивание»
+rewind,fmod,event:/sfx/ui/timeline/ui_timeline_open_epoch,0.5,откат — эпоха
+portal.enter,own,portal.wav,0.8,Багровый портал — гул и вихрь
+portal.enter,fmod,event:/sfx/characters/necrobinder/necrobinder_doom_kill,0.5,Багровый портал — рок
+cache.open,fmod,event:/sfx/ui/treasure/treasure_act1,0.9,Тайник открыт
+cache.trap,fmod,event:/sfx/enemy/enemy_attacks/spiny_toad/spiny_toad_protrude,0.9,Тайник — ловушка

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Singleton;
@@ -55,9 +56,20 @@ public static class ActIndexShim
 
     private static readonly MethodInfo ShimMethod = AccessTools.Method(typeof(ActIndexShim), nameof(Tier), [typeof(IRunState)]);
 
-    /// <summary>Все чтения <c>CurrentActIndex</c> (через интерфейс или класс) — в <see cref="Tier(IRunState)"/>.</summary>
-    public static IEnumerable<CodeInstruction> ReplaceActIndex(IEnumerable<CodeInstruction> instructions)
+    /// <summary>Сколько чтений <c>CurrentActIndex</c> заменил каждый транспайлер (0 = IL игры изменился, патч не сработал).</summary>
+    public static IReadOnlyDictionary<string, int> Replacements => _replacements;
+
+    private static readonly Dictionary<string, int> _replacements = new();
+
+    /// <summary>
+    /// Все чтения <c>CurrentActIndex</c> (через интерфейс или класс) — в <see cref="Tier(IRunState)"/>.
+    /// Число замен пишется в лог; ноль — предупреждение: после обновления игры метод читает индекс иначе,
+    /// и в актах 4–5 ванильные таблицы получат индекс вне 0..2 (ревью R-04, smoke-проверка M0).
+    /// </summary>
+    public static IEnumerable<CodeInstruction> ReplaceActIndex(IEnumerable<CodeInstruction> instructions, string patch)
     {
+        var result = new List<CodeInstruction>();
+        var replaced = 0;
         foreach (var code in instructions)
         {
             if ((code.opcode == OpCodes.Callvirt || code.opcode == OpCodes.Call) && code.operand is MethodInfo
@@ -65,11 +77,19 @@ public static class ActIndexShim
                     Name: "get_CurrentActIndex",
                 } method && typeof(IRunState).IsAssignableFrom(method.DeclaringType))
             {
-                yield return new CodeInstruction(OpCodes.Call, ShimMethod).WithLabels(code.labels).WithBlocks(code.blocks);
+                result.Add(new CodeInstruction(OpCodes.Call, ShimMethod).WithLabels(code.labels).WithBlocks(code.blocks));
+                replaced++;
                 continue;
             }
-            yield return code;
+            result.Add(code);
         }
+        _replacements[patch] = replaced;
+        if (replaced == 0)
+            MainFile.Logger.Warn($"ActIndexShim: {patch} — не найдено ни одного чтения CurrentActIndex. " +
+                                 "IL игры изменился; в актах 4–5 метод получит индекс вне 0..2.");
+        else
+            MainFile.Logger.Info($"ActIndexShim: {patch} — заменено чтений CurrentActIndex: {replaced}.");
+        return result;
     }
 }
 
@@ -95,16 +115,20 @@ public static class RestSiteCharacterTierPatch
 {
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
-        ActIndexShim.ReplaceActIndex(instructions);
+        ActIndexShim.ReplaceActIndex(instructions, "NRestSiteCharacter._Ready");
 }
 
-/// <summary>Шанс улучшенной карты в награде растёт с актом: в пяти актах — по ступени, а не по индексу.</summary>
-[HarmonyPatch(typeof(CardFactory), "RollForUpgrade")]
+/// <summary>
+/// Шанс улучшенной карты в награде растёт с актом: в пяти актах — по ступени, а не по индексу.
+/// У RollForUpgrade две перегрузки (без Rng и с Rng) — без типов аргументов Harmony бросит AmbiguousMatchException
+/// и сорвёт PatchAll. CurrentActIndex читает только перегрузка с Rng (игра 0.107.1).
+/// </summary>
+[HarmonyPatch(typeof(CardFactory), "RollForUpgrade", typeof(Player), typeof(CardModel), typeof(decimal), typeof(Rng))]
 public static class CardUpgradeTierPatch
 {
     [HarmonyTranspiler]
     public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
-        ActIndexShim.ReplaceActIndex(instructions);
+        ActIndexShim.ReplaceActIndex(instructions, "CardFactory.RollForUpgrade");
 }
 
 /// <summary>

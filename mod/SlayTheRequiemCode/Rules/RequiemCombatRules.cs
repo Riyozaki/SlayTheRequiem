@@ -30,8 +30,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override async Task BeforeCardPlayed(CardPlay cardPlay)
     {
         var card = cardPlay.Card;
-        // Заклинания платят только ✦ (docs/design/08): ни ◆, ни множителя Устал/Изнурён.
-        if (card.Type != CardType.Attack || card is Spells.SpellCard) return;
+        // Заклинания и магические атаки платят только ✦ (08), Кличи — перезарядкой (04): ни ◆, ни множителя Устал/Изнурён.
+        if (card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return;
         var player = card.Owner;
         if (!RequiemMode.IsInSystem(player)) return;
         // Повторы (Двойной удар, эхо) не платят второй раз и бьют с тем же множителем.
@@ -56,7 +56,10 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
         if (payment.HpLoss > 0 && RequiemConfig.EnableOverstrain)
         {
+            UI.RequiemUiEvents.RaiseOverstrained(player);
+            UI.RequiemVfx.Overstrain(player.Creature);
             using var _ = DamageTyping.As(DamageType.True);
+            using var quiet = UI.RequiemVfx.Quiet();
             await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), player.Creature, payment.HpLoss,
                 ValueProp.Unblockable | ValueProp.Unpowered, null, null);
         }
@@ -99,7 +102,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     private static decimal StaminaMultiplier(ValueProp props, CardModel? cardSource)
     {
-        if (cardSource == null || cardSource is Spells.SpellCard || !props.IsPoweredAttack()) return 1m;
+        if (cardSource == null || StaminaCosts.IsStaminaExempt(cardSource) || !props.IsPoweredAttack()) return 1m;
         if (PendingMultiplier.TryGetValue(cardSource, out var box)) return box.Value;
 
         // Предпросмотр урона на карте в руке: показываем, сколько она нанесёт при текущей ◆.
@@ -195,7 +198,15 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     public override async Task AfterCreatureAddedToCombat(Creature creature)
     {
-        if (creature.Monster != null) await EnemySetup.Ensure(creature, creature.CombatState);
+        // Призывы героя — тоже монстры, но им не нужны ◆/Стойкость/аффиксы врагов.
+        if (creature.Monster != null && creature.IsEnemy) await EnemySetup.Ensure(creature, creature.CombatState);
+    }
+
+    /// <summary>Павший враг — кандидат для «Поднять мертвеца».</summary>
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    {
+        if (!wasRemovalPrevented) Graveyard.Note(creature.CombatState, creature);
+        return Task.CompletedTask;
     }
 }
 

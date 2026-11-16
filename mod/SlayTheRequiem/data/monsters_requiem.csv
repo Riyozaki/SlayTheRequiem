@@ -2,29 +2,42 @@
 key,faction,plating,poise_bonus,res_fire,res_frost,res_shock,res_poison,res_magic,attack_type,note
 AbyssBlackKnight,abyss,3,4,2,-1,0,4,0,magic,редкая элита Славы «Чёрный рыцарь Бездны»
 AbyssGateObject,abyss,0,4,2,-1,0,4,0,magic,Врата Бездны (объект)
+AbyssGuardianSummon,abyss,0,0,2,-1,0,4,0,magic,призыв «Дремлющий страж»
 AbyssScamp,abyss,0,0,2,-1,0,4,0,fire,скамп Бездны
 AbyssWarlord,abyss,2,3,2,-1,0,4,0,fire,элита Улья «Полководец Бездны»
 Aeonglass,construct,2,0,1,-1,-1,4,0,magic,босс
 Architect,abyss,0,0,2,-1,0,4,0,magic,финал
+ArchmageSimulacrum,construct,0,0,1,-1,-1,4,0,magic,босс 4б «Симулякр Архимага»
 AssassinRubyRaider,humanoid,0,0,0,0,0,0,0,phys,Багряные Ножи
+AstrolabeKeeper,cultist,0,0,0,0,0,0,1,magic,босс 4б «Хранитель Астролябии»
+AutomatonArchitect,construct,0,0,1,-1,-1,4,0,phys,босс 2б «Архитектор автоматонов»
 AxeRubyRaider,humanoid,0,0,0,0,0,0,0,phys,Багряные Ножи
 Axebot,construct,2,0,1,-1,-1,4,0,phys,
 BarrowDead,undead,0,0,-1,2,0,4,0,phys,курганный мертвец
+BarrowHuskarl,undead,1,2,-1,2,0,4,0,phys,хускарл кургана
 BarrowPriest,undead,0,2,-1,2,0,4,0,magic,элита Славы «Жрец курганов»
 BarrowReaper,undead,0,5,-1,2,0,4,0,frost,супербосс 2а «Жнец Курганов»
+BarrowWailer,spirit,0,0,0,1,0,4,1,frost,босс 2а «Плакальщица курганов»
 BattleFriendV1,construct,1,0,1,-1,-1,4,0,phys,
 BattleFriendV2,construct,2,0,1,-1,-1,4,0,phys,
 BattleFriendV3,construct,3,0,1,-1,-1,4,0,phys,
+BeastBearSummon,spirit,0,0,0,1,0,4,1,phys,призыв «Дух зверя: медведь»
+BeastSabertoothSummon,spirit,0,0,0,1,0,4,1,phys,призыв «Дух зверя: саблезуб»
+BeastWolfSummon,spirit,0,0,0,1,0,4,1,phys,призыв «Дух зверя: волк»
 BlackWanderer,humanoid,2,4,0,0,0,0,0,phys,супербосс акта 1 «Чёрный Странник»
 BloodCourtLord,undead,0,5,-1,2,0,4,0,magic,супербосс 4а «Владыка Кровавого Двора»
 BloodNoble,undead,0,2,-1,2,0,4,0,magic,элита 4а «Кровавый вельможа»
 BloodThrall,undead,0,0,-1,2,0,4,0,phys,раб крови
+BoilerWyrm,construct,2,0,1,-1,-1,4,0,fire,босс 2б «Котловой змей»
 BoneChampion,undead,2,3,-1,2,0,4,0,phys,элита Славы «Костяной поборник»
+BoneFrostWyrm,undead,0,0,-1,2,0,4,0,frost,босс 2а «Костяной змей стужи»
 BoneShieldbearer,undead,2,0,-1,2,0,4,0,phys,костяной щитоносец
+BoneThrallSummon,undead,0,0,-1,2,0,4,0,magic,призыв «Костяной прислужник» (Лич)
 BowlbugEgg,insect,1,0,-1,-1,0,1,0,phys,
 BowlbugNectar,insect,0,0,-1,-1,0,1,0,poison,
 BowlbugRock,insect,3,4,-1,-1,0,1,0,phys,каменный
 BowlbugSilk,insect,0,0,-1,-1,0,1,0,phys,
+BrassSentry,construct,2,0,1,-1,-1,4,0,shock,латунный часовой
 BruteRubyRaider,humanoid,1,3,0,0,0,0,0,phys,Багряные Ножи
 BygoneEffigy,construct,2,0,1,-1,-1,4,0,phys,идол
 Byrdonis,beast,0,0,-1,1,0,0,0,phys,
@@ -32,10 +45,14 @@ Byrdpip,beast,0,0,-1,1,0,0,0,phys,
 CalcifiedCultist,cultist,2,0,0,0,0,0,1,phys,окаменевший
 CauldronMistress,cultist,0,2,0,0,0,0,1,magic,редкая элита акта 1 «Хозяйка котла»
 CeremonialBeast,beast,1,0,-1,1,0,0,0,phys,босс
+ChaliceAcolyte,cultist,0,0,0,0,0,0,1,phys,послушник Чаши
+ChaliceHierophant,undead,0,0,-1,2,0,4,0,magic,босс 4а «Иерофант Багряной Чаши»
 Chomper,beast,0,0,-1,1,0,0,0,phys,
+ClockworkColossus,construct,4,0,1,-1,-1,4,0,phys,босс 2б «Заводной колосс»
 CorpseSlug,undead,0,0,-1,2,0,4,0,poison,
 CrimsonBandit,humanoid,0,0,0,0,0,0,0,phys,шайка Атаманши
 CrimsonChieftain,humanoid,0,2,0,0,0,0,0,phys,элита «Атаманша Багряных Ножей» (Диджа)
+CrimsonCountess,undead,0,0,-1,2,0,4,0,phys,босс 4а «Алая Графиня»
 CrossbowRubyRaider,humanoid,0,0,0,0,0,0,0,phys,Багряные Ножи
 Crusher,construct,3,4,1,-1,-1,4,0,phys,
 CubexConstruct,construct,3,2,1,-1,-1,4,0,phys,
@@ -51,6 +68,7 @@ DevotedSculptor,cultist,0,0,0,0,0,0,1,phys,
 DragonEgg,beast,0,0,-1,1,0,0,0,phys,драконье яйцо (объект)
 Dremora,abyss,1,1,2,-1,0,4,0,fire,дремора (Врата Бездны)
 EchoKnight,spirit,0,3,0,1,0,4,1,phys,элита Безымянного предела «Рыцарь-эхо»
+EclipseWarden,construct,3,0,1,-1,-1,4,0,phys,босс 4а «Страж Затмения»
 Entomancer,cultist,0,0,0,0,0,0,1,magic,
 Exoskeleton,insect,3,2,-1,-1,0,1,0,phys,
 EyeWithTeeth,abyss,0,0,2,-1,0,4,0,phys,
@@ -61,10 +79,12 @@ FirstSnowPrince,undead,1,3,-1,2,0,4,0,frost,редкая элита 2а «При
 FirstSummoner,cultist,0,5,0,0,0,0,1,shock,супербосс 4б «Первый Призыватель»
 FlailKnight,humanoid,3,4,0,0,0,0,0,phys,рыцарь
 FlameAtronachMinion,spirit,0,0,0,1,0,4,1,fire,огненный атронах
+FlameAtronachSummon,abyss,0,0,2,-1,0,4,0,fire,призыв «Огненный атронах»
 Flyconid,plant,0,0,-1,0,0,1,0,poison,грибные споры
 Fogmog,plant,0,0,-1,0,0,1,0,phys,
 FossilStalker,undead,2,2,-1,2,0,4,0,phys,
 FrogKnight,aquatic,2,3,1,0,-1,0,0,phys,рыцарь
+FrostAtronachSummon,construct,0,0,1,-1,-1,4,0,frost,призыв «Ледяной атронах»
 FuzzyWurmCrawler,insect,0,0,-1,-1,0,1,0,phys,
 GargoyleServant,construct,1,0,1,-1,-1,4,0,phys,гаргулья-слуга
 GargoyleWarden,construct,3,3,1,-1,-1,4,0,phys,элита 4а «Гаргулья-страж»
@@ -81,18 +101,22 @@ InfestedPrism,construct,2,0,1,-1,-1,4,0,magic,
 Inklet,cultist,0,0,0,0,0,0,1,magic,
 KinFollower,cultist,0,0,0,0,0,0,1,phys,
 KinPriest,cultist,0,0,0,0,0,0,1,magic,босс
+KingUnderBarrow,undead,2,0,-1,2,0,4,0,frost,босс 2а «Король-под-Курганом»
 KnowledgeDemon,abyss,0,0,2,-1,0,4,0,magic,босс
 LagavulinMatriarch,aquatic,3,0,1,0,-1,0,0,phys,"босс, панцирь"
 LeafSlimeM,slime,0,0,-1,1,0,2,0,phys,
 LeafSlimeS,slime,0,0,-1,1,0,2,0,phys,
+LeyWyrm,spirit,0,0,0,1,0,4,1,magic,босс 4б «Змей лей-линий»
 LivingFog,spirit,0,0,0,1,0,4,1,magic,
 LivingShield,construct,4,4,1,-1,-1,4,0,phys,щит
 LordsBride,undead,0,3,-1,2,0,4,0,magic,редкая элита 4а «Невеста Владыки»
 LouseProgenitor,insect,1,0,-1,-1,0,1,0,phys,
+LoyalGuardSummon,humanoid,0,0,0,0,0,0,0,phys,призыв «Верный-до-Конца»
 MagiKnight,cultist,2,4,0,0,0,0,1,magic,рыцарь
 Mawler,beast,0,2,-1,1,0,0,0,phys,
 MechaKnight,construct,4,6,1,-1,-1,4,0,phys,рыцарь-механизм
 MechanicTurret,construct,2,0,1,-1,-1,4,0,phys,турель механика
+MirrorShard,construct,0,0,1,-1,-1,4,0,magic,зеркальный осколок
 MirrorWarden,construct,2,3,1,-1,-1,4,0,magic,элита 4б «Зеркальный страж»
 MossElder,plant,1,2,-1,0,0,1,0,poison,элита акта 1 «Мшистый старейшина»
 MysteriousKnight,humanoid,3,4,0,0,0,0,0,phys,рыцарь
@@ -112,6 +136,7 @@ PhrogParasite,insect,0,0,-1,-1,0,1,0,poison,
 PlagueMother,insect,0,2,-1,-1,0,1,0,poison,элита Улья «Мать чумы»
 PunchConstruct,construct,2,2,1,-1,-1,4,0,phys,
 Queen,insect,1,0,-1,-1,0,1,0,phys,босс
+RaisedDeadSummon,undead,0,0,-1,2,0,4,0,phys,призыв «Поднятый мертвец»
 ReactorGuard,construct,2,0,1,-1,-1,4,0,phys,страж реактора
 ReactorHeart,construct,3,4,1,-1,-1,4,0,fire,редкая элита 2б «Сердце реактора»
 RenegadeMechanic,humanoid,1,2,0,0,0,0,0,phys,элита 2б «Механик-отступник»
@@ -134,12 +159,15 @@ SorceressIlvarre,cultist,0,2,0,0,0,0,1,magic,элита 4б «Чародейка
 SoulFysh,spirit,0,0,0,1,0,4,1,magic,босс
 SoulNexus,spirit,0,0,0,1,0,4,1,magic,
 SpectralKnight,spirit,2,4,0,1,0,4,1,magic,рыцарь
+SpectralKnightSummon,spirit,0,0,0,1,0,4,1,phys,призыв «Призрачный рыцарь»
 SpiderMatriarch,construct,2,2,1,-1,-1,4,0,shock,элита 2б «Паучиха-матриарх»
 SpinyToad,aquatic,0,0,1,0,-1,0,0,phys,
+SpiritWolfSummon,spirit,0,0,0,1,0,4,1,phys,призыв «Волк-дух»
 Stabbot,construct,1,0,1,-1,-1,4,0,phys,
 StarExaminer,cultist,0,3,0,0,0,0,1,magic,редкая элита 4б «Звёздный экзаменатор»
 SteamValve,construct,0,0,1,-1,-1,4,0,phys,вентиль (объект)
 StormAtronachMinion,spirit,1,0,0,1,0,4,1,shock,грозовой атронах
+StormAtronachSummon,construct,0,0,1,-1,-1,4,0,shock,призыв «Грозовой атронах»
 SwarmDevourer,insect,1,3,-1,-1,0,1,0,phys,редкая элита Улья «Пожиратель роя»
 SwarmlingBug,insect,0,0,-1,-1,0,1,0,phys,роевик
 TerrorEel,aquatic,0,0,1,0,-1,0,0,shock,угорь

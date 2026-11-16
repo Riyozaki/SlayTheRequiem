@@ -3,8 +3,10 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
+using VulnerablePower = MegaCrit.Sts2.Core.Models.Powers.VulnerablePower;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Cards.Platebearer;
 
@@ -201,5 +203,28 @@ public sealed class WrathHammer : RequiemCard
         await Hit(ctx, play.Target, "vfx/vfx_attack_blunt");
         await Apply<StaggerPower>(ctx, play.Target, Var(nameof(StaggerPower)));
         await Apply<SunderPower>(ctx, play.Target, Var(nameof(SunderPower)));
+    }
+}
+
+/// <summary>
+/// Прицельный выстрел (старт «Браконьера» Горнокровных, 04): Оружейная атака — с луком или арбалетом это выстрел
+/// (урон оружия, узлы «Стрельбы»), который ещё и накладывает Уязвимость.
+/// </summary>
+[Pool(typeof(IroncladCardPool))]
+public sealed class AimedShot : RequiemCard, IWeaponCard
+{
+    public AimedShot() : base(1, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy)
+    {
+        WithDamage(7, 3);
+        WithPower<VulnerablePower>(1, 1);
+        WithStamina(1);
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
+    {
+        ArgumentNullException.ThrowIfNull(play.Target);
+        await Hit(ctx, play.Target, "vfx/vfx_attack_pierce");
+        if (Progression.HeroRecord.IsRanged(Loadout.InSlot(Owner, EquipSlot.MainHand)?.Weapon ?? WeaponKind.None))
+            await Apply<VulnerablePower>(ctx, play.Target, Var(nameof(VulnerablePower)));
     }
 }

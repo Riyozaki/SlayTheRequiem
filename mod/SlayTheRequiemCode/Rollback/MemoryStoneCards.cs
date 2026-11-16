@@ -25,6 +25,7 @@ public sealed class DeathEcho : RequiemCard
 public abstract class ScarChoiceCard() : RequiemCard(-1, CardType.Status, CardRarity.Status, TargetType.None)
 {
     public abstract Scar Scar { get; }
+    public override bool IsMenuToken => true;
     public override int MaxUpgradeLevel => 0;
 }
 

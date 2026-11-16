@@ -1,5 +1,6 @@
 ﻿using BaseLib.Abstracts;
 using BaseLib.Extensions;
+using SlayTheRequiem.SlayTheRequiemCode.Art;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Relics;
@@ -12,8 +13,11 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Relics;
 /// </summary>
 public abstract class RequiemRelic : CustomRelicModel
 {
-    //SlayTheRequiem/images/relics
-    public override string PackedIconPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".RelicImagePath();
-    protected override string PackedIconOutlinePath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}_outline.png".RelicImagePath();
-    protected override string BigIconPath => $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".BigRelicImagePath();
+    // Свой значок: images/relics/<id>.png, <id>_outline.png, big/<id>.png;
+    // пока своего нет — ванильный по таблице tools/art/vanilla_art.csv (Art/VanillaArt).
+    private string ArtName => Id.Entry.RemovePrefix().ToLowerInvariant();
+    public override string PackedIconPath => $"{ArtName}.png".RelicImagePath(VanillaArt.RelicIcon(GetType().Name));
+    protected override string PackedIconOutlinePath => $"{ArtName}_outline.png".RelicImagePath(VanillaArt.RelicOutline(GetType().Name));
+    protected override string BigIconPath =>
+        $"{ArtName}.png".BigRelicImagePath(VanillaArt.RelicBigIcon(GetType().Name), VanillaArt.RelicIcon(GetType().Name));
 }

@@ -60,6 +60,9 @@ public sealed class MerchantLedger : RequiemRelic
     private int _orderFloor;     // этаж, где заказ выполняется, + 1; 0 — нигде
     private int _refillsUsed;
     private int _theftFloor;     // этаж последней попытки кражи + 1
+    private int _theftTries;     // попыток на этом этаже (Кольцо Безликого Вора даёт вторую)
+    private int _caravanAct;     // акт, где уже был Караван, + 1 (14 §2.8: не больше одного за акт)
+    private int _tradeFloor;     // этаж, где уже был Обмен Каравана, + 1 (раз за визит)
 
     /// <summary>Золото, потраченное в лавках каждого вида (индекс = <see cref="ShopType"/>).</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -114,6 +117,23 @@ public sealed class MerchantLedger : RequiemRelic
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int TheftFloor { get => _theftFloor; set { AssertMutable(); _theftFloor = value; } }
 
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int TheftTries { get => _theftTries; set { AssertMutable(); _theftTries = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int CaravanAct { get => _caravanAct; set { AssertMutable(); _caravanAct = value; } }
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int TradeFloor { get => _tradeFloor; set { AssertMutable(); _tradeFloor = value; } }
+
+    public bool TradedHere(IRunState runState) => _tradeFloor == runState.TotalFloor + 1;
+
+    public void MarkTrade(IRunState runState)
+    {
+        AssertMutable();
+        _tradeFloor = runState.TotalFloor + 1;
+    }
+
     public ShopType CurrentShop => (ShopType)Math.Clamp(_currentShop, 0, ShopRules.ShopTypeCount - 1);
     public int TrustOf(ShopType shop) => ShopRules.Trust(_spent[(int)shop]);
 
@@ -126,11 +146,14 @@ public sealed class MerchantLedger : RequiemRelic
     /// Выбрать вид лавки для текущего узла (до генерации витрины). Повторный вызов на том же этаже ничего не меняет.
     /// Вид зависит только от зерна забега, этажа и счётчиков книги — поэтому одинаков у всех игроков коопа.
     /// </summary>
+    /// <summary>Отладка (<c>str_shop</c>): вид следующей лавки вместо броска. Сбрасывается при входе.</summary>
+    internal static ShopType? DebugNextShop { get; set; }
+
     public ShopType EnterShop(IRunState runState)
     {
         AssertMutable();
         var floor = runState.TotalFloor;
-        if (_currentFloor == floor) return CurrentShop;
+        if (_currentFloor == floor && DebugNextShop == null) return CurrentShop;
         if (_shopAct != runState.CurrentActIndex)
         {
             _shopAct = runState.CurrentActIndex;
@@ -139,7 +162,12 @@ public sealed class MerchantLedger : RequiemRelic
         }
         var hash = ShopRules.Fnv1a(runState.Rng.StringSeed ?? string.Empty, floor * 31 + runState.CurrentActIndex);
         ShopType? previous = _previousShop >= 0 ? (ShopType)_previousShop : null;
-        var shop = ShopRules.RollShopType(hash, Acts.ActKinds.Tier(runState), _shopsThisAct, previous);
+        var kind = Acts.ActKinds.Current(runState);
+        var caravanSeen = _caravanAct == runState.CurrentActIndex + 1;
+        var shop = DebugNextShop ?? ShopRules.RollShopType(hash, kind, Acts.ActKinds.Tier(runState), _shopsThisAct, previous,
+            outlaw: IsOutlaw(Owner), caravanSeen: caravanSeen);
+        if (shop == ShopType.Caravan) _caravanAct = runState.CurrentActIndex + 1;
+        DebugNextShop = null;
         _currentFloor = floor;
         _refillsUsed = 0;
         // Заказ выполняется в первой следующей лавке того же вида.
@@ -151,8 +179,20 @@ public sealed class MerchantLedger : RequiemRelic
         _shopsThisAct++;
         _previousShop = (int)shop;
         CurrentShopIndex = (int)shop;
+        // Значок пройденной лавки на карте (M6 п. 1).
+        if (NodeRules.FromShop(shop) is { } subtype) Acts.ActLedger.Of(Owner)?.RecordVisit(runState, subtype);
         return shop;
     }
+
+    /// <summary>
+    /// «Вне закона» (14 §2.7): Запятнанный/Отступник или под Знамением Ловкача — Скупщик краденого встречается в любом акте.
+    /// </summary>
+    public static bool IsOutlaw(Player player) =>
+        Pantheon.Faith.Effective(player) != Piety.Righteous || player.Relics.OfType<Pantheon.OmenOfTheTrickster>().Any();
+
+    /// <summary>Бог Храмовой лавки на этом этаже (по зерну и этажу — одинаков у всех игроков).</summary>
+    public static Celestial TempleGod(IRunState runState) =>
+        (Celestial)(int)(ShopRules.Fnv1a($"{runState.Rng.StringSeed}|temple", runState.TotalFloor) % (uint)Pantheon.CelestialBlessing.Blessings.Length);
 
     // ───── доверие, Заказ, кража ─────
 
@@ -174,6 +214,14 @@ public sealed class MerchantLedger : RequiemRelic
         SyncVars();
     }
 
+    /// <summary>«Отмыть имя» у Скупщика (14 §2.7): доверие лавки — не ниже 1.</summary>
+    public void ClearName(ShopType shop)
+    {
+        AssertMutable();
+        _spent[(int)shop] = Math.Max(_spent[(int)shop], ShopRules.ClearNameSpent);
+        SyncVars();
+    }
+
     public bool HasOrder => _orderShop > 0;
     public ShopType? OrderedShop => _orderShop > 0 ? (ShopType)(_orderShop - 1) : null;
     public OrderCategory OrderedCategory => (OrderCategory)_orderCategory;
@@ -189,12 +237,16 @@ public sealed class MerchantLedger : RequiemRelic
     public OrderCategory? ActiveOrder(IRunState runState) =>
         _orderFloor > 0 && _orderFloor - 1 == runState.TotalFloor ? (OrderCategory)_orderCategory : null;
 
-    public bool TheftTriedHere(IRunState runState) => _theftFloor == runState.TotalFloor + 1;
+    /// <summary>Попытки кражи на этом этаже исчерпаны (<paramref name="allowed"/> — сколько можно за визит).</summary>
+    public bool TheftTriedHere(IRunState runState, int allowed = 1) =>
+        _theftFloor == runState.TotalFloor + 1 && Math.Max(1, _theftTries) >= Math.Max(1, allowed);
 
     public void MarkTheftAttempt(IRunState runState)
     {
         AssertMutable();
-        _theftFloor = runState.TotalFloor + 1;
+        var floor = runState.TotalFloor + 1;
+        _theftTries = _theftFloor == floor ? Math.Max(1, _theftTries) + 1 : 1;
+        _theftFloor = floor;
     }
 
     // ───── цены ─────
@@ -206,6 +258,9 @@ public sealed class MerchantLedger : RequiemRelic
         MerchantRelicEntry { Model: TreatiseRelic } => ShopRules.TreatisePrice(_treatisesBought),
         MerchantPotionEntry { Model: RequiemPotion potion } =>
             ShopRules.BrewPrice(potion.Tier, AlchemyRules.IsPoison(potion.Kind)),
+        MerchantPotionEntry { Model: RequiemScroll scroll } => ShopRules.ScrollPrice(scroll.Tier),
+        MerchantRelicEntry { Model: Pantheon.CelestialAmulet } when CurrentShop == ShopType.Temple => ShopRules.TempleAmuletPrice,
+        MerchantRelicEntry { Model: Pantheon.CelestialRobe } when CurrentShop == ShopType.Temple => ShopRules.TempleRobePrice,
         _ => null,
     };
 
@@ -228,12 +283,13 @@ public sealed class MerchantLedger : RequiemRelic
 
     /// <summary>
     /// «+1 товар на витрине за уровень доверия» (14 §1): слоты сцены фиксированы, поэтому купленный товар
-    /// замещается новым — до «доверие» раз за визит. Удаление карты не пополняется.
+    /// замещается новым — до «доверие» раз за визит («Торговое имя» — ещё +1, 10 §2). Удаление карты не пополняется.
     /// </summary>
     public override bool ShouldRefillMerchantEntry(MerchantEntry entry, Player player)
     {
         if (player != Owner || !Active(Owner) || entry is MerchantCardRemovalEntry) return false;
-        if (_refillsUsed >= ShopRules.RefillsPerVisit(CurrentTrust)) return false;
+        var tradeName = Progression.HeroRecord.Of(Owner)?.Has(Skill.TradeName) == true;
+        if (_refillsUsed >= ShopRules.RefillsPerVisit(CurrentTrust, tradeName)) return false;
         AssertMutable();
         _refillsUsed++;
         return true;

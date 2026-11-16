@@ -7,6 +7,10 @@ public enum ShopType
     Armorer,    // Оружейник — снаряжение
     Arcanist,   // Чародейская лавка — заклинания, Трактаты
     Herbalist,  // Травница — зелья и яды Реквиема
+    Jeweler,    // Ювелир — кольца, амулеты, Камни душ (M5)
+    Temple,     // Храмовая лавка — облачения бога, Очищение, Искупление (M5)
+    Fence,      // Скупщик краденого — Бездонное, яды V, скупка по 60 % (M5)
+    Caravan,    // Караван — понемногу всего + экзотика, Обмен (M5)
 }
 
 /// <summary>Ценовая категория снаряжения (docs/design/14 §2.2, §2.5).</summary>
@@ -20,27 +24,73 @@ public enum OrderCategory { Weapon, Armor, Shield, Equipment, Spell, Potion, Poi
 /// </summary>
 public static class ShopRules
 {
-    public const int ShopTypeCount = 4;
+    public const int ShopTypeCount = 8;
 
     // ───── вид лавки ─────
 
     /// <summary>
-    /// Какие лавки встречаются в акте (docs/design/14 §3). В ванильной сетке 3 акта, поэтому «Чародейская с 3-го акта»
-    /// сдвинута на 2-й ванильный акт (индекс 1) — иначе заклинания негде покупать до финала.
+    /// Пул лавок по ванильной ступени акта (0–2) — для актов вне сетки Реквиема (<see cref="ActKind.Other"/>).
+    /// «Чародейская с 3-го акта» сдвинута на 2-й ванильный акт (индекс 1) — иначе заклинания негде покупать до финала.
     /// </summary>
     public static IReadOnlyList<ShopType> ActPool(int actIndex) => actIndex <= 0
         ? [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist]
-        : [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist];
+        : [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler];
 
     /// <summary>
-    /// Вид лавки для узла. Первая лавка акта — всегда Странник (гарантия §3); дальше — по зерну из пула акта,
-    /// без повтора предыдущего вида подряд. Детерминирован (зерно забега + этаж), поэтому одинаков у всех игроков коопа
+    /// Какие лавки встречаются в акте Реквиема (docs/design/14 §3). Чародейская — со 2-го акта (как и в ванильной сетке),
+    /// в Глубинах Оружейник вдвое чаще; Караван — только 2-й и 5-й акт; Храм — 5-й акт (Святилища).
+    /// </summary>
+    public static IReadOnlyList<ShopType> ActPool(ActKind kind, int tier = 0) => kind switch
+    {
+        ActKind.Foothills => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist],
+        ActKind.FrozenBarrows => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler, ShopType.Caravan],
+        ActKind.ClockworkDepths => [ShopType.Wanderer, ShopType.Armorer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler, ShopType.Caravan],
+        ActKind.Hive => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler],
+        ActKind.BloodCourt => [ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler, ShopType.Fence],
+        ActKind.StarTower => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler],
+        ActKind.Glory => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler, ShopType.Temple, ShopType.Caravan],
+        ActKind.NamelessLimit => [ShopType.Wanderer, ShopType.Armorer, ShopType.Herbalist, ShopType.Arcanist, ShopType.Jeweler],
+        _ => ActPool(tier),
+    };
+
+    /// <summary>
+    /// Гарантированные лавки (§3): первая лавка акта — Странник, в Кровавом Дворе — Скупщик, в Слава — Храм;
+    /// в Звёздной Башне первые две — Чародейские. null — бросок по пулу.
+    /// </summary>
+    public static ShopType? GuaranteedShop(ActKind kind, int shopsSeenThisAct) => kind switch
+    {
+        ActKind.BloodCourt when shopsSeenThisAct <= 0 => ShopType.Fence,
+        ActKind.StarTower when shopsSeenThisAct <= 1 => ShopType.Arcanist,
+        ActKind.Glory when shopsSeenThisAct <= 0 => ShopType.Temple,
+        _ when shopsSeenThisAct <= 0 => ShopType.Wanderer,
+        _ => null,
+    };
+
+    /// <summary>Шанс, что Караван остаётся в пуле броска (§2.8: «редкий»), — если в этом акте его ещё не было.</summary>
+    public const int CaravanChancePercent = 35;
+
+    /// <summary>
+    /// Вид лавки для узла (ванильная ступень акта, без сетки Реквиема). Первая лавка акта — всегда Странник (гарантия §3);
+    /// дальше — по зерну из пула акта, без повтора предыдущего вида подряд.
+    /// </summary>
+    public static ShopType RollShopType(uint hash, int actIndex, int shopsSeenThisAct, ShopType? previous) =>
+        RollShopType(hash, ActKind.Other, actIndex, shopsSeenThisAct, previous);
+
+    /// <summary>
+    /// Вид лавки для узла: гарантия акта, иначе бросок по пулу без повтора предыдущего вида. Караван — не чаще раза за акт
+    /// и только с шансом <see cref="CaravanChancePercent"/>; Скупщик добавляется в любой акт, если герой «вне закона»
+    /// (Запятнанный/Отступник или с Ловкачом, §2.7). Детерминирован (зерно забега + этаж) — одинаков у всех игроков коопа
     /// и после перезагрузки.
     /// </summary>
-    public static ShopType RollShopType(uint hash, int actIndex, int shopsSeenThisAct, ShopType? previous)
+    public static ShopType RollShopType(uint hash, ActKind kind, int tier, int shopsSeenThisAct, ShopType? previous,
+        bool outlaw = false, bool caravanSeen = false)
     {
-        if (shopsSeenThisAct <= 0) return ShopType.Wanderer;
-        var pool = ActPool(actIndex).Where(t => previous == null || t != previous.Value).ToList();
+        if (GuaranteedShop(kind, shopsSeenThisAct) is { } guaranteed) return guaranteed;
+        var pool = ActPool(kind, tier).ToList();
+        if (outlaw && !pool.Contains(ShopType.Fence)) pool.Add(ShopType.Fence);
+        var caravanOk = !caravanSeen && (hash >> 16) % 100 < CaravanChancePercent;
+        pool = pool.Where(t => (previous == null || t != previous.Value) && (t != ShopType.Caravan || caravanOk)).ToList();
+        if (pool.Count == 0) return ShopType.Wanderer;
         return pool[(int)(hash % (uint)pool.Count)];
     }
 
@@ -80,6 +130,9 @@ public static class ShopRules
     public static int SellValue(int price, int trust) =>
         price <= 0 ? 0 : Math.Max(1, (int)Math.Floor(price * (trust >= MaxTrust ? 0.50 : 0.35)));
 
+    /// <summary>Доля выручки в процентах для подписи: 35, при доверии 3 — 50, у Скупщика краденого — 60.</summary>
+    public static int SellPercent(int trust, bool fence) => fence ? 60 : trust >= MaxTrust ? 50 : 35;
+
     // ───── цены ─────
 
     private static int ByTier(int tier, params int[] prices) => prices[Math.Clamp(tier, 1, prices.Length) - 1];
@@ -110,10 +163,14 @@ public static class ShopRules
     /// <summary>Трактат владения: 120, +40 за каждый купленный ранее (§2.3).</summary>
     public static int TreatisePrice(int boughtBefore) => 120 + 40 * Math.Max(0, boughtBefore);
 
-    /// <summary>Ступени снаряжения на витрине: Странник — I–II; Оружейник — по акту (I–II, II–III, III–IV, IV–V).</summary>
+    /// <summary>
+    /// Ступени снаряжения на витрине: Странник, Чародейская, Храм — I–II; Оружейник, Ювелир и Караван — по акту
+    /// (I–II, II–III, III–IV, IV–V); Скупщик краденого — IV–V («краденое»).
+    /// </summary>
     public static (int Min, int Max) EquipmentTiers(ShopType shop, int actIndex) => shop switch
     {
-        ShopType.Armorer => (Math.Clamp(actIndex + 1, 1, 4), Math.Clamp(actIndex + 2, 2, 5)),
+        ShopType.Armorer or ShopType.Jeweler or ShopType.Caravan => (Math.Clamp(actIndex + 1, 1, 4), Math.Clamp(actIndex + 2, 2, 5)),
+        ShopType.Fence => (4, 5),
         _ => (1, 2),
     };
 
@@ -142,6 +199,9 @@ public static class ShopRules
     /// <summary>«+1 товар за уровень доверия» (§1): сколько раз за визит опустевший слот витрины пополняется.</summary>
     public static int RefillsPerVisit(int trust) => Math.Clamp(trust, 0, MaxTrust);
 
+    /// <summary>«Торговое имя» (Выживание II, 10 §2): ещё +1 товар за визит.</summary>
+    public static int RefillsPerVisit(int trust, bool tradeName) => RefillsPerVisit(trust) + (tradeName ? 1 : 0);
+
     /// <summary>Заказ (§1) доступен при доверии 3 и стоит 50 % цены заказанного предмета.</summary>
     public static bool CanOrder(int trust) => trust >= MaxTrust;
 
@@ -156,6 +216,8 @@ public static class ShopRules
         ShopType.Armorer => [OrderCategory.Weapon, OrderCategory.Armor, OrderCategory.Shield],
         ShopType.Arcanist => [OrderCategory.Spell],
         ShopType.Herbalist => [OrderCategory.Potion, OrderCategory.Poison],
+        ShopType.Fence => [OrderCategory.Poison],
+        ShopType.Temple => [],
         _ => [OrderCategory.Equipment],
     };
 
@@ -222,4 +284,111 @@ public static class ShopRules
 
     /// <summary>Цена удаления карты у торговца (ваниль: 75, +25 за каждое следующее) — для доплаты за «эхо».</summary>
     public static int RemovalPrice(int removalsUsed) => 75 + 25 * Math.Max(0, removalsUsed);
+
+    // ───── Чародейская: свитки, посохи, камни, зачарование (§2.3) ─────
+
+    /// <summary>Свиток I / II / III: 25 / 45 / 70.</summary>
+    public static int ScrollPrice(int tier) => ByTier(tier, 25, 45, 70);
+
+    /// <summary>Посох по ступени I–V: 70 / 120 / 180 / 240 / 320.</summary>
+    public static int StaffPrice(int tier) => ByTier(tier, 70, 120, 180, 240, 320);
+
+    /// <summary>Ступень свитков на витрине по ванильной ступени акта: I → II → III.</summary>
+    public static int ScrollTier(int actIndex) => Math.Clamp(actIndex + 1, 1, 3);
+
+    /// <summary>Ступень посоха на витрине: акт 1 — I, 2 — II–III, 3 — IV–V (по ванильной ступени акта).</summary>
+    public static (int Min, int Max) StaffTiers(int actIndex) => actIndex <= 0 ? (1, 1) : actIndex == 1 ? (2, 3) : (4, 5);
+
+    /// <summary>Камень душ (малый / большой / чёрный): 40 / 80 / 140.</summary>
+    public static int SoulStonePrice(int power) => ByTier(power, 40, 80, 140);
+
+    /// <summary>Сила камня душ в лавке по ванильной ступени акта: 1 → 2 → 3.</summary>
+    public static int SoulStonePower(int actIndex) => Math.Clamp(actIndex + 1, 1, 3);
+
+    /// <summary>Зачарование снаряжения у Чародея: 75 / 110 / 150 по силе чар; без своего камня — +60 за камень лавки.</summary>
+    public static int EnchantServicePrice(int power, bool ownStone) => ByTier(power, 75, 110, 150) + (ownStone ? 0 : 60);
+
+    /// <summary>Переписать свиток в карту-заклинание: 40.</summary>
+    public const int RewriteScrollPrice = 40;
+
+    /// <summary>Зачаровать карту: 80.</summary>
+    public const int CardEnchantPrice = 80;
+
+    // ───── Ювелир (§2.5) ─────
+
+    /// <summary>Гравировка: чары силы 1 на кольцо/амулет — 70.</summary>
+    public const int EngravePrice = 70;
+
+    /// <summary>Огранка: перенести чары с одного предмета на другой — 50.</summary>
+    public const int FacetPrice = 50;
+
+    // ───── Храм (§2.6) ─────
+
+    /// <summary>Амулет бога Святилища: 150 (дороже, чем у алтаря/события — храмовая наценка).</summary>
+    public const int TempleAmuletPrice = 150;
+
+    /// <summary>Облачение бога Святилища: 200.</summary>
+    public const int TempleRobePrice = 200;
+
+    /// <summary>Сменить благословение на бога Святилища: 60.</summary>
+    public const int BlessingChangePrice = 60;
+
+    /// <summary>Очищение (удаление карты): 50, Праведнику — 35.</summary>
+    public static int CleansePrice(bool righteous) => righteous ? 35 : 50;
+
+    /// <summary>Исцеление в Храме: 30 % макс. ♥ за 40.</summary>
+    public const int TempleHealPercent = 30;
+    public const int TempleHealPrice = 40;
+
+    /// <summary>Искупление: +1 ступень праведности (раз за акт) — 100.</summary>
+    public const int AtonementPrice = 100;
+
+    // ───── Скупщик краденого (§2.7) ─────
+
+    /// <summary>Скупщик берёт всё по 60 % цены (минимум 1).</summary>
+    public static int FenceSellValue(int price) => price <= 0 ? 0 : Math.Max(1, (int)Math.Floor(price * 0.60));
+
+    /// <summary>Снять проклятие — не золотом, а −6 макс. ♥.</summary>
+    public const int CurseRemovalMaxHp = 6;
+
+    /// <summary>Снять проклятие можно, если после потери останется хотя бы 1 макс. ♥.</summary>
+    public static bool CanPayCurseRemoval(int maxHp) => maxHp > CurseRemovalMaxHp;
+
+    /// <summary>Отмыть имя: вернуть доверие одной лавки к 1 — 80.</summary>
+    public const int ClearNamePrice = 80;
+
+    /// <summary>Золото «доверия 1» после «Отмыть имя».</summary>
+    public const int ClearNameSpent = GoldPerTrust;
+
+    /// <summary>Какую лавку «отмывать»: вид (кроме самого Скупщика) с наименьшим доверием ниже 1; при равенстве — первый. −1 — нечего.</summary>
+    public static int ClearNameTarget(IReadOnlyList<int> spent)
+    {
+        var best = -1;
+        for (var i = 0; i < Math.Min(spent.Count, ShopTypeCount); i++)
+        {
+            if (i == (int)ShopType.Fence || Trust(spent[i]) >= 1) continue;
+            if (best < 0 || spent[i] < spent[best]) best = i;
+        }
+        return best;
+    }
+
+    // ───── Караван (§2.8) ─────
+
+    /// <summary>Обмен: за отданный предмет — предмет той же ступени или на одну ниже (не ниже I).</summary>
+    public static (int Min, int Max) TradeTiers(int givenTier) => (Math.Max(1, givenTier - 1), Math.Max(1, givenTier));
+
+    // ───── Наставник (§2.9) ─────
+
+    public const int MentorMaxSkillPoints = 3;
+
+    /// <summary>Очко навыка у Наставника: 100 / 150 / 200 (по числу уже купленных), чужая ветка Наставника — +50 %. null — лимит.</summary>
+    public static int? MentorSkillPrice(int bought, bool nativeBranch)
+    {
+        if (bought < 0 || bought >= MentorMaxSkillPoints) return null;
+        var price = 100 + 50 * bought;
+        return nativeBranch ? price : (int)Math.Round(price * 1.5, MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>Урок владения оружием (снимает «Неумелый хват» для одного класса): 90.</summary>
+    public const int WeaponLessonPrice = 90;
 }

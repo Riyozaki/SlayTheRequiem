@@ -118,6 +118,24 @@ public static class ProgressionRules
             _ => false,
         };
     }
+
+    /// <summary>Классы оружия, для которых у героя бывает «Неумелый хват» — их снимает урок Наставника (14 §2.9).</summary>
+    public static IReadOnlyList<WeaponKind> LessonKinds(string? heroTypeName) => heroTypeName switch
+    {
+        "Regent" => [WeaponKind.TwoHanded, WeaponKind.Crossbow, WeaponKind.Shield],
+        "Silent" => [WeaponKind.TwoHanded],
+        _ => [],
+    };
+
+    /// <summary>Урок владения взят (бит на <see cref="WeaponKind"/>; тяжёлый щит — бит Shield).</summary>
+    public static bool HasLesson(int lessonMask, WeaponKind kind) => kind != WeaponKind.None && (lessonMask & (1 << (int)kind)) != 0;
+
+    public static int WithLesson(int lessonMask, WeaponKind kind) => kind == WeaponKind.None ? lessonMask : lessonMask | (1 << (int)kind);
+
+    /// <summary>Неумелый хват с учётом уроков Наставника: урок снимает штраф только для своего класса оружия.</summary>
+    public static bool IsClumsy(string? heroTypeName, WeaponKind mainHand, bool heavyShield, bool trained, int lessonMask) =>
+        IsClumsy(heroTypeName, HasLesson(lessonMask, mainHand) ? WeaponKind.None : mainHand,
+            heavyShield && !HasLesson(lessonMask, WeaponKind.Shield), trained);
 }
 
 // ═════════════ Деревья навыков ═════════════

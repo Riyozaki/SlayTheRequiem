@@ -454,6 +454,70 @@ public static class PantheonRules
     /// <summary>Отдача Ткачихи: 1 ♥ за удар по отравленной цели, не больше 5 за ход.</summary>
     public const int WebLeechPerTurnCap = 5;
 
+    // ───── Пеплорождённые: «Наследники Тройственных» (docs/design/04 §Регент 3) ─────
+
+    /// <summary>
+    /// Ослабленная Цена Тройственных у Наследника (половина): Измена — призывы получают +25 % вместо +50 %,
+    /// Паутина — лечение на отдыхе −15 % вместо −30 %. Звёздные метки — на одну меньше (<see cref="HeirStarMarks"/>).
+    /// </summary>
+    public static Boon HeirPriceRelief(AbyssPrince prince) => prince switch
+    {
+        AbyssPrince.Treachery => new Boon { SummonTakenPercent = -25 },
+        AbyssPrince.WebWeaver => new Boon { RestHealPercent = 15 },
+        _ => Boon.None,
+    };
+
+    /// <summary>Звёздные метки у Наследника: на одну меньше (первый акт с даром — без меток).</summary>
+    public static int HeirStarMarks(int marks) => Math.Max(0, marks - 1);
+
+    /// <summary>
+    /// Пепельный кочевник — дары Тройственных «на ступень сильнее»: Измена — атаки +3 и Пробитие 2;
+    /// Звезда — +9 ♥, +3 пул ✦, сопротивления огню и холоду II. Паутина — в <see cref="WebLeechCap"/>/<see cref="WebBelowHalfBonus"/>.
+    /// </summary>
+    public static Boon TribunalTierUp(AbyssPrince prince) => prince switch
+    {
+        AbyssPrince.Treachery => new Boon { AttackDamage = 1, Pierce = 1 },
+        AbyssPrince.DuskStar => new Boon { MaxHp = 3, ManaPool = 1, FireRes = 1, FrostRes = 1 },
+        _ => Boon.None,
+    };
+
+    /// <summary>Отдача Ткачихи за ход: 5, у Пепельного кочевника — 8.</summary>
+    public static int WebLeechCap(bool tierUp) => tierUp ? 8 : WebLeechPerTurnCap;
+
+    /// <summary>Ткачиха после Обета: +2 урона по целям с ♥ &lt; 50 %, у Пепельного кочевника — +3.</summary>
+    public static int WebBelowHalfBonus(bool tierUp) => tierUp ? 3 : 2;
+
+    /// <summary>Числовая часть дара с учётом Наследника (ослабленная Цена) и Кочевника (ступень вверх). Только Тройственные.</summary>
+    public static Boon TribunalGift(AbyssPrince prince, bool heir, bool tierUp)
+    {
+        var boon = Gift(prince);
+        if (!IsTribunal(prince)) return boon;
+        if (heir) boon += HeirPriceRelief(prince);
+        if (tierUp) boon += TribunalTierUp(prince);
+        return boon;
+    }
+
+    /// <summary>
+    /// «Без условий»: в Тёмном святилище Наследнику всегда предлагается хотя бы один Тройственный. Если среди
+    /// <paramref name="picks"/> его нет — последний вариант заменяется Тройственным (не <paramref name="held"/>).
+    /// </summary>
+    public static List<int> HeirShrinePicks(IReadOnlyList<int> picks, int? held, Func<int, int> next)
+    {
+        var result = picks.ToList();
+        if (result.Count == 0 || result.Any(p => IsTribunal((AbyssPrince)p))) return result;
+        var tribunal = Tribunal.Select(t => (int)t).Where(t => t != held && !result.Contains(t)).ToList();
+        if (tribunal.Count == 0) return result;
+        result[^1] = tribunal[Math.Clamp(next(tribunal.Count), 0, tribunal.Count - 1)];
+        return result;
+    }
+
+    public static readonly AbyssPrince[] Tribunal = [AbyssPrince.Treachery, AbyssPrince.WebWeaver, AbyssPrince.DuskStar];
+
+    /// <summary>
+    /// Ординатор держит все три дара Тройственных (вместо правила «один дар»), а чужих Князей не принимает — клятва Трибуналу.
+    /// </summary>
+    public static bool OrdinatorMayAccept(AbyssPrince prince) => IsTribunal(prince);
+
     /// <summary>Отверженный после Обета: бонусы ×2.</summary>
     public static int OutcastMultiplier(bool vowDone) => vowDone ? 2 : 1;
 

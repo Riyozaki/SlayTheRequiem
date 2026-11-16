@@ -1,7 +1,13 @@
 namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 
 /// <summary>Действия лагеря (docs/design/10 §1). Other — чужие действия (ванильные реликвии, другие моды).</summary>
-public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm }
+public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm, Tavern }
+
+/// <summary>
+/// Постройки лагеря (10 §5) в порядке открытия победами: Котёл — Готовка без «Походного котла»; Наковальня — Кузня за
+/// 1 очко; Зачаровальный стол и Алтарь — в каждом лагере; Палатка травника — Варка ступенью выше.
+/// </summary>
+public enum CampBuilding { Kettle = 1, Anvil, EnchantingTable, Altar, HerbalistTent }
 
 /// <summary>
 /// Лагерь: очки лагеря, лечение, Усталость похода, Медитация (docs/design/10). Чистые функции — зеркало в tools/sim.
@@ -31,8 +37,13 @@ public static class CampRules
         CampAction.Meditate => 1,
         CampAction.Train => 0,
         CampAction.Warm => 0,
+        CampAction.Tavern => 0,
         _ => 2,
     };
+
+    /// <summary>Цена с учётом построек метапрогресса (§5): «Наковальня» — Кузня за 1 очко.</summary>
+    public static int Cost(CampAction action, bool campMaster, bool anvil) =>
+        action == CampAction.Forge && anvil ? 1 : Cost(action, campMaster);
 
     public static bool CanAfford(int points, int cost) => cost <= points;
 
@@ -65,6 +76,31 @@ public static class CampRules
         if (rank == EnemyRank.Boss) power++;
         return Math.Clamp(power, 1, 3);
     }
+
+    // ───── Вьючный зверь (10 §6) ─────
+
+    public const int MuleBurden = 10;
+    public const int ShodBurden = 5;
+    /// <summary>Мул у торговца (Странник, Караван) — до скидки доверия.</summary>
+    public const int MulePrice = 120;
+    /// <summary>«Подковать» у Оружейника (в лагере — Кузня).</summary>
+    public const int MuleShoePrice = 40;
+
+    /// <summary>Вместимость Груза от зверя: +10, «Подкованный» — ещё +5.</summary>
+    public static int MuleCapacity(bool shod) => MuleBurden + (shod ? ShodBurden : 0);
+
+    /// <summary>«Засада»: со зверем пропадает половина Сундука (с округлением вверх).</summary>
+    public static int ChestLoss(int stored) => (Math.Max(0, stored) + 1) / 2;
+
+    // ───── Постройки лагеря (10 §5, метапрогресс — отдельная настройка) ─────
+
+    public const int BuildingCount = 5;
+
+    /// <summary>Открыта ли постройка при <paramref name="unlocked"/> открытых (по порядку §5).</summary>
+    public static bool HasBuilding(int unlocked, CampBuilding building) => unlocked >= (int)building;
+
+    /// <summary>Победа в забеге открывает следующую постройку.</summary>
+    public static int UnlockAfterVictory(int unlocked) => Math.Clamp(unlocked + 1, 0, BuildingCount);
 }
 
 // ═════════════ Еда (10 §3) ═════════════
@@ -111,6 +147,19 @@ public static class FoodRules
     };
 
     public static int DurationOf(Dish dish) => dish == Dish.Feast ? FeastDuration : Duration;
+
+    /// <summary>
+    /// Походный котелок (07, «Новые реликвии рюкзака»): еда даёт +1 к каждому своему действию
+    /// (Кровяная похлёбка — +7 ♥ вместо +6, Оленина — +2 прироста ◆ и т. д.). Пустой Сытости не прибавляет.
+    /// </summary>
+    public static DishEffect Boosted(DishEffect e)
+    {
+        static int Up(int v) => v > 0 ? v + KettleBonus : v;
+        return new DishEffect(Up(e.MaxHp), Up(e.StaminaRegen), Up(e.ManaRegen), Up(e.FrostResistance), Up(e.StartStamina),
+            Up(e.Regen), Up(e.OpeningDraw));
+    }
+
+    public const int KettleBonus = 1;
 
     /// <summary>Грибная похлёбка совместима с любой другой едой — свой слот.</summary>
     public static bool IsCompanion(Dish dish) => dish == Dish.MushroomStew;
@@ -213,6 +262,9 @@ public enum Enchant
     Health, Stamina, Magic, FireResistance, FrostResistance, ShockResistance, WeaponMight, Burden,
     // Оружейные чары (с зарядами)
     FireBrand, FrostBrand, ShockBrand,
+    // Отложенные чары 07 §6.1 (M4 п. 6). Ремесло школы — по чарам на школу (школа хранится видом чар).
+    CraftDestruction, CraftRestoration, CraftAlteration, CraftConjuration, CraftIllusion,
+    AbsorbHealth, AbsorbStamina, AbsorbMagic, Banish, Paralysis,
 }
 
 /// <summary>Чары на предмете: вид, сила 1–3, заряды (только оружейные).</summary>
@@ -222,7 +274,33 @@ public static class EnchantRules
 {
     public static readonly Enchant[] All = Enum.GetValues<Enchant>();
 
-    public static bool IsWeaponBrand(Enchant e) => e is Enchant.FireBrand or Enchant.FrostBrand or Enchant.ShockBrand;
+    public static bool IsWeaponBrand(Enchant e) => e is Enchant.FireBrand or Enchant.FrostBrand or Enchant.ShockBrand
+        or Enchant.AbsorbHealth or Enchant.AbsorbStamina or Enchant.AbsorbMagic or Enchant.Banish or Enchant.Paralysis;
+
+    /// <summary>Оружейные чары, которые тратят заряд только при срабатывании (Изгнание — по призванным, Паралич — раз в бой).</summary>
+    public static bool ChargesOnTrigger(Enchant e) => e is Enchant.Banish or Enchant.Paralysis;
+
+    /// <summary>Школа «Ремесла школы» (null — это не Ремесло).</summary>
+    public static SpellSchool? SchoolOf(Enchant e) => e switch
+    {
+        Enchant.CraftDestruction => SpellSchool.Destruction,
+        Enchant.CraftRestoration => SpellSchool.Restoration,
+        Enchant.CraftAlteration => SpellSchool.Alteration,
+        Enchant.CraftConjuration => SpellSchool.Conjuration,
+        Enchant.CraftIllusion => SpellSchool.Illusion,
+        _ => null,
+    };
+
+    /// <summary>Ремесло школы: −1 ✦ первым N заклинаниям этой школы за ход (N = сумма чар на надетых вещах).</summary>
+    public static int CraftDiscount(int perTurn, int castThisTurn) => castThisTurn < perTurn ? 1 : 0;
+
+    /// <summary>Ступень контроля Паралича по силе чар 1/2/3: Ученик / Адепт / Эксперт (порог ♥ цели — <see cref="SpellAffinity.ControlHpCap"/>).</summary>
+    public static SpellTier ParalysisTier(int power) => Math.Clamp(power, 1, 3) switch
+    {
+        1 => SpellTier.Apprentice,
+        2 => SpellTier.Adept,
+        _ => SpellTier.Expert,
+    };
 
     public static bool IsResistance(Enchant e) => e is Enchant.FireResistance or Enchant.FrostResistance or Enchant.ShockResistance;
 
@@ -235,6 +313,8 @@ public static class EnchantRules
             slot is EquipSlot.OffHand or EquipSlot.Ring or EquipSlot.Feet,
         Enchant.WeaponMight => slot is EquipSlot.Hands or EquipSlot.Ring,
         Enchant.Burden => slot is EquipSlot.Hands or EquipSlot.Feet,
+        Enchant.CraftDestruction or Enchant.CraftRestoration or Enchant.CraftAlteration or Enchant.CraftConjuration
+            or Enchant.CraftIllusion => slot is EquipSlot.Head or EquipSlot.Amulet,
         _ => slot == EquipSlot.MainHand,
     };
 
@@ -252,7 +332,8 @@ public static class EnchantRules
             Enchant.Burden => 4 * p,
             Enchant.FireBrand => 2 * p,   // Горение
             Enchant.FrostBrand => p,      // Озноб
-            _ => p,                       // Разряд: выжечь ✦
+            Enchant.Banish => 1,          // мгновенная смерть призванного
+            _ => p,                       // Разряд: выжечь ✦; Ремесло: заклинаний за ход; Поглощение ♥/◆/✦; Паралич: ступень
         };
     }
 

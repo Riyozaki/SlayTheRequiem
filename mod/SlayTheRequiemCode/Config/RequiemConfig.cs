@@ -27,8 +27,8 @@ internal class RequiemConfig : SimpleModConfig
     [ConfigSection("HeroSection")]
     public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Random;
 
-    /// <summary>Клан Латоносца. Пока готов один — Инеерождённые (этап 1).</summary>
-    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Frostborn;
+    /// <summary>Клан Латоносца (docs/design/04): Инеерождённые, Горнокровные, Дюнные клинки, Цитадельцы; «Случайно» — по сиду забега.</summary>
+    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Random;
 
     /// <summary>Племя Безмолвной (docs/design/04).</summary>
     public static SilentOriginChoice SilentOrigin { get; set; } = SilentOriginChoice.Random;
@@ -40,6 +40,31 @@ internal class RequiemConfig : SimpleModConfig
     public static BackgroundChoice Background { get; set; } = BackgroundChoice.Random;
 
     /// <summary>
+    /// Некробиндер и Дефект (docs/design/06 §4): в моде это облики превращений, а не герои, поэтому на экране выбора
+    /// скрыты, а их карты не попадают в награды и случайную генерацию. Вкл — вернуть их как ванильных героев
+    /// (системы мода на них не действуют). В коопе должна совпадать у всех.
+    /// </summary>
+    public static bool ShowVanillaOnlyHeroes { get; set; } = false;
+
+    /// <summary>Название стихийной карты окрашено в цвет стихии (огонь, холод, разряд, яд…). Только оформление.</summary>
+    public static bool ColorElementalTitles { get; set; } = true;
+
+    /// <summary>Кукла героя (docs/design/07 §8): в бою оружие и щит в руках цвета материала, аура брони. Только оформление.</summary>
+    public static bool ShowPaperDoll { get; set; } = true;
+
+    /// <summary>
+    /// Боевые эффекты Реквиема (M7 п. 4, art spec §5): вспышки стихий при ударах, надрыв, Слом, Уворот, Кличи, призыв, откат
+    /// Камня Памяти, Багровый портал — ванильные эффекты с перекраской. Выкл — как в ванили. Только оформление.
+    /// </summary>
+    public static bool CombatVfx { get; set; } = true;
+
+    /// <summary>
+    /// Звуки Реквиема (M7 п. 5, art spec §6): удары по типу урона, надрыв, Слом, Уворот, Кличи, призыв, откат, портал, Тайник —
+    /// ванильные звуки игры и свои (data/sfx.csv). Отдельно от боевых эффектов. Громкость — ползунок «Звуки» игры.
+    /// </summary>
+    public static bool RequiemSounds { get; set; } = true;
+
+    /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).
     /// Меняется до начала забега; в коопе должна совпадать у всех.
     /// </summary>
@@ -48,6 +73,12 @@ internal class RequiemConfig : SimpleModConfig
 
     /// <summary>«Короткий забег»: акты 1 → 3 → 5 — Подножие, Улей, Слава с оверлеями мода (docs/design/13 §2).</summary>
     public static bool ShortRun { get; set; } = false;
+
+    /// <summary>
+    /// Вариант актов 2 и 4 (docs/design/13 §2): «Две двери» — после босса актов 1 и 3 экран выбора (в коопе — голосование),
+    /// «Случайно» — вариант выпадает при создании забега, экрана нет (в коопе такой игрок воздерживается).
+    /// </summary>
+    public static ActVariantMode ActVariant { get; set; } = ActVariantMode.Doors;
 
     /// <summary>Уровень «Реквием» (docs/design/11 §7): −1 — по Возвышению (Возвышение N → уровень N + 1), 0–10 — свой.</summary>
     [ConfigSlider(-1, 10, 1)]
@@ -77,6 +108,18 @@ internal class RequiemConfig : SimpleModConfig
     /// </summary>
     public static bool EnablePantheon { get; set; } = true;
 
+    /// <summary>
+    /// Метапрогресс лагеря (docs/design/10 §5, открытый вопрос ROADMAP №2): победы в забегах по очереди открывают постройки —
+    /// Котёл, Наковальня, Зачаровальный стол, Алтарь, Палатка травника; открытая стоит в каждом лагере. Только бонус: без
+    /// него лагерь прежний. Действует в одиночной игре (в коопе настройки у игроков разные).
+    /// </summary>
+    public static bool EnableCampMeta { get; set; } = false;
+
+    /// <summary>Сколько построек лагеря открыто победами (0–5). Не настройка — счётчик, переживает сброс по умолчанию.</summary>
+    [ConfigHideInUI]
+    [ConfigIgnoreRestoreDefaults]
+    public static int CampBuildingsUnlocked { get; set; } = 0;
+
     /// <summary>Камень Памяти (docs/design/15): Отпечаток в начале акта и возврат с экрана поражения.</summary>
     [ConfigSection("DeathSection")]
     public static bool EnableMemoryStone { get; set; } = true;
@@ -84,6 +127,12 @@ internal class RequiemConfig : SimpleModConfig
     /// <summary>Свечи Реквиема за забег: −1 — по уровню «Реквием», 0 — классический рогалик.</summary>
     [ConfigSlider(-1, 9, 1)]
     public static int MemoryStoneCandles { get; set; } = -1;
+}
+
+public enum ActVariantMode
+{
+    Doors,
+    Random,
 }
 
 public enum SuperbossMode
@@ -95,8 +144,14 @@ public enum SuperbossMode
 
 public enum PlatebearerOriginChoice
 {
+    Random,
     Frostborn,
+    Forgeblood,
+    Duneblade,
+    Citadel,
     None,
+    /// <summary>Выбор на экране в начале забега.</summary>
+    Choose,
 }
 
 public enum SilentOriginChoice

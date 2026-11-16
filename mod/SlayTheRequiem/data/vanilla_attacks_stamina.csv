@@ -1,4 +1,5 @@
 # Slay the Requiem: stamina markup of vanilla attacks. Card facts from sts2_database, game 0.107.1
+# Necrobinder and Defect attacks are intentionally not marked: in the mod they are transformation forms, not heroes (docs/design/06 §4)
 key,category,name_eng,energy,rarity,damage,hits,stamina,strike_class,damage_type,weapon,note
 Bolas,Colorless,Bolas,0,Rare,3,1,0,L,phys,N,"возвращается в руку каждый ход — 0, иначе налог"
 DramaticEntrance,Colorless,Dramatic Entrance,0,Uncommon,11,1,1,N,phys,N,
@@ -22,7 +23,7 @@ ByrdSwoop,Event,Byrd Swoop,0,Event,14,1,1,N,phys,N,
 Clash,Event,Clash,0,Event,14,1,1,N,phys,Y,
 Exterminate,Event,Exterminate,1,Event,3,4,2,N,phys,N,4 удара по всем
 Maul,Event,Maul,1,Ancient,5,1,1,N,phys,N,
-NeowsFury,Event,Neow's Fury,1,Ancient,10,1,1,N,magic,N,
+NeowsFury,Event,Neow's Fury,1,Ancient,10,1,1,N,magic,N,сила Древней — магия
 Peck,Event,Peck,1,Event,2,3,1,L,phys,N,
 Rebound,Event,Rebound,1,Event,9,1,1,N,phys,Y,
 RipAndTear,Event,Rip and Tear,1,Event,7,1,1,N,phys,N,
@@ -114,7 +115,7 @@ MementoMori,Silent,Memento Mori,1,Uncommon,,,1,N,phys,Y,
 Murder,Silent,Murder,3,Rare,,,3,H,phys,Y,
 Neutralize,Silent,Neutralize,0,Basic,3,1,0,L,phys,Y,"базовый тычок, ядро класса"
 Pinpoint,Silent,Pinpoint,3,Uncommon,15,1,2,N,phys,Y,дешевеет по энергии — ◆ ставим средним
-PoisonedStab,Silent,Poisoned Stab,1,Common,6,1,1,N,phys,Y,
+PoisonedStab,Silent,Poisoned Stab,1,Common,6,1,1,N,phys,Y,"яд — статус, удар клинка физический (иначе нежить, иммунная к яду, не получала бы урона)"
 Pounce,Silent,Pounce,2,Uncommon,14,1,2,N,phys,Y,
 PreciseCut,Silent,Precise Cut,0,Uncommon,,,1,L,phys,Y,
 Predator,Silent,Predator,2,Common,15,1,2,N,phys,Y,

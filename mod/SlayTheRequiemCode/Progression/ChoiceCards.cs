@@ -31,6 +31,7 @@ public abstract class PickCard : RequiemCard
         WithVar(CostVar, 0);
     }
 
+    public override bool IsMenuToken => true;
     public override int MaxUpgradeLevel => 0;
 
     public void SetDisplay(int value, int cost = 0)
@@ -120,6 +121,16 @@ public static class CampMenu
         Enchant.FireBrand => typeof(PickEnchantFireBrand),
         Enchant.FrostBrand => typeof(PickEnchantFrostBrand),
         Enchant.ShockBrand => typeof(PickEnchantShockBrand),
+        Enchant.CraftDestruction => typeof(PickEnchantCraftDestruction),
+        Enchant.CraftRestoration => typeof(PickEnchantCraftRestoration),
+        Enchant.CraftAlteration => typeof(PickEnchantCraftAlteration),
+        Enchant.CraftConjuration => typeof(PickEnchantCraftConjuration),
+        Enchant.CraftIllusion => typeof(PickEnchantCraftIllusion),
+        Enchant.AbsorbHealth => typeof(PickEnchantAbsorbHealth),
+        Enchant.AbsorbStamina => typeof(PickEnchantAbsorbStamina),
+        Enchant.AbsorbMagic => typeof(PickEnchantAbsorbMagic),
+        Enchant.Banish => typeof(PickEnchantBanish),
+        Enchant.Paralysis => typeof(PickEnchantParalysis),
         _ => typeof(PickEnchantShockBrand),
     };
 
@@ -241,6 +252,16 @@ public static class CampMenu
 [Pool(typeof(TokenCardPool))] public sealed class PickEnchantFireBrand : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickEnchantFrostBrand : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickEnchantShockBrand : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantCraftDestruction : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantCraftRestoration : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantCraftAlteration : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantCraftConjuration : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantCraftIllusion : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantAbsorbHealth : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantAbsorbStamina : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantAbsorbMagic : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantBanish : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickEnchantParalysis : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickStoneSmall : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickStoneLarge : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickStoneBlack : PickCard { }
@@ -250,6 +271,11 @@ public static class CampMenu
 [Pool(typeof(TokenCardPool))] public sealed class PickMeditateMana : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickPrayRedeem : PickCard { }
 [Pool(typeof(TokenCardPool))] public sealed class PickPraySwitch : PickCard { }
+// Таверна: Наставник (14 §2.9).
+[Pool(typeof(TokenCardPool))] public sealed class PickMentorSkill : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonTwoHanded : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonCrossbow : PickCard { }
+[Pool(typeof(TokenCardPool))] public sealed class PickLessonShield : PickCard { }
 
 // ───── узлы деревьев навыков (Value = ранг/ярус, Cost = цена в очках навыка) ─────
 [Pool(typeof(TokenCardPool))] public sealed class NodeCraftAlchemy : PickCard { }

@@ -1,6 +1,11 @@
+using Godot;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Multiplayer.Connection;
+using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Screens.MainMenu;
+using MegaCrit.Sts2.Core.Platform;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
@@ -18,7 +23,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rollback;
 ///       <see cref="StonePhase.Scar"/>; кто не выбрал за <see cref="ScarTimeout"/>, получает Шрам по умолчанию.</item>
 /// <item>Хост дописывает в Отпечаток общие Свечи, Шрамы всех игроков и «новую карту», записывает его как сохранение
 ///       кооп-забега и рассылает <see cref="StonePhase.Go"/>. Все выходят в главное меню; хост сразу открывает лобби
-///       загрузки этого сохранения, клиентам открывается экран «Присоединиться к другу».</item>
+///       загрузки этого сохранения, клиенты сами ищут его лобби и входят (<see cref="RejoinAsClient"/>; экран
+///       «Присоединиться к другу» — запасной ручной путь).</item>
 /// </list>
 /// Свечи общие: возврат тратит одну Свечу всего отряда (у всех Камней одинаковый счётчик потраченных).
 /// </summary>
@@ -36,6 +42,21 @@ public static class CoopMemoryStone
 
     /// <summary>Состояние погибшего забега у клиента (для выбора Шрама и счётчиков в окне).</summary>
     private static RunState? _clientState;
+
+    /// <summary>
+    /// Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31). Голоса и Шрамы нужны только до сборки
+    /// сохранения возврата — к запуску следующего забега раунд закончен. Счётчик раундов не сбрасывается:
+    /// по нему отсекаются опоздавшие сообщения прошлого раунда.
+    /// </summary>
+    internal static void ResetForNewRun()
+    {
+        Votes.Clear();
+        Scars.Clear();
+        _votesDone = null;
+        _scarsDone = null;
+        _expected = 0;
+        _clientState = null;
+    }
 
     // ───── хост ─────
 
@@ -90,7 +111,8 @@ public static class CoopMemoryStone
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
             await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
             Send(StonePhase.Go, round, 0, 0);
-            await Task.Delay(500); // дать сообщению уйти до разрыва соединения
+            // дать сообщению уйти до разрыва соединения; тем временем — трещины отката
+            await Task.WhenAll(Task.Delay(500), UI.RequiemVfx.Rewind(round));
             await NGame.Instance.ReturnToMainMenu();
             var submenu = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu();
             submenu?.StartHost(save);
@@ -146,20 +168,68 @@ public static class CoopMemoryStone
         Send(StonePhase.Scar, round, (int)scar, 0);
     }
 
-    private static async Task RejoinAsClient()
+    /// <summary>
+    /// Автопереподключение (15 §5, M5 п. 6): клиент выходит в меню, открывает «Присоединиться к другу» (ручной вход остаётся
+    /// запасным путём) и сам ищет лобби хоста — паузы <see cref="MemoryStoneRules.RejoinDelayMs"/>, не больше
+    /// <see cref="MemoryStoneRules.RejoinAttempts"/> попыток. Steam: ждём, пока хост появится среди друзей с открытым лобби,
+    /// и входим один раз (неудачный вход показывает окно ошибки — поэтому не «долбим» вход вслепую). Без Steam (LAN-отладка,
+    /// ENet) — один вход на 127.0.0.1 после первой паузы. Если игрок ушёл с экрана или уже подключился — поиск прекращается.
+    /// </summary>
+    private static async Task RejoinAsClient(ulong hostNetId)
     {
+        var platform = RunManager.Instance.NetService?.Platform ?? PlatformType.None;
+        var myNetId = RequiemNet.LocalNetId;
+        NJoinFriendScreen? screen = null;
         MemoryStone.Restoring = true;
         try
         {
+            await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
             await NGame.Instance.ReturnToMainMenu();
-            NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
+            screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
         }
         finally
         {
             MemoryStone.Restoring = false;
             _clientState = null;
         }
+        if (screen == null || hostNetId == 0) return;
+
+        for (var attempt = 0; ; attempt++)
+        {
+            if (!MemoryStoneRules.ShouldRetryRejoin(attempt, Connected(), ScreenOpen(screen))) break;
+            await Task.Delay(MemoryStoneRules.RejoinDelayMs(attempt));
+            if (!ScreenOpen(screen) || Connected()) break;
+            try
+            {
+                if (platform == PlatformType.Steam)
+                {
+                    var open = await PlatformUtil.GetFriendsWithOpenLobbies(PlatformType.Steam);
+                    if (!open.Contains(hostNetId)) continue;
+                    MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти (кооп): лобби хоста найдено (попытка {attempt + 1}), вход.");
+                    await screen.JoinGameAsync(SteamClientConnectionInitializer.FromPlayer(hostNetId));
+                }
+                else
+                {
+                    await screen.JoinGameAsync(new ENetClientConnectionInitializer(myNetId, LanHost, LanPort));
+                }
+                return;
+            }
+            catch (Exception e)
+            {
+                MainFile.Logger.Warn($"[SlayTheRequiem] Камень Памяти (кооп): переподключение не удалось ({e.Message}).");
+                if (platform != PlatformType.Steam) return;
+            }
+        }
+        MainFile.Logger.Info("[SlayTheRequiem] Камень Памяти (кооп): лобби хоста не найдено — остаётся ручной вход.");
     }
+
+    /// <summary>Адрес хоста LAN-отладки (ванильный «быстрый вход»: NJoinFriendScreen.FastMpJoin).</summary>
+    private const string LanHost = "127.0.0.1";
+    private const ushort LanPort = 33771;
+
+    private static bool Connected() => RunManager.Instance.NetService is { IsConnected: true, Type: NetGameType.Client };
+
+    private static bool ScreenOpen(NJoinFriendScreen screen) => GodotObject.IsInstanceValid(screen) && screen.IsVisibleInTree();
 
     // ───── сообщения ─────
 
@@ -179,7 +249,7 @@ public static class CoopMemoryStone
                 if (value == 1) TaskHelper.RunSafely(ScarAsClient(round));
                 break;
             case StonePhase.Go when RequiemNet.IsClient && round == _round:
-                TaskHelper.RunSafely(RejoinAsClient());
+                TaskHelper.RunSafely(RejoinAsClient(senderId));
                 break;
             case StonePhase.Abort when RequiemNet.IsClient:
                 MainFile.Logger.Warn("[SlayTheRequiem] Камень Памяти (кооп): хост отменил возврат.");

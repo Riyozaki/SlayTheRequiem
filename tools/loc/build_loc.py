@@ -20,6 +20,22 @@ from loc_stage5 import STAGE5_CARDS, STAGE5_POWERS, STAGE5_REST_SITE, STAGE5_REL
 from loc_stage6 import (STAGE6_BADGES, STAGE6_CARDS, STAGE6_ENCHANTMENTS, STAGE6_EVENTS, STAGE6_POWERS,  # noqa: E402
                         STAGE6_EQUIPMENT, STAGE6_RELICS, STAGE6_REST_SITE, STAGE6_SETTINGS)
 from loc_flavor import FLAVOR  # noqa: E402
+from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
+from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
+from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
+from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
+from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
+from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
+from loc_m5events import M5_EVENTS  # noqa: E402
+from loc_m5shops import (M5_SCROLLS, M5_SHOP_CARDS, M5_SHOP_ENCOUNTERS, M5_SHOP_MONSTERS, M5_SHOP_REST_SITE,  # noqa: E402
+                         M5_SHOP_RELIC_EXTRA, M5_STAVES)
+from loc_m5camp import M5_CAMP_CARDS, M5_CAMP_RELICS, M5_CAMP_SETTINGS  # noqa: E402
+from loc_m6map import M6_POTIONS, M6_RELICS, MAP_TIPS  # noqa: E402
+from loc_m6summons import M6_SUMMON_CARDS, M6_SUMMON_MONSTERS, M6_SUMMON_POWERS  # noqa: E402
+from loc_m6shops import SHOP_RELIC_EXTRA, SHOP_TIPS  # noqa: E402
+from loc_m7origins import ORIGIN_TIPS  # noqa: E402
+from loc_m7vfx import VFX_TIPS  # noqa: E402
+from loc_relics import RELICS_BACKPACK, RELICS_EQUIPMENT, RELICS_POTIONS, RELICS_TIPS  # noqa: E402
 from loc_stage7 import (STAGE7_ACTS, STAGE7_ENCOUNTERS, STAGE7_MONSTERS, STAGE7_POWERS, STAGE7_RELIC_EXTRA,  # noqa: E402
                         STAGE7_RELICS, STAGE7_REST_SITE, STAGE7_SETTINGS)
 
@@ -61,8 +77,7 @@ CARDS = [
      "Твёрдая стойка", "Получить {Block:diff()} [gold]Блока[/gold].\nПолучить {StaminaGain:diff()} ◆."),
     ("SmotherFlames", "Smother Flames", "Remove [gold]Burning[/gold] and [gold]Chill[/gold] from yourself.\nGain {Block:diff()} [gold]Block[/gold].",
      "Сбить пламя", "Снять с себя [gold]Горение[/gold] и [gold]Озноб[/gold].\nПолучить {Block:diff()} [gold]Блока[/gold]."),
-    ("BattleCry", "Battle Cry", "Apply {WeakPower:diff()} [gold]Weak[/gold] and {StaggerPower:diff()} [gold]Stagger[/gold] to ALL enemies.",
-     "Боевой клич", "Наложить {WeakPower:diff()} [gold]Слабости[/gold] и {StaggerPower:diff()} [gold]Шаткости[/gold] ВСЕМ врагам."),
+    # BattleCry — Клич, текст в loc_stage5.SHOUT_CARDS (с пометкой о перезарядке).
     ("ChangeGrip", "Change Grip", "Your next Attack this turn costs no ◆ and deals {GripPower:diff()} more damage.",
      "Сменить хват", "Следующая атака в этом ходу не тратит ◆ и наносит на {GripPower:diff()} урона больше."),
     ("CloseRanks", "Close Ranks", "Gain {PlatingPower:diff()} [gold]Plating[/gold].",
@@ -175,51 +190,76 @@ def merge(lang: str, file: str, entries: dict) -> int:
     return len(entries)
 
 
+def check_unique() -> None:
+    """Один класс — один текст. Повтор с другим текстом молча перетирал первый
+    (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
+    tables = {
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS,
+        "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
+                  + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS,
+    }
+    dupes = []
+    for name, rows in tables.items():
+        seen = {}
+        for row in rows:
+            if row[0] in seen and seen[row[0]] != row[1:]:
+                dupes.append(f"{name}: {row[0]}")
+            seen[row[0]] = row[1:]
+    if dupes:
+        sys.exit("Повторяющиеся классы в таблицах текстов:\n  " + "\n  ".join(dupes))
+
+
 def main() -> None:
+    check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
             powers[f"{k}.smartDescription"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT:
+        for cls, et, ed, rt, rd, fe, fr in RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li] + WEIGHT_NOTE[lang]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS:
+        for cls, et, ed, rt, rd, fe, fr in MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS:
             k = PREFIX + snake(cls)
             relics[f"{k}.title"] = (et, rt)[li]
             relics[f"{k}.description"] = (ed, rd)[li]
             relics[f"{k}.flavor"] = (fe, fr)[li]
-        relics.update({f"{PREFIX}{key}": text for key, text in {**STAGE35_RELIC_EXTRA[lang], **STAGE36_RELIC_EXTRA[lang], **STAGE7_RELIC_EXTRA[lang]}.items()})
+        relics.update({f"{PREFIX}{key}": text for key, text in {**STAGE35_RELIC_EXTRA[lang], **STAGE36_RELIC_EXTRA[lang], **STAGE7_RELIC_EXTRA[lang], **M5_SHOP_RELIC_EXTRA[lang], **SHOP_RELIC_EXTRA[lang]}.items()})
         for key, texts in FLAVOR.items():  # цитаты для реликвий без своей (этап 8)
             if not relics.get(f"{PREFIX}{key}.flavor"):
                 relics[f"{PREFIX}{key}.flavor"] = texts[li]
         monsters = {}
-        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS}.items():
+        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS, **M5_MONSTERS, **M5_SHOP_MONSTERS, **M6_SUMMON_MONSTERS}.items():
             data = langs[lang]
             monsters[f"{PREFIX}{key}.name"] = data["name"]
             for move, title in data["moves"].items():
                 monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
-        encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS}.items()}
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang]}.items()}
+        encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS, **M5_ENCOUNTERS, **M5_SHOP_ENCOUNTERS}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang]}.items()}
         potions = {}
-        for cls, et, ed, rt, rd in STAGE3_POTIONS:
+        for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS + M6_POTIONS:
             k = PREFIX + snake(cls)
             potions[f"{k}.title"] = (et, rt)[li]
             potions[f"{k}.description"] = (ed, rd)[li]
         n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
         n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
-        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang]})
-        n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
+        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang], **M5_SHOP_REST_SITE[lang]})
+        n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang], **M5_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
         n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
+        # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
+        n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang]}.items()})
+        n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 
 

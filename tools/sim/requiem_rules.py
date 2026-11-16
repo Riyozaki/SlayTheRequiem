@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import math
+import re
 from dataclasses import dataclass
 
 RESTED, TIRED, EXHAUSTED = "rested", "tired", "exhausted"
@@ -315,6 +316,41 @@ def beast_spirit(elites_defeated: int) -> tuple[int, int]:
     return 20, 7
 
 
+
+# Кланы Латоносца (M4 п. 1)
+FORGE_FURY_ATTACKS = 3
+
+
+def forge_fury_active(attacks_this_turn: int) -> bool:
+    return attacks_this_turn >= FORGE_FURY_ATTACKS
+
+
+def dune_rhythm_regen(stamina: int, pool: int) -> int:
+    if pool <= 0:
+        return 0
+    if stamina * 2 < pool:
+        return 2
+    if stamina * 4 < pool * 3:
+        return 1
+    return 0
+
+
+def training_bonus_points(level: int, max_level: int = 15) -> int:
+    return max(1, min(max_level, level)) // 3
+
+
+def conspirator_potency(potency: int) -> int:
+    return potency if potency <= 0 else (potency * 5 + 3) // 4
+
+
+def blade_spirit_bonus(mana: int) -> int:
+    return max(0, mana) // 2
+
+
+def loyal_guard(level: int, max_level: int = 15) -> tuple[int, int]:
+    lv = max(1, min(max_level, level))
+    return 8 + 2 * lv, 2 + lv // 4
+
 # ───────────── Алхимия (Core/AlchemyRules.cs) ─────────────
 
 REAGENTS = ["Bloodmoss", "Bluebloom", "Yellowsorrel", "AshSalt", "FrostSalt", "StormCrystal", "Nightcap", "GraveDust",
@@ -445,7 +481,8 @@ def control_hp_cap(tier: str) -> int | None:
 
 import math as _math
 
-SHOP_TYPES = ("Wanderer", "Armorer", "Arcanist", "Herbalist")
+SHOP_TYPES = ("Wanderer", "Armorer", "Arcanist", "Herbalist", "Jeweler", "Temple", "Fence", "Caravan")
+CARAVAN_CHANCE_PERCENT = 35
 
 
 def _round_away(x: float) -> int:
@@ -454,14 +491,54 @@ def _round_away(x: float) -> int:
 
 
 def shop_act_pool(act_index: int) -> list[str]:
-    return ["Wanderer", "Armorer", "Herbalist"] if act_index <= 0 else ["Wanderer", "Armorer", "Herbalist", "Arcanist"]
+    if act_index <= 0:
+        return ["Wanderer", "Armorer", "Herbalist"]
+    return ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"]
+
+
+_KIND_POOLS = {
+    "Foothills": ["Wanderer", "Armorer", "Herbalist"],
+    "FrozenBarrows": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Caravan"],
+    "ClockworkDepths": ["Wanderer", "Armorer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Caravan"],
+    "Hive": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+    "BloodCourt": ["Armorer", "Herbalist", "Arcanist", "Jeweler", "Fence"],
+    "StarTower": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+    "Glory": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler", "Temple", "Caravan"],
+    "NamelessLimit": ["Wanderer", "Armorer", "Herbalist", "Arcanist", "Jeweler"],
+}
+
+
+def shop_act_pool_kind(kind: str, tier: int = 0) -> list[str]:
+    return list(_KIND_POOLS[kind]) if kind in _KIND_POOLS else shop_act_pool(tier)
+
+
+def guaranteed_shop(kind: str, shops_seen: int) -> str | None:
+    if kind == "BloodCourt" and shops_seen <= 0:
+        return "Fence"
+    if kind == "StarTower" and shops_seen <= 1:
+        return "Arcanist"
+    if kind == "Glory" and shops_seen <= 0:
+        return "Temple"
+    return "Wanderer" if shops_seen <= 0 else None
+
+
+def roll_shop_type_kind(hash_: int, kind: str, tier: int, shops_seen: int, previous: str | None,
+                        outlaw: bool = False, caravan_seen: bool = False) -> str:
+    g = guaranteed_shop(kind, shops_seen)
+    if g is not None:
+        return g
+    pool = shop_act_pool_kind(kind, tier)
+    if outlaw and "Fence" not in pool:
+        pool.append("Fence")
+    caravan_ok = not caravan_seen and (hash_ >> 16) % 100 < CARAVAN_CHANCE_PERCENT
+    pool = [t for t in pool if (previous is None or t != previous) and (t != "Caravan" or caravan_ok)]
+    if not pool:
+        return "Wanderer"
+    return pool[hash_ % len(pool)]
 
 
 def roll_shop_type(hash_: int, act_index: int, shops_seen: int, previous: str | None) -> str:
-    if shops_seen <= 0:
-        return "Wanderer"
-    pool = [t for t in shop_act_pool(act_index) if t != previous]
-    return pool[hash_ % len(pool)]
+    return roll_shop_type_kind(hash_, "Other", act_index, shops_seen, previous)
 
 
 def fnv1a(text: str, salt: int = 0) -> int:
@@ -523,8 +600,10 @@ def treatise_price(bought_before: int) -> int:
 
 
 def equipment_tiers(shop: str, act_index: int) -> tuple[int, int]:
-    if shop == "Armorer":
+    if shop in ("Armorer", "Jeweler", "Caravan"):
         return max(1, min(4, act_index + 1)), max(2, min(5, act_index + 2))
+    if shop == "Fence":
+        return 4, 5
     return 1, 2
 
 
@@ -541,8 +620,9 @@ def spell_allowed_in_shop(tier: int, mastery: int) -> bool:
 
 
 # доверие: витрина и Заказ
-def refills_per_visit(trust_level: int) -> int:
-    return max(0, min(3, trust_level))
+def refills_per_visit(trust_level: int, trade_name: bool = False) -> int:
+    # «Торговое имя» (Выживание II, 10 §2): ещё +1 товар за визит
+    return max(0, min(3, trust_level)) + (1 if trade_name else 0)
 
 
 def can_order(trust_level: int) -> bool:
@@ -606,6 +686,86 @@ def removal_price(removals_used: int) -> int:
 
 def death_echo_surcharge(removal: int, gold_left: int) -> int:
     return max(0, min(removal, max(0, gold_left)))
+
+
+# ───── лавки M5 (14 §2.3–2.9) ─────
+
+def scroll_price(tier: int) -> int:
+    return _by_tier(tier, (25, 45, 70))
+
+
+def staff_price(tier: int) -> int:
+    return _by_tier(tier, (70, 120, 180, 240, 320))
+
+
+def scroll_tier(act_index: int) -> int:
+    return max(1, min(3, act_index + 1))
+
+
+def staff_tiers(act_index: int) -> tuple[int, int]:
+    return (1, 1) if act_index <= 0 else (2, 3) if act_index == 1 else (4, 5)
+
+
+def soul_stone_price(power: int) -> int:
+    return _by_tier(power, (40, 80, 140))
+
+
+def soul_stone_power(act_index: int) -> int:
+    return max(1, min(3, act_index + 1))
+
+
+def enchant_service_price(power: int, own_stone: bool) -> int:
+    return _by_tier(power, (75, 110, 150)) + (0 if own_stone else 60)
+
+
+REWRITE_SCROLL_PRICE = 40
+CARD_ENCHANT_PRICE = 80
+ENGRAVE_PRICE = 70
+FACET_PRICE = 50
+TEMPLE_AMULET_PRICE = 150
+TEMPLE_ROBE_PRICE = 200
+BLESSING_CHANGE_PRICE = 60
+TEMPLE_HEAL_PERCENT = 30
+TEMPLE_HEAL_PRICE = 40
+ATONEMENT_PRICE = 100
+CURSE_REMOVAL_MAX_HP = 6
+CLEAR_NAME_PRICE = 80
+CLEAR_NAME_SPENT = 150
+MENTOR_MAX_SKILL_POINTS = 3
+WEAPON_LESSON_PRICE = 90
+
+
+def cleanse_price(righteous: bool) -> int:
+    return 35 if righteous else 50
+
+
+def fence_sell_value(price: int) -> int:
+    return 0 if price <= 0 else max(1, _math.floor(price * 0.60))
+
+
+def can_pay_curse_removal(max_hp: int) -> bool:
+    return max_hp > CURSE_REMOVAL_MAX_HP
+
+
+def clear_name_target(spent: list[int]) -> int:
+    best = -1
+    for i in range(min(len(spent), len(SHOP_TYPES))):
+        if i == SHOP_TYPES.index("Fence") or trust(spent[i]) >= 1:
+            continue
+        if best < 0 or spent[i] < spent[best]:
+            best = i
+    return best
+
+
+def trade_tiers(given_tier: int) -> tuple[int, int]:
+    return max(1, given_tier - 1), max(1, given_tier)
+
+
+def mentor_skill_price(bought: int, native_branch: bool) -> int | None:
+    if bought < 0 or bought >= MENTOR_MAX_SKILL_POINTS:
+        return None
+    price = 100 + 50 * bought
+    return price if native_branch else _round_away(price * 1.5)
 
 
 # ───────────── Камень Памяти (Core/MemoryStoneRules.cs) ─────────────
@@ -754,6 +914,59 @@ def star_marks_after_act(marks: int, vow_done: bool) -> int:
     return 0 if vow_done else marks + 1
 
 
+# ── Пеплорождённые: «Наследники Тройственных» (M4 п. 2) ──
+# Индексы Князей: PlagueLord 0, TwilightWidow 1, WebWeaver 2, GateBreaker 3, Treachery 4, Revel 5, Outcast 6, DuskStar 7.
+TRIBUNAL = [4, 2, 7]
+
+
+def is_tribunal(prince: int) -> bool:
+    return prince in TRIBUNAL
+
+
+def heir_star_marks(marks: int) -> int:
+    return max(0, marks - 1)
+
+
+def tribunal_gift(prince: int, heir: bool, tier_up: bool) -> dict:
+    """Числовая часть дара Тройственных (только изменённые поля)."""
+    base = {4: {"attack": 2, "pierce": 1, "summon_taken": 50},
+            2: {"rest_heal": -30},
+            7: {"max_hp": 6, "mana_pool": 2, "fire": 1, "frost": 1}}.get(prince, {})
+    out = dict(base)
+    if prince not in TRIBUNAL:
+        return out
+    if heir:
+        for k, v in {4: {"summon_taken": -25}, 2: {"rest_heal": 15}}.get(prince, {}).items():
+            out[k] = out.get(k, 0) + v
+    if tier_up:
+        for k, v in {4: {"attack": 1, "pierce": 1}, 7: {"max_hp": 3, "mana_pool": 1, "fire": 1, "frost": 1}}.get(prince, {}).items():
+            out[k] = out.get(k, 0) + v
+    return out
+
+
+def web_leech_cap(tier_up: bool) -> int:
+    return 8 if tier_up else 5
+
+
+def web_below_half_bonus(tier_up: bool) -> int:
+    return 3 if tier_up else 2
+
+
+def heir_shrine_picks(picks, held, nxt) -> list:
+    res = list(picks)
+    if not res or any(is_tribunal(p) for p in res):
+        return res
+    pool = [t for t in TRIBUNAL if t != held and t not in res]
+    if not pool:
+        return res
+    res[-1] = pool[max(0, min(nxt(len(pool)), len(pool) - 1))]
+    return res
+
+
+def ordinator_may_accept(prince: int) -> bool:
+    return is_tribunal(prince)
+
+
 
 # ═════════════ Этап 5: Прогрессия (Core/ProgressionRules.cs) ═════════════
 
@@ -806,6 +1019,26 @@ def tiers(hp: int, st: int, mana: int) -> dict:
         poison_res=1 if hp >= 1 else 0, burden=6 if hp >= 2 else 0, plating=1 if hp >= 3 else 0,
         stamina_regen=1 if st >= 1 else 0, attack_damage=1 if st >= 2 else 0, free_first_attack=st >= 3,
         mana_regen=1 if mana >= 1 else 0, first_spell_discount=1 if mana >= 2 else 0, ward=3 if mana >= 3 else 0)
+
+
+WEAPON_KINDS = ("None", "Dagger", "Sword", "Axe", "Mace", "Spear", "TwoHanded", "Bow", "Crossbow", "Staff", "Shield")
+
+
+def lesson_kinds(hero: str) -> list[str]:
+    return {"Regent": ["TwoHanded", "Crossbow", "Shield"], "Silent": ["TwoHanded"]}.get(hero, [])
+
+
+def has_lesson(mask: int, kind: str) -> bool:
+    return kind != "None" and (mask & (1 << WEAPON_KINDS.index(kind))) != 0
+
+
+def with_lesson(mask: int, kind: str) -> int:
+    return mask if kind == "None" else mask | (1 << WEAPON_KINDS.index(kind))
+
+
+def is_clumsy_with_lessons(hero: str, main_hand: str, heavy_shield: bool, trained: bool, mask: int) -> bool:
+    return is_clumsy(hero, "None" if has_lesson(mask, main_hand) else main_hand,
+                     heavy_shield and not has_lesson(mask, "Shield"), trained)
 
 
 def is_clumsy(hero: str, main_hand: str, heavy_shield: bool, trained: bool) -> bool:
@@ -896,10 +1129,33 @@ def camp_budget(wayfarer: bool, camp_master: bool) -> int:
     return 2 + (1 if wayfarer else 0) + (1 if camp_master else 0)
 
 
-def camp_cost(action: str, camp_master: bool) -> int:
+def camp_cost(action: str, camp_master: bool, anvil: bool = False) -> int:
+    if action == "Forge" and anvil:  # Наковальня метапрогресса (10 §5)
+        return 1
     if camp_master and action in ("Forge", "Enchant"):
         return 1
     return CAMP_COSTS.get(action, 2)
+
+
+# M5 п. 5: вьючный зверь (10 §6) и постройки метапрогресса (10 §5)
+MULE_BURDEN, SHOD_BURDEN, MULE_PRICE, MULE_SHOE_PRICE = 10, 5, 120, 40
+CAMP_BUILDINGS = ["Kettle", "Anvil", "EnchantingTable", "Altar", "HerbalistTent"]
+
+
+def mule_capacity(shod: bool) -> int:
+    return MULE_BURDEN + (SHOD_BURDEN if shod else 0)
+
+
+def chest_loss(stored: int) -> int:
+    return (max(0, stored) + 1) // 2
+
+
+def has_building(unlocked: int, building: str) -> bool:
+    return unlocked >= CAMP_BUILDINGS.index(building) + 1
+
+
+def unlock_after_victory(unlocked: int) -> int:
+    return max(0, min(len(CAMP_BUILDINGS), unlocked + 1))
 
 
 def short_rest_percent(first_aid: bool) -> int:
@@ -981,7 +1237,20 @@ ENCHANT_SLOTS = {
     "FireResistance": ("OffHand", "Ring", "Feet"), "FrostResistance": ("OffHand", "Ring", "Feet"),
     "ShockResistance": ("OffHand", "Ring", "Feet"), "WeaponMight": ("Hands", "Ring"), "Burden": ("Hands", "Feet"),
     "FireBrand": ("MainHand",), "FrostBrand": ("MainHand",), "ShockBrand": ("MainHand",),
+    **{f"Craft{school}": ("Head", "Amulet") for school in ("Destruction", "Restoration", "Alteration", "Conjuration", "Illusion")},
+    "AbsorbHealth": ("MainHand",), "AbsorbStamina": ("MainHand",), "AbsorbMagic": ("MainHand",),
+    "Banish": ("MainHand",), "Paralysis": ("MainHand",),
 }
+WEAPON_BRANDS = ("FireBrand", "FrostBrand", "ShockBrand", "AbsorbHealth", "AbsorbStamina", "AbsorbMagic", "Banish", "Paralysis")
+
+
+def craft_discount(per_turn: int, cast_this_turn: int) -> int:
+    return 1 if cast_this_turn < per_turn else 0
+
+
+def paralysis_tier(power: int) -> int:
+    """SpellTier: 2 Ученик, 3 Адепт, 4 Эксперт."""
+    return {1: 2, 2: 3}.get(max(1, min(3, power)), 4)
 
 
 def enchant_allowed(e: str, slot: str) -> bool:
@@ -991,7 +1260,8 @@ def enchant_allowed(e: str, slot: str) -> bool:
 def enchant_value(e: str, power: int) -> int:
     p = max(1, min(3, power))
     return {"Health": 4 * p, "Stamina": p, "Magic": 2 * p, "WeaponMight": p, "Burden": 4 * p,
-            "FireBrand": 2 * p, "FrostBrand": p, "ShockBrand": p}.get(e, 2 if p >= 3 else 1)
+            "FireBrand": 2 * p, "FrostBrand": p, "ShockBrand": p, "Banish": 1}.get(
+        e, p if e in ENCHANT_SLOTS and not e.endswith("Resistance") else 2 if p >= 3 else 1)
 
 
 def enchant_charges(power: int) -> int:
@@ -1000,7 +1270,7 @@ def enchant_charges(power: int) -> int:
 
 def apply_enchant(current: list, e: str, power: int, slots: int) -> list:
     lst = list(current)
-    brand = e in ("FireBrand", "FrostBrand", "ShockBrand")
+    brand = e in WEAPON_BRANDS
     slot = (e, max(1, min(3, power)), enchant_charges(power) if brand else 0)
     for i, s in enumerate(lst):
         if s[0] == e:
@@ -1064,7 +1334,9 @@ def is_chain_step(frm: str, to: str) -> bool:
 def can_take_worldview(current: str, nxt: str, righteous_piety: bool, ordinator: bool, clockwork: bool) -> bool:
     if not is_worldview(nxt):
         return False
-    if (ordinator or clockwork) and nxt != "Righteous":
+    if ordinator and nxt in ("Righteous", "Vampire", "Werewolf", "Lich"):
+        return False
+    if clockwork and nxt != "Righteous":
         return False
     if nxt in ("Herald", "Lich"):
         return is_chain_step(current, nxt)
@@ -1193,23 +1465,23 @@ def path_offer_due(level: int, boss_act: int, total: int, has_path: bool) -> boo
     return not has_path and level >= 8 and boss_act >= path_offer_act_index(total)
 
 
-def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool) -> bool:
+def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool, ordinator: bool = False) -> bool:
     if path == "None":
         return False
     if path == "Paladin":
-        return worldview == "Righteous"
+        return worldview == "Righteous" or ordinator
     if path == "BlackKnight":
-        return apostate and worldview != "Righteous"
+        return not ordinator and apostate and worldview != "Righteous"
     if path == "Monk":
         return unarmed
     return True
 
 
-def native_paths(hero, worldview: str, apostate: bool, unarmed: bool) -> list:
+def native_paths(hero, worldview: str, apostate: bool, unarmed: bool, ordinator: bool = False) -> list:
     out = []
-    if worldview == "Righteous":
+    if worldview == "Righteous" or ordinator:
         out.append("Paladin")
-    if apostate and worldview != "Righteous":
+    if not ordinator and apostate and worldview != "Righteous":
         out.append("BlackKnight")
     out += {"Ironclad": ["Champion", "Barbarian", "Battlemage"],
             "Silent": ["Assassin", "Blightbringer", "MysticArcher"],
@@ -1219,9 +1491,9 @@ def native_paths(hero, worldview: str, apostate: bool, unarmed: bool) -> list:
     return list(dict.fromkeys(out))
 
 
-def offer_paths(hero, worldview, apostate, unarmed, nxt) -> list:
-    native = native_paths(hero, worldview, apostate, unarmed)
-    foreign = [p for p in PATHS[1:] if p not in native and path_allowed(p, worldview, apostate, unarmed)]
+def offer_paths(hero, worldview, apostate, unarmed, nxt, ordinator: bool = False) -> list:
+    native = native_paths(hero, worldview, apostate, unarmed, ordinator)
+    foreign = [p for p in PATHS[1:] if p not in native and path_allowed(p, worldview, apostate, unarmed, ordinator)]
     res = []
     for _ in range(2):
         if not native:
@@ -1489,3 +1761,1013 @@ def binding_multiplier(stacks: int) -> float:
 
 def bypasses_ghostly(is_spell: bool, damage_type: str, silver: bool) -> bool:
     return is_spell or damage_type != "physical" or silver
+
+
+# ═════════════ M4 п. 4: переработка ванильных реликвий (Core/VanillaRelicTable.cs) ═════════════
+
+FURY_STRIKE_DAMAGE = 1
+IRON_SKIN_BLOCK = 3
+THORNS_NECKLACE = 2
+
+
+def iron_skin_active(plating: int) -> bool:
+    return plating >= 1
+
+
+def relic_regen_penalty(hero: str, reworked_count: int) -> tuple:
+    """(◆, ✦): у Регента режется ✦, у остальных героев Реквиема — ◆ (07 §7 «по типу»)."""
+    return (0, reworked_count) if hero == "Regent" else (reworked_count, 0)
+
+
+# ───── бижутерия 07 §5 (M4 п. 3) — зеркало Core/JewelryRules, RingComboRules ─────
+DRUNKARD_POTION_PERCENT = 50
+LIGHTNING_ROD_ABSORB_PERCENT = 50
+RING_COMBOS = {
+    "Steam": ("RingOfThePyromancer", "RingOfHoarfrost"),
+    "QuickFury": ("RingOfQuickBreath", "RingOfFuryStrike"),
+    "ClearViceroy": ("RingOfClearMind", "RingOfTheViceroy"),
+}
+
+
+def drunkard_potency(potency: int) -> int:
+    return potency if potency <= 0 else (potency * (100 + DRUNKARD_POTION_PERCENT) + 99) // 100
+
+
+def lightning_rod_mana(damage: int) -> int:
+    return max(0, damage) * LIGHTNING_ROD_ABSORB_PERCENT // 100
+
+
+def regeneration_active(hp: int, max_hp: int) -> bool:
+    return max_hp > 0 and hp * 2 < max_hp
+
+
+def steam_damage(burning: int, chill: int) -> int:
+    return burning + chill if burning > 0 and chill > 0 else 0
+
+
+def viceroy_replays(clear_mind_combo: bool) -> int:
+    return 2 if clear_mind_combo else 1
+
+
+def ring_combos(rings) -> list:
+    rs = set(rings)
+    return [c for c, (a, b) in RING_COMBOS.items() if a in rs and b in rs]
+
+
+# ───── реликвии рюкзака (M4 п. 5) — зеркало Core/BackpackRules, FoodRules.Boosted ─────
+FEATHER_BURDEN = 8
+KETTLE_BONUS = 1
+
+
+def kettle_boost(effect: dict) -> dict:
+    return {k: (v + KETTLE_BONUS if v > 0 else v) for k, v in effect.items()}
+
+
+def barrow_indices(visited: int, count: int, shown: int = 3) -> list:
+    return [] if count <= 0 else [(max(0, visited) + i) % count for i in range(min(shown, count))]
+
+
+
+# ───────────── M5: силы боссов актов 2 и 4 (Powers/BossPowers.cs → BossPowerRules) ─────────────
+SUN_STANCE_REDUCTION_PERCENT = 50
+MOON_STANCE_LIGHT_MULTIPLIER = 1.5
+
+
+def oath_multiplier(percent: int, guard_alive: bool) -> float:
+    """Клятва стражи: −N % урона по носителю, пока жива свита."""
+    return (100 - max(0, min(100, percent))) / 100 if guard_alive else 1.0
+
+
+def stance_multiplier(night: bool, damage_type: str) -> float:
+    """Страж Затмения: днём −50 % всего, кроме Света; ночью Свет ×1.5."""
+    if night:
+        return MOON_STANCE_LIGHT_MULTIPLIER if damage_type == "Light" else 1.0
+    return 1.0 if damage_type == "Light" else (100 - SUN_STANCE_REDUCTION_PERCENT) / 100
+
+
+# ───────────── M5: «две двери» (Core/ActDoorRules.cs) ─────────────
+DOOR_ABSTAIN = -1
+DOOR_OPTIONS = {1: ["FrozenBarrows", "ClockworkDepths"], 3: ["BloodCourt", "StarTower"]}
+
+
+def has_doors(act_index: int, act_count: int) -> bool:
+    return act_count >= 5 and act_index in (1, 3)
+
+
+def door_resolve(votes, current: int, tie_break: int) -> int:
+    """Большинство; ничья — жребий; все воздержались — вариант, выпавший при создании забега."""
+    counts = [sum(1 for v in votes if v == d) for d in (0, 1)]
+    if counts == [0, 0]:
+        return max(0, min(1, current))
+    if counts[0] == counts[1]:
+        return abs(tie_break) % 2
+    return 0 if counts[0] > counts[1] else 1
+
+
+def door_tie_break(seed: str, act_index: int) -> int:
+    """FNV-1a от «{seed}/doors/{act}» — как ActDoorRules.TieBreak."""
+    h = 2166136261
+    for ch in f"{seed}/doors/{act_index}":
+        h ^= ord(ch)
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h % 2
+
+
+# ───── M5 п. 6: «Свеча в склепе», автопереподключение (Core/MemoryStoneRules) ─────
+
+CRYPT_CANDLE_CHANCE = 30
+MAX_CRYPT_CANDLES = 1
+REJOIN_ATTEMPTS = 10
+
+
+def crypt_candle_in_pool(hash_: int) -> bool:
+    return hash_ % 100 < CRYPT_CANDLE_CHANCE
+
+
+def can_take_crypt_candle(stone_enabled: bool, has_stone: bool, candles_allowed: bool, candles_left: int, taken: int) -> bool:
+    return stone_enabled and has_stone and candles_allowed and candles_left != INFINITE and taken < MAX_CRYPT_CANDLES
+
+
+def rejoin_delay_ms(attempt: int) -> int:
+    if attempt < 0:
+        return 0
+    return [2000, 2500, 3500, 5000][attempt] if attempt < 4 else 6000
+
+
+def rejoin_total_ms() -> int:
+    return sum(rejoin_delay_ms(a) for a in range(REJOIN_ATTEMPTS))
+
+
+def should_retry_rejoin(attempt: int, connected: bool, screen_open: bool) -> bool:
+    return attempt < REJOIN_ATTEMPTS and not connected and screen_open
+
+
+# ───── M5: 20 подтипов узлов (Core/NodeRules, 13 §4.2) ─────
+
+NODE_SUBTYPES = ["Shrine", "DarkAltar", "Armorer", "Arcanist", "Herbalist", "Jeweler", "Caravan", "Fence", "Tavern", "Library",
+                 "Lair", "Trial", "Cache", "LockedGate", "Valve", "AbyssGate", "CrimsonPortal", "MemoryStone", "EbbStones", "Ambush"]
+
+NODE_ICONS = {"Shrine": "shrine", "DarkAltar": "dark_altar", "Armorer": "armorer", "Arcanist": "enchanter", "Herbalist": "herbalist",
+              "Jeweler": "jeweler", "Caravan": "caravan", "Fence": "fence", "Tavern": "tavern", "Library": "library", "Lair": "lair",
+              "Trial": "trial", "Cache": "cache", "LockedGate": "locked_gate", "Valve": "valve", "AbyssGate": "abyss_gate",
+              "CrimsonPortal": "crimson_portal", "MemoryStone": "memory_stone", "EbbStones": "ebb_stones", "Ambush": "ambush"}
+
+
+def node_base(sub: str) -> str:
+    if sub in ("Shrine", "DarkAltar", "Library", "Valve", "EbbStones"):
+        return "Unknown"
+    if sub in ("Armorer", "Arcanist", "Herbalist", "Jeweler", "Caravan", "Fence"):
+        return "Shop"
+    return {"Tavern": "RestSite", "Lair": "Elite", "Trial": "Elite", "Cache": "Treasure", "AbyssGate": "Monster",
+            "Ambush": "Monster", "CrimsonPortal": "Boss", "LockedGate": "Edge", "MemoryStone": "ActStart"}[sub]
+
+
+def node_reveal(sub: str) -> str:
+    if sub in ("Lair", "Trial", "Cache", "LockedGate", "Valve", "AbyssGate"):
+        return "Marked"
+    if sub == "Ambush":
+        return "Hidden"
+    if sub in ("CrimsonPortal", "MemoryStone"):
+        return "Fixed"
+    return "OnEnter"
+
+
+NODE_SHOPS = {"Armorer": "Armorer", "Arcanist": "Arcanist", "Herbalist": "Herbalist", "Jeweler": "Jeweler",
+              "Caravan": "Caravan", "Fence": "Fence"}
+
+
+def node_from_shop(shop: str) -> str | None:
+    return "Shrine" if shop == "Temple" else NODE_SHOPS.get(shop)
+
+
+def node_from_mark(mark: str) -> str | None:
+    return {"AbyssGate": "AbyssGate", "LockedVault": "LockedGate", "Valve": "Valve", "Lair": "Lair", "Trial": "Trial",
+            "Cache": "Cache", "Ambush": "Ambush"}.get(mark)
+
+
+def node_from_unknown_roll(pantheon_roll: int, library: bool) -> str | None:
+    return {1: "Shrine", 2: "DarkAltar", 3: "EbbStones"}.get(pantheon_roll, "Library" if library else None)
+
+
+def node_available(sub: str, kind: str, slot: int) -> bool:
+    if sub in ("Shrine", "DarkAltar", "Library", "Trial", "Ambush", "EbbStones"):
+        return slot >= 1
+    if sub == "Lair":
+        return slot <= 1
+    if sub in ("Armorer", "Herbalist", "Tavern", "Cache", "CrimsonPortal", "MemoryStone", "Fence"):
+        return True
+    if sub in ("Arcanist", "Jeweler", "Caravan"):
+        return NODE_SHOPS[sub] in shop_act_pool_kind(kind, slot)
+    return {"LockedGate": kind == "FrozenBarrows", "Valve": kind == "ClockworkDepths",
+            "AbyssGate": kind in ("Hive", "Glory")}.get(sub, False)
+
+
+def lair_count(slot: int) -> int:
+    return 1 if slot <= 1 else 0
+
+
+def trial_count(slot: int, roll: int) -> int:
+    return 0 if slot < 1 else 1 + (1 if abs(roll) % 3 == 0 else 0)
+
+
+def cache_count(slot: int) -> int:
+    return 1
+
+
+def ambush_count(slot: int, roll: int) -> int:
+    return 0 if slot < 1 else 1 + abs(roll) % 2
+
+
+LIBRARY_PERCENT = 9
+
+
+def roll_library(slot: int, roll: int) -> bool:
+    return slot >= 1 and 0 <= roll < LIBRARY_PERCENT
+
+
+def lair_hp(max_hp: int) -> int:
+    return max(1, (max(0, max_hp) * 70 + 99) // 100)
+
+
+def lair_reagents(slot: int) -> int:
+    return 2 if slot <= 0 else 3
+
+
+def lair_hide_tiers(slot: int) -> tuple[int, int]:
+    return (1, 1) if slot <= 0 else (1, 2)
+
+
+def trial_strength(slot: int) -> int:
+    return 2 if slot >= 3 else 1
+
+
+def cache_trapped(roll: int) -> bool:
+    return abs(roll) % 100 < 50
+
+
+def cache_gold(slot: int) -> int:
+    return 30 + 15 * max(0, slot)
+
+
+def cache_trap(slot: int) -> int:
+    return 4 + 2 * max(0, slot)
+
+
+def ambush_strength(slot: int) -> int:
+    return 2 if slot >= 3 else 1
+
+
+def ambush_gold(slot: int) -> int:
+    return 15 + 10 * max(0, slot)
+
+
+# ───── M6 п. 1: вариации путей карты (Core/MapGraphRules) ─────
+# Граф: nodes {(col,row): kind}, edges {((c,r),(c,r))}. Виды узлов: Monster, Elite, Unknown, Shop, Rest, Treasure, Other.
+
+def portal_count(roll: int) -> int:
+    return 2 + abs(roll) % 2
+
+
+def secret_count(roll: int) -> int:
+    return 1 + abs(roll) % 2
+
+
+def pocket_count(roll: int) -> int:
+    return 1 + abs(roll) % 2
+
+
+PATH_VARIATION_ACTS = ("FrozenBarrows", "ClockworkDepths", "BloodCourt", "StarTower")
+LAST_REST_BOSS_HP_PERCENT = 10
+CELESTIAL_BANNER_COUNT = 2
+
+
+def last_rest_boss_hp(max_hp: int) -> int:
+    return max(1, max_hp + (max(0, max_hp) * LAST_REST_BOSS_HP_PERCENT + 99) // 100)
+
+
+def night_sight(moonborn: bool, shade: bool, torch: bool, potion: bool) -> bool:
+    return moonborn or shade or torch or potion
+
+
+def secret_sight(night: bool, barrow_map: bool, trickster: bool) -> bool:
+    return night or barrow_map or trickster
+
+
+def edges_cross(a, b, x, y) -> bool:
+    return a[1] == x[1] and b[1] == y[1] and b[1] == a[1] + 1 and (a[0] - x[0]) * (b[0] - y[0]) < 0
+
+
+def edge_blocked(edge, into_locked_vault: bool, to, secret: bool, has_key: bool, valve_turned, vault_opened) -> bool:
+    """edge — (kind, from, to, valve) или None."""
+    if into_locked_vault and not has_key and not vault_opened(to):
+        return True
+    if edge is None:
+        return False
+    kind, _, _, valve = edge
+    if kind == "Secret":
+        return not secret
+    if kind == "ValveOpen":
+        return valve is None or not valve_turned(valve)
+    if kind == "ValveClose":
+        return valve is not None and valve_turned(valve)
+    return False
+
+
+_LETTERS = {"Portal": "P", "Secret": "S", "Danger": "D", "PocketIn": "I", "PocketOut": "O", "ValveOpen": "V", "ValveClose": "C"}
+
+
+def encode_plan(edges, pockets, last_rest) -> str:
+    parts = [f"{_LETTERS[k]}:{f[0]},{f[1]}>{t[0]},{t[1]}" + (f"@{v[0]},{v[1]}" if v else "") for k, f, t, v in edges]
+    parts += [f"K:{p[0]},{p[1]}" for p in pockets]
+    if last_rest:
+        parts.append(f"L:{last_rest[0]},{last_rest[1]}")
+    return ";".join(parts)
+
+
+def decode_plan(text: str):
+    kinds = {v: k for k, v in _LETTERS.items()}
+    edges, pockets, last = [], [], None
+
+    def cell(s):
+        c, _, r = s.partition(",")
+        return (int(c), int(r))
+    for part in (text or "").split(";"):
+        if len(part) < 2 or part[1] != ":":
+            continue
+        body = part[2:]
+        try:
+            if part[0] == "K":
+                pockets.append(cell(body))
+            elif part[0] == "L":
+                last = cell(body)
+            elif part[0] in kinds:
+                valve = None
+                if "@" in body:
+                    body, _, v = body.partition("@")
+                    valve = cell(v)
+                f, _, t = body.partition(">")
+                edges.append((kinds[part[0]], cell(f), cell(t), valve))
+        except ValueError:
+            continue
+    return edges, pockets, last
+
+
+NODE_GROUPS = ["Trade", "Faith", "Danger", "Nature", "Magic"]
+
+
+def node_group(sub: str) -> str:
+    if sub in ("Armorer", "Jeweler", "Caravan", "Fence", "Tavern", "Cache"):
+        return "Trade"
+    if sub in ("Shrine", "EbbStones", "MemoryStone"):
+        return "Faith"
+    if sub in ("DarkAltar", "Trial", "AbyssGate", "CrimsonPortal", "Ambush"):
+        return "Danger"
+    if sub in ("Herbalist", "Lair"):
+        return "Nature"
+    return "Magic"
+
+
+class Graph:
+    """Зеркало GraphView + планировщик MapGraphRules.Plan (те же шаги и порядок кандидатов)."""
+
+    def __init__(self, cols: int, rows: int):
+        self.cols, self.rows = cols, rows
+        self.nodes: dict = {}
+        self.edges: set = set()
+
+    @property
+    def last_row(self):
+        return self.rows - 1
+
+    def ordered(self):
+        return sorted(self.nodes, key=lambda c: (c[1], c[0]))
+
+    def out_degree(self, c):
+        return sum(1 for e in self.edges if e[0] == c)
+
+    def in_degree(self, c):
+        return sum(1 for e in self.edges if e[1] == c)
+
+    def free_of_crossings(self, a, b):
+        return not any(edges_cross(a, b, x, y) for x, y in self.edges)
+
+    def can_add_adjacent(self, a, b):
+        return (a in self.nodes and b in self.nodes and b[1] == a[1] + 1 and abs(a[0] - b[0]) <= 1
+                and (a, b) not in self.edges and self.free_of_crossings(a, b))
+
+    def is_branch(self, node):
+        parents = [e[0] for e in self.edges if e[1] == node]
+        return bool(parents) and all(self.out_degree(p) >= 2 for p in parents)
+
+    def reaches_last_row(self, blocked):
+        rows = [c[1] for c in self.nodes if c[1] > 0]
+        first = min(rows) if rows else 1
+        frontier = [c for c in self.nodes if c[1] == first]
+        seen = set(frontier)
+        while frontier:
+            c = frontier.pop(0)
+            if c[1] == self.last_row:
+                return True
+            for e in sorted(self.edges):
+                if e[0] == c and not blocked(e[0], e[1]) and e[1] not in seen:
+                    seen.add(e[1])
+                    frontier.append(e[1])
+        return False
+
+
+def plan_paths(g: Graph, kind: str, valves, nxt):
+    edges, pockets, last = [], [], [None]
+    if kind not in PATH_VARIATION_ACTS:
+        return edges, pockets, None
+    combat = ("Monster", "Elite")
+
+    def edge_of(a, b):
+        for e in edges:
+            if e[1] == a and e[2] == b:
+                return e
+        return None
+
+    def add(e):
+        g.edges.add((e[1], e[2]))
+        edges.append(e)
+
+    if kind == "StarTower":
+        used = set()
+        for _ in range(portal_count(nxt(100))):
+            cand = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 2 <= g.last_row - 2 and a not in used
+                    for b in g.ordered() if b[1] == a[1] + 2 and abs(a[0] - b[0]) <= 2 and g.nodes[b] in combat and b not in used
+                    and (a, b) not in g.edges]
+            if not cand:
+                break
+            a, b = cand[nxt(len(cand))]
+            add(("Portal", a, b, None))
+            used |= {a, b}
+    pairs = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 2 <= g.last_row - 2 and not any(e[1] == a for e in edges)
+             for b in g.ordered() if b[1] == a[1] + 2 and abs(a[0] - b[0]) <= 1 and g.nodes[b] in combat
+             and not any(e[2] == b for e in edges) and (a, b) not in g.edges]
+    elites = [p for p in pairs if g.nodes[p[1]] == "Elite"]
+    pool = elites or pairs
+    if pool:
+        a, b = pool[nxt(len(pool))]
+        add(("Danger", a, b, None))
+    for _ in range(secret_count(nxt(100))):
+        cand = [(a, b) for a in g.ordered() if a[1] >= 2 and a[1] + 1 <= g.last_row - 1
+                for b in g.ordered() if g.can_add_adjacent(a, b)]
+        if not cand:
+            break
+        a, b = cand[nxt(len(cand))]
+        add(("Secret", a, b, None))
+
+    def nearest(row, col, ok):
+        for dc in (0, -1, 1):
+            c = (col + dc, row)
+            if c in g.nodes and g.nodes[c] != "Treasure" and ok(c):
+                return c
+        return None
+    for _ in range(pocket_count(nxt(100))):
+        cand = []
+        for r in range(3, g.last_row - 2):
+            for c in range(g.cols):
+                cell = (c, r)
+                if cell in g.nodes or any(abs(p[1] - r) <= 2 for p in pockets):
+                    continue
+                parent = nearest(r - 1, c, lambda p: g.free_of_crossings(p, cell))
+                child = nearest(r + 1, c, lambda q: g.free_of_crossings(cell, q))
+                if parent and child:
+                    cand.append((cell, parent, child))
+        if not cand:
+            break
+        cell, p, q = cand[nxt(len(cand))]
+        g.nodes[cell] = "Treasure"
+        pockets.append(cell)
+        add(("PocketIn", p, cell, None))
+        add(("PocketOut", cell, q, None))
+    rests = [c for c in g.ordered() if c[1] == g.last_row and g.nodes[c] == "Rest"]
+    if len(rests) >= 2:
+        last[0] = rests[nxt(len(rests))]
+    if kind == "ClockworkDepths":
+        switched = set()
+        for v in sorted(valves, key=lambda c: (c[1], c[0])):
+            def near(a, v=v):
+                return v[1] < a[1] <= min(v[1] + 5, g.last_row - 1) and abs(a[0] - v[0]) <= 3
+            swaps = sorted(((e[0], e[1], b) for e in g.edges
+                            if near(e[0]) and e[1][1] == e[0][1] + 1 and e[0] not in switched and edge_of(*e) is None
+                            for b in g.ordered() if g.can_add_adjacent(e[0], b)),
+                           key=lambda t: (t[0][1], t[0][0], t[1][0], t[2][0]))
+            if not swaps:
+                continue
+            a, old, new = swaps[nxt(len(swaps))]
+            add(("ValveOpen", a, new, v))
+            edges.append(("ValveClose", a, old, v))
+            switched.add(a)
+    return edges, pockets, last[0]
+
+
+# ───── M6 п. 2: настоящие призывы (Core/SummonRules) ─────
+
+SUMMON_KINDS = ["SpiritWolf", "BeastWolf", "BeastSabertooth", "BeastBear", "FlameAtronach", "FrostAtronach",
+                "StormAtronach", "RaisedDead", "AbyssGuardian", "SpectralKnight", "LoyalGuard", "BoneThrall"]
+SUMMON_BASE_SLOTS = 1
+RAISE_DEAD_PERCENT, RAISE_DEAD_PERCENT_UPGRADE, RAISED_DEAD_DAMAGE = 50, 15, 4
+ABYSS_GUARDIAN_HP, ABYSS_GUARDIAN_HP_UPGRADE, ABYSS_GUARDIAN_DAMAGE, ABYSS_GUARDIAN_SLUMBER_TURNS = 30, 8, 10, 1
+SPECTRAL_KNIGHT_HP, SPECTRAL_KNIGHT_HP_UPGRADE, SPECTRAL_KNIGHT_DAMAGE, SPECTRAL_KNIGHT_ATTACK_BONUS = 25, 7, 5, 2
+BONE_THRALL_HP, BONE_THRALL_DAMAGE = 10, 3
+SUMMON_FIRST_GAP, SUMMON_SPACING, SUMMON_OSTY_GAP = 60.0, 150.0, 220.0
+
+
+def summon_slots(bonus: int) -> int:
+    return SUMMON_BASE_SLOTS + max(0, bonus)
+
+
+def summon_dismissals(other_summons: int, slots: int) -> int:
+    return max(0, other_summons - (max(1, slots) - 1))
+
+
+def summon_absorb(incoming: int, summon_hp: int, pending: int) -> int:
+    return max(0, min(incoming, summon_hp - pending))
+
+
+def summon_scaled_loss(taken: int, percent: int) -> int:
+    if taken <= 0:
+        return 0
+    if percent <= 0:
+        return taken
+    return (taken * (100 + percent) + 99) // 100
+
+
+def raised_dead_hp(max_hp: int, percent: int) -> int:
+    return 0 if max_hp <= 0 or percent <= 0 else max(1, max_hp * percent // 100)
+
+
+def can_raise(is_enemy: bool, is_boss: bool) -> bool:
+    return is_enemy and not is_boss
+
+
+def beast_kind(elites_defeated: int) -> str:
+    return "BeastWolf" if elites_defeated <= 0 else "BeastSabertooth" if elites_defeated == 1 else "BeastBear"
+
+
+def summon_move(kind: str, turns_on_field: int) -> str:
+    return "Slumber" if kind == "AbyssGuardian" and turns_on_field < ABYSS_GUARDIAN_SLUMBER_TURNS else "Strike"
+
+
+def summon_is_undead(kind: str) -> bool:
+    return kind in ("RaisedDead", "BoneThrall")
+
+
+def summon_is_companion(kind: str) -> bool:
+    return kind == "LoyalGuard"
+
+
+def summon_art_key(kind: str) -> str:
+    return "summon_" + re.sub(r"(?<!^)([A-Z])", r"_\1", kind).lower()
+
+
+def summon_layout_x(hero_half_width: float, index: int, has_osty: bool) -> float:
+    return hero_half_width + SUMMON_FIRST_GAP + max(0, index) * SUMMON_SPACING + (SUMMON_OSTY_GAP if has_osty else 0.0)
+
+
+# ───── M6 п. 3: облики форм и Знаки Путей (Core/HeroLookRules) ─────
+
+HERO_LOOKS = ["Hero", "Vampire", "Werewolf", "Lich", "Clockwork"]
+HERO_PATHS = ["None", "Paladin", "BlackKnight", "Champion", "Barbarian", "Monk", "Assassin", "Blightbringer",
+              "MysticArcher", "ElementLord", "Battlemage", "Reflector", "Medium", "Reborn"]
+LOOK_BEAST_SCALE = 1.15
+LOOK_MAX_ORBS = 3
+
+
+def hero_look(worldview: str, clockwork: bool) -> str:
+    """Мировоззрение важнее Заводного сердца."""
+    if worldview in ("Lich", "Vampire", "Werewolf"):
+        return worldview
+    return "Clockwork" if clockwork else "Hero"
+
+
+def look_borrows_model(look: str) -> bool:
+    return look in ("Lich", "Clockwork")
+
+
+def look_sprite_key(look: str) -> str | None:
+    return {"Vampire": "hero_vampire", "Werewolf": "hero_werewolf"}.get(look)
+
+
+def look_sprite_variant(look: str, beast: bool, lord: bool) -> str | None:
+    if look == "Werewolf" and beast:
+        return "beast"
+    if look == "Vampire" and lord:
+        return "lord"
+    return None
+
+
+def look_keeps_tint(look: str) -> bool:
+    return look == "Hero"
+
+
+def look_beast_scale(look: str) -> float:
+    return 1.0 if look_sprite_key(look) else LOOK_BEAST_SCALE
+
+
+def path_sign_key(path: str) -> str | None:
+    if path in ("None", "Reborn"):
+        return None
+    return re.sub(r"(?<!^)([A-Z])", r"_\1", path).lower()
+
+
+def orb_art(element: str) -> str:
+    return {"Fire": "PlasmaOrb", "Shock": "LightningOrb"}.get(element, "FrostOrb")
+
+
+def orb_sequence(steam: int, spark: int, rime: int) -> list[str]:
+    seq = ["Fire"] * max(0, steam) + ["Shock"] * max(0, spark) + ["Frost"] * max(0, rime)
+    return seq[:LOOK_MAX_ORBS]
+
+
+def orb_slot(index: int, capacity: int, is_local: bool) -> tuple[float, float]:
+    """Дуга ванильного NOrbManager.TweenLayout."""
+    capacity = max(1, capacity)
+    index = min(max(index, 0), capacity - 1)
+    radius = 225.0 + 75.0 * ((capacity - 3.0) / 7.0)
+    if not is_local:
+        radius *= 0.75
+    sweep = 0.0 if capacity == 1 else 125.0 - index * (125.0 / (capacity - 1))
+    a = math.radians(-25.0 - sweep)
+    return (-math.cos(a) * radius, math.sin(a) * radius)
+
+
+# ───── M6 п. 4: кукла героя — оружие в руках и аура брони (Core/PaperDollRules) ─────
+
+DOLL_MATERIAL_COLOR = {
+    "Iron": (0.64, 0.66, 0.70), "Steel": (0.72, 0.82, 0.98), "Silver": (1.0, 1.0, 1.0),
+    "ScaledSteel": (0.95, 0.80, 0.48), "Obsidian": (0.36, 0.46, 0.40), "DragonBone": (1.0, 0.94, 0.80),
+    "EternalIce": (0.55, 0.96, 0.95), "Abyssal": (0.62, 0.14, 0.16),
+}
+DOLL_WEAPON_ART = {
+    "Dagger": "dagger", "Sword": "sword", "Axe": "axe", "Mace": "mace", "Spear": "spear", "TwoHanded": "greatsword",
+    "Bow": "bow", "Crossbow": "crossbow", "Staff": "staff", "Shield": "shield",
+}
+DOLL_AURA = {"Heavy": ("Steady", 0.42, 2.4), "Light": ("Flicker", 0.32, 0.7), "Robe": ("Shimmer", 0.36, 1.5)}
+DOLL_CANVAS = (140, 260)
+
+
+def doll_material(tier: int, abyssal: bool = False, explicit: str = "None") -> str:
+    if explicit != "None":
+        return explicit
+    if abyssal:
+        return "Abyssal"
+    return {2: "Steel", 3: "Silver", 4: "Obsidian"}.get(tier, "Iron" if tier <= 1 else "EternalIce")
+
+
+def doll_material_color(material: str) -> tuple[float, float, float]:
+    return DOLL_MATERIAL_COLOR.get(material, DOLL_MATERIAL_COLOR["Iron"])
+
+
+def doll_glint(material: str) -> bool:
+    return material in ("Silver", "Obsidian", "EternalIce")
+
+
+def doll_smoke(material: str) -> bool:
+    return material == "Abyssal"
+
+
+def doll_aura(pieces: list[tuple[str, int, str]]) -> tuple[str, str, float]:
+    """(класс, материал, сила) по броне [(класс, ступень, материал)]; ("None", "None", 0) — ауры нет."""
+    pieces = [p for p in pieces if p[0] != "None"]
+    if not pieces:
+        return ("None", "None", 0.0)
+    order = {"Heavy": 0, "Light": 1}
+    counts: dict[str, int] = {}
+    for cls, _, _ in pieces:
+        counts[cls] = counts.get(cls, 0) + 1
+    cls = min(counts, key=lambda c: (-counts[c], order.get(c, 2)))
+    best = max((p for p in pieces if p[0] == cls), key=lambda p: p[1])  # первая с наибольшей ступенью
+    material = best[2] if best[2] != "None" else doll_material(best[1])
+    return (cls, material, min(1.0, 0.4 + 0.15 * len(pieces)))
+
+
+def doll_weapon_art(kind: str) -> str | None:
+    return DOLL_WEAPON_ART.get(kind)
+
+
+def doll_blocks_off_hand(main_kind: str) -> bool:
+    return main_kind in ("TwoHanded", "Bow", "Crossbow")
+
+
+def doll_shows_weapons(own_sprite_look: bool, beast_form: bool) -> bool:
+    return not beast_form and not own_sprite_look
+
+
+def doll_pivot(kind: str) -> tuple[int, int]:
+    return (70, 130) if kind in ("Shield", "Bow", "Crossbow") else (70, 190)
+
+
+def doll_rest_angle(kind: str) -> float:
+    if kind in ("Staff", "Spear"):
+        return -0.12
+    if kind == "Shield":
+        return 0.0
+    if kind in ("Bow", "Crossbow"):
+        return 0.1
+    return 0.35
+
+
+def doll_scale(kind: str) -> float:
+    if kind == "Dagger":
+        return 0.62
+    return 0.95 if kind in ("TwoHanded", "Spear", "Staff") else 0.8
+
+
+# ───── M6 п. 5: интерфейс лавки — вкладки, превью груза, «Перегруз?» (Core/ShopUiRules) ─────
+
+SHOP_TABS = ["Buy", "Sell", "Services"]
+SHOP_SELL_ROWS_VISIBLE = 8
+
+
+def overload_tier(excess: int) -> int:
+    if excess <= 0:
+        return 0
+    if excess <= 5:
+        return 1
+    return 2 if excess <= 10 else 3
+
+
+def burden_preview(weight: int, capacity: int, delta: int) -> dict:
+    before, after, cap = max(0, weight), max(0, weight + delta), max(0, capacity)
+    tb, ta = overload_tier(before - cap), overload_tier(after - cap)
+    return {"before": before, "after": after, "capacity": cap, "delta": after - before,
+            "excess_after": max(0, after - cap), "tier_before": tb, "tier_after": ta,
+            "worsens": ta > tb, "improves": ta < tb}
+
+
+def needs_overload_warning(preview: dict) -> bool:
+    return preview["delta"] > 0 and preview["worsens"]
+
+
+def shop_tab_enabled(tab: str, sell_count: int, service_count: int) -> bool:
+    return {"Buy": True, "Sell": sell_count > 0, "Services": service_count > 0}.get(tab, False)
+
+
+def shop_tab_badge(tab: str, sell_count: int, service_count: int) -> int:
+    return {"Sell": max(0, sell_count), "Services": max(0, service_count)}.get(tab, 0)
+
+
+def shop_sell_order(items: list[tuple[int, int]]) -> list[int]:
+    """items — [(выручка, вес)] → индексы: дороже выше, при равной цене тяжелее выше, дальше по порядку."""
+    return sorted(range(len(items)), key=lambda i: (-items[i][0], -items[i][1], i))
+
+
+def sell_percent(trust_level: int, fence: bool) -> int:
+    return 60 if fence else 50 if trust_level >= 3 else 35
+
+
+# ───── M7 п. 1: облик супербоссов — свои спрайты, вариант по состоянию, перекраска свиты (Core/SuperbossLookRules) ─────
+
+SUPERBOSSES = ["BlackWanderer", "BarrowReaper", "DeepMasterSmith", "GatebreakerEnvoy", "BloodCourtLord", "FirstSummoner",
+               "WorldEater", "NamelessShadow"]
+SUPERBOSS_ART = {b: "".join("_" + c.lower() if c.isupper() and i else c.lower() for i, c in enumerate(b)) for b in SUPERBOSSES}
+SUPERBOSS_VARIANTS = {"BlackWanderer": ["guard"], "BloodCourtLord": ["cocoon"], "WorldEater": ["landed"],
+                      "NamelessShadow": ["exposed"]}
+ECHO_KNIGHT_ART = "echo_knight"
+SUPERBOSS_COURT = {"WraithThrall": "BlackWanderer", "BarrowDead": "BarrowReaper", "SteamValve": "DeepMasterSmith",
+                   "GargoyleServant": "BloodCourtLord", "DragonEgg": "FirstSummoner", "CultistThrall": "FirstSummoner",
+                   "FacelessPriest": "WorldEater", "ShadowSoul": "NamelessShadow"}
+COURT_TINT = {
+    "BlackWanderer": (0.60, 0.70, 0.82, 1.00),
+    "BarrowReaper": (0.52, 0.80, 0.95, 1.00),
+    "DeepMasterSmith": (0.08, 1.00, 0.86, 0.62),
+    "GatebreakerEnvoy": (0.00, 1.00, 0.55, 0.45),
+    "BloodCourtLord": (0.96, 1.00, 0.50, 0.56),
+    "FirstSummoner": (0.70, 0.80, 0.74, 1.00),
+    "WorldEater": (0.04, 1.00, 0.66, 0.44),
+    "NamelessShadow": (0.78, 0.55, 0.45, 0.75),
+}
+COURT_MIN_TINT = 0.4
+
+
+def superboss_variant(boss: str, guarding: bool, invulnerable: bool, flying: bool) -> str | None:
+    if boss == "BlackWanderer":
+        return "guard" if guarding else None
+    if boss == "BloodCourtLord":
+        return "cocoon" if invulnerable else None
+    if boss == "WorldEater":
+        return None if flying else "landed"
+    if boss == "NamelessShadow":
+        return None if invulnerable else "exposed"
+    return None
+
+
+def court_of(monster_type: str) -> str | None:
+    return SUPERBOSS_COURT.get(monster_type)
+
+
+def combined_hue(court_hue: float, game_hue: float) -> float:
+    return (court_hue + game_hue) % 1.0
+
+
+# ───── M7 п. 2: фоны актов — бой, лагерь, карта, сундук (Core/ActLookRules, Acts/ActLooks, tools/art/acts) ─────
+
+ACT_ART = {"FrozenBarrows": "frozen_barrows", "ClockworkDepths": "clockwork_depths", "BloodCourt": "blood_court",
+           "StarTower": "star_tower", "NamelessLimit": "nameless_limit"}
+ACT_PIECES = ["combat.jpg", "combat_fg.png", "camp.jpg", "map_top.png", "map_middle.png", "map_bottom.png"]
+ACT_PIECE_SIZE = {"combat.jpg": (2048, 960), "combat_fg.png": (2048, 960), "camp.jpg": (3072, 1440),
+                  "map_top.png": (2036, 1440), "map_middle.png": (2036, 1440), "map_bottom.png": (2036, 1440)}
+COMBAT_HALF = (1440.77, 675.36)
+CAMP_RECT = (-444.0, -139.0, 2320.8, 1157.0)
+ACT_CHEST_TINT = {
+    "FrozenBarrows": (0.80, 0.92, 1.00, "0E1620"),
+    "ClockworkDepths": (1.00, 0.88, 0.70, "1E1408"),
+    "BloodCourt": (1.00, 0.72, 0.74, "1A0608"),
+    "StarTower": (0.82, 0.84, 1.00, "0E0E24"),
+    "NamelessLimit": (0.78, 0.70, 0.92, "0E0A16"),
+}
+
+
+def act_piece_path(kind: str, piece: str) -> str | None:
+    key = ACT_ART.get(kind)
+    return f"acts/{key}/{piece}" if key else None
+
+
+def camp_target(look_id: str) -> str:
+    return "RestSiteBG2" if look_id == "underdocks" else "RestSiteBG"
+
+
+def camp_keeps(node: str, target: str) -> bool:
+    return node == target or node == "RestSiteLighting" or "Log" in node or node.startswith("light_small")
+
+
+# ───── M7 п. 3: облик выбора происхождения и предыстории (Core/OriginLookRules, Relics/OriginLooks, tools/art/relics) ─────
+
+ORIGIN_CREST = {
+    **{o: "Clan" for o in ("FrostbornOrigin", "ForgebloodOrigin", "DunebladeOrigin", "CitadelOrigin")},
+    **{o: "Tribe" for o in ("MoonbornOrigin", "ThicketbornOrigin", "MarshbornOrigin")},
+    **{o: "Dynasty" for o in ("HighbornOrigin", "MistbornOrigin", "AshbornOrigin")},
+}
+ORIGIN_HEADING = {"Clan": "ORIGIN_PICK.clan", "Tribe": "ORIGIN_PICK.tribe", "Dynasty": "ORIGIN_PICK.dynasty"}
+RELIC_ICON_SIZES = {"icon": 85, "outline": 85, "big": 256}
+
+
+def origin_heading(relic_types: list[str]) -> str | None:
+    if not relic_types:
+        return None
+    if all(t.endswith("Background") for t in relic_types):
+        return "ORIGIN_PICK.background"
+    crests = {ORIGIN_CREST.get(t) for t in relic_types}
+    if len(crests) == 1 and None not in crests:
+        return ORIGIN_HEADING[crests.pop()]
+    return None
+
+
+# ───── M7 п. 4: боевые эффекты (Core/VfxRules, UI/RequiemVfx, UI/RequiemVfxPatches) ─────
+
+VFX_DAMAGE_TINT = {
+    "Frost": "9FD8FF", "Fire": "FF7A2E", "Shock": "C9A8FF", "Poison": "7BC043",
+    "Blight": "5E6B3A", "Light": "FFE680", "Magic": "B565E8", "True": "E0E0E0",
+}
+VFX_HIT_KIND = {
+    "Fire": "FireBurst", "Frost": "FrostMist", "Shock": "SparkSpray", "Poison": "PoisonCloud",
+    "Blight": "BlightSpores", "Light": "LightStars", "Magic": "MagicMissile", "True": "TrueSlice",
+}
+VFX_HIT_THROTTLE_MS = 150
+VFX_TICK_SCALE = 0.6
+VFX_BLIGHT_FX_TINT = "8C9A4E"
+VFX_SECONDS = {"Overstrain": 0.4, "Broken": 0.6, "Dodge": 0.3, "Shout": 0.5, "Summon": 0.6,
+               "Rewind": 1.5, "PortalEnter": 1.0, "PortalPulse": 1.0}
+VFX_SHOUT_TINT = {"War": "FF8A3D", "Guard": "FFD36B", "Rally": "9FD8FF"}
+VFX_SUMMON_TINT = {
+    "FlameAtronach": "FF7A2E", "FrostAtronach": "9FD8FF", "StormAtronach": "C9A8FF",
+    "SpiritWolf": "7FE0B0", "BeastWolf": "7FE0B0", "BeastSabertooth": "7FE0B0", "BeastBear": "7FE0B0",
+    "RaisedDead": "A8C27A", "BoneThrall": "A8C27A", "AbyssGuardian": "B3122E", "SpectralKnight": "BFD8FF",
+    "LoyalGuard": "FFE680",
+}
+VFX_PORTAL_TINT = "B3122E"
+
+
+def vfx_hit(damage_type: str, powered_attack: bool, total_damage: int):
+    """(вид, цвет, масштаб) или None — как VfxRules.For."""
+    kind = VFX_HIT_KIND.get(damage_type)
+    if kind is None or (not powered_attack and total_damage <= 0):
+        return None
+    tint = VFX_BLIGHT_FX_TINT if damage_type == "Blight" else VFX_DAMAGE_TINT[damage_type]
+    return kind, tint, 1.0 if powered_attack else VFX_TICK_SCALE
+
+
+def vfx_throttled(last_ms: int, now_ms: int) -> bool:
+    return last_ms != 0 and now_ms >= last_ms and now_ms - last_ms < VFX_HIT_THROTTLE_MS
+
+
+def vfx_shout(attack: bool, power: bool) -> str:
+    return "War" if attack else "Rally" if power else "Guard"
+
+
+def vfx_portal_pulse(is_second_boss_point: bool, is_superboss: bool) -> bool:
+    return is_second_boss_point and is_superboss
+
+
+def vfx_rewind_cracks(seed: int, count: int = 7, segments: int = 4):
+    """Трещины отката — тот же LCG, что в VfxRules.RewindCracks (точки в долях полуэкрана)."""
+    import math
+    state = seed & 0xFFFFFFFF
+
+    def nxt():
+        nonlocal state
+        state = (state * 1664525 + 1013904223) & 0xFFFFFFFF
+        return (state >> 8) / 16777216.0
+
+    cracks = []
+    for i in range(count):
+        angle = (i + 0.3 + 0.4 * nxt()) / count * math.tau
+        pts = [(0.04 * math.cos(angle), 0.04 * math.sin(angle))]
+        for s in range(1, segments + 1):
+            radius = 0.04 + 0.96 * s / segments
+            a = angle + (nxt() - 0.5) * 0.35
+            pts.append((max(-1.0, min(1.0, radius * math.cos(a))), max(-1.0, min(1.0, radius * math.sin(a)))))
+        cracks.append(pts)
+    return cracks
+
+
+# ───── M7 п. 5: звуки Реквиема (Core/SfxRules.cs, data/sfx.csv; art spec §6) ─────
+
+SFX_EVENTS = ["hit.fire", "hit.frost", "hit.shock", "hit.poison", "hit.blight", "hit.light", "hit.magic", "hit.true",
+              "overstrain", "broken", "dodge", "shout.war", "shout.guard", "shout.rally", "summon", "rewind", "portal.enter",
+              "cache.open", "cache.trap"]
+SFX_HIT_EVENT = {"Fire": "hit.fire", "Frost": "hit.frost", "Shock": "hit.shock", "Poison": "hit.poison",
+                 "Blight": "hit.blight", "Light": "hit.light", "Magic": "hit.magic", "True": "hit.true"}
+SFX_HIT_THROTTLE_MS = 120
+SFX_TICK_VOLUME = 0.5
+SFX_MAX_VOLUME = 2.0
+SFX_SOURCES = ("fmod", "game", "own")
+
+
+def sfx_hit_event(damage_type: str):
+    """Звук удара по типу урона; физический — None (ванильный звук атаки)."""
+    return SFX_HIT_EVENT.get(damage_type)
+
+
+def sfx_hit_volume(damage_type: str, powered_attack: bool, total_damage: int) -> float:
+    """Как вспышка: атака звучит всегда, не-атака — если прошёл урон, и тише."""
+    if sfx_hit_event(damage_type) is None or (not powered_attack and total_damage <= 0):
+        return 0.0
+    return 1.0 if powered_attack else SFX_TICK_VOLUME
+
+
+def sfx_throttled(last_ms: int, now_ms: int) -> bool:
+    return last_ms != 0 and now_ms >= last_ms and now_ms - last_ms < SFX_HIT_THROTTLE_MS
+
+
+def sfx_shout_event(variant: str) -> str:
+    return {"War": "shout.war", "Rally": "shout.rally"}.get(variant, "shout.guard")
+
+
+def sfx_layer_volume(volume: float, scale: float) -> float:
+    return max(0.0, min(SFX_MAX_VOLUME, volume * scale))
+
+
+def sfx_parse(text: str) -> dict[str, list[tuple[str, str, float]]]:
+    """Зеркало SfxTable.Parse: событие → слои (источник, звук, громкость); ошибка — ValueError с номером строки."""
+    layers: dict[str, list[tuple[str, str, float]]] = {}
+    lines = [l for l in text.splitlines() if l.strip() and not l.startswith("#")]
+    for n, row in enumerate(csv.DictReader(lines), 2):
+        ev, src, sound = row.get("event", ""), row.get("source", ""), row.get("sound", "")
+        if ev not in SFX_EVENTS:
+            raise ValueError(f"неизвестное событие {ev!r} (строка {n})")
+        if src not in SFX_SOURCES:
+            raise ValueError(f"неизвестный источник {src!r} (строка {n})")
+        if not sound or (src == "fmod") != sound.startswith("event:/"):
+            raise ValueError(f"звук {sound!r} не подходит к источнику {src} (строка {n})")
+        try:
+            vol = float(row.get("volume", ""))
+        except ValueError:
+            raise ValueError(f"громкость {row.get('volume')!r} (строка {n})") from None
+        if not 0 <= vol <= SFX_MAX_VOLUME:
+            raise ValueError(f"громкость {vol} вне 0…{SFX_MAX_VOLUME} (строка {n})")
+        layers.setdefault(ev, []).append((src, sound, vol))
+    return layers
+
+
+# ───── M7 п. 6: свои значки реликвий и портреты карт (tools/art/art_fit.py, relics/draw_relics.py, cards/draw_portraits.py) ─────
+
+CARD_PORTRAIT_SIZES = {"small": (250, 190), "big": (1000, 760)}
+HIDDEN_RELIC_POOLS = {"Defect", "Necrobinder"}
+VISIBLE_RELIC_BUCKETS = {"keep", "rework"}
+
+
+def vanilla_relic_visible(pool: str, bucket: str) -> bool:
+    """Ванильная реликвия выпадает героям Реквиема: оставлена/переделана и не только у скрытых героев (Дефект, Некробиндер)."""
+    return bucket in VISIBLE_RELIC_BUCKETS and not set(pool.split("+")) & HIDDEN_RELIC_POOLS
+
+
+def relic_icon_conflicts(borrowed: dict[str, str | None], visible: set[str], notes: dict[str, str] | None = None):
+    """borrowed: реликвия мода → ванильный значок (None — свой файл). Возвращает (ошибки, исключения) — списки реликвий.
+
+    Ошибка — значок у 2+ реликвий мода или значок видимой ванильной реликвии; исключение — note «дубль: …»."""
+    notes = notes or {}
+    by_icon: dict[str, list[str]] = {}
+    for relic, icon in borrowed.items():
+        if icon:
+            by_icon.setdefault(icon, []).append(relic)
+    errors, allowed = [], []
+    for icon, relics in by_icon.items():
+        if len(relics) < 2 and icon not in visible:
+            continue
+        for relic in relics:
+            (allowed if notes.get(relic, "").startswith("дубль:") else errors).append(relic)
+    return sorted(errors), sorted(allowed)

@@ -12,6 +12,18 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 /// <summary>Реакции врагов на исчерпание ◆ и шаткость: Обледенение, Отдышаться, Ошеломление, Слом.</summary>
 public static class EnemyResponses
 {
+    /// <summary>Чем занят враг вместо атаки (для иконки намерения, art spec 4.5).</summary>
+    public enum RestKind { None, Breather, Focus }
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Creature, System.Runtime.CompilerServices.StrongBox<RestKind>> Resting = new();
+
+    /// <summary>Намерение «Оглушён» на самом деле «Отдышаться»/«Сосредоточиться» мода.</summary>
+    public static RestKind RestingAs(Creature? enemy) =>
+        enemy != null && enemy.IsStunned && Resting.TryGetValue(enemy, out var box) ? box.Value : RestKind.None;
+
+    private static void MarkResting(Creature enemy, RestKind kind) =>
+        Resting.AddOrUpdate(enemy, new System.Runtime.CompilerServices.StrongBox<RestKind>(kind));
+
     /// <summary>
     /// ◆ врага упала до нуля. Если на нём Озноб — Обледенение (намерение отменено, затем иммунитет 2 хода).
     /// Иначе при атакующем намерении — «Отдышаться» (Блок 5 и полная ◆ вместо атаки). Непоколебимые просто Изнурены.
@@ -23,6 +35,7 @@ public static class EnemyResponses
 
         if (enemy.HasPower<ChillPower>() && !enemy.HasPower<FrozenImmunityPower>())
         {
+            Resting.Remove(enemy);
             await CreatureCmd.Stun(enemy);
             await PowerCmd.Apply<FrozenImmunityPower>(new ThrowingPlayerChoiceContext(), enemy, EnemyRules.FrozenImmunityTurns, null, null, silent: true);
             return;
@@ -43,8 +56,10 @@ public static class EnemyResponses
         var stamina = enemy.GetPower<EnemyStaminaPower>();
         if (stamina == null || stamina.DisplayAmount > 0 || !enemy.Monster.IntendsToAttack) return;
 
+        MarkResting(enemy, RestKind.Breather);
         await CreatureCmd.Stun(enemy, async _ =>
         {
+            Resting.Remove(enemy);
             await CreatureCmd.GainBlock(enemy, EnemyRules.BreatherBlock, ValueProp.Unpowered, null);
             enemy.GetPower<EnemyStaminaPower>()?.Set(int.MaxValue);
         });
@@ -57,8 +72,10 @@ public static class EnemyResponses
         var mana = enemy.GetPower<EnemyManaPower>();
         if (mana == null || mana.DisplayAmount >= EnemyRules.MinSpellMana || !enemy.Monster.IntendsToAttack) return;
 
+        MarkResting(enemy, RestKind.Focus);
         await CreatureCmd.Stun(enemy, async _ =>
         {
+            Resting.Remove(enemy);
             await PowerCmd.Apply<SpellShieldPower>(new ThrowingPlayerChoiceContext(), enemy, EnemyRules.FocusSpellShield, enemy, null);
             enemy.GetPower<EnemyManaPower>()?.Set(int.MaxValue);
         });

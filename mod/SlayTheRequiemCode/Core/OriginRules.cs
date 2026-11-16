@@ -43,4 +43,42 @@ public static class OriginRules
         1 => (12, 5),
         _ => (20, 7),
     };
+
+    // ───── Латоносец: Горнокровные, Дюнные клинки, Цитадельцы (M4 п. 1) ─────
+
+    /// <summary>«Ярость горна» (Горнокровные): после 3+ Атак за ход урон по герою в ход врага ×0.75.</summary>
+    public const int ForgeFuryAttacks = 3;
+    public const decimal ForgeFuryMultiplier = 0.75m;
+    public static bool ForgeFuryActive(int attacksThisTurn) => attacksThisTurn >= ForgeFuryAttacks;
+
+    /// <summary>«Ритм дюн» (Дюнные клинки): прирост ◆ +1 при ◆ ниже 75 % пула, +2 — ниже 50 %.</summary>
+    public static int DuneRhythmRegen(int stamina, int pool)
+    {
+        if (pool <= 0) return 0;
+        if (stamina * 2 < pool) return 2;
+        if (stamina * 4 < pool * 3) return 1;
+        return 0;
+    }
+
+    /// <summary>«Выучка» (Цитадельцы): +1 очко характеристик за каждые 3 уровня.</summary>
+    public static int TrainingBonusPoints(int level) => Math.Clamp(level, 1, ProgressionRules.MaxLevel) / 3;
+
+    /// <summary>«Заговорщик»: яды на оружии +25 % силы (округление вверх).</summary>
+    public static int ConspiratorPotency(int potency) => potency <= 0 ? potency : (potency * 5 + 3) / 4;
+
+    /// <summary>«Клинок-ансей»: Дух клинка добавляет атаке урон магией ⌊✦/2⌋ (считается до траты 1 ✦).</summary>
+    public static int BladeSpiritBonus(int mana) => Math.Max(0, mana) / 2;
+
+    /// <summary>«Дух света» (Брат Рассвета): урон светом случайному врагу в начале хода.</summary>
+    public const int LightSpiritDamage = 2;
+
+    /// <summary>«Верный-до-Конца» (Посланник): страж растёт с уровнем героя — ♥ 8 + 2 за уровень, удар 2 + 1 за каждые 4 уровня.</summary>
+    public static (int hp, int damage) LoyalGuard(int level)
+    {
+        var l = Math.Clamp(level, 1, ProgressionRules.MaxLevel);
+        return (8 + 2 * l, 2 + l / 4);
+    }
+
+    /// <summary>«Легионер»: Блок от карт +2 в первый ход боя, если в левой руке щит.</summary>
+    public const int LegionaryFirstTurnBlock = 2;
 }
