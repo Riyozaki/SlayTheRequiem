@@ -156,10 +156,10 @@ PATH_PICKS = [(f"PickPath{s}", en, f"Path of the {en}. {ee}" if s != "Reborn" el
                rn, f"Путь: {rn}. {re_}") for s, en, rn, ee, re_, *_ in PATHS]
 
 OTHER_PICKS = [
-    ("PickBeastHunter", "Hunter", "Node {Value}: I +2 beast damage, II beast attacks apply 2 [gold]Bleed[/gold], III +2 more damage.",
-     "Охотник", "Узел {Value}: I +2 урона зверя, II звериные атаки — 2 [gold]Кровотечения[/gold], III ещё +2 урона."),
-    ("PickBeastStalker", "Stalker", "Node {Value}: I +1 form turn, II a turn per 2 hits instead of 3, III +1 more form turn.",
-     "Ловчий", "Узел {Value}: I +1 ход формы, II ход за 2 удара вместо 3, III ещё +1 ход."),
+    ("PickBeastHunter", "Fang", "Node {Value}: I +2 beast damage, II beast attacks apply 2 [gold]Bleed[/gold], III +2 more damage.",
+     "Клык", "Узел {Value}: I +2 урона зверя, II звериные атаки — 2 [gold]Кровотечения[/gold], III ещё +2 урона."),
+    ("PickBeastStalker", "Long Night", "Node {Value}: I +1 form turn, II a turn per 2 hits instead of 3, III +1 more form turn.",
+     "Долгая ночь", "Узел {Value}: I +1 ход формы, II ход за 2 удара вместо 3, III ещё +1 ход."),
     ("PickBeastAlpha", "Alpha", "Node {Value}: a wolf joins each Transformation (8/12/16 HP); III +1 summon slot.",
      "Альфа", "Узел {Value}: при Обращении — волк (8/12/16 ♥); III +1 слот призыва."),
     ("PickCardEnchantFlaming", "Flaming", "Attack: also apply 3 [gold]Burning[/gold].", "Пламенная", "Атака: ещё 3 [gold]Горения[/gold]."),
@@ -209,10 +209,10 @@ FORM_RELICS = [
      "The night is long, and so is hunger.", "Ночь длинна, как и голод."),
     ("WerewolfForm", "Beast Bearer",
      "[gold]Moon Call[/gold] — transform. Outside the form Regeneration does not work; rest heals 25% less. "
-     "Every 2 Transformations in won combats — a branch node at camp: Hunter {Hunter}/3, Stalker {Stalker}/3, Alpha {Alpha}/3 (pending: {Pending})." + _APOSTATE["eng"],
+     "Every 2 Transformations in won combats — a branch node at camp: Fang {Hunter}/3, Long Night {Stalker}/3, Alpha {Alpha}/3 (pending: {Pending})." + _APOSTATE["eng"],
      "Носитель Зверя",
      "[gold]Зов луны[/gold] — Обращение. Вне формы Регенерация не действует, отдых лечит на 25 % меньше. "
-     "Каждые 2 Обращения в выигранных боях — узел ветки в лагере: Охотник {Hunter}/3, Ловчий {Stalker}/3, Альфа {Alpha}/3 (ждут: {Pending})." + _APOSTATE["rus"],
+     "Каждые 2 Обращения в выигранных боях — узел ветки в лагере: Клык {Hunter}/3, Долгая ночь {Stalker}/3, Альфа {Alpha}/3 (ждут: {Pending})." + _APOSTATE["rus"],
      "The moon always finds you.", "Луна всегда тебя находит."),
     ("DarkPactForm", "Dark Pact",
      "+4 max ✦; summoning spells cost 1 less ✦; −8 max HP. Defeat the Tomb Guardian to become a Herald." + _APOSTATE["eng"],

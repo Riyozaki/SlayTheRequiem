@@ -1,5 +1,8 @@
 # Технический план
 
+> Документ описывает архитектуру этапа 1; он обновлён по ревью F-17 там, где расходился с кодом. Актуальные
+> цифры контента — в README, состояние этапов — в `docs/ROADMAP.md`, синхронизация настроек — §«Настройки забега» ниже.
+
 ## 1. Стек
 
 | Компонент | Выбор | Примечание |
@@ -9,7 +12,7 @@
 | Патчинг | HarmonyX (встроен в загрузчик модов StS2) | префиксы/постфиксы на методы игры |
 | Библиотека | **BaseLib** (Alchyr) | базовые классы карт/реликвий/сил/персонажей, автрегистрация, конфиг-UI, кастомные ключевые слова |
 | Шаблон | `Alchyr/ModTemplate-StS2` | структура `Code/{Cards,Relics,Powers,Potions,Monsters,Encounters,Events,Characters,Patches,UI}` |
-| Локализация | `localization/eng/*.json`, `localization/rus/*.json` | ключи с префиксом `STR_` |
+| Локализация | `localization/eng/*.json`, `localization/rus/*.json` | ключи с префиксом `SLAYTHEREQUIEM-` (BaseLib: `<MODID>-<UPPER_SNAKE>`) |
 
 Проверенная версия игры для старта — та, на которой собирается шаблон (EA ≥ 0.103). В `mod_manifest.json` указываем минимальную версию; при каждом патче EA — прогон смоук-тестов.
 
@@ -23,14 +26,14 @@ SlayTheRequiem/
 ├─ docs/                          дизайн (этот набор)
 ├─ mod/
 │  ├─ SlayTheRequiem.csproj        Godot.NET.Sdk 4.5.1, net9.0; ссылки на sts2.dll/0Harmony.dll из папки игры
-│  ├─ SlayTheRequiem.json          манифест (id, BaseLib ≥ 3.3.0, affects_gameplay)
+│  ├─ SlayTheRequiem.json          манифест (id, BaseLib ≥ 3.4.8, affects_gameplay)
 │  ├─ project.godot, export_presets.cfg, Sts2PathDiscovery.props   из шаблона
 │  ├─ SlayTheRequiemCode/          C#
 │  │  ├─ MainFile.cs               [ModInitializer]: конфиг, загрузка таблиц, Harmony.PatchAll
 │  │  ├─ Core/                     ЧИСТАЯ логика без ссылок на игру (тестируется отдельно):
 │  │  │                            StaminaRules, CombatMath, StatusMath, SpellAffinity, BurdenRules, HeroStats,
 │  │  │                            StaminaTable, EnemyRules/StaggerRules, MonsterTable (+CsvRows), EquipmentRules,
-│  │  │                            ManaRules (старт боя = пул/2, прирост до пула без срезания излишка)
+│  │  │                            ManaRules (старт боя = пул/2 + бонусы, затем прирост хода; прирост до пула без срезания излишка)
 │  │  ├─ Config/                   RequiemConfig (SimpleModConfig): выключатели, ♥ врагов %
 │  │  ├─ Resources/                StaminaResource (BasicCustomResource; бонусы снаряжения, Груз, происхождения)
 │  │  ├─ Rules/                    RequiemMode, RequiemData (CSV из res://), StaminaCosts, DamageTyping,
@@ -39,14 +42,14 @@ SlayTheRequiem/
 │  │  ├─ Powers/                   статусы (Горение, Озноб, Статика, Кровотечение), Латы/Раскол, сопротивления,
 │  │  │                            враги (◆, Стойкость, Шаткость, Непоколебим, Сломлен, Оттаивание), Уворот/Покров,
 │  │  │                            силы героев; EnemyResponses (Обледенение, «Отдышаться», Ошеломление, Слом)
-│  │  ├─ Cards/                    RequiemCard (ConstructedCardModel + цена ◆), Platebearer/ — 20 карт
+│  │  ├─ Cards/                    RequiemCard (ConstructedCardModel + цена ◆), Platebearer/ — 39 карт (+ Кличи, заклинания, карты Путей в соседних папках)
 │  │  ├─ Equipment/                EquipmentRelic/WeaponRelic/ArmorRelic, Loadout (слоты, рюкзак, вес),
 │  │  │                            EquipmentCombatRules (броня в начале боя, урон оружия), Items — 20 предметов
 │  │  ├─ Spells/                   SpellCard (школа, ступень, CanonicalStarCost), SpellRules (TryModifyStarCost —
 │  │  │                            надбавка предрасположенности; «С трудом» ×0.75), SpellRewardRules (доля
 │  │  │                            заклинаний в наградах), SpellCardPool (общий пул), Mastery/Grimoire (владение
 │  │  │                            школами в сохраняемой реликвии), трактаты; 33 заклинания четырёх школ
-│  │  ├─ Monsters/                 TombGuardian + TombGuardianElite (CustomMonsterModel/CustomEncounterModel)
+│  │  ├─ Monsters/                 враги, элиты, боссы актов и супербоссы (CustomMonsterModel/CustomEncounterModel)
 │  │  ├─ Patches/                  Гримуар в стартовые реликвии, счётчик звёзд у всех, Хворь блокирует лечение
 │  │  ├─ Relics/ Extensions/       базы шаблона; Origins — происхождения (Регент: 3)
 │  │  └─ (дальше) Acts/ Shops/ Rollback/ Events/ UI/
@@ -79,7 +82,7 @@ SlayTheRequiem/
 | **Лагерь** | патч `RestSite`: свои `RestSiteOption`, очки лагеря | средний |
 | **Враги** | BaseLib-монстры + аффиксы как Power, накладываемые при спавне | низкий |
 | **Супербоссы** | дополнительный `Encounter` в узле после босса; объекты на поле — монстры-«пропсы» | средний |
-| **Звёзды Регента → ✦** | Решено наоборот: ✦ **и есть** звёзды у всех героев в системе. Патч `CharacterModel.ShouldAlwaysShowStarCounter` показывает счётчик всем; `ManaCombatRules` в `AfterPlayerTurnStart` даёт пул/2 в 1-м раунде и прирост до пула (`PlayerCmd.GainStars`); ванильные звёздные карты Регента платят ✦ без единого патча | низкий: ванильный код звёзд не трогаем |
+| **Звёзды Регента → ✦** | Решено наоборот: ✦ **и есть** звёзды у всех героев в системе. Патч `CharacterModel.ShouldAlwaysShowStarCounter` показывает счётчик всем; `ManaCombatRules` в `AfterPlayerTurnStart` даёт пул/2 в 1-м раунде, затем прирост хода до пула (02 §2) (`PlayerCmd.GainStars`); ванильные звёздные карты Регента платят ✦ без единого патча | низкий: ванильный код звёзд не трогаем |
 | **5 актов** | новые акты — `CustomActModel(actNumber)` (BaseLib снимает проверку «≤4 актов» в `ModelDb.Acts`); патч сборки списка актов забега (`ActsByIndex` / создание `RunState`) на 5 слотов с развилками 2а/2б и 4а/4б; «Короткий забег» — 1→3→5 | **высокий**: экран финала, статистика, сейвы |
 | **Карта** | `ModifyGeneratedMap(Late)` для новых значков (подтипы точек поверх `MapPointType`) и ширины 9 в своих актах | средний |
 | **Лавки** | тип лавки хранится на точке карты; `ModifyMerchantCardPool/Rarity/CreationResults`, `ModifyMerchantPrice`, `AfterItemPurchased`; новые записи `MerchantInventory` (снаряжение, свитки) и вкладка «Продать» | средний: UI лавки |
@@ -94,7 +97,8 @@ SlayTheRequiem/
 
 - Баланс в `data/*.csv` (предметы, аффиксы, враги, рецепты) → генератор `tools/gen` создаёт C#-партиалы и JSON локализации.
   Геймдизайнер правит таблицы без перекомпиляции логики.
-- Стабильные ID: `STR_<Тип>_<Имя>` (например, `STR_RELIC_EVERICE_HAMMER`). Не менять после релиза — ломает сейвы.
+- Стабильные ID: `SLAYTHEREQUIEM-<ИМЯ_КЛАССА>` (например, `SLAYTHEREQUIEM-EVERICE_HAMMER`) — BaseLib строит их из имени
+  класса. Не переименовывать классы моделей после релиза — ломает сейвы.
 
 ## 5. Конфиг мода (BaseLib config UI)
 
@@ -124,3 +128,20 @@ SlayTheRequiem/
 | Баланс ресурсов | `tools/sim` + конфиг множителей |
 | Совместимость с другими модами | префикс ID, не заменять ванильные классы, только хуки |
 | Объём контента | вертикальный срез сначала (ROADMAP, Этап 1) |
+
+## Настройки забега (ревью F-02, F-03)
+
+- **Изоляция патчей.** `Rules/PatchReport.PatchAll` ставит патчи по одному классу; упавший класс пишется в лог и в
+  команду консоли `str_patches`, остальные работают. Если не встал класс с `[CriticalPatch]` (поток актов, стартовые
+  реликвии, снимок настроек), системы Реквиема выключаются целиком (`RunSettings.EnableRequiemSystems = false`) —
+  лучше ванильный забег, чем полусломанный.
+- **Снимок настроек.** Игровая логика читает настройки только через `Config/RunSettings`, а не `RequiemConfig`.
+  Хост в префиксе `StartRunLobby.BeginRunForAllPlayers` собирает снимок (`Core/RunSettingsData`, строка `v=1;…`) и
+  рассылает `RunSettingsMessage` до `LobbyBeginRunMessage`; клиенты применяют его в `BeginRunLocally` до генерации актов.
+  Личный выбор (происхождения трёх героев, предыстория) клиент шлёт хосту `PersonalChoicesMessage` при «Готов».
+- **Сохранение.** Снимок пишется в `Grimoire.RunSettingsCode` каждого героя; `RunManager.InitializeSavedRun` (загрузка,
+  возврат Камнем Памяти, кооп-лобби загрузки) поднимает его оттуда. Сейв без снимка (старая версия мода) берёт настройки
+  машины; герои мода без Гримуара — забег без систем Реквиема.
+- **Не синхронизируются** чисто визуальные настройки: VFX, звуки, кукла, цвет названий.
+- **BaseLib 3.4.8:** обработчик `CustomMessageWrapper` в лобби клиента не регистрируется (патч нацелен на конструктор
+  хоста). `Net/LobbyMessageHandlers` регистрирует его сам после конструкторов обоих сервисов.

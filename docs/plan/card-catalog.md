@@ -209,8 +209,8 @@
 | `Pounce` | Прыжок | Token | 1 | 2 |  | Attack | Token | AnyEnemy | 9 | 5 |  |  | Нанести {Damage:diff()} урона. Получить {Block:diff()} Блока. Эфирная. Изгнание. |
 | `Roar` | Рык | Token | 1 |  |  | Skill | Token | AllEnemies |  |  | WeakPower 1, StaggerPower 3 |  | Наложить {WeakPower:diff()} Слабости и {StaggerPower:diff()} Шаткости ВСЕМ врагам. Эфирная. Изгнание. |
 | `Devour` | Пожрать | Token | 1 |  |  | Skill | Token | Self |  |  | Heal 6 |  | Съесть павшего врага: +{Heal} ♥ и +1 ход формы зверя. Эфирная. Изгнание. |
-| `PickBeastHunter` | Охотник | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +2 урона зверя, II звериные атаки — 2 Кровотечения, III ещё +2 урона. |
-| `PickBeastStalker` | Ловчий | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +1 ход формы, II ход за 2 удара вместо 3, III ещё +1 ход. |
+| `PickBeastHunter` | Клык | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +2 урона зверя, II звериные атаки — 2 Кровотечения, III ещё +2 урона. |
+| `PickBeastStalker` | Долгая ночь | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: I +1 ход формы, II ход за 2 удара вместо 3, III ещё +1 ход. |
 | `PickBeastAlpha` | Альфа | Token |  |  |  |  |  |  |  |  |  |  | Узел {Value}: при Обращении — волк (8/12/16 ♥); III +1 слот призыва. |
 
 ## Зачарование карт (6)

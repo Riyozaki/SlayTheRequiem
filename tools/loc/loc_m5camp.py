@@ -34,7 +34,7 @@ M5_CAMP_SETTINGS = {
         "ENABLE_CAMP_META.hover.title": "Camp meta-progression",
         "ENABLE_CAMP_META.hover.desc": "Each won run unlocks the next camp building for all future runs: Kettle (cooking without the skill), "
                                        "Anvil (Forge costs 1 point), Enchanting Table and Altar (in every camp), Herbalist's Tent "
-                                       "(brewing one tier higher). Only a bonus. Singleplayer only.",
+                                       "(brewing one tier higher). Only a bonus. In co-op the host's buildings apply.",
         "CAMP_BUILDINGS_UNLOCKED.title": "Camp buildings unlocked",
     },
     "rus": {
@@ -42,7 +42,7 @@ M5_CAMP_SETTINGS = {
         "ENABLE_CAMP_META.hover.title": "Метапрогресс лагеря",
         "ENABLE_CAMP_META.hover.desc": "Каждая победа в забеге открывает следующую постройку лагеря для всех будущих забегов: Котёл "
                                        "(Готовка без навыка), Наковальня (Кузня за 1 очко), Зачаровальный стол и Алтарь (в каждом лагере), "
-                                       "Палатка травника (Варка ступенью выше). Только бонус. Лишь в одиночной игре.",
+                                       "Палатка травника (Варка ступенью выше). Только бонус. В коопе действуют постройки хоста.",
         "CAMP_BUILDINGS_UNLOCKED.title": "Открыто построек лагеря",
     },
 }

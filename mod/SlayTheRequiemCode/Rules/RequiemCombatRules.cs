@@ -145,9 +145,8 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
             return EnemySetup.IsUndead(target) || (target.Monster != null && RequiemData.MonsterEntry(target.Monster.GetType().Name).Faction == "abyss") ? 2m : 1m;
         var tier = ResistancePower.TierOf(target, type);
         if (tier == 0) return 1m;
-        // Уязвимость стихии и ванильная Уязвимость не складываются — берём одну.
-        if (tier < 0 && props.IsPoweredAttack() && target.HasPower<VulnerablePower>()) return 1m;
-        return CombatMath.ResistanceMultiplier(tier);
+        // Уязвимость стихии и ванильная Уязвимость (действует только на атаки) не складываются — берём одну.
+        return CombatMath.ElementalMultiplier(tier, props.IsPoweredAttack() && target.HasPower<VulnerablePower>());
     }
 
     /// <summary>Холод бьёт и по ◆, разряд — по ✦ («урон по ХП и СТ», docs/design/03).</summary>

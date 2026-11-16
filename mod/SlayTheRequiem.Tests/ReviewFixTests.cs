@@ -81,3 +81,57 @@ public class RunSettingsDataTests
         Assert.Equal(PersonalChoices.Random, back.ChoicesFor(8));
     }
 }
+
+/// <summary>Ревью F-07: старт боя — пул/2, затем прирост хода (02 §2).</summary>
+public class ManaStartTests
+{
+    [Theory]
+    [InlineData(10, 2, 7)] // Регент
+    [InlineData(5, 1, 3)] // Безмолвная
+    [InlineData(3, 1, 2)] // Латоносец
+    [InlineData(0, 1, 0)]
+    public void FirstTurn(int pool, int regen, int expected)
+    {
+        var start = ManaRules.StartAmount(pool);
+        Assert.Equal(expected, start + ManaRules.RegenGain(start, pool, regen));
+    }
+}
+
+/// <summary>Ревью F-04: «Устал» для карт-наград за усталость — ◆ меньше половины, в том числе 0.</summary>
+public class WearyPayoffTests
+{
+    [Theory]
+    [InlineData(0, 8, StaminaState.Tired)]
+    [InlineData(3, 8, StaminaState.Tired)]
+    [InlineData(4, 8, StaminaState.Rested)]
+    public void ZeroCostState(int current, int pool, StaminaState expected) =>
+        Assert.Equal(expected, StaminaRules.StateFor(current, pool, 0));
+}
+
+/// <summary>Ревью F-05: «2» у ванили значит «последний акт».</summary>
+public class FinalAwareTierTests
+{
+    [Theory]
+    [InlineData(0, 3, 0)]
+    [InlineData(1, 3, 1)]
+    [InlineData(2, 3, 2)]
+    [InlineData(0, 5, 0)]
+    [InlineData(1, 5, 1)]
+    [InlineData(2, 5, 1)]
+    [InlineData(3, 5, 1)]
+    [InlineData(4, 5, 2)]
+    public void Tier(int index, int count, int expected) => Assert.Equal(expected, ActRules.FinalAwareTier(index, count));
+}
+
+/// <summary>Ревью F-10: уязвимость стихии и ванильная Уязвимость не складываются (03).</summary>
+public class ElementalVulnerabilityTests
+{
+    [Theory]
+    [InlineData(-1, false, 1.5)]
+    [InlineData(-1, true, 1.0)]
+    [InlineData(1, true, 0.75)]
+    [InlineData(2, false, 0.5)]
+    [InlineData(0, true, 1.0)]
+    public void Multiplier(int tier, bool vulnerable, double expected) =>
+        Assert.Equal((decimal)expected, CombatMath.ElementalMultiplier(tier, vulnerable));
+}

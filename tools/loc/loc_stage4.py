@@ -313,11 +313,11 @@ STAGE4_SETTINGS = {
     "eng": {
         "ENABLE_PANTHEON.title": "Pantheon", "ENABLE_PANTHEON.hover.title": "Pantheon",
         "ENABLE_PANTHEON.hover.desc": "An Omen at Neow; from act 2 some «?» become Shrines, Dark Shrines and Six Stones by the Water. "
-                                      "Must match in co-op.",
+                                      "In co-op the host's setting applies.",
     },
     "rus": {
         "ENABLE_PANTHEON.title": "Пантеон", "ENABLE_PANTHEON.hover.title": "Пантеон",
         "ENABLE_PANTHEON.hover.desc": "Знамение у Нео; со 2-го акта часть «?» — Святилища, Тёмные святилища и Шесть камней у воды. "
-                                      "В коопе должен совпадать.",
+                                      "В коопе действует настройка хоста.",
     },
 }

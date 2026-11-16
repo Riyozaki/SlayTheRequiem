@@ -167,7 +167,10 @@ public sealed class FrostStrike : RequiemCard
     }
 }
 
-/// <summary>Вопреки всему: ◆ не тратит; если вы Устали или Изнурены — урон ×2.</summary>
+/// <summary>
+/// Вопреки всему: ◆ не тратит; если вы Устали (◆ меньше половины пула, в том числе 0) — урон ×2. Штраф Усталости на
+/// неё не действует (<see cref="IWearyPayoff"/>, ревью F-04). «Изнурение» для карты ценой 0 ◆ невозможно — в тексте его нет.
+/// </summary>
 [Pool(typeof(IroncladCardPool))]
 public sealed class AgainstAllOdds : RequiemCard, IWearyPayoff
 {

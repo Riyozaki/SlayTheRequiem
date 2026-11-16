@@ -25,7 +25,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 /// <summary>Карта-болезнь (Хворь/Болезнь, этап 4 — Повелитель Мора): снимается Панацеей Травницы.</summary>
 public interface IAilment { }
 
-/// <summary>Источник кражи в лавках (Знамение Ловкача, Кольцо Безликого Вора, Лунная порода-Плут — этапы 4–6).</summary>
+/// <summary>Источник кражи в лавках: Знамение Ловкача, Кольцо Безликого Вора, предыстория Плут (14 §1).</summary>
 public interface ITheftEnabler
 {
     /// <summary>Включает ли кражу сейчас (кольцо — только надетое).</summary>

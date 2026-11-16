@@ -352,9 +352,12 @@ public sealed class FugitiveBackground : BackgroundRelic
         IsOwnAttack(dealer, props, cardSource) ? OriginRules.FugitiveBonus(_zeroCostThisTurn) : 0m;
 }
 
-/// <summary>Плут: в колоде «Обчистить» (кража золота). Доп. выбор в сундуках событий — с актами (этап 7).</summary>
+/// <summary>
+/// Плут (04, 14 §1): в колоде «Обчистить» (кража золота); открывает Кражу в лавках (<see cref="ITheftEnabler"/>);
+/// в сундуке комнаты сокровищ — +1 реликвия на выбор (<see cref="RogueChestPatch"/>). Ревью F-09.
+/// </summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class RogueBackground : BackgroundRelic
+public sealed class RogueBackground : BackgroundRelic, Shops.ITheftEnabler
 {
     protected override Task SetUpStart() => AddToDeck<PickPocket>();
 }
