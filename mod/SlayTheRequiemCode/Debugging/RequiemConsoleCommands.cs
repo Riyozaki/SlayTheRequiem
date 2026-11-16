@@ -375,6 +375,8 @@ public sealed class StrPatchesCmd : RequiemConsoleCmd
     public override string Args => "";
     public override string Description => "Slay the Requiem: report failed Harmony patches and the run settings snapshot.";
     public override bool IsNetworked => false;
+    /// <summary>Диагностика, а не чит: доступна и в обычной сборке игры.</summary>
+    public override bool DebugOnly => false;
 
     public override CmdResult Process(Player? issuingPlayer, string[] args)
     {
