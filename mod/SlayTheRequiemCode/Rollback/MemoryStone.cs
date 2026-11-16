@@ -45,7 +45,7 @@ public static class MemoryStone
 
     internal static bool Restoring { get; set; }
 
-    public static bool Enabled => RequiemConfig.EnableMemoryStone && RequiemConfig.EnableRequiemSystems;
+    public static bool Enabled => RunSettings.EnableMemoryStone && RunSettings.EnableRequiemSystems;
 
     // ───── Отпечаток ─────
 

@@ -27,7 +27,7 @@ public static class RequiemSfx
     private static readonly HashSet<string> Reported = [];
 
     public static bool Enabled =>
-        RequiemConfig.EnableRequiemSystems && RequiemConfig.RequiemSounds && !TestMode.IsOn && !NonInteractiveMode.IsActive;
+        RunSettings.EnableRequiemSystems && RequiemConfig.RequiemSounds && !TestMode.IsOn && !NonInteractiveMode.IsActive;
 
     /// <summary>Сыграть все слои события (громкость слоя × scale).</summary>
     public static void Play(string sfxEvent, float scale = 1f)

@@ -80,14 +80,14 @@ STAGE36_SETTINGS = {
     "eng": {
         "ALLOW_THEFT.title": "Theft in shops", "ALLOW_THEFT.hover.title": "Theft in shops",
         "ALLOW_THEFT.hover.desc": "Click an item you can't afford to try stealing it (80% −10% per 50 gold, once per shop). "
-                                  "Later theft will come from relics and origins; this switch allows it without them. Must match in co-op.",
+                                  "Usually theft comes from the Trickster Omen, the Faceless Thief's Ring or the Rogue background; this switch allows it without them. In co-op the host's setting applies.",
         "ENABLE_MEMORY_STONE.hover.desc": "Imprint at the start of every act; after death you may return to it for a Candle and a Scar. "
                                           "The act gets a new map, the boss stays. In co-op the host proposes, the party votes, Candles are shared.",
     },
     "rus": {
         "ALLOW_THEFT.title": "Кража в лавках", "ALLOW_THEFT.hover.title": "Кража в лавках",
         "ALLOW_THEFT.hover.desc": "Щелчок по товару, на который не хватает золота, — попытка кражи (80% −10% за каждые 50 золотых, раз за лавку). "
-                                  "Позже кражу дадут реликвии и происхождения; переключатель разрешает её без них. В коопе должен совпадать.",
+                                  "Обычно кражу дают Знамение Ловкача, Кольцо Безликого Вора или предыстория Плут; переключатель разрешает её без них. В коопе действует настройка хоста.",
         "ENABLE_MEMORY_STONE.hover.desc": "Отпечаток в начале каждого акта; после смерти можно вернуться к нему за Свечу и Шрам. "
                                           "Карта акта — новая, босс — прежний. В коопе хост предлагает, отряд голосует, Свечи общие.",
     },

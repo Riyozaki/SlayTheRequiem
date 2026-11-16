@@ -130,7 +130,7 @@ public sealed class MemoryStoneRelic : RequiemRelic
     public int RequiemLevel => IsMutable && Owner != null ? Acts.RequiemLevel.Of(Owner.RunState) : 0;
 
     public int CandlesLeft =>
-        MemoryStoneRules.CandlesLeft(RequiemLevel, _candlesUsed, _bonusCandles, RequiemConfig.MemoryStoneCandles);
+        MemoryStoneRules.CandlesLeft(RequiemLevel, _candlesUsed, _bonusCandles, RunSettings.MemoryStoneCandles);
 
     // ───── Отпечаток ─────
 

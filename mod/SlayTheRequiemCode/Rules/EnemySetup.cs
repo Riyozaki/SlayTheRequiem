@@ -32,7 +32,7 @@ public static class EnemySetup
 
     public static async Task Ensure(Creature creature, ICombatState? combatState)
     {
-        if (!RequiemConfig.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return;
+        if (!RunSettings.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return;
         if (Done.TryGetValue(creature, out _)) return;
         Done.Add(creature, new object());
 
@@ -42,7 +42,7 @@ public static class EnemySetup
 
         var state0 = combatState ?? creature.CombatState;
         var run0 = state0?.RunState;
-        var hpMultiplier = (decimal)RequiemConfig.EnemyHpPercent / 100m
+        var hpMultiplier = (decimal)RunSettings.EnemyHpPercent / 100m
                            * RequiemLevelRules.EnemyHpMultiplier(Acts.RequiemLevel.Of(run0))
                            * (100 + ActHpBonusPercent(run0, rank)) / 100m;
         if (hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)

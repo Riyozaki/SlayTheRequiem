@@ -31,7 +31,7 @@ public static class VanillaPoolGuard
     public static void Postfix(CardPoolModel __instance, ref IEnumerable<CardModel> __result)
     {
         if (__instance.GetType().Assembly == ModAssembly) return; // свои пулы (заклинания, Пути) и так вне ванильных наград
-        if (RequiemConfig.EnableRequiemSystems)
+        if (RunSettings.EnableRequiemSystems)
         {
             if (RequiemData.Pools is { CutCount: > 0 }) __result = __result.Where(c => !IsCut(__instance, c)).ToList();
             return;

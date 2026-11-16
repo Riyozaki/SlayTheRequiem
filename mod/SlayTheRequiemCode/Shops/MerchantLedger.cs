@@ -138,7 +138,7 @@ public sealed class MerchantLedger : RequiemRelic
     public int TrustOf(ShopType shop) => ShopRules.Trust(_spent[(int)shop]);
 
     /// <summary>Лавки Реквиема включены для этого героя.</summary>
-    public static bool Active(Player? player) => RequiemConfig.ShopVariety && RequiemMode.IsInSystem(player);
+    public static bool Active(Player? player) => RunSettings.ShopVariety && RequiemMode.IsInSystem(player);
 
     // ───── вход в лавку ─────
 

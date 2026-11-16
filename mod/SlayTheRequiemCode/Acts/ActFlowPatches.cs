@@ -27,10 +27,11 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 /// новые акты добавляются тем же генератором «act_selection» — у всех игроков коопа список совпадает.
 /// «Короткий забег» и выключенные пять актов — ванильные три акта (с оверлеями мода).
 /// </summary>
+[Rules.CriticalPatch]
 [HarmonyPatch(typeof(ActModel), nameof(ActModel.GetRandomList))]
 public static class ActListPatch
 {
-    public static bool FiveActsEnabled => RequiemConfig.EnableRequiemSystems && RequiemConfig.FiveActs && !RequiemConfig.ShortRun;
+    public static bool FiveActsEnabled => RunSettings.EnableRequiemSystems && RunSettings.FiveActs && !RunSettings.ShortRun;
 
     [HarmonyPostfix]
     public static void Postfix(Rng rng, ref IEnumerable<ActModel> __result)
@@ -54,7 +55,29 @@ public static class ActIndexShim
     /// <summary>Подменяет <c>IRunState.CurrentActIndex</c> в транспайлерах.</summary>
     public static int Tier(IRunState run) => ActRules.VanillaTier(run.CurrentActIndex, run.Acts.Count);
 
+    /// <summary>Подменяет <c>IRunState.CurrentActIndex</c> там, где ваниль под «2» понимает последний акт.</summary>
+    public static int FinalAwareTier(IRunState run) => ActRules.FinalAwareTier(run.CurrentActIndex, run.Acts.Count);
+
     private static readonly MethodInfo ShimMethod = AccessTools.Method(typeof(ActIndexShim), nameof(Tier), [typeof(IRunState)]);
+
+    public static readonly MethodInfo FinalAwareShimMethod =
+        AccessTools.Method(typeof(ActIndexShim), nameof(FinalAwareTier), [typeof(IRunState)]);
+
+    /// <summary>Читает ли метод <c>CurrentActIndex</c> (для поиска лямбд в <c>TargetMethods</c>).</summary>
+    public static bool ReadsActIndex(MethodBase method)
+    {
+        try
+        {
+            return PatchProcessor.ReadMethodBody(method).Any(op => op.Value is MethodInfo
+            {
+                Name: "get_CurrentActIndex",
+            } m && typeof(IRunState).IsAssignableFrom(m.DeclaringType));
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     /// <summary>Сколько чтений <c>CurrentActIndex</c> заменил каждый транспайлер (0 = IL игры изменился, патч не сработал).</summary>
     public static IReadOnlyDictionary<string, int> Replacements => _replacements;
@@ -66,8 +89,10 @@ public static class ActIndexShim
     /// Число замен пишется в лог; ноль — предупреждение: после обновления игры метод читает индекс иначе,
     /// и в актах 4–5 ванильные таблицы получат индекс вне 0..2 (ревью R-04, smoke-проверка M0).
     /// </summary>
-    public static IEnumerable<CodeInstruction> ReplaceActIndex(IEnumerable<CodeInstruction> instructions, string patch)
+    public static IEnumerable<CodeInstruction> ReplaceActIndex(IEnumerable<CodeInstruction> instructions, string patch,
+        MethodInfo? shim = null)
     {
+        shim ??= ShimMethod;
         var result = new List<CodeInstruction>();
         var replaced = 0;
         foreach (var code in instructions)
@@ -77,13 +102,13 @@ public static class ActIndexShim
                     Name: "get_CurrentActIndex",
                 } method && typeof(IRunState).IsAssignableFrom(method.DeclaringType))
             {
-                result.Add(new CodeInstruction(OpCodes.Call, ShimMethod).WithLabels(code.labels).WithBlocks(code.blocks));
+                result.Add(new CodeInstruction(OpCodes.Call, shim).WithLabels(code.labels).WithBlocks(code.blocks));
                 replaced++;
                 continue;
             }
             result.Add(code);
         }
-        _replacements[patch] = replaced;
+        _replacements[patch] = _replacements.GetValueOrDefault(patch) + replaced;
         if (replaced == 0)
             MainFile.Logger.Warn($"ActIndexShim: {patch} — не найдено ни одного чтения CurrentActIndex. " +
                                  "IL игры изменился; в актах 4–5 метод получит индекс вне 0..2.");
@@ -93,7 +118,54 @@ public static class ActIndexShim
     }
 }
 
+/// <summary>
+/// Дарв (ревью F-05): реликвии «акта 2» (Эктоплазма/Созу) и «акта 3» (Философский камень/Бархатный чокер) — по ступени,
+/// то есть в 2а/2б/3 и в 4а/4б/5 соответственно. Условия — лямбды в скрытом классе Дарва; патчим те, что читают индекс.
+/// </summary>
+[HarmonyPatch]
+public static class DarvRelicTierPatch
+{
+    public static IEnumerable<MethodBase> TargetMethods() =>
+        typeof(MegaCrit.Sts2.Core.Models.Events.Darv)
+            .GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public)
+            .SelectMany(t => t.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
+                                          BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+            .Where(m => !m.IsAbstract && !m.ContainsGenericParameters && ActIndexShim.ReadsActIndex(m))
+            .Cast<MethodBase>();
+
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+        ActIndexShim.ReplaceActIndex(instructions, "Darv.ValidRelicSet");
+}
+
+/// <summary>Ключ-фонарь (ревью F-05): «акт 2» ванили — последний акт забега, а не третий акт мода (Улей).</summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Models.Cards.LanternKey))]
+public static class LanternKeyFinalActPatch
+{
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(MegaCrit.Sts2.Core.Models.Cards.LanternKey.ModifyUnknownMapPointRoomTypes))]
+    public static IEnumerable<CodeInstruction> RoomTypes(IEnumerable<CodeInstruction> instructions) =>
+        ActIndexShim.ReplaceActIndex(instructions, "LanternKey.ModifyUnknownMapPointRoomTypes", ActIndexShim.FinalAwareShimMethod);
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(MegaCrit.Sts2.Core.Models.Cards.LanternKey.ModifyNextEvent))]
+    public static IEnumerable<CodeInstruction> NextEvent(IEnumerable<CodeInstruction> instructions) =>
+        ActIndexShim.ReplaceActIndex(instructions, "LanternKey.ModifyNextEvent", ActIndexShim.FinalAwareShimMethod);
+}
+
+/// <summary>
+/// Эпохи открытий за акты (ревью F-05): ваниль знает индексы 0..2, на 3+ пишет Log.Error. Первый акт — эпоха «2»,
+/// промежуточные — «3», последний — «4»; повторная выдача уже открытой эпохи игрой игнорируется.
+/// </summary>
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager), "ObtainCharUnlockEpoch")]
+public static class CharUnlockEpochTierPatch
+{
+    [HarmonyPrefix]
+    public static void Prefix(Player localPlayer, ref int act) => act = ActRules.FinalAwareTier(act, localPlayer.RunState.Acts.Count);
+}
+
 /// <summary>Кооп-надбавка ♥ (бросает исключение на индексе &gt; 2).</summary>
+[Rules.CriticalPatch]
 [HarmonyPatch(typeof(MultiplayerScalingModel), nameof(MultiplayerScalingModel.GetMultiplayerScaling))]
 public static class MultiplayerScalingTierPatch
 {
@@ -102,6 +174,7 @@ public static class MultiplayerScalingTierPatch
 }
 
 /// <summary>Сундук акта (бросает исключение вне 0..2).</summary>
+[Rules.CriticalPatch]
 [HarmonyPatch(typeof(TreasureRoom), MethodType.Constructor, typeof(int))]
 public static class TreasureRoomTierPatch
 {
@@ -110,6 +183,7 @@ public static class TreasureRoomTierPatch
 }
 
 /// <summary>Поза героя в лагере выбирается по индексу акта (0..2, иначе исключение).</summary>
+[Rules.CriticalPatch]
 [HarmonyPatch(typeof(NRestSiteCharacter), nameof(NRestSiteCharacter._Ready))]
 public static class RestSiteCharacterTierPatch
 {
@@ -153,7 +227,7 @@ public static class RareElitePatch
     [HarmonyPostfix]
     public static void Postfix(ActModel __instance, RoomType roomType, ref EncounterModel __result)
     {
-        if (roomType != RoomType.Elite || !RequiemConfig.EnableRequiemSystems) return;
+        if (roomType != RoomType.Elite || !RunSettings.EnableRequiemSystems) return;
         var run = RequiemNet.State;
         if (run == null || RareFor(__instance) is not { } rare) return;
         var actIndex = run.CurrentActIndex;
@@ -176,7 +250,7 @@ public static class ActRoomsPatch
     public static void Postfix(RunManager __instance)
     {
         var state = __instance.DebugOnlyGetState();
-        if (state == null || !RequiemConfig.EnableRequiemSystems) return;
+        if (state == null || !RunSettings.EnableRequiemSystems) return;
         var rng = new Rng(state.Rng.Seed, "requiem_bosses");
         var used = new HashSet<ModelId>();
         foreach (var act in state.Acts)
@@ -190,7 +264,7 @@ public static class ActRoomsPatch
             if (act.SecondBossEncounter != null) used.Add(act.SecondBossEncounter.Id);
         }
 
-        if (RequiemConfig.Superbosses == SuperbossMode.Off) return;
+        if (RunSettings.Superbosses == SuperbossMode.Off) return;
         foreach (var act in state.Acts)
             if (ActRules.SuperbossFor(ActKinds.Of(act)) is { } boss)
                 act.SetSecondBossEncounter(SuperbossEncounter.For(boss));
@@ -210,11 +284,14 @@ public static class PortalPromptPatch
 
     private static bool _asking;
 
+    /// <summary>Сброс при новом забеге: окно могло не закрыться (выход в меню посреди диалога) — ревью F-06.</summary>
+    internal static void ResetForNewRun() => _asking = false;
+
     [HarmonyPrefix]
     public static bool Prefix(NRewardsScreen __instance)
     {
         if (_asking) return false;
-        if (!IsTerminal(__instance) || RequiemConfig.Superbosses != SuperbossMode.Optional || !RequiemNet.IsSingleplayer) return true;
+        if (!IsTerminal(__instance) || RunSettings.Superbosses != SuperbossMode.Optional || !RequiemNet.IsSingleplayer) return true;
         var run = RunStateRef(__instance);
         if (run?.CurrentRoom?.RoomType != RoomType.Boss || run.Map.SecondBossMapPoint == null
             || run.CurrentMapCoord != run.Map.BossMapPoint.coord || run.Act.SecondBossEncounter is not SuperbossEncounter) return true;
@@ -262,7 +339,7 @@ public static class NamelessLimitPatch
     public static void Prefix(RunManager __instance)
     {
         var state = __instance.DebugOnlyGetState();
-        if (state == null || !RequiemConfig.EnableRequiemSystems || ActsSetter == null) return;
+        if (state == null || !RunSettings.EnableRequiemSystems || ActsSetter == null) return;
         if (state.CurrentActIndex < state.Acts.Count - 1 || state.CurrentRoom is { IsVictoryRoom: true }) return;
         if (state.Act is NamelessLimit || !ActKinds.IsFullRun(state)) return;
         var records = ActRunState.Records(state).ToList();

@@ -41,7 +41,7 @@ public abstract class RequiemActModel(int slot) : CustomActModel(-1)
     protected override string CustomBackgroundScenePath => SceneHelper.GetScenePath($"backgrounds/{LookId}/{LookId}_background");
 
     protected override ActMap? CustomCreateMap(RunState runState, bool replaceTreasureWithElites) =>
-        RequiemConfig.WideMaps ? WideActMap.CreateFor(runState, replaceTreasureWithElites, ActRules.MapWidth(Kind)) : null;
+        RunSettings.WideMaps ? WideActMap.CreateFor(runState, replaceTreasureWithElites, ActRules.MapWidth(Kind)) : null;
 
     protected override int BaseNumberOfRooms => ActRules.Rooms(Kind);
     protected override int NumberOfWeakEncounters => 2;

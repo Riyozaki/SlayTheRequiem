@@ -367,3 +367,29 @@ public sealed class StrStatCmd : RequiemConsoleCmd
         return Ok(string.Join("\n", lines));
     }
 }
+
+/// <summary><c>str_patches</c> — какие патчи Harmony не встали (ревью F-02) и снимок настроек забега (F-03).</summary>
+public sealed class StrPatchesCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_patches";
+    public override string Args => "";
+    public override string Description => "Slay the Requiem: report failed Harmony patches and the run settings snapshot.";
+    public override bool IsNetworked => false;
+    /// <summary>Диагностика, а не чит: доступна и в обычной сборке игры.</summary>
+    public override bool DebugOnly => false;
+
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var lines = new List<string>
+        {
+            $"Патчей установлено: {PatchReport.Applied}, не установлено: {PatchReport.Failed.Count}" +
+            (PatchReport.Degraded ? " — системы Реквиема выключены (не встал несущий патч)." : "."),
+        };
+        lines.AddRange(PatchReport.Failed.Select(f => "  ✗ " + f));
+        foreach (var (patch, count) in ActIndexShim.Replacements)
+            lines.Add($"  ActIndexShim {patch}: замен {count}{(count == 0 ? " ⚠" : string.Empty)}");
+        var active = Config.RunSettings.Active;
+        lines.Add(active == null ? "Настройки забега: снимка нет (действует меню)." : $"Настройки забега: {active.Encode()}");
+        return Ok(string.Join("\n", lines));
+    }
+}

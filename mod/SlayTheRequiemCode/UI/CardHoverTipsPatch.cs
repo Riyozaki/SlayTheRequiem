@@ -19,7 +19,7 @@ public static class CardHoverTipsPatch
     [HarmonyPostfix]
     public static void Postfix(CardModel __instance, ref IEnumerable<IHoverTip> __result)
     {
-        if (!RequiemConfig.EnableRequiemSystems) return;
+        if (!RunSettings.EnableRequiemSystems) return;
         try
         {
             var extra = Extra(__instance).ToList();

@@ -9,7 +9,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 public static class RequiemLevel
 {
     public static int Of(IRunState? run) =>
-        RequiemLevelRules.Resolve(RequiemConfig.RequiemLevelSetting, run?.AscensionLevel ?? 0);
+        RequiemLevelRules.Resolve(RunSettings.RequiemLevelSetting, run?.AscensionLevel ?? 0);
 
     public static int Of(Player? player) => Of(player?.RunState);
 }

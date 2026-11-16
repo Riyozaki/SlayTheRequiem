@@ -97,6 +97,16 @@ public static class ActRules
         return Math.Clamp(actIndex, 0, 2);
     }
 
+    /// <summary>
+    /// Ступень ванильного кода, где «2» значит «последний акт» (ключ-фонарь, эпоха за третий акт): первый акт — 0,
+    /// последний — 2, всё между — 1. В трёх актах совпадает с индексом (ревью F-05).
+    /// </summary>
+    public static int FinalAwareTier(int actIndex, int actCount)
+    {
+        if (actIndex <= 0) return 0;
+        return actIndex >= actCount - 1 ? 2 : 1;
+    }
+
     /// <summary>Слот (0..4) акта по индексу в забеге: в «Коротком забеге» индексы 0/1/2 — это слоты 0/2/4.</summary>
     public static int SlotOf(int actIndex, int actCount)
     {

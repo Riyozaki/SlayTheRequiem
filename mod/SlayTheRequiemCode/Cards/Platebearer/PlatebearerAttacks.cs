@@ -167,9 +167,12 @@ public sealed class FrostStrike : RequiemCard
     }
 }
 
-/// <summary>Вопреки всему: ◆ не тратит; если вы Устали или Изнурены — урон ×2.</summary>
+/// <summary>
+/// Вопреки всему: ◆ не тратит; если вы Устали (◆ меньше половины пула, в том числе 0) — урон ×2. Штраф Усталости на
+/// неё не действует (<see cref="IWearyPayoff"/>, ревью F-04). «Изнурение» для карты ценой 0 ◆ невозможно — в тексте его нет.
+/// </summary>
 [Pool(typeof(IroncladCardPool))]
-public sealed class AgainstAllOdds : RequiemCard
+public sealed class AgainstAllOdds : RequiemCard, IWearyPayoff
 {
     public AgainstAllOdds() : base(1, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy)
     {
@@ -180,7 +183,7 @@ public sealed class AgainstAllOdds : RequiemCard
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
     {
         ArgumentNullException.ThrowIfNull(play.Target);
-        var tired = RequiemCombatRules.IsOwnerWeary(Owner);
+        var tired = RequiemCombatRules.IsOwnerWeary(Owner, this);
         await Hit(ctx, play.Target, "vfx/vfx_attack_blunt", DynamicVars.Damage.BaseValue * (tired ? 2 : 1));
     }
 }

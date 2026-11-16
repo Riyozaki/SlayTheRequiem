@@ -30,7 +30,7 @@ public partial class NRequiemMapLegend : PanelContainer
 
     public static void Attach(NMapScreen screen)
     {
-        if (!RequiemConfig.EnableRequiemSystems || screen.GetNodeOrNull(NodeName) != null) return;
+        if (!RunSettings.EnableRequiemSystems || screen.GetNodeOrNull(NodeName) != null) return;
         var legend = new NRequiemMapLegend();
         screen.AddChildSafely(legend);
         legend.AnchorLeft = legend.AnchorRight = 1f;
@@ -118,7 +118,7 @@ public partial class NRequiemMapLegend : PanelContainer
         _sinceRefresh += delta;
         if (_sinceRefresh < 0.5) return;
         _sinceRefresh = 0;
-        Visible = RequiemConfig.EnableRequiemSystems && RequiemNet.State?.Map != null;
+        Visible = RunSettings.EnableRequiemSystems && RequiemNet.State?.Map != null;
         if (!Visible) return;
         foreach (var (group, button) in _buttons) button.SetPressedNoSignal(MapVisuals.Filter == group);
         foreach (var (row, shown) in _edgeRows) row.Visible = shown();

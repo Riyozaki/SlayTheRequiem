@@ -22,8 +22,11 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 /// </summary>
 public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonModel.HookType.Combat)
 {
-    /// <summary>Множитель урона, зафиксированный при оплате атаки (живёт, пока карта разыгрывается).</summary>
-    private static readonly ConditionalWeakTable<CardModel, StrongBox<decimal>> PendingMultiplier = new();
+    /// <summary>Оплата атаки: множитель урона и состояние ◆ до оплаты (живут, пока карта разыгрывается).</summary>
+    private sealed record PaidAttack(decimal Multiplier, StaminaState State);
+
+    /// <summary>Множитель и состояние, зафиксированные при оплате атаки.</summary>
+    private static readonly ConditionalWeakTable<CardModel, PaidAttack> PendingMultiplier = new();
 
     // ───────────── ◆ за атаки ─────────────
 
@@ -51,10 +54,10 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
                 stamina.ModifyAmount(-payment.Spent);
         }
 
-        var multiplier = payment.State == StaminaState.Tired && IsTireless(player) ? 1m : payment.DamageMultiplier;
-        PendingMultiplier.AddOrUpdate(card, new StrongBox<decimal>(multiplier));
+        var multiplier = payment.State == StaminaState.Tired && IsTireless(player, card) ? 1m : payment.DamageMultiplier;
+        PendingMultiplier.AddOrUpdate(card, new PaidAttack(multiplier, payment.State));
 
-        if (payment.HpLoss > 0 && RequiemConfig.EnableOverstrain)
+        if (payment.HpLoss > 0 && RunSettings.EnableOverstrain)
         {
             UI.RequiemUiEvents.RaiseOverstrained(player);
             UI.RequiemVfx.Overstrain(player.Creature);
@@ -65,11 +68,15 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         }
     }
 
-    /// <summary>Был ли владелец Устал/Изнурён при оплате текущей атаки (или сейчас, если карта не оплачивалась).</summary>
-    public static bool IsOwnerWeary(MegaCrit.Sts2.Core.Entities.Players.Player player)
+    /// <summary>
+    /// Был ли владелец Устал или Изнурён при оплате атаки <paramref name="card"/> (состояние до списания ◆). Карта, которая
+    /// не платила ◆ (навык или вызов вне розыгрыша), смотрит на текущее ◆: «Устал» — ◆ меньше половины пула.
+    /// </summary>
+    public static bool IsOwnerWeary(MegaCrit.Sts2.Core.Entities.Players.Player player, CardModel? card = null)
     {
+        if (card != null && PendingMultiplier.TryGetValue(card, out var paid)) return paid.State != StaminaState.Rested;
         var stamina = RequiemResource.Of<StaminaResource>(player);
-        return stamina != null && stamina.Amount * 2 < stamina.Pool;
+        return stamina != null && StaminaRules.StateFor(stamina.Amount, stamina.Pool, 0) != StaminaState.Rested;
     }
 
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
@@ -82,7 +89,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (!RequiemConfig.EnableRequiemSystems) return 1m;
+        if (!RunSettings.EnableRequiemSystems) return 1m;
         return StaminaMultiplier(props, cardSource) * ResistanceMultiplier(target, props, dealer, cardSource)
             * LevelMultiplier(target, dealer);
     }
@@ -103,7 +110,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     private static decimal StaminaMultiplier(ValueProp props, CardModel? cardSource)
     {
         if (cardSource == null || StaminaCosts.IsStaminaExempt(cardSource) || !props.IsPoweredAttack()) return 1m;
-        if (PendingMultiplier.TryGetValue(cardSource, out var box)) return box.Value;
+        if (PendingMultiplier.TryGetValue(cardSource, out var paid)) return paid.Multiplier;
 
         // Предпросмотр урона на карте в руке: показываем, сколько она нанесёт при текущей ◆.
         var player = cardSource.Owner;
@@ -111,13 +118,22 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         var stamina = RequiemResource.Of<StaminaResource>(player);
         if (stamina == null) return 1m;
         var state = StaminaRules.StateFor(stamina.Amount, stamina.Pool, StaminaCosts.CostFor(cardSource));
-        if (state == StaminaState.Tired && IsTireless(player)) return 1m;
+        if (state == StaminaState.Tired && IsTireless(player, cardSource)) return 1m;
         return StaminaRules.DamageMultiplier(state);
     }
 
-    /// <summary>«Устал» не снижает урон (Знамение Клинка).</summary>
-    public static bool IsTireless(MegaCrit.Sts2.Core.Entities.Players.Player? player) =>
-        player != null && player.Relics.OfType<ITirelessSource>().Any(t => t.IgnoresWeariness);
+    /// <summary>
+    /// «Устал» не снижает урон: источник у героя — реликвия или сила (<see cref="ITirelessSource"/>, сейчас — Знамение
+    /// Клинка), либо сама карта награждает усталость (<see cref="IWearyPayoff"/>: «Вопреки всему», «Танец дюн» —
+    /// ревью F-04, 02 §1). Изнурение (◆ не хватает) по-прежнему режет урон вдвое.
+    /// </summary>
+    public static bool IsTireless(MegaCrit.Sts2.Core.Entities.Players.Player? player, CardModel? card = null)
+    {
+        if (card is IWearyPayoff) return true;
+        if (player == null) return false;
+        return player.Relics.OfType<ITirelessSource>().Any(t => t.IgnoresWeariness)
+               || player.Creature.Powers.OfType<ITirelessSource>().Any(t => t.IgnoresWeariness);
+    }
 
     private static decimal ResistanceMultiplier(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
@@ -129,15 +145,14 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
             return EnemySetup.IsUndead(target) || (target.Monster != null && RequiemData.MonsterEntry(target.Monster.GetType().Name).Faction == "abyss") ? 2m : 1m;
         var tier = ResistancePower.TierOf(target, type);
         if (tier == 0) return 1m;
-        // Уязвимость стихии и ванильная Уязвимость не складываются — берём одну.
-        if (tier < 0 && props.IsPoweredAttack() && target.HasPower<VulnerablePower>()) return 1m;
-        return CombatMath.ResistanceMultiplier(tier);
+        // Уязвимость стихии и ванильная Уязвимость (действует только на атаки) не складываются — берём одну.
+        return CombatMath.ElementalMultiplier(tier, props.IsPoweredAttack() && target.HasPower<VulnerablePower>());
     }
 
     /// <summary>Холод бьёт и по ◆, разряд — по ✦ («урон по ХП и СТ», docs/design/03).</summary>
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (!RequiemConfig.EnableRequiemSystems || result.UnblockedDamage <= 0 || !target.IsAlive) return;
+        if (!RunSettings.EnableRequiemSystems || result.UnblockedDamage <= 0 || !target.IsAlive) return;
         var type = DamageTyping.Resolve(props, dealer, cardSource);
         switch (type)
         {
@@ -159,7 +174,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)
     {
         modifiedAmount = amount;
-        if (!RequiemConfig.EnableRequiemSystems || amount <= 0) return false;
+        if (!RunSettings.EnableRequiemSystems || amount <= 0) return false;
 
         if ((canonicalPower is BleedPower && EnemySetup.IsBleedImmune(target))
             || (canonicalPower is BlightPower && EnemySetup.IsBlightImmune(target))
@@ -190,7 +205,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
-        if (!RequiemConfig.EnableRequiemSystems || side != CombatSide.Player) return;
+        if (!RunSettings.EnableRequiemSystems || side != CombatSide.Player) return;
         await EnemySetup.EnsureAll(combatState);
         // Намерения уже выбраны — враги без ◆ показывают «Отдышаться» вместо атаки.
         foreach (var enemy in combatState.Enemies.ToList()) await EnemyResponses.TryBreather(enemy);
@@ -210,8 +225,17 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     }
 }
 
-/// <summary>Источник «Устал не снижает урон» (Знамение Клинка). Изнурение (◆ не хватает) по-прежнему режет урон вдвое.</summary>
+/// <summary>
+/// Источник «Устал не снижает урон» — реликвия или сила героя (Знамение Клинка). Изнурение (◆ не хватает) по-прежнему
+/// режет урон вдвое.
+/// </summary>
 public interface ITirelessSource
 {
     bool IgnoresWeariness { get; }
 }
+
+/// <summary>
+/// Карта, которая награждает усталость («если вы Устали — …»): штраф «Устал» −25 % на неё не действует, иначе бонус
+/// карты съедался бы её же штрафом (ревью F-04, docs/design/02 §1).
+/// </summary>
+public interface IWearyPayoff { }

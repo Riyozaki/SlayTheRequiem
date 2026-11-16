@@ -39,7 +39,7 @@ public partial class NEnemyResourcePips : NRequiemHoverWidget
 
     public override void _Process(double delta)
     {
-        var show = RequiemConfig.EnableRequiemSystems && _creature is { IsAlive: true } && _anchor != null
+        var show = RunSettings.EnableRequiemSystems && _creature is { IsAlive: true } && _anchor != null
                    && IsInstanceValid(_anchor) && (Stamina != null || ManaPower != null);
         Visible = show;
         if (!show) return;

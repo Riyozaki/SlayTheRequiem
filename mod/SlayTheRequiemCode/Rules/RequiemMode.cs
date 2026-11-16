@@ -20,12 +20,16 @@ public static class RequiemMode
     };
 
     public static bool IsInSystem(Player? player) =>
-        RequiemConfig.EnableRequiemSystems && player != null && Participants.Contains(player.Character.GetType().Name);
+        RunSettings.EnableRequiemSystems && player != null && Participants.Contains(player.Character.GetType().Name);
 
     public static bool IsInSystem(Creature? creature) => IsInSystem(creature?.Player);
 
     public static bool IsInSystem(CharacterModel? character) =>
-        RequiemConfig.EnableRequiemSystems && character != null && Participants.Contains(character.GetType().Name);
+        RunSettings.EnableRequiemSystems && IsParticipant(character);
+
+    /// <summary>Герой мода (Латоносец, Безмолвная, Регент) — независимо от того, включены ли системы.</summary>
+    public static bool IsParticipant(CharacterModel? character) =>
+        character != null && Participants.Contains(character.GetType().Name);
 
     public static HeroStats StatsFor(Player? player) => HeroStats.ForCharacterTypeName(player?.Character.GetType().Name);
 }

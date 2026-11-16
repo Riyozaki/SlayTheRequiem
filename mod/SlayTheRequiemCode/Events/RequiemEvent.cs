@@ -54,7 +54,7 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
     {
         var act = ActKinds.Current(runState);
         if (act != HomeAct && !AlsoIn.Contains(act)) return false;
-        return (!IsVanillaAct(act) || RequiemConfig.EnableRequiemSystems) && Allowed(runState);
+        return (!IsVanillaAct(act) || RunSettings.EnableRequiemSystems) && Allowed(runState);
     }
 
     /// <summary>Доп. условие появления (по умолчанию — всегда).</summary>

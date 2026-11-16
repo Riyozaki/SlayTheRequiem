@@ -51,6 +51,9 @@ public static class MapVisuals
 
     private static bool _queued;
 
+    /// <summary>Сброс при новом забеге: отложенная перерисовка могла не выполниться (ревью F-06).</summary>
+    internal static void ResetForNewRun() => _queued = false;
+
     /// <summary>Перерисовать карту в следующем кадре (состояние вентилей, ключей, зрения изменилось).</summary>
     public static void RefreshSoon()
     {
@@ -67,7 +70,7 @@ public static class MapVisuals
     public static void Restyle(NMapScreen screen)
     {
         var run = RequiemNet.State;
-        if (run?.Map == null || !RequiemConfig.EnableRequiemSystems) return;
+        if (run?.Map == null || !RunSettings.EnableRequiemSystems) return;
         try
         {
             StylePaths(screen, run);
@@ -129,7 +132,7 @@ public static class MapVisuals
     public static void ApplyIcon(NNormalMapPoint node, IRunState? run = null)
     {
         run ??= RequiemNet.State;
-        if (run?.Map == null || !RequiemConfig.EnableRequiemSystems || !GodotObject.IsInstanceValid(node)) return;
+        if (run?.Map == null || !RunSettings.EnableRequiemSystems || !GodotObject.IsInstanceValid(node)) return;
         var icon = Icon(node);
         var container = IconContainer(node);
         if (icon == null || container == null) return;

@@ -35,9 +35,16 @@ public static class CombatMath
         return 1m - 0.25m * Math.Min(tier, 3);
     }
 
-    /// <summary>Ванильная Уязвимость и наша уязвимость стихии не складываются: берётся максимум.</summary>
-    public static decimal CombineVulnerability(decimal vanillaVulnerableMultiplier, int resistanceTier) =>
-        resistanceTier < 0 ? Math.Max(vanillaVulnerableMultiplier, 1.5m) : vanillaVulnerableMultiplier;
+    /// <summary>
+    /// Множитель стихии с учётом ванильной Уязвимости (03, ревью F-10): уязвимость стихии (×1.5) и ванильная Уязвимость
+    /// (×1.5 к атакам) не складываются — если на цель уже действует ванильная, стихия добавляет ×1. Сопротивления
+    /// (ступени 1+) с Уязвимостью складываются как обычно.
+    /// </summary>
+    public static decimal ElementalMultiplier(int tier, bool vanillaVulnerableApplies, bool immune = false)
+    {
+        if (tier < 0 && vanillaVulnerableApplies && !immune) return 1m;
+        return ResistanceMultiplier(tier, immune);
+    }
 
     /// <summary>Сопротивление статусам уменьшает накладываемые стаки (а не урон тика).</summary>
     public static int ResistStacks(int stacks, int tier, bool immune = false)

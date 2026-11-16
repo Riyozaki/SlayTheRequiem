@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
+using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
@@ -54,7 +55,14 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 
     // ───── выдача по настройке ─────
 
-    /// <summary>Происхождение героя по настройкам (Гримуар выдаёт его при входе в первую комнату).</summary>
+    /// <summary>
+    /// Свой генератор для случайного происхождения и предыстории — от сида забега и id игрока (ревью F-03): одинаков на
+    /// всех машинах и не сдвигает ванильный поток наград, что бы ни стояло в настройках.
+    /// </summary>
+    public static Rng OriginRng(Player player, string what) =>
+        new(player.RunState.Rng.Seed, $"requiem_{what}_{player.NetId}");
+
+    /// <summary>Происхождение героя по личному выбору игрока (Гримуар выдаёт его при входе в первую комнату).</summary>
     public static OriginRelic? ForHero(Player player) => player.Character.GetType().Name switch
     {
         "Ironclad" => ForPlatebearer(player),
@@ -68,11 +76,11 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     {
         Type[]? types = player.Character.GetType().Name switch
         {
-            "Ironclad" when RequiemConfig.PlatebearerOrigin == PlatebearerOriginChoice.Choose =>
+            "Ironclad" when RunSettings.PlatebearerOrigin(player) == PlatebearerOriginChoice.Choose =>
                 [typeof(FrostbornOrigin), typeof(ForgebloodOrigin), typeof(DunebladeOrigin), typeof(CitadelOrigin)],
-            "Silent" when RequiemConfig.SilentOrigin == SilentOriginChoice.Choose =>
+            "Silent" when RunSettings.SilentOrigin(player) == SilentOriginChoice.Choose =>
                 [typeof(MoonbornOrigin), typeof(ThicketbornOrigin), typeof(MarshbornOrigin)],
-            "Regent" when RequiemConfig.RegentOrigin == RegentOriginChoice.Choose =>
+            "Regent" when RunSettings.RegentOrigin(player) == RegentOriginChoice.Choose =>
                 [typeof(HighbornOrigin), typeof(MistbornOrigin), typeof(AshbornOrigin)],
             _ => null,
         };
@@ -90,9 +98,9 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 
     public static OriginRelic? ForPlatebearer(Player player)
     {
-        var choice = RequiemConfig.PlatebearerOrigin;
+        var choice = RunSettings.PlatebearerOrigin(player);
         if (choice is PlatebearerOriginChoice.Random or PlatebearerOriginChoice.Choose)
-            choice = (PlatebearerOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(4));
+            choice = (PlatebearerOriginChoice)(1 + OriginRng(player, "origin").NextInt(4));
         RelicModel? canonical = choice switch
         {
             PlatebearerOriginChoice.Frostborn => ModelDb.Relic<FrostbornOrigin>(),
@@ -106,9 +114,9 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 
     public static OriginRelic? ForSilent(Player player)
     {
-        var choice = RequiemConfig.SilentOrigin;
+        var choice = RunSettings.SilentOrigin(player);
         if (choice is SilentOriginChoice.Random or SilentOriginChoice.Choose)
-            choice = (SilentOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(3));
+            choice = (SilentOriginChoice)(1 + OriginRng(player, "origin").NextInt(3));
         RelicModel? canonical = choice switch
         {
             SilentOriginChoice.Moonborn => ModelDb.Relic<MoonbornOrigin>(),
@@ -121,9 +129,9 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 
     public static OriginRelic? ForRegent(Player player)
     {
-        var choice = RequiemConfig.RegentOrigin;
+        var choice = RunSettings.RegentOrigin(player);
         if (choice is RegentOriginChoice.Random or RegentOriginChoice.Choose)
-            choice = (RegentOriginChoice)(1 + player.PlayerRng.Rewards.NextInt(3));
+            choice = (RegentOriginChoice)(1 + OriginRng(player, "origin").NextInt(3));
         RelicModel? canonical = choice switch
         {
             RegentOriginChoice.Highborn => ModelDb.Relic<HighbornOrigin>(),

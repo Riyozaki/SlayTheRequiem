@@ -28,7 +28,7 @@ public static class CreatureResourceUiPatch
     {
         try
         {
-            if (!RequiemConfig.EnableRequiemSystems) return;
+            if (!RunSettings.EnableRequiemSystems) return;
             var health = __instance.GetNodeOrNull<NHealthBar>("%HealthBar");
             var anchor = health?.HpBarContainer;
             if (anchor == null) return;

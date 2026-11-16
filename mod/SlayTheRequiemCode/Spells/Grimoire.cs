@@ -86,6 +86,14 @@ public sealed class Grimoire : RequiemRelic
     }
 
     private bool _originGranted;
+    private string _runSettingsCode = string.Empty;
+
+    /// <summary>
+    /// Снимок игровых настроек забега (<see cref="Config.RunSettings"/>, ревью F-03): одинаковая строка у всех героев;
+    /// при загрузке забега правила берутся отсюда, а не из меню машины.
+    /// </summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string RunSettingsCode { get => _runSettingsCode; set { AssertMutable(); _runSettingsCode = value ?? string.Empty; } }
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public bool OriginGranted { get => _originGranted; set { AssertMutable(); _originGranted = value; } }

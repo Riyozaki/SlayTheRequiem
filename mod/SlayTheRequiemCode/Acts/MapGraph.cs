@@ -57,7 +57,7 @@ public static class MapGraph
         {
             var kind = ActKinds.Of(run.Acts[actIndex]);
             plan = new MapPlan();
-            if (MapGraphRules.HasPathVariations(kind) && RequiemConfig.EnableRequiemSystems)
+            if (MapGraphRules.HasPathVariations(kind) && RunSettings.EnableRequiemSystems)
             {
                 // Отметки — по базовой карте (до плана), как и после загрузки (ActMarks вычитает рёбра и карманы плана).
                 ActMarks.Reset();
@@ -151,7 +151,7 @@ public static class MapGraph
     /// <summary>Закрыт ли переход <paramref name="from"/> → <paramref name="to"/> (тайная тропа, труба, Запертые врата).</summary>
     public static bool Blocked(IRunState run, MapPoint from, MapPoint to, TravelState? state = null)
     {
-        if (!RequiemConfig.EnableRequiemSystems || run.Map == null) return false;
+        if (!RunSettings.EnableRequiemSystems || run.Map == null) return false;
         var plan = Current(run);
         var (a, b) = (CellOf(from), CellOf(to));
         var intoVault = ActMarks.At(run, to.coord) == MapMark.LockedVault;
@@ -178,7 +178,7 @@ public static class MapTravelPatch
     [HarmonyPostfix]
     public static void Postfix(IRunState runState, MapPoint currentPoint, ref IEnumerable<MapPoint> __result)
     {
-        if (!RequiemConfig.EnableRequiemSystems || runState?.Map == null) return;
+        if (!RunSettings.EnableRequiemSystems || runState?.Map == null) return;
         var state = MapGraph.StateOf(runState);
         var list = __result.ToList();
         var open = list.Where(p => !MapGraph.Blocked(runState, currentPoint, p, state)).ToList();
