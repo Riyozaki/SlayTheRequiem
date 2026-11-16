@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using SlayTheRequiem.SlayTheRequiemCode.Spells;

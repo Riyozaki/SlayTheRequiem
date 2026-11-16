@@ -44,7 +44,24 @@ PREFIX = "SLAYTHEREQUIEM-"
 
 
 def snake(name: str) -> str:
-    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).upper()
+    # Must match the game's StringHelper.Slugify ("([A-Za-z0-9]|\\G(?!^))([A-Z])"):
+    # every (alnum, UPPER) pair gets a separator, and a run of capitals continues via \\G,
+    # so "NodeDestructionII" -> NODE_DESTRUCTION_I_I and "NodeDestructionIII" -> NODE_DESTRUCTION_II_I.
+    out: list[str] = []
+    i, last_end = 0, -1
+    while i < len(name):
+        if i + 1 < len(name) and name[i].isalnum() and name[i + 1].isupper():
+            out.append(name[i] + "_" + name[i + 1])
+            i += 2
+            last_end = i
+        elif i == last_end and name[i].isupper():
+            out.append("_" + name[i])
+            i += 1
+            last_end = i
+        else:
+            out.append(name[i])
+            i += 1
+    return "".join(out).upper()
 
 
 # (класс, eng title, eng text, rus title, rus text)
@@ -243,7 +260,11 @@ def main() -> None:
             monsters[f"{PREFIX}{key}.name"] = data["name"]
             for move, title in data["moves"].items():
                 monsters[f"{PREFIX}{key}.moves.{move}.title"] = title
-        encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS, **M5_ENCOUNTERS, **M5_SHOP_ENCOUNTERS}.items()}
+        all_encounters = {**ENCOUNTERS, **STAGE3_ENCOUNTERS, **STAGE7_ENCOUNTERS, **M5_ENCOUNTERS, **M5_SHOP_ENCOUNTERS}
+        encounters = {f"{PREFIX}{key}.title": names[lang] for key, names in all_encounters.items()}
+        # EncounterModel.GetLossMessageFor() requires "<ENCOUNTER>.loss" (shown on the game-over screen).
+        loss_text = {"eng": "Slain by {encounter}.", "rus": "Вы погибли в бою: {encounter}."}[lang]
+        encounters.update({f"{PREFIX}{key}.loss": loss_text for key in all_encounters})
         settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang]}.items()}
         potions = {}
         for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS + M6_POTIONS:

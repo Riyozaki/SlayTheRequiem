@@ -150,7 +150,7 @@ public abstract class RequiemMonster : CustomMonsterModel
     {
         var heroes = Heroes.ToList();
         DamageType[] elements = [DamageType.Fire, DamageType.Frost, DamageType.Shock];
-        return elements.OrderBy(t => heroes.Sum(h => ResistancePowers.TierOf(h, t))).First();
+        return elements.OrderBy(t => heroes.Sum(h => ResistancePower.TierOf(h, t))).First();
     }
 
     /// <summary>Статус по стихии: Горение / Озноб / Статика.</summary>

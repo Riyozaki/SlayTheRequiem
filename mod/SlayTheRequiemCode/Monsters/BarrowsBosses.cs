@@ -127,7 +127,7 @@ public sealed class BoneFrostWyrm : ActBossMonster
 
     protected override IReadOnlyList<MoveState> PhaseOne() =>
     [
-        new MoveState("WING_GUST", async _ => { await Hit(GustDamage, GustHits, fx: null); await DrainStamina(GustStaminaDrain); },
+        new MoveState("WING_GUST", async _ => { await Hit(GustDamage, GustHits, fx: null); DrainStamina(GustStaminaDrain); },
             Multi(GustDamage, GustHits), new DebuffIntent()),
         new MoveState("FROST_BREATH", async _ => { await Cast(); await Hit(BreathDamage, type: DamageType.Frost, fx: null); await Debuff<ChillPower>(BreathChill); },
             Atk(BreathDamage), new DebuffIntent()),
@@ -189,7 +189,7 @@ public sealed class BarrowWailer : ActBossMonster
     [
         new MoveState("GRAVE_TOUCH", async _ => { await Hit(TouchDamage, type: DamageType.Frost, fx: null); await Debuff<ChillPower>(TouchChill); },
             Atk(TouchDamage), new DebuffIntent()),
-        new MoveState("MOURNING_WAIL", async _ => { await Cast(); await DrainStamina(WailStaminaDrain); await Debuff<FearPower>(WailFear); },
+        new MoveState("MOURNING_WAIL", async _ => { await Cast(); DrainStamina(WailStaminaDrain); await Debuff<FearPower>(WailFear); },
             new DebuffIntent()),
         new MoveState("GRAVE_TOUCH_2", async _ => { await Hit(TouchDamage, type: DamageType.Frost, fx: null); await Debuff<ChillPower>(TouchChill); },
             Atk(TouchDamage), new DebuffIntent()),

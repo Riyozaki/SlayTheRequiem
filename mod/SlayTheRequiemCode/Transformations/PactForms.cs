@@ -254,7 +254,7 @@ public sealed class LichForm : PactStage, ISummonListener
 
 /// <summary>Филактерия: 3 веса Груза. При смерти — воскрешение с 30 % ♥ один раз за забег, затем разрушается.</summary>
 [Pool(typeof(SharedRelicPool))]
-public sealed class Phylactery : RequiemRelic, IWeighted
+public sealed class Phylactery : RequiemRelic, Equipment.IWeighted
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool IsAllowedInShops => false;
