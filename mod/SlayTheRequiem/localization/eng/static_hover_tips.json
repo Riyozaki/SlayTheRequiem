@@ -137,5 +137,6 @@
   "SLAYTHEREQUIEM-ORIGIN_PICK.tribe": "Choose your tribe",
   "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Choose your dynasty",
   "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Choose your background",
-  "SLAYTHEREQUIEM-VFX.dodge": "Dodge!"
+  "SLAYTHEREQUIEM-VFX.dodge": "Dodge!",
+  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Too heavy: {Card} was not taken (Burden {Weight} / {Capacity}, overload +{Excess}). Store or remove cards at camp, or drop equipment."
 }

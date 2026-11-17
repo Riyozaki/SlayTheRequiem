@@ -168,6 +168,27 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
         return Loadout.Overload(Owner).CanPickUp;
     }
 
+    /// <summary>
+    /// Карта не взята из-за перегруза: раньше игра молча оставляла её на экране награды («карты то добавляются, то нет»,
+    /// плейтест 2026-11). Теперь реликвия мигает и игрок видит, почему и что делать.
+    /// </summary>
+    public override Task AfterAddToDeckPrevented(CardModel card)
+    {
+        if (card.Owner != Owner) return Task.CompletedTask;
+        Flash();
+        if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(Owner))
+        {
+            var overload = Loadout.Overload(Owner);
+            var loc = UI.RequiemUi.Tip("BURDEN_BLOCKED.title");
+            loc.Add("Card", card.Title);
+            loc.Add("Weight", Loadout.TotalWeight(Owner));
+            loc.Add("Capacity", Loadout.Capacity(Owner));
+            loc.Add("Excess", overload.Excess);
+            UI.NRequiemToast.Show(loc.GetFormattedText());
+        }
+        return Task.CompletedTask;
+    }
+
     public override Task AfterRoomEntered(AbstractRoom room)
     {
         // «Пёрышко» действует до следующего лагеря.

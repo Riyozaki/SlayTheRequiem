@@ -25,19 +25,19 @@ internal class RequiemConfig : SimpleModConfig
     /// реликвии при входе в первую комнату (этап 6).
     /// </summary>
     [ConfigSection("HeroSection")]
-    public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Random;
+    public static RegentOriginChoice RegentOrigin { get; set; } = RegentOriginChoice.Choose;
 
     /// <summary>Клан Латоносца (docs/design/04): Инеерождённые, Горнокровные, Дюнные клинки, Цитадельцы; «Случайно» — по сиду забега.</summary>
-    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Random;
+    public static PlatebearerOriginChoice PlatebearerOrigin { get; set; } = PlatebearerOriginChoice.Choose;
 
     /// <summary>Племя Безмолвной (docs/design/04).</summary>
-    public static SilentOriginChoice SilentOrigin { get; set; } = SilentOriginChoice.Random;
+    public static SilentOriginChoice SilentOrigin { get; set; } = SilentOriginChoice.Choose;
 
     /// <summary>
     /// Предыстория (для всех героев): 1-я/2-я/3-я предыстория выбранного происхождения или «Бродяга».
     /// Ещё не сделанные предыстории (дары Князей — этап 4) при выборе заменяются случайной готовой.
     /// </summary>
-    public static BackgroundChoice Background { get; set; } = BackgroundChoice.Random;
+    public static BackgroundChoice Background { get; set; } = BackgroundChoice.Choose;
 
     /// <summary>
     /// Некробиндер и Дефект (docs/design/06 §4): в моде это облики превращений, а не герои, поэтому на экране выбора

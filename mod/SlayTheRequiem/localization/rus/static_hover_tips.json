@@ -137,5 +137,6 @@
   "SLAYTHEREQUIEM-ORIGIN_PICK.tribe": "Выберите племя",
   "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Выберите династию",
   "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Выберите предысторию",
-  "SLAYTHEREQUIEM-VFX.dodge": "Уворот!"
+  "SLAYTHEREQUIEM-VFX.dodge": "Уворот!",
+  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Слишком тяжело: «{Card}» не взята (груз {Weight} / {Capacity}, перегруз +{Excess}). Уберите карты в Сундук лагеря или снимите снаряжение."
 }

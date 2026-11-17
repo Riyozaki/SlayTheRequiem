@@ -131,6 +131,8 @@ UI_TIPS = {
         "BURDEN_CRUSHING.title": "Crushing overload +{Excess}",
         "BURDEN_CRUSHING.description": "Overload {Excess} (above 10): ◆ regeneration −{StaminaPenalty}, opening hand −{HandPenalty} card, "
                                        "you cannot pick up anything until you drop something.",
+        "BURDEN_BLOCKED.title": "Too heavy: {Card} was not taken (Burden {Weight} / {Capacity}, overload +{Excess}). "
+                                "Store or remove cards at camp, or drop equipment.",
     },
     "rus": {
         "STAMINA_BAR.title": "◆ Выносливость",
@@ -160,6 +162,8 @@ UI_TIPS = {
         "BURDEN_CRUSHING.title": "Неподъёмный груз +{Excess}",
         "BURDEN_CRUSHING.description": "Перегруз {Excess} (больше 10): прирост ◆ −{StaminaPenalty}, стартовая рука −{HandPenalty} карта, "
                                        "ничего не поднять, пока что-нибудь не выбросите.",
+        "BURDEN_BLOCKED.title": "Слишком тяжело: «{Card}» не взята (груз {Weight} / {Capacity}, перегруз +{Excess}). "
+                                "Уберите карты в Сундук лагеря или снимите снаряжение.",
     },
 }
 
