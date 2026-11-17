@@ -138,5 +138,10 @@
   "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Choose your dynasty",
   "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Choose your background",
   "SLAYTHEREQUIEM-VFX.dodge": "Dodge!",
-  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Too heavy: {Card} was not taken (Burden {Weight} / {Capacity}, overload +{Excess}). Store or remove cards at camp, or drop equipment."
+  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Too heavy: {Card} was not taken (Burden {Weight} / {Capacity}, overload +{Excess}). Drop a card from the deck view (click a card → Drop), store it in the camp Chest, or stow equipment.",
+  "SLAYTHEREQUIEM-DISCARD_BUTTON.title": "Drop (−{Weight} ⚖)",
+  "SLAYTHEREQUIEM-DISCARD_CONFIRM.title": "Click again to drop",
+  "SLAYTHEREQUIEM-DISCARD_HINT.title": "Overload +{Excess}. The card is lost for good; its weight {Weight} is freed.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_THIS.title": "Basic cards, curses, statuses and Eternal cards cannot be dropped — remove them at a shop or event.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "You can drop cards only while overloaded. To thin the deck, use card removal at a shop."
 }

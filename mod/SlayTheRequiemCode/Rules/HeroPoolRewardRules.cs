@@ -22,7 +22,10 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 /// </summary>
 public sealed class HeroPoolRewardRules() : CustomSingletonModel(CustomSingletonModel.HookType.Run)
 {
-    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
+    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions) =>
+        RewardSwap.Guard(nameof(HeroPoolRewardRules), () => Modify(player, cardRewardOptions, creationOptions));
+
+    private static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
     {
         if (!RequiemMode.IsInSystem(player) || creationOptions.Source != CardCreationSource.Encounter) return false;
 
@@ -43,7 +46,7 @@ public sealed class HeroPoolRewardRules() : CustomSingletonModel(CustomSingleton
             if (pact.Count > 0 && rng.NextDouble() < PoolRules.PactCardSharePercent / 100.0
                 && rng.NextItem(pact.Where(p => p.Rarity == card.Rarity && !taken.Contains(p))) is { } doom)
             {
-                option.ModifyCard(player.RunState.CreateCard(doom, player));
+                RewardSwap.Replace(option, doom, player);
                 changed = true;
                 continue;
             }
@@ -52,7 +55,7 @@ public sealed class HeroPoolRewardRules() : CustomSingletonModel(CustomSingleton
             var chance = PoolRules.OwnReplaceChance(ownOfRarity.Count, vanilla.Count(v => v.Rarity == card.Rarity));
             if (chance <= 0 || rng.NextDouble() >= chance) continue;
             if (rng.NextItem(ownOfRarity.Where(o => !taken.Contains(o))) is not { } mine) continue;
-            option.ModifyCard(player.RunState.CreateCard(mine, player));
+            RewardSwap.Replace(option, mine, player);
             changed = true;
         }
         return changed;

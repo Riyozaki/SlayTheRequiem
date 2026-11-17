@@ -138,5 +138,10 @@
   "SLAYTHEREQUIEM-ORIGIN_PICK.dynasty": "Выберите династию",
   "SLAYTHEREQUIEM-ORIGIN_PICK.background": "Выберите предысторию",
   "SLAYTHEREQUIEM-VFX.dodge": "Уворот!",
-  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Слишком тяжело: «{Card}» не взята (груз {Weight} / {Capacity}, перегруз +{Excess}). Уберите карты в Сундук лагеря или снимите снаряжение."
+  "SLAYTHEREQUIEM-BURDEN_BLOCKED.title": "Слишком тяжело: «{Card}» не взята (груз {Weight} / {Capacity}, перегруз +{Excess}). Выбросьте карту на экране колоды (клик по карте → «Выбросить»), уберите в Сундук лагеря или снимите снаряжение.",
+  "SLAYTHEREQUIEM-DISCARD_BUTTON.title": "Выбросить (−{Weight} ⚖)",
+  "SLAYTHEREQUIEM-DISCARD_CONFIRM.title": "Нажмите ещё раз, чтобы выбросить",
+  "SLAYTHEREQUIEM-DISCARD_HINT.title": "Перегруз +{Excess}. Карта пропадёт насовсем, освободится {Weight} веса.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_THIS.title": "Базовые карты, проклятия, статусы и «Вечные» не выбрасываются — их снимают лавка и события.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "Выбрасывать карты можно только при перегрузе. Чтобы проредить колоду — удаление карт в лавке."
 }

@@ -80,6 +80,11 @@ public enum ShopAction
     ShoeMule = 26,
     /// <summary>Сундук у прилавка (со зверем): выбор карт и вещей — синхронные экраны у всех.</summary>
     MuleChest = 27,
+
+    // ───── плейтест 2026-11: Груз (02 §3 «выбрасывать можно в любой момент вне боя») ─────
+
+    /// <summary>a = индекс карты в колоде, s = id карты (сверка). Не только в лавке: любое место вне боя.</summary>
+    DiscardCard = 28,
 }
 
 /// <summary>
@@ -334,6 +339,16 @@ public static class ShopActions
                 case ShopAction.MuleChest:
                     if (Alchemy.PackMule.Of(player) != null) await ChestRestSiteOption.ChestFlow(player);
                     break;
+
+                case ShopAction.DiscardCard:
+                {
+                    var deck = player.Deck.Cards;
+                    var card = a >= 0 && a < deck.Count && deck[a].Id.Entry == s
+                        ? deck[a]
+                        : deck.FirstOrDefault(c => c.Id.Entry == s && DeckDiscard.CanDiscard(c));
+                    if (card != null) await CardPileCmd.RemoveFromDeck(card, showPreview: LocalContext.IsMe(player));
+                    break;
+                }
 
                 case ShopAction.TheftFailed:
                 {

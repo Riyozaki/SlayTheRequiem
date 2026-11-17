@@ -132,7 +132,12 @@ UI_TIPS = {
         "BURDEN_CRUSHING.description": "Overload {Excess} (above 10): ◆ regeneration −{StaminaPenalty}, opening hand −{HandPenalty} card, "
                                        "you cannot pick up anything until you drop something.",
         "BURDEN_BLOCKED.title": "Too heavy: {Card} was not taken (Burden {Weight} / {Capacity}, overload +{Excess}). "
-                                "Store or remove cards at camp, or drop equipment.",
+                                "Drop a card from the deck view (click a card → Drop), store it in the camp Chest, or stow equipment.",
+        "DISCARD_BUTTON.title": "Drop (−{Weight} ⚖)",
+        "DISCARD_CONFIRM.title": "Click again to drop",
+        "DISCARD_HINT.title": "Overload +{Excess}. The card is lost for good; its weight {Weight} is freed.",
+        "DISCARD_NOT_THIS.title": "Basic cards, curses, statuses and Eternal cards cannot be dropped — remove them at a shop or event.",
+        "DISCARD_NOT_OVERLOADED.title": "You can drop cards only while overloaded. To thin the deck, use card removal at a shop.",
     },
     "rus": {
         "STAMINA_BAR.title": "◆ Выносливость",
@@ -163,7 +168,12 @@ UI_TIPS = {
         "BURDEN_CRUSHING.description": "Перегруз {Excess} (больше 10): прирост ◆ −{StaminaPenalty}, стартовая рука −{HandPenalty} карта, "
                                        "ничего не поднять, пока что-нибудь не выбросите.",
         "BURDEN_BLOCKED.title": "Слишком тяжело: «{Card}» не взята (груз {Weight} / {Capacity}, перегруз +{Excess}). "
-                                "Уберите карты в Сундук лагеря или снимите снаряжение.",
+                                "Выбросьте карту на экране колоды (клик по карте → «Выбросить»), уберите в Сундук лагеря или снимите снаряжение.",
+        "DISCARD_BUTTON.title": "Выбросить (−{Weight} ⚖)",
+        "DISCARD_CONFIRM.title": "Нажмите ещё раз, чтобы выбросить",
+        "DISCARD_HINT.title": "Перегруз +{Excess}. Карта пропадёт насовсем, освободится {Weight} веса.",
+        "DISCARD_NOT_THIS.title": "Базовые карты, проклятия, статусы и «Вечные» не выбрасываются — их снимают лавка и события.",
+        "DISCARD_NOT_OVERLOADED.title": "Выбрасывать карты можно только при перегрузе. Чтобы проредить колоду — удаление карт в лавке.",
     },
 }
 
