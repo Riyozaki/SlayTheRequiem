@@ -24,6 +24,14 @@ public partial class NBurdenMeter : NRequiemHoverWidget
     private int _weight, _capacity;
     private BurdenRules.Overload _overload;
     private int _previewDelta;
+    // Анимация: число и полоса «доезжают» до нового веса, при росте ступени перегруза шкала вздрагивает и
+    // вспыхивает, в перегрузе — мягко пульсирует (плейтест 2026-11: «перегруз не заметен, пока не заблокирует»).
+    private float _shownWeight = -1f;
+    private float _flash;
+    private float _pulse;
+    private int _tier = -1;
+
+    private static int TierOf(BurdenRules.Overload o) => o.Excess <= 0 ? 0 : o.Excess <= 5 ? 1 : o.Excess <= 10 ? 2 : 3;
 
     /// <summary>
     /// Превью покупки (+вес) или продажи (−вес) в лавке (M6 п. 5): призрачный отрезок до веса «после», подпись
@@ -54,6 +62,7 @@ public partial class NBurdenMeter : NRequiemHoverWidget
 
     public override void _Process(double delta)
     {
+        Animate((float)delta);
         _sinceRefresh += delta;
         if (_sinceRefresh < 0.25) return;
         _sinceRefresh = 0;
@@ -62,7 +71,33 @@ public partial class NBurdenMeter : NRequiemHoverWidget
         _weight = Loadout.TotalWeight(_player);
         _capacity = Loadout.Capacity(_player);
         _overload = BurdenRules.Evaluate(_weight, _capacity);
+        var tier = TierOf(_overload);
+        if (_tier >= 0 && tier > _tier)
+        {
+            _flash = 1f;
+            RequiemKit.Shake(this, 4f + 2f * tier);
+        }
+        _tier = tier;
+        if (_shownWeight < 0) _shownWeight = _weight;
         QueueRedraw();
+    }
+
+    private void Animate(float dt)
+    {
+        if (!Visible || _shownWeight < 0) return;
+        var moving = Math.Abs(_shownWeight - _weight) > 0.01f;
+        if (moving) _shownWeight = Mathf.Lerp(_shownWeight, _weight, 1f - Mathf.Exp(-dt * 8f));
+        if (!moving) _shownWeight = _weight;
+        if (_flash > 0) _flash = Math.Max(0, _flash - dt * 1.6f);
+        if (_overload.Excess > 0) _pulse = (_pulse + dt * (1.2f + 0.6f * _tier)) % Mathf.Tau;
+        if (moving || _flash > 0 || _overload.Excess > 0) QueueRedraw();
+    }
+
+    /// <summary>Цвет ступени с пульсом и вспышкой.</summary>
+    private Color Glow(Color tint)
+    {
+        var pulse = _overload.Excess > 0 ? 0.18f * (0.5f + 0.5f * Mathf.Sin(_pulse)) : 0f;
+        return tint.Lerp(Colors.White, Math.Max(pulse, _flash * 0.7f));
     }
 
     public override void _Draw()
@@ -72,9 +107,11 @@ public partial class NBurdenMeter : NRequiemHoverWidget
         DrawRect(new Rect2(Vector2.Zero, Size), RequiemUi.BarBack);
         var icon = RequiemUi.Texture(RequiemUi.UiImage("burden"));
         if (icon != null) DrawTextureRect(icon, new Rect2(2, 2, h - 4, h - 4), false);
-        var tint = RequiemUi.BurdenTint(_overload);
+        var tint = Glow(RequiemUi.BurdenTint(_overload));
+        if (_flash > 0) DrawRect(new Rect2(Vector2.Zero, Size), new Color(RequiemUi.BurdenTint(_overload), 0.35f * _flash), false, 3f);
         var left = h + 2;
-        var text = $"{_weight}/{_capacity}";
+        var shown = _shownWeight < 0 ? _weight : (int)Math.Round(_shownWeight);
+        var text = $"{shown}/{_capacity}";
         if (_compact)
         {
             DrawOutlined(text, new Vector2(left, h * 0.5f + 8), Size.X - left - 4, 20, tint, HorizontalAlignment.Left);
@@ -90,7 +127,8 @@ public partial class NBurdenMeter : NRequiemHoverWidget
         DrawRect(new Rect2(X(_capacity), y, X(_capacity + 5) - X(_capacity), 10), new Color(RequiemUi.TiredColor, 0.25f));
         DrawRect(new Rect2(X(_capacity + 5), y, X(_capacity + 10) - X(_capacity + 5), 10), new Color(RequiemUi.ExhaustedColor, 0.25f));
         DrawRect(new Rect2(X(_capacity + 10), y, X(max) - X(_capacity + 10), 10), new Color(RequiemUi.OverstrainColor, 0.25f));
-        DrawRect(new Rect2(barX, y, X(_weight) - barX, 10), RequiemUi.BurdenColor.Lerp(tint, _overload.Excess > 0 ? 0.6f : 0f));
+        var fillTo = barX + barW * Math.Clamp(_shownWeight < 0 ? _weight : _shownWeight, 0, max) / max;
+        DrawRect(new Rect2(barX, y, fillTo - barX, 10), RequiemUi.BurdenColor.Lerp(tint, _overload.Excess > 0 ? 0.6f : 0f));
         if (_previewDelta != 0)
         {
             // превью сделки: покупка — отрезок вправо цветом ступени «после», продажа — светлая «выемка» влево
