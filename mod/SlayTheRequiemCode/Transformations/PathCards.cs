@@ -53,7 +53,10 @@ public sealed class PathRewardRules() : CustomSingletonModel(CustomSingletonMode
     /// <summary>Подписные заклинания Повелителя стихии (карты его Пути).</summary>
     public static readonly Type[] ElementLordSpells = [typeof(Meteor), typeof(IceTomb), typeof(ChainLightning)];
 
-    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
+    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions) =>
+        RewardSwap.Guard(nameof(PathRewardRules), () => Modify(player, cardRewardOptions, creationOptions));
+
+    private static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
     {
         if (!RequiemMode.IsInSystem(player) || creationOptions.Source != CardCreationSource.Encounter) return false;
         var path = Paths.PathOf(player);
@@ -72,7 +75,7 @@ public sealed class PathRewardRules() : CustomSingletonModel(CustomSingletonMode
             var taken = cardRewardOptions.Select(o => o.Card.CanonicalInstance).ToHashSet();
             var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)));
             if (pick == null) break;
-            option.ModifyCard(player.RunState.CreateCard(pick, player));
+            RewardSwap.Replace(option, pick, player);
             changed = true;
         }
         return changed;

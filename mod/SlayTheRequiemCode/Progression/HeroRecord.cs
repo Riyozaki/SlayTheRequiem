@@ -497,7 +497,9 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         if (card is RequiemCard { ShelvedByThisPlay: true } shoutCard && card is IShoutCard shout)
         {
             shoutCard.ShelvedByThisPlay = false;
-            await Shouts.Shelve(card, shout);
+            // Хуки ModifyCardPlayResultPileTypeAndPosition могли перенаправить карту (в изгнание, в колоду) —
+            // тогда она не «нигде», и полка дала бы её копию в руку при живом оригинале.
+            if (cardPlay.ResultPile == PileType.None) await Shouts.Shelve(card, shout);
         }
         if (card is SpellCard spell)
         {

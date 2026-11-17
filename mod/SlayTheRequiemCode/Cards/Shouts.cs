@@ -53,7 +53,16 @@ public sealed class ShoutShelfPower : RequiemPower
             ready.Add(entry.Card);
         }
         foreach (var card in ready)
-            await CardPileCmd.Add(card, PileType.Hand);
+        {
+            // Игра, отправляя карту «никуда» (PileType.None), снимает её с боя через RemoveFromCombat → RemoveFromState:
+            // HasBeenRemovedFromState = true, и CardPileCmd.Add молча отказывает (success = false). Из-за этого Кличи
+            // не возвращались в руку (плейтест 2026-11). Карта остаётся в CombatState — снимаем флаг, как RunState
+            // делает для украденных карт, и только потом кладём в руку (полная рука — игра сама отправит в сброс).
+            if (card.Owner == null || card.CombatState == null) continue;
+            card.HasBeenRemovedFromState = false;
+            var result = await CardPileCmd.Add(card, PileType.Hand);
+            if (!result.success) MainFile.Logger.Warn($"Клич {card.Id.Entry} не вернулся в руку.");
+        }
         if (ready.Count == 0) return;
         Flash();
         if (_shelf.Count == 0) await PowerCmd.Remove(this);
