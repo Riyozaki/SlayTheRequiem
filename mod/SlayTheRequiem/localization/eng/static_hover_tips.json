@@ -143,5 +143,10 @@
   "SLAYTHEREQUIEM-DISCARD_CONFIRM.title": "Click again to drop",
   "SLAYTHEREQUIEM-DISCARD_HINT.title": "Overload +{Excess}. The card is lost for good; its weight {Weight} is freed.",
   "SLAYTHEREQUIEM-DISCARD_NOT_THIS.title": "Basic cards, curses, statuses and Eternal cards cannot be dropped — remove them at a shop or event.",
-  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "You can drop cards only while overloaded. To thin the deck, use card removal at a shop."
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "You can drop cards only while overloaded. To thin the deck, use card removal at a shop.",
+  "SLAYTHEREQUIEM-DISCARD_BUTTON.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+  "SLAYTHEREQUIEM-DISCARD_CONFIRM.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+  "SLAYTHEREQUIEM-DISCARD_HINT.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_THIS.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.description": "Dropping is allowed outside combat while overloaded; the card is gone for good."
 }

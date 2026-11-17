@@ -143,5 +143,10 @@
   "SLAYTHEREQUIEM-DISCARD_CONFIRM.title": "Нажмите ещё раз, чтобы выбросить",
   "SLAYTHEREQUIEM-DISCARD_HINT.title": "Перегруз +{Excess}. Карта пропадёт насовсем, освободится {Weight} веса.",
   "SLAYTHEREQUIEM-DISCARD_NOT_THIS.title": "Базовые карты, проклятия, статусы и «Вечные» не выбрасываются — их снимают лавка и события.",
-  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "Выбрасывать карты можно только при перегрузе. Чтобы проредить колоду — удаление карт в лавке."
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.title": "Выбрасывать карты можно только при перегрузе. Чтобы проредить колоду — удаление карт в лавке.",
+  "SLAYTHEREQUIEM-DISCARD_BUTTON.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+  "SLAYTHEREQUIEM-DISCARD_CONFIRM.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+  "SLAYTHEREQUIEM-DISCARD_HINT.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_THIS.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем."
 }

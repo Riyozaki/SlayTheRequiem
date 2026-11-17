@@ -138,6 +138,11 @@ UI_TIPS = {
         "DISCARD_HINT.title": "Overload +{Excess}. The card is lost for good; its weight {Weight} is freed.",
         "DISCARD_NOT_THIS.title": "Basic cards, curses, statuses and Eternal cards cannot be dropped — remove them at a shop or event.",
         "DISCARD_NOT_OVERLOADED.title": "You can drop cards only while overloaded. To thin the deck, use card removal at a shop.",
+        "DISCARD_BUTTON.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+        "DISCARD_CONFIRM.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+        "DISCARD_HINT.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+        "DISCARD_NOT_THIS.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+        "DISCARD_NOT_OVERLOADED.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
     },
     "rus": {
         "STAMINA_BAR.title": "◆ Выносливость",
@@ -174,6 +179,11 @@ UI_TIPS = {
         "DISCARD_HINT.title": "Перегруз +{Excess}. Карта пропадёт насовсем, освободится {Weight} веса.",
         "DISCARD_NOT_THIS.title": "Базовые карты, проклятия, статусы и «Вечные» не выбрасываются — их снимают лавка и события.",
         "DISCARD_NOT_OVERLOADED.title": "Выбрасывать карты можно только при перегрузе. Чтобы проредить колоду — удаление карт в лавке.",
+        "DISCARD_BUTTON.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+        "DISCARD_CONFIRM.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+        "DISCARD_HINT.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+        "DISCARD_NOT_THIS.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
+        "DISCARD_NOT_OVERLOADED.description": "Выбрасывать можно вне боя при перегрузе; карта пропадает насовсем.",
     },
 }
 
