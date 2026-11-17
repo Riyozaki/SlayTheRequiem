@@ -148,5 +148,15 @@
   "SLAYTHEREQUIEM-DISCARD_CONFIRM.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
   "SLAYTHEREQUIEM-DISCARD_HINT.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
   "SLAYTHEREQUIEM-DISCARD_NOT_THIS.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
-  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.description": "Dropping is allowed outside combat while overloaded; the card is gone for good."
+  "SLAYTHEREQUIEM-DISCARD_NOT_OVERLOADED.description": "Dropping is allowed outside combat while overloaded; the card is gone for good.",
+  "SLAYTHEREQUIEM-CAMP_CAT_REST.title": "Rest",
+  "SLAYTHEREQUIEM-CAMP_CAT_REST.description": "Recover HP, meditate, pray.",
+  "SLAYTHEREQUIEM-CAMP_CAT_CRAFT.title": "Craft",
+  "SLAYTHEREQUIEM-CAMP_CAT_CRAFT.description": "Forge, brew, cook.",
+  "SLAYTHEREQUIEM-CAMP_CAT_MAGIC.title": "Enchanting",
+  "SLAYTHEREQUIEM-CAMP_CAT_MAGIC.description": "Enchant gear and cards.",
+  "SLAYTHEREQUIEM-CAMP_CAT_GEAR.title": "Gear & training",
+  "SLAYTHEREQUIEM-CAMP_CAT_GEAR.description": "Chest, level points, lifting.",
+  "SLAYTHEREQUIEM-CAMP_CAT_SPECIAL.title": "Special",
+  "SLAYTHEREQUIEM-CAMP_CAT_SPECIAL.description": "Tavern, rites and other rare options."
 }
