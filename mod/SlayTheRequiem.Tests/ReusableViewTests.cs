@@ -48,13 +48,55 @@ public class ReusableViewTests
         Assert.Empty(original);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void A_failed_rebuild_releases_unpublished_references_immediately_even_after_reset(bool resetDuringBuild)
+    {
+        InvalidatedListView<object> view = null!;
+        List<object> scratch = null!; // test instrumentation only; production builders must not retain this buffer
+        var fail = false;
+        var owner = new object();
+        var stale = new object();
+        view = new(target =>
+        {
+            scratch = target;
+            target.Add(owner);
+            if (!fail) return;
+            if (resetDuringBuild) view.Reset();
+            target.Add(stale); // also exercise a continuation AFTER Reset cleared the buffer
+            view.Invalidate();
+            Assert.False(view.Refresh());
+            Assert.Same(stale, target[^1]); // nested refresh must not clean an outer builder's live buffer
+            throw new InvalidOperationException("synthetic retained-reference regression");
+        });
+        Assert.True(view.Refresh());
+        var published = view.Value;
+        fail = true; view.Invalidate();
+        Assert.Throws<InvalidOperationException>(() => view.Refresh());
+        var rejected = scratch;
+        Assert.NotSame(published, rejected);
+        Assert.Empty(rejected); // no later Reset/Refresh/GC is needed to release these element references
+        Assert.Same(published, view.Value);
+        if (resetDuringBuild) Assert.Empty(view.Value);
+        else Assert.Same(owner, Assert.Single(view.Value));
+        Assert.True(view.IsDirty);
+        fail = false;
+        Assert.True(view.Refresh());
+        Assert.Same(rejected, view.Value); // capacity/buffer is still reused, not discarded to avoid cleanup
+        Assert.Same(owner, Assert.Single(view.Value));
+        Assert.Empty(published);
+    }
+
     [Fact]
-    public void Reset_during_build_does_not_publish_the_old_owners_buffer()
+    public void Reset_during_build_does_not_publish_or_retain_the_old_owners_buffer()
     {
         InvalidatedListView<string> view = null!;
+        List<string> scratch = null!; // inspect rejected storage, not only the public view
         var rebind = true;
         view = new(target =>
         {
+            scratch = target;
             if (rebind)
             {
                 target.Add("old owner");
@@ -65,6 +107,7 @@ public class ReusableViewTests
         });
         Assert.False(view.Refresh());
         Assert.Empty(view.Value);
+        Assert.Empty(scratch); // a rejected non-throwing builder must release post-Reset additions as well
         Assert.True(view.IsDirty);
         rebind = false;
         Assert.True(view.Refresh());

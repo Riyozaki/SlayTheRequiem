@@ -13,6 +13,7 @@ public sealed class InvalidatedListView<T>
     private List<T> _spare = new();
     private readonly Action<List<T>> _build;
     private readonly Func<List<T>> _buildNext;
+    private bool _refreshing;
 
     public InvalidatedListView(Action<List<T>> build)
     {
@@ -33,11 +34,23 @@ public sealed class InvalidatedListView<T>
 
     public bool Refresh()
     {
+        // Only the outer invocation owns scratch cleanup. A nested refresh must not clear a builder's live buffer.
+        if (!_view.IsDirty || _refreshing) return false;
+        _refreshing = true;
         var previous = _view.Value;
-        if (!_view.Refresh(_buildNext)) return false;
-        _spare = previous;
-        _spare.Clear(); // do not retain removed powers/old owners until the next mutation
-        return true;
+        try
+        {
+            if (!_view.Refresh(_buildNext)) return false;
+            _spare = previous;
+            return true;
+        }
+        finally
+        {
+            // On success this is the former published list; on rejection/exception it is the unpublished scratch.
+            // A builder may continue adding references AFTER Reset, so Reset's own Clear is not sufficient.
+            _spare.Clear();
+            _refreshing = false;
+        }
     }
 
     private List<T> BuildNext()
