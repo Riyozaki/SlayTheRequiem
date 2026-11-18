@@ -1,0 +1,2 @@
+# Godot must not scan the xUnit project: dotnet test copies data/*.csv into
+# bin/ and Godot would import them as CSV translations, aborting the export.
