@@ -1,0 +1,6 @@
+Snapshot metadata and hashes: 100 changed code inputs, 25 recorded check logs
+Core: 560/560 via stored public CI annotation; native adapters: 67 SOURCE-ONLY / NOT EXECUTED
+Port: 63-file reconstructed scope verified against Git trees; original copy-list NOT independently recoverable
+Markdown: 16 changed/new documents; 215 local links and 52 pinned Git source links verified
+Other external URLs not fetched: 31
+PASS (offline evidence/link integrity only; no build, engine, network or game test)

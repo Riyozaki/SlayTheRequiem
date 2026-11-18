@@ -9,12 +9,12 @@
 жечь ману и тащить на себе всё, что они решились нести.*
 
 [![CI](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml/badge.svg)](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml)
-![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-%E2%89%A5%200.107-8b0000?style=flat)
+![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1-8b0000?style=flat)
 ![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)
-![BaseLib](https://img.shields.io/badge/BaseLib-%E2%89%A5%203.3-2f4f4f)
-![Godot](https://img.shields.io/badge/Godot-4.5%20mono-478CBF?logo=godotengine&logoColor=white)
+![BaseLib](https://img.shields.io/badge/BaseLib-3.4.8-2f4f4f)
+![Godot](https://img.shields.io/badge/Godot-4.5.1%20mono-478CBF?logo=godotengine&logoColor=white)
 ![Языки](https://img.shields.io/badge/loc-RU%20%7C%20EN-c9a227)
-![Статус](https://img.shields.io/badge/статус-pre--alpha%2C%20не%20собран%20в%20игре-orange)
+![Статус](https://img.shields.io/badge/статус-pre--alpha%2C%20после%20плейтеста-orange)
 
 [**О моде**](#-о-моде) ·
 [**Путь через Шпиль**](#-пять-актов) ·
@@ -22,6 +22,7 @@
 [**📖 Путеводитель**](docs/GUIDE.md) ·
 [**Документация**](docs/README.md) ·
 [**Дорожная карта**](docs/ROADMAP.md) ·
+[**Аудит 18.11**](docs/review/main-audit-2026-11-18.md) ·
 [**Changelog**](CHANGELOG.md)
 
 </div>
@@ -29,9 +30,12 @@
 ---
 
 > [!WARNING]
-> **Pre-alpha.** Весь код мода (≈ 41 тыс. строк C#) написан по исходникам BaseLib и декомпилированной игре,
-> но **ещё ни разу не запускался в Slay the Spire 2**. Чистая логика (`Core/`) компилируется и проходит тесты в CI,
-> остальное ждёт первой сборки с игрой — ошибки компиляции и баланса неизбежны. Помощь с первой сборкой очень приветствуется!
+> **Pre-alpha после первого плейтеста.** Историческая сборка/PCK и запуск пользователем на `ec598de` подтверждены.
+> После [аудита main от 18.11.2026](docs/review/main-audit-2026-11-18.md) внесён [блок 1 «Надёжное ядро»](docs/review/stage-one-implementation-2026-11-18.md):
+> защита карт/предметов/сейвов, восстановление и воспроизводимый build pipeline. Публичный CI подтверждает **560/560 Core-тестов**
+> и проверки контента; ручной full-build workflow с легальной игрой подготовлен, но здесь не исполнен. Новый DLL/PCK и игра
+> ещё не приняты. [Три блока релиза](docs/plan/next-playable-release-2026-11-18.md): надёжное ядро → цельный игровой цикл →
+> качество и выпуск. Ручной и двухклиентный плейтест — в самом конце; автоматические проверки выполняются сейчас.
 
 ## ✦ О моде
 
@@ -156,24 +160,31 @@ flowchart LR
 | Реликвии и снаряжение (+ переработка ванильных) | **203** | Зелья и яды | **84** |
 | Новые враги | **86** | Встречи (бои, элиты, супербоссы) | **49** |
 | События | **43** | Чары карт | **6** |
-| Ключей локализации (RU + EN) | **2 × 3484** | Настроек мода | **25** |
+| Ключей локализации (RU + EN) | **2 × 3523** | Настроек мода | **25** |
 
 Герои системы — **Латоносец** (Ironclad), **Безмолвная** и **Регент**, каждый с происхождениями и предысториями.
 Некробиндер и Дефект появляются как облики трансформаций.
 
 ## 🛠 Сборка и установка
 
-Нужно: Slay the Spire 2 (≥ 0.107), [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
-мод [BaseLib](https://github.com/Alchyr/BaseLib-StS2) 3.4.8 и, для `.pck`, [MegaDot](https://megadot.megacrit.com/) (Godot 4.5.1 mono).
+Проверяемый контракт: легальная Slay the Spire 2 **0.107.1**, [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
+[BaseLib 3.4.8](https://github.com/Alchyr/BaseLib-StS2) и [MegaDot 4.5.1 mono](https://megadot.megacrit.com/).
+Релизный путь собирает и устанавливает **одну проверенную пару DLL/PCK**, не смешивает её с прежним пакетом:
 
 ```bash
 git clone https://github.com/Riyozaki/SlayTheRequiem.git
 cd SlayTheRequiem
-dotnet build mod/SlayTheRequiem.csproj     # DLL (+ .pck) копируются в <игра>/mods/SlayTheRequiem/
+# STS2_GAME_DIR и MEGADOT — пути вашей машины; output должен быть новым.
+python3 tools/g0/mod_build.py build --game-dir "$STS2_GAME_DIR" --godot "$MEGADOT" --output .arena/builds/local-001
+python3 tools/g0/mod_build.py verify --bundle .arena/builds/local-001
+# Закрыть игру, сохранить важные сейвы; предыдущая установка останется в backup.
+python3 tools/g0/mod_build.py install --bundle .arena/builds/local-001 --mods-dir "$STS2_GAME_DIR/mods" --game-closed
 ```
 
-Путь к игре определяется автоматически; если нет — скопируйте `mod/Directory.Build.props.example`
-в `mod/Directory.Build.props` и пропишите `Sts2Path` / `GodotPath`. Подробности — в [mod/README.md](mod/README.md).
+Требования, отдельные стадии build/Core/export/load и настройка приватного runner — в [инструкции G0](tools/g0/README.md).
+Обычный `dotnet build mod/SlayTheRequiem.csproj` теперь **только компилирует DLL**: он не экспортирует PCK и не устанавливает
+мод автоматически. Для локальной разработки доступны `Sts2Path` / `GodotPath` через игнорируемый
+`mod/Directory.Build.props`; подробнее — [mod/README.md](mod/README.md).
 
 Все системы мода включаются и выключаются в настройках (BaseLib → Slay the Requiem): пять актов, супербоссы,
 уровень «Реквием», Камень Памяти, Пантеон, лавки и другое.

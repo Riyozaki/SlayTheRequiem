@@ -1,0 +1,102 @@
+{
+  "recorded_at_utc": "2026-11-18T02:03:41.668517+00:00",
+  "note": "Pinned source only. No assemblies, game runtime or semantic compilation.",
+  "references": [
+    {
+      "name": "CardFactory.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Factories/CardFactory.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Factories/CardFactory.cs",
+      "sha256": "69bba37c3d0ea3efc423264dd796fc4d22a49dcff3290c56ba9813365e8030dd"
+    },
+    {
+      "name": "CardReward.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Rewards/CardReward.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Rewards/CardReward.cs",
+      "sha256": "937a512def94d408efa9f06849658fde845918be76a144fb832b30335c03523d"
+    },
+    {
+      "name": "CardModel.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Models/CardModel.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Models/CardModel.cs",
+      "sha256": "bb3ea9a22a833e6505bbf70dd9d3ec209f00003f2d68f5933a9e074a0d22fc21"
+    },
+    {
+      "name": "AbstractModel.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Models/AbstractModel.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Models/AbstractModel.cs",
+      "sha256": "6dae61e75edc2eb867a02d217089a562a7198564bf5f3823a466e132c7a20137"
+    },
+    {
+      "name": "RelicModel.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Models/RelicModel.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Models/RelicModel.cs",
+      "sha256": "82d29bc5857bbf1dadaf26a6d55dbb05c19af0067bf8a642dd6d225999303f7b"
+    },
+    {
+      "name": "PowerModel.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Models/PowerModel.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Models/PowerModel.cs",
+      "sha256": "2cc44bddbdd6de6e1d3ded50110a0aace66bc37a942dbf1c5af2af08b9a80dbc"
+    },
+    {
+      "name": "CardPileCmd.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Commands/CardPileCmd.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Commands/CardPileCmd.cs",
+      "sha256": "4bc599d4f58de90db206f2509c6467d7b769bed92a67df7d3fc681a21959fe47"
+    },
+    {
+      "name": "CardCreationResult.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Entities.Cards/CardCreationResult.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Entities.Cards/CardCreationResult.cs",
+      "sha256": "fd46e6cd8cfb28c1590d34bc7f0e78dd488a9d1136a67281e3071d92b152e428"
+    },
+    {
+      "name": "RunManager.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Runs/RunManager.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Runs/RunManager.cs",
+      "sha256": "6fa14a80bf7969bfb8d43b583219d61411c3e1cf56e0c9844e064f30cf387a20"
+    },
+    {
+      "name": "EventRoom.cs",
+      "repository": "zhiyue/sts2-rl-agent",
+      "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "path": "decompiled/MegaCrit.Sts2.Core.Rooms/EventRoom.cs",
+      "url": "https://github.com/zhiyue/sts2-rl-agent/blob/5d874e855ae1d0550d5c30416fadd7dbb0d133b7/decompiled/MegaCrit.Sts2.Core.Rooms/EventRoom.cs",
+      "sha256": "1038126138bdc9799ec3f1286bfddef80618dad80083c375d07cf2ae36e0e0f3"
+    },
+    {
+      "name": "CustomRelicModel.cs",
+      "repository": "Alchyr/BaseLib-StS2",
+      "commit": "6fc4adb72556f2f30a57e540dbe7722ce0827aa8",
+      "path": "Abstracts/CustomRelicModel.cs",
+      "url": "https://github.com/Alchyr/BaseLib-StS2/blob/6fc4adb72556f2f30a57e540dbe7722ce0827aa8/Abstracts/CustomRelicModel.cs",
+      "sha256": "0632c357d301a7ef988f4d97a0e0d9aaf742d5fe0ade8d9894a0f50264549d73"
+    },
+    {
+      "name": "CustomPowerModel.cs",
+      "repository": "Alchyr/BaseLib-StS2",
+      "commit": "6fc4adb72556f2f30a57e540dbe7722ce0827aa8",
+      "path": "Abstracts/CustomPowerModel.cs",
+      "url": "https://github.com/Alchyr/BaseLib-StS2/blob/6fc4adb72556f2f30a57e540dbe7722ce0827aa8/Abstracts/CustomPowerModel.cs",
+      "sha256": "e8588ac0fa39510cb3f7a4cfe8bef948aa4218d1d5ed753f6c295204c7841354"
+    }
+  ]
+}

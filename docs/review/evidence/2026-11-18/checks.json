@@ -1,0 +1,320 @@
+{
+  "audit_date_utc": "2026-11-18",
+  "source_commit": "8000886e9c52db78227972bdd4740ee71f7eca03",
+  "branch": "arena/5906afa4-slaytherequiem",
+  "game_source": {
+    "repository": "https://github.com/zhiyue/sts2-rl-agent",
+    "commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "game_version": "0.107.1"
+  },
+  "baselib_source": {
+    "repository": "https://github.com/Alchyr/BaseLib-StS2",
+    "commit": "6fc4adb72556f2f30a57e540dbe7722ce0827aa8",
+    "tag": "v3.4.8"
+  },
+  "local_dependencies": {
+    "tree-sitter": "0.26.1",
+    "tree-sitter-c-sharp": "0.23.5",
+    "pillow": "13.0.0",
+    "numpy": "2.4.6"
+  },
+  "execution_note": "Commands were run with a workspace-local Python venv. Paths are normalized for reproduction. This is not a full mod build, an xUnit run, or an in-game test.",
+  "checks": [
+    {
+      "name": "sim",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/sim",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 1.95,
+      "summary": [
+        "Ran 150 tests in 1.656s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "localization-build",
+      "command": [
+        "python3",
+        "tools/loc/build_loc.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.16,
+      "summary": [
+        "eng: 3523 ключей",
+        "rus: 3523 ключей"
+      ]
+    },
+    {
+      "name": "localization",
+      "command": [
+        "python3",
+        "tools/ci/check_loc.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4,
+      "summary": [
+        "Моделей проверено: 1196; ошибок: 0"
+      ]
+    },
+    {
+      "name": "csharp-syntax",
+      "command": [
+        "python3",
+        "tools/ci/check_csharp_syntax.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.17,
+      "summary": [
+        "230 files 0 errors"
+      ]
+    },
+    {
+      "name": "harmony-targets",
+      "command": [
+        "python3",
+        "tools/ci/check_harmony_targets.py",
+        "<sts2-rl-agent-checkout>/decompiled"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2,
+      "summary": [
+        "Патчей проверено: 98; ошибок: 0"
+      ]
+    },
+    {
+      "name": "vanilla-art",
+      "command": [
+        "python3",
+        "tools/art/build_vanilla_art.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.29,
+      "summary": [
+        "relic         203/203  с ванильным артом",
+        "event           9/9    с ванильным артом",
+        "enchantment     6/6    с ванильным артом"
+      ]
+    },
+    {
+      "name": "art-fit",
+      "command": [
+        "python3",
+        "tools/art/art_fit.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.5,
+      "summary": [
+        "Арт карт: нарушений 0, повторов внутри мода 0, исключений с причиной 0",
+        "Значки реликвий: нарушений 0, исключений с причиной 0, своих значков 197"
+      ]
+    },
+    {
+      "name": "boss-icons",
+      "command": [
+        "python3",
+        "tools/art/monsters/build_boss_icons.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.49,
+      "summary": [
+        "значки боссов: 12 × 2 OK"
+      ]
+    },
+    {
+      "name": "scenes",
+      "command": [
+        "python3",
+        "tools/art/scenes/build_scenes.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.12,
+      "summary": [
+        "сцены: 4, ошибок: 0"
+      ]
+    },
+    {
+      "name": "events-art",
+      "command": [
+        "python3",
+        "tools/art/events/build_events.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.27,
+      "summary": [
+        "события: 34, ошибок: 0"
+      ]
+    },
+    {
+      "name": "acts-art",
+      "command": [
+        "python3",
+        "tools/art/acts/build_acts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.16,
+      "summary": [
+        "фоны актов: 5 × 6, ошибок: 0"
+      ]
+    },
+    {
+      "name": "origins-art",
+      "command": [
+        "python3",
+        "tools/art/relics/draw_origins.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.13,
+      "summary": [
+        "значки происхождений и предысторий: 10 + 31, ошибок: 0"
+      ]
+    },
+    {
+      "name": "relics-art",
+      "command": [
+        "python3",
+        "tools/art/relics/draw_relics.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2,
+      "summary": [
+        "свои значки реликвий (M7 п. 6): 156, ошибок: 0"
+      ]
+    },
+    {
+      "name": "cards-art",
+      "command": [
+        "python3",
+        "tools/art/cards/draw_portraits.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.11,
+      "summary": [
+        "свои портреты карт (M7 п. 6): 20, ошибок: 0"
+      ]
+    },
+    {
+      "name": "sounds",
+      "command": [
+        "python3",
+        "tools/audio/build_sfx.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.71,
+      "summary": [
+        "звуки: событий 19, строк таблицы 23 (fmod 15, game 1, own 7); своих звуков 7, 6.6 с; ошибок: 0"
+      ]
+    },
+    {
+      "name": "events",
+      "command": [
+        "python3",
+        "tools/ci/check_events.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.12,
+      "summary": [
+        "событий актов: 33 (FrozenBarrows 9, ClockworkDepths 6, BloodCourt 6, StarTower 6, Hive 3, Glory 3); событий узлов: 1; ошибок: 0"
+      ]
+    },
+    {
+      "name": "assets",
+      "command": [
+        "python3",
+        "tools/assets/asset_manifest.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.39,
+      "summary": [
+        "rest_option        13       13      0      13      0",
+        "ui                  0      106    106       0      0",
+        "итого             895     1951    833    1118      0"
+      ]
+    },
+    {
+      "name": "card-audit",
+      "command": [
+        "python3",
+        "tools/cards/audit_cards.py",
+        "--check",
+        "--out",
+        "docs/plan/card-audit.md"
+      ],
+      "exit_code": 0,
+      "seconds": 0.77,
+      "summary": [
+        "Карт: 340; ошибок: 0; предупреждений: 1"
+      ]
+    },
+    {
+      "name": "design-tables",
+      "command": [
+        "python3",
+        "tools/cards/design_tables.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.31,
+      "summary": [
+        "Таблицы карт: актуальны"
+      ]
+    },
+    {
+      "name": "card-catalog",
+      "command": [
+        "python3",
+        "tools/cards/card_catalog.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.26,
+      "summary": [
+        "docs/plan/card-catalog.md: актуален"
+      ]
+    },
+    {
+      "name": "pools",
+      "command": [
+        "python3",
+        "tools/pools/build_pools.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.17,
+      "summary": [
+        "Пулы: изъято 22, открывается трансформациями 12"
+      ]
+    },
+    {
+      "name": "relics",
+      "command": [
+        "python3",
+        "tools/relics/build_relics.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.12,
+      "summary": [
+        "Реликвий: 295 (остаются 277, в бижутерию 6, перерабатываются 12); ошибок: 0"
+      ]
+    }
+  ]
+}
