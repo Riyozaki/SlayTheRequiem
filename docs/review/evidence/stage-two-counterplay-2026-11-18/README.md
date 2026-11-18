@@ -28,15 +28,37 @@ Snapshot обновлён на рабочем дереве поверх `7e83e62
 
 ## Отдельное исполнение C#
 
-Новые `BossCounterplayTests.cs` и session-5 regressions входят в проект Core CI. Для этого рабочего checkpoint
-результат фиксируется только после реального запуска CI; этот manifest их **не исполняет** и не считает по `[Fact]`.
+На `ed39e1552fd0c2ec8dd8f8e8bd80781ddf8a7c7b`
+[CI 44259875985](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44259875985) прошёл **все четыре jobs**.
+Core check **134650356474** сообщил **858 total / 858 executed / 858 passed / 0 failed / 0 notExecuted**.
+Новые `BossCounterplayTests.cs`, session-5 и combat contracts действительно исполнены production Core CI;
+локальный 29-командный manifest их **не исполняет** и не вычисляет по `[Fact]`.
+[`core/ci.json`](core/ci.json) хранит действительные metadata/counters, а также предыдущую неуспешную попытку
+`7e83e62` / CI 44259635997: 857 executed, 856 PASS и единственная ошибка старого count 199→201. Исправление сохраняет
+точный count и добавляет явные роли обоих новых тел и typing призрака, не отключает/ослабляет проверку.
+TRX локально **не скачан**; API metadata/counters не выдаются за его XML.
+
+**Новый actual synthetic output:** [`core/annotations.json`](core/annotations.json) — исходные bounded notices API,
+[`core/verification.json`](core/verification.json) — проверка **8/8 частей / 611069 распакованных байт bundle**,
+[`core/core-scenarios.summary.json`](core/core-scenarios.summary.json) — действительная сводка C# runner на `ed39e15`.
+Bundle SHA256 `5d046894b9c682e2c5b240770b04c4c6d87a4ab755538b30ea6ff6d0a27ca1aa`.
+60 ledgers / 30 same-seed pairs / 300 act rows / **native runs 0**, не реконструкция Python и не 60 побед.
+Проверка сохранённых пакетов воспроизводится без GitHub:
+
+```sh
+python3 tools/balance/collect_core_evidence.py \
+  docs/review/evidence/stage-two-counterplay-2026-11-18/core/annotations.json \
+  --commit ed39e1552fd0c2ec8dd8f8e8bd80781ddf8a7c7b \
+  --out .arena/stage2/recovered-counterplay-core
+```
+
+Повторно полученный `core-scenarios.json` **байт-в-байт совпадает** с полным output
+[Б2.5 на `20ddd2f`](../stage-two-economy-2026-11-18/README.md), SHA256
+`76afa0960095cacc7254c568273cfcc0fe18209e32cc545b2d6abd6a74c32331`; второй распакованный JSON не дублируется в Git.
+Новый summary фиксирует `ed39e15`, это не выдача старой квитанции за новый запуск. Неполные старые notices отвергнуты.
+
 Пять новых fixtures `IntegrityCounterplay.cs` написаны для финальной legal-game автоматизации и **не исполнены**.
 Публичный Core CI не компилирует game-facing Monsters/Rules/Powers/UI.
-
-Предыдущий подтверждённый CI `20ddd2f` — **778/778 Core**. Полный реальный synthetic economic output с него теперь
-сохранён [в evidence Б2.5](../stage-two-economy-2026-11-18/README.md): 8/8 частей/SHA проверены,
-60 ledgers / 30 same-seed pairs / 300 act rows / **native runs 0**, не реконструкция Python и не 60 побед.
-Старые неполные transport notices не использованы как полный output.
 
 Полная сборка/PCK и реальные столкновения/матрица остаются обязательными. Исторические успешные сборки/PCK/плейтест
 автора не отменены отсутствием новой среды. Ручной, визуальный и двухклиентный плейтест — **только в самом конце цикла**.

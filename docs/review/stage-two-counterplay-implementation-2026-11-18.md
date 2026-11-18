@@ -1,6 +1,7 @@
 # Б2.2 — недостающие контрмеры боссов, 18.11.2026
 
-**Пакет исходников на `arena/5906afa4-slaytherequiem`, не native-приёмка всех боёв.**
+**Код `ed39e1552fd0c2ec8dd8f8e8bd80781ddf8a7c7b` на `arena/5906afa4-slaytherequiem`, не native-приёмка всех боёв.**
+Реализация `7e83e62` + обновлённый Core контракт `ed39e15`; документационные addenda не меняют проверенный код.
 Наличие блокирования/огнестойкости/обычных Навыков не было авторским разрешением убрать обещанные механики.
 Пакет продолжает Б2.1–Б2.5; условия старта, раннего Пути, Reborn, True, стойки Странника и цикла Жнеца не меняются.
 Все 21 заявленный бой остаются в [паспортах](stage-two-combat-passports-2026-11-18.md).
@@ -71,11 +72,21 @@ shop operations **2**, save schema **4** и rules envelope **v1** не повы�
 По 3955 ключей RU/EN, regeneration идемпотентна. **913 моделей / 1984 asset references / 0 missing**;
 art-fit — 0 нарушений/повторов/исключений. Это не компиляция всего game-facing C#.
 
-Новые Core xUnit политики/очереди/перезарядки написаны и передаются CI; результат этого checkpoint фиксируется отдельно
-после реального исполнения, не вычисляется по атрибутам. Последний предыдущий подтверждённый compiled checkpoint —
-`20ddd2f` / [CI 44253669236](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44253669236), **778/778 Core**.
-С него теперь сохранён полный [экономический Core output](evidence/stage-two-economy-2026-11-18/README.md), 8/8 частей с SHA;
-60 synthetic ledgers / 30 same-seed pairs / 300 act rows, **native runs 0**, не боевые симуляции/победы.
+На `ed39e15` [CI 44259875985](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44259875985) — **все четыре jobs PASS**,
+Core check **134650356474**: **858 total / 858 executed / 858 passed / 0 failed / 0 notExecuted**. Это реальное исполнение
+production Core и xUnit, включая новые политики фаз/очереди/перезарядки, не подсчёт атрибутов.
+[Метаданные и actual counters](evidence/stage-two-counterplay-2026-11-18/core/ci.json); локальный TRX не скачан.
+Первый CI `7e83e62` выполнил 857 тестов, 856 PASS: единственная ошибка — старый frozen count 199 вместо 201 после двух
+новых тел. В `ed39e15` count обновлён вместе с явными проверками SolarStandard=Prop / DevouredSoulGhost=Minion и типа
+его удара. Тесты не отключались и игровые роли не подменялись ради зелёного CI; предыдущая ошибка сохранена в metadata.
+
+С `ed39e15` также принят и повторно проверен **полный bounded economic bundle 8/8 частей / 611069 байт**
+([квитанция](evidence/stage-two-counterplay-2026-11-18/core/verification.json),
+[исходные annotations](evidence/stage-two-counterplay-2026-11-18/core/annotations.json)).
+60 synthetic ledgers / 30 same-seed pairs / 300 act rows / **native runs 0**, не боевые симуляции/победы.
+Сценарный JSON байт-в-байт совпадает с уже [сохранённым output `20ddd2f`](evidence/stage-two-economy-2026-11-18/README.md),
+SHA `76afa0960095cacc7254c568273cfcc0fe18209e32cc545b2d6abd6a74c32331`; summary/receipt фиксируют новый commit.
+Это проверка отсутствия изменения узкого workload, не новая калибровка боёв.
 
 Подготовлены пять дополнительных native fixtures `IntegrityCounterplay.cs` (вентили/таймеры; entitlement/форма/Deck/удалённый
 источник; source-qualified защита/аура/Слово/Туман/Пробитие; приземление/отмена метеоров; холод/Давление/live intent). Они **не исполнены** и не подменяют
