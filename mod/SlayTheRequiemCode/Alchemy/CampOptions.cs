@@ -55,20 +55,32 @@ public static class Camp
     {
         var hero = HeroRecord.Of(player);
         if (hero == null) return;
-        hero.CampPoints = Budget(player);
-        hero.ArtisanUsed = false;
+        var visit = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{player.RunState.CurrentActIndex}:{player.RunState.TotalFloor}");
+        var history = player.RunState.CurrentMapPointHistoryEntry?.GetEntry(player.NetId).RestSiteChoices ?? new List<string>();
+        var saved = new CampVisitState(hero.CampVisitKey, hero.CampPoints, hero.ArtisanUsed, hero.CampCompletedOptions);
+        var resumed = saved.Enter(visit, Budget(player), history);
+        hero.CampVisitKey = resumed.Key;
+        hero.CampPoints = resumed.Points;
+        hero.ArtisanUsed = resumed.ArtisanUsed;
+        hero.CampCompletedOptions = resumed.Completed;
+        options.RemoveAll(o => resumed.CompletedOptions.Contains(o.OptionId));
         hero.Refresh();
         Lists[player.NetId] = options;
         LastChosen.Remove(player.NetId);
     }
 
     public static void Choosing(Player player, RestSiteOption option) => LastChosen[player.NetId] = option;
+    internal static void ResetForNewRun() { Lists.Clear(); LastChosen.Clear(); }
 
     /// <summary>Списать очки; «Мастер-ремесленник» раз за привал возвращает 1 очко за ремесло.</summary>
     public static void Spend(Player player, CampAction action, int cost)
     {
         var hero = HeroRecord.Of(player);
         if (hero == null) return;
+        if (LastChosen.TryGetValue(player.NetId, out var chosen))
+            hero.CampCompletedOptions = new CampVisitState(hero.CampVisitKey, hero.CampPoints, hero.ArtisanUsed, hero.CampCompletedOptions)
+                .Complete(chosen.OptionId).Completed;
         hero.CampPoints -= cost;
         if (CampRules.IsCraft(action) && cost > 0 && hero.Has(Skill.CraftArtisan) && !hero.ArtisanUsed)
         {
@@ -77,6 +89,36 @@ public static class Camp
             hero.Flash();
         }
         hero.Refresh();
+    }
+
+    /// <summary>
+    /// An action that throws/returns false after changing inventory/HP still consumes its camp cost exactly once.
+    /// Selector/RNG activity alone is NOT a committed action: Digest excludes RNG/choice counters. Native success
+    /// without a numerical delta (e.g. resting at full HP) retains its original cost policy.
+    /// </summary>
+    internal static async Task<bool> ExecuteOption(Player player, CampAction action, int cost, Func<Task<bool>> perform,
+        Action? after = null, OperationGate.Lease? held = null)
+    {
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null || InventoryGate.For(player).Blocked || !InSystem(player) || player.Creature.IsDead || cost < 0 || !CanAfford(player, cost)
+            || MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress
+            || player.RunState.CurrentRoom is not MegaCrit.Sts2.Core.Rooms.RestSiteRoom) return false;
+        using var mutation = InventoryGate.Track(player, lease, $"camp:{action}");
+        var before = Shops.ShopOperations.Digest(player, Shops.ShopAction.DiscardCard);
+        var accepted = false;
+        var wasBlocked = InventoryGate.For(player).Blocked;
+        var result = await TransferProtocol.MoveAsync($"camp:{action}",
+            async () => accepted = await perform(),
+            () => accepted || before != Shops.ShopOperations.Digest(player, Shops.ShopAction.DiscardCard),
+            () => TransferProtocol.Finish(
+                () => { Spend(player, action, cost); return Task.CompletedTask; },
+                () => { after?.Invoke(); return Task.CompletedTask; }));
+        if (!wasBlocked && InventoryGate.For(player).Blocked && result.Changed)
+            result = result with { Status = OperationStatus.PartialCommit, Detail = result.Detail + " An inner adapter blocked the inventory; inspect its result" };
+        MainFile.Logger.Info($"[InventoryOperation] {result.Target} {result.Status}: {result.Detail}");
+        if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(player, $"{result.Target}: {result.Detail}");
+        mutation.Complete();
+        return result.Changed;
     }
 
     /// <summary>Осталось ли доступное действие, кроме только что выбранного (оно сейчас уйдёт из списка).</summary>
@@ -197,7 +239,7 @@ public abstract class RequiemRestSiteOption(Player owner) : RestSiteOption(owner
     /// <summary>Своё условие действия (есть реагенты, есть что улучшить...).</summary>
     protected virtual bool Available => true;
 
-    public override bool IsEnabled => Available && Camp.CanAfford(Owner, Cost);
+    public override bool IsEnabled => !_completed && !InventoryGate.For(Owner).Blocked && Available && Camp.CanAfford(Owner, Cost);
 
     public override LocString Description
     {
@@ -214,13 +256,25 @@ public abstract class RequiemRestSiteOption(Player owner) : RestSiteOption(owner
     /// <summary>Доп. переменные описания.</summary>
     protected virtual void Fill(LocString loc) { }
 
+    private bool _inFlight, _completed;
+    protected OperationGate.Lease? InventoryLease { get; private set; }
+
     public sealed override async Task<bool> OnSelect()
     {
-        Camp.Choosing(Owner, this);
-        var cost = Cost;
-        var success = await Perform();
-        if (success) Camp.Spend(Owner, Action, cost);
-        return success;
+        if (_inFlight) return false;
+        _inFlight = true;
+        var room = Owner.RunState.CurrentRoom;
+        try
+        {
+            using var lease = await InventoryGate.For(Owner).Enter();
+            if (lease == null || room != Owner.RunState.CurrentRoom || !IsEnabled) return false;
+            InventoryLease = lease;
+            Camp.Choosing(Owner, this);
+            var success = await Camp.ExecuteOption(Owner, Action, Cost, Perform, held: lease);
+            if (success) _completed = true;
+            return success;
+        }
+        finally { InventoryLease = null; _inFlight = false; }
     }
 
     protected abstract Task<bool> Perform();
@@ -240,17 +294,25 @@ public sealed class ForeignRestSiteOption(Player owner, RestSiteOption inner, Ca
     public override string OptionId => inner.OptionId;
     public override LocString Description => inner.Description;
     public override IEnumerable<string> AssetPaths => inner.AssetPaths;
-    public override bool IsEnabled => inner.IsEnabled && Camp.CanAfford(Owner, Cost);
+    public override bool IsEnabled => !_completed && !InventoryGate.For(Owner).Blocked && inner.IsEnabled && Camp.CanAfford(Owner, Cost);
 
+    private bool _inFlight, _completed;
     public override async Task<bool> OnSelect()
     {
-        Camp.Choosing(Owner, this);
-        var cost = Cost;
-        var success = await inner.OnSelect();
-        if (!success) return false;
-        Camp.Spend(Owner, action, cost);
-        if (action == CampAction.Rest) HeroRecord.Of(Owner)?.AfterRest();
-        return true;
+        if (_inFlight) return false;
+        _inFlight = true;
+        var room = Owner.RunState.CurrentRoom;
+        try
+        {
+            using var lease = await InventoryGate.For(Owner).Enter();
+            if (lease == null || room != Owner.RunState.CurrentRoom || !IsEnabled) return false;
+            Camp.Choosing(Owner, this);
+            var success = await Camp.ExecuteOption(Owner, action, Cost, inner.OnSelect,
+                () => { if (action == CampAction.Rest) HeroRecord.Of(Owner)?.AfterRest(); }, lease);
+            if (success) _completed = true;
+            return success;
+        }
+        finally { _inFlight = false; }
     }
 
     public override Task DoLocalPostSelectVfx(CancellationToken ct = default) => inner.DoLocalPostSelectVfx(ct);
@@ -356,10 +418,17 @@ public sealed class BrewRestSiteOption(Player owner) : RequiemRestSiteOption(own
         }
         if (rewards.Count == 0) return false;
         pouch.BeginBrew(offers);
-        await RewardsCmd.OfferCustom(Owner, rewards);
-        var brewed = pouch.BrewTaken;
-        pouch.EndBrew();
-        return brewed;
+        try
+        {
+            var result = await TransferProtocol.Move("camp:brew",
+                async () => { await RewardsCmd.OfferCustom(Owner, rewards); return true; },
+                () => pouch.HasBrewCommit, pouch.CompleteBrew);
+            MainFile.Logger.Info($"[InventoryOperation] {result.Target} {result.Status}: {result.Detail}");
+            if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(Owner, $"Camp brew: {result.Detail}");
+            // A potion already in the belt still costs the camp action even when a later reward hook threw.
+            return result.Changed;
+        }
+        finally { pouch.EndBrew(); }
     }
 }
 
@@ -471,33 +540,57 @@ public sealed class EnchantRestSiteOption(Player owner) : RequiemRestSiteOption(
             power = chosen;
         }
 
-        return await EnchantFlow(Owner, power, null, () => Task.FromResult(hero.SpendStone(power)));
+        return (await EnchantFlow(Owner, power, null, () => hero.Stones(power) > 0,
+            () => Task.FromResult(hero.SpendStone(power)), InventoryLease)).Changed;
     }
 
-    /// <summary>
-    /// Зачаровать надетый предмет (лагерь, Чародей, Гравировка Ювелира): выбрать предмет (синхронно в коопе), выбрать чары
-    /// силы <paramref name="power"/>, оплатить (<paramref name="commit"/> — камень или золото; false — отмена) и наложить.
-    /// </summary>
-    public static async Task<bool> EnchantFlow(Player owner, int power, Func<EquipmentRelic, bool>? filter, Func<Task<bool>> commit)
+    /// <summary>Синхронный выбор → повторная проверка цели/цены → наблюдаемое наложение → оплата и обновление.</summary>
+    public static async Task<OperationResult> EnchantFlow(Player owner, int power, Func<EquipmentRelic, bool>? filter,
+        Func<bool> canCommit, Func<Task<bool>> commit, OperationGate.Lease? held = null)
     {
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null) return new(OperationStatus.Busy, "item-enchant", "Inventory synchronization blocked");
+        var room = owner.RunState.CurrentRoom;
         var items = Enchanting.Enchantable(owner).Where(i => filter?.Invoke(i) ?? true).ToList();
-        if (items.Count == 0) return false;
+        if (items.Count == 0) return new(OperationStatus.Cancelled, "item-enchant");
         var picked = items.Count == 1 ? items[0] : await RelicSelectCmd.FromChooseARelicScreen(owner, items.Cast<RelicModel>().ToList());
-        if (picked is not EquipmentRelic item) return false;
+        if (picked is not EquipmentRelic item) return new(OperationStatus.Cancelled, "item-enchant");
 
         var choices = Enchanting.AllowedFor(item)
             .Select(e => new CampMenu.Choice(CampMenu.EnchantCard(e), EnchantRules.Value(e, power),
                 EnchantRules.IsWeaponBrand(e) ? EnchantRules.Charges(power) : 0, e))
             .ToList();
-        if (await CampMenu.Pick(owner, choices, "SLAYTHEREQUIEM_ENCHANT_PROMPT") is not Enchant enchant) return false;
-        if (!await commit()) return false;
-        Enchanting.Apply(owner, item, enchant, power);
-        var hero = HeroRecord.Of(owner);
-        if (hero != null) await hero.SyncMaxHp();
-        TravelPack.Of(owner)?.Refresh();
-        hero?.Refresh();
-        return true;
+        if (await CampMenu.Pick(owner, choices, "SLAYTHEREQUIEM_ENCHANT_PROMPT") is not Enchant enchant)
+            return new(OperationStatus.Cancelled, "item-enchant");
+        return await EnchantSelected(owner, item, enchant, power,
+            () => ReferenceEquals(room, owner.RunState.CurrentRoom) && (filter?.Invoke(item) ?? true) && canCommit(), commit, lease);
     }
+
+    internal static async Task<OperationResult> EnchantSelected(Player owner, EquipmentRelic item, Enchant enchant, int power,
+        Func<bool> canCommit, Func<Task<bool>> commit, OperationGate.Lease? held = null)
+    {
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null) return new(OperationStatus.Busy, "item-enchant", "Inventory synchronization blocked");
+        if (InventoryGate.For(owner).Blocked || !RequiemMode.IsInSystem(owner) || owner.Creature.IsDead || MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress
+            || item.Owner != owner || !Enchanting.Enchantable(owner).Contains(item) || !Enchanting.AllowedFor(item).Contains(enchant)
+            || power is < 1 or > 3 || !canCommit())
+            return OperationResult.Reject("item-enchant", "Equipment enchant target or payment changed after selection");
+        var key = InventoryIdentity.RelicKey(item);
+        using var mutation = InventoryGate.Track(owner, lease, $"item-enchant:{key}");
+        var before = item.Enchants;
+        var result = await TransferProtocol.MoveAsync(key,
+            () => { Enchanting.Apply(owner, item, enchant, power); return Task.FromResult(true); },
+            () => item.Enchants != before,
+            () => TransferProtocol.Finish(
+                async () => { if (!await commit()) throw new InvalidOperationException("Equipment enchant committed but payment was rejected"); },
+                async () => { if (HeroRecord.Of(owner) is { } hero) await hero.SyncMaxHp(); },
+                () => { TravelPack.Of(owner)?.Refresh(); HeroRecord.Of(owner)?.Refresh(); return Task.CompletedTask; }));
+        MainFile.Logger.Info($"[InventoryOperation] item-enchant {key} {result.Status}: {result.Detail}");
+        if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(owner, $"Equipment enchant {key}: {result.Detail}");
+        mutation.Complete();
+        return result;
+    }
+
 }
 
 /// <summary>Медитация (10 §1): 1 очко — +1 к ступени ◆ или ✦ (не выше III) до конца следующего боя.</summary>
@@ -557,7 +650,7 @@ public sealed class PrayRestSiteOption(Player owner) : RequiemRestSiteOption(own
                 Faith.RefreshAll(Owner);
                 return true;
             case "switch":
-                await CelestialBlessing.Grant(Owner, Camp.AltarGod(Owner));
+                await CelestialBlessing.Grant(Owner, Camp.AltarGod(Owner), InventoryLease);
                 Faith.RefreshAll(Owner);
                 return true;
             default:
@@ -665,17 +758,24 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         loc.Add("Stored", pack?.StoredCount ?? 0);
     }
 
-    protected override Task<bool> Perform() => ChestFlow(Owner);
+    protected override async Task<bool> Perform() => await ChestFlow(Owner, InventoryLease);
 
     /// <summary>
     /// Сундук: карты и снаряжение туда и обратно. Лагерь, а со вьючным зверем — и прилавок любой лавки (действие лавки,
     /// выполняется у всех игроков коопа; выбор — синхронные экраны игры).
     /// </summary>
-    public static async Task<bool> ChestFlow(Player owner)
+    public static async Task<bool> ChestFlow(Player owner, OperationGate.Lease? held = null)
     {
         var pack = TravelPack.Of(owner);
         if (pack == null) return false;
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null)
+        {
+            ChestFeedback(owner, [new(OperationStatus.Busy, "chest", "Inventory synchronization blocked")]);
+            return false;
+        }
         var changed = false;
+        var takeable = pack.PreviewStoredCards(); // Capture exact pre-existing entries, not count minus requested stores.
 
         // 1. Карты из колоды → в сундук.
         var storePrefs = new CardSelectorPrefs(new LocString("rest_site_ui", "SLAYTHEREQUIEM_CHEST_STORE_PROMPT"), 0, 99)
@@ -686,14 +786,13 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
         var toStore = (await CardSelectCmd.FromDeckGeneric(owner, storePrefs, c => c.IsRemovable)).ToList();
         if (toStore.Count > 0)
         {
-            await pack.StoreCards(toStore);
-            changed = true;
+            var results = await pack.StoreCards(toStore, lease);
+            changed |= results.Any(r => r.Changed);
+            ChestFeedback(owner, results);
+            if (InventoryGate.For(owner).Blocked) return changed;
         }
 
         // 2. Карты из сундука → в колоду (кроме только что убранных).
-        var preview = pack.PreviewStoredCards();
-        var fresh = toStore.Count;
-        var takeable = preview.Take(preview.Count - fresh).ToList();
         if (takeable.Count > 0)
         {
             var takePrefs = new CardSelectorPrefs(new LocString("rest_site_ui", "SLAYTHEREQUIEM_CHEST_TAKE_PROMPT"), 0, takeable.Count)
@@ -704,8 +803,10 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             var chosen = (await CardSelectCmd.FromSimpleGrid(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), takeable, owner, takePrefs)).ToList();
             if (chosen.Count > 0)
             {
-                await pack.TakeCards(chosen.Select(c => takeable.IndexOf(c)).ToList());
-                changed = true;
+                var results = await pack.TakeCards(chosen, lease);
+                changed |= results.Any(r => r.Changed);
+                ChestFeedback(owner, results);
+                if (InventoryGate.For(owner).Blocked) return changed;
             }
         }
 
@@ -719,18 +820,31 @@ public sealed class ChestRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             var pick = await RelicSelectCmd.FromChooseARelicScreen(owner, [.. stowed, .. stored]);
             if (pick is EquipmentRelic item && stowed.Contains(item))
             {
-                await pack.StoreItem(item);
-                changed = true;
+                var result = await pack.StoreItem(item, lease);
+                changed |= result.Changed;
+                ChestFeedback(owner, [result]);
+                if (InventoryGate.For(owner).Blocked) return changed;
             }
             else if (pick != null && stored.Contains(pick))
             {
-                await pack.TakeItem(pick.GetType().Name);
-                changed = true;
+                var result = await pack.TakeItem(pick, lease);
+                changed |= result.Changed;
+                ChestFeedback(owner, [result]);
+                if (InventoryGate.For(owner).Blocked) return changed;
             }
             else break;
         } while (unlimited);
 
         return changed;
+    }
+
+    private static void ChestFeedback(Player owner, IReadOnlyList<OperationResult> results)
+    {
+        if (!MegaCrit.Sts2.Core.Context.LocalContext.IsMe(owner) || results.Count == 0) return;
+        UI.NRequiemToast.Show(UI.RequiemUi.TipText("CHEST_RESULT.title",
+            ("Moved", results.Count(r => r.Succeeded)), ("Total", results.Count), ("Issues", results.Count(r => !r.Succeeded)))
+            + "\n" + string.Join("\n", results.Select(r => UI.RequiemUi.TipText("CHEST_RESULT_ITEM.title", ("Target", r.Target),
+                ("Status", UI.RequiemUi.TipText($"OP_STATUS_{r.Status.ToString().ToUpperInvariant()}.title"))))));
     }
 }
 

@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using SlayTheRequiem.SlayTheRequiemCode.Acts;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -140,7 +141,9 @@ public sealed class MemoryStoneRelic : RequiemRelic
     /// </summary>
     public override Task AfterActEntered()
     {
-        if (LocalContext.IsMe(Owner)) MemoryStone.TakeImprint();
+        // Host only, once for the party. AfterActEntered can precede the Ancient decision; it merely arms capture.
+        if (!Net.RequiemNet.IsClient && Owner.RunState.Players.Select(Of).FirstOrDefault(s => s != null) == this)
+            MemoryStone.RequestImprint();
         return Task.CompletedTask;
     }
 
@@ -159,7 +162,15 @@ public sealed class MemoryStoneRelic : RequiemRelic
         try
         {
             var rng = new Rng(runState.Rng.Seed, MemoryStoneRules.MapRngName(actIndex, _rollbacks));
-            var fresh = new StandardActMap(rng, runState.Act, runState.Players.Count > 1, false, runState.Act.HasSecondBoss);
+            // Special maps (Golden Compass, Nameless Limit, other mods) keep their own generation policy.
+            // The input here already passed the act's CustomCreateMap, so preserve that map's actual shape.
+            ActMap fresh = map switch
+            {
+                WideActMap wide => wide.Reroll(rng, runState.Act, runState.Players.Count > 1),
+                StandardActMap => new StandardActMap(rng, runState.Act, runState.Players.Count > 1,
+                    !map.GetAllMapPoints().Any(p => p.PointType == MapPointType.Treasure), map.SecondBossMapPoint != null),
+                _ => map,
+            };
             foreach (var p in runState.Players) if (Of(p) is { } stone) stone._mapRerollAct1 = 0;
             MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти: новая карта акта {actIndex + 1} (откат {_rollbacks}).");
             return fresh;

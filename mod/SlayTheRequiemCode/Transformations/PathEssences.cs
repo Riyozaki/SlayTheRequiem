@@ -381,7 +381,7 @@ public sealed class ElementLordEssence : PathEssence
             _ => typeof(ChainLightning),
         };
         var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(spell));
-        await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+        await CardAcquisition.AddOrDefer(Owner.RunState.CreateCard(canonical, Owner));
     }
 
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)

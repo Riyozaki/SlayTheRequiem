@@ -45,7 +45,7 @@ public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
         foreach (var type in FormCards)
         {
             var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(type));
-            await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+            await CardAcquisition.AddOrDefer(Owner.RunState.CreateCard(canonical, Owner));
         }
         Faith.RefreshAll(Owner);
         FormVisuals.Refresh(Owner, flash: FlashColor);

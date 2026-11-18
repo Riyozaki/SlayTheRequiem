@@ -30,6 +30,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install numeric simulation dependency (no optional skipped suite)
+        run: pip install numpy==2.4.6
       - name: unittest
         run: python -m unittest discover -s tools/sim -v
 
@@ -41,8 +43,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install tree-sitter
-        run: pip install tree-sitter tree-sitter-c-sharp
+      - name: Install pinned content-check dependencies
+        run: pip install -r tools/ci/requirements.txt
       - name: Localization is up to date
         run: |
           python tools/loc/build_loc.py
@@ -57,7 +59,6 @@ jobs:
           python tools/art/art_fit.py --check
       - name: Own art (M5, M7) — SVG sources match the generators, PNG present and sized (bosses, scenes, acts, relics, card portraits)
         run: |
-          pip install pillow numpy
           python tools/art/monsters/draw_monsters.py
           git diff --exit-code -- art/monsters || (echo "::error::Run python3 tools/art/monsters/draw_monsters.py and commit the result" && exit 1)
           python tools/art/monsters/build_boss_icons.py --check
@@ -96,3 +97,14 @@ jobs:
           python tools/art/snapshot_vanilla.py /tmp/rl/decompiled 0.107.1
           git diff --exit-code -- tools/art/vanilla_models.txt tools/art/vanilla_card_types.txt tools/relics/vanilla_relics_snapshot.txt || (echo "::error::Vanilla snapshot is stale: run tools/art/snapshot_vanilla.py" && exit 1)
           python tools/relics/build_relics.py --check
+
+  build-contracts:
+    name: Build/export/install safety contracts · Python (not full mod build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: G0 tool contract tests
+        run: python -m unittest discover -s tools/g0 -v

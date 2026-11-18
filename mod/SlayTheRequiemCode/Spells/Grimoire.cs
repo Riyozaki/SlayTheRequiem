@@ -1,4 +1,8 @@
 using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Models;
+using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Runs;
@@ -72,17 +76,89 @@ public sealed class Grimoire : RequiemRelic
         return true;
     }
 
-    /// <summary>Выдать происхождение (если его ещё нет) при входе в первую комнату забега.</summary>
+    private bool _starting;
+    private int _startPhase;
+    private string _originChoiceId = "", _backgroundChoiceId = "";
+
+    /// <summary>0/1: origin not selected/selected; 2/3: origin committed/background selected; 4: complete.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int StartPhase { get => _startPhase; set { AssertMutable(); _startPhase = value; } }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string OriginChoiceId { get => _originChoiceId; set { AssertMutable(); _originChoiceId = value ?? ""; } }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string BackgroundChoiceId { get => _backgroundChoiceId; set { AssertMutable(); _backgroundChoiceId = value ?? ""; } }
+    public bool StartingChoicesComplete => OriginGranted && StartPhase == 4;
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _starting = false;
+    }
+
+    /// <summary>Resume only unfinished startup steps; flags follow observed grants, never precede an await.</summary>
     public override async Task AfterRoomEntered(MegaCrit.Sts2.Core.Rooms.AbstractRoom room)
     {
-        if (Owner.Relics.OfType<OriginRelic>().Any() || OriginGranted) return;
-        OriginGranted = true;
-        // «На выбор» — экран выбора реликвии (этап 6), иначе по настройке.
-        var origin = await OriginRelic.Pick(Owner);
-        if (origin != null) await MegaCrit.Sts2.Core.Commands.RelicCmd.Obtain(origin, Owner);
-        // Предыстория — сразу за происхождением (её набор зависит от происхождения).
-        if (!Owner.Relics.OfType<BackgroundRelic>().Any() && await BackgroundRelic.Pick(Owner, origin) is { } background)
-            await MegaCrit.Sts2.Core.Commands.RelicCmd.Obtain(background, Owner);
+        if (_starting || StartPhase == 4 || !RequiemMode.IsInSystem(Owner)) return;
+        _starting = true;
+        try
+        {
+            using var lease = await InventoryGate.For(Owner).Enter();
+            if (lease == null) return;
+            using var mutation = InventoryGate.Track(Owner, lease, "starting-choices");
+            try
+            {
+                var origin = Owner.Relics.OfType<OriginRelic>().FirstOrDefault();
+                if (origin != null && StartPhase < 2) { OriginChoiceId = origin.Id.Entry; StartPhase = 2; }
+                if (StartPhase == 0)
+                {
+                    var chosen = await OriginRelic.Pick(Owner);
+                    OriginChoiceId = chosen?.Id.Entry ?? "none";
+                    StartPhase = 1; // persist the decision BEFORE the obtain callback
+                }
+                if (StartPhase == 1)
+                {
+                    if (OriginChoiceId != "none")
+                    {
+                        var canonical = ModelDb.AllRelics.OfType<OriginRelic>().FirstOrDefault(r => r.Id.Entry == OriginChoiceId)
+                            ?? throw new InvalidOperationException("Selected origin model unavailable; saved decision retained");
+                        origin = (OriginRelic)canonical.ToMutable();
+                        await RelicCmd.Obtain(origin, Owner);
+                        if (!Owner.Relics.Contains(origin)) throw new InvalidOperationException("Origin grant did not commit");
+                    }
+                    StartPhase = 2;
+                }
+                origin ??= Owner.Relics.OfType<OriginRelic>().FirstOrDefault();
+                var background = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault();
+                if (background != null) { BackgroundChoiceId = background.Id.Entry; StartPhase = 4; }
+                if (StartPhase == 2)
+                {
+                    var chosen = await BackgroundRelic.Pick(Owner, origin);
+                    BackgroundChoiceId = chosen?.Id.Entry ?? "none";
+                    StartPhase = 3;
+                }
+                if (StartPhase == 3)
+                {
+                    if (BackgroundChoiceId != "none")
+                    {
+                        var canonical = ModelDb.AllRelics.OfType<BackgroundRelic>().FirstOrDefault(r => r.Id.Entry == BackgroundChoiceId)
+                            ?? throw new InvalidOperationException("Selected background model unavailable; saved decision retained");
+                        background = (BackgroundRelic)canonical.ToMutable();
+                        await RelicCmd.Obtain(background, Owner);
+                        if (!Owner.Relics.Contains(background)) throw new InvalidOperationException("Background grant did not commit");
+                    }
+                    StartPhase = 4;
+                }
+                OriginGranted = StartPhase == 4; // HeroRecord may now offer the next independent startup step
+                mutation.Complete();
+            }
+            catch (Exception e)
+            {
+                // AfterObtained can fail after adding a relic/HP/cards. Never replay unknown one-shot bonuses.
+                InventoryGate.Block(Owner, $"Starting choices interrupted at phase={StartPhase}: {e}");
+                mutation.Complete();
+            }
+        }
+        finally { _starting = false; }
     }
 
     private bool _originGranted;

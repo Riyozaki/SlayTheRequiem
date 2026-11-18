@@ -16,6 +16,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Acts;
 public sealed class WideActMap : ActMap
 {
     private readonly int _width;
+    private readonly bool _replaceTreasureWithElites;
     private readonly int _mapLength;
     private readonly Rng _rng;
     private readonly MapPointTypeCounts _pointTypeCounts;
@@ -37,6 +38,7 @@ public sealed class WideActMap : ActMap
     public WideActMap(Rng mapRng, ActModel act, int width, bool isMultiplayer, bool replaceTreasureWithElites, bool hasSecondBoss)
     {
         _width = Math.Max(ActRules.VanillaMapWidth, width);
+        _replaceTreasureWithElites = replaceTreasureWithElites;
         _mapLength = act.GetNumberOfRooms(isMultiplayer) + 1;
         _rng = mapRng;
         var baseCounts = act.GetMapPointTypes(mapRng);
@@ -61,6 +63,10 @@ public sealed class WideActMap : ActMap
     public static WideActMap CreateFor(RunState runState, bool replaceTreasureWithElites, int width) =>
         new(new Rng(runState.Rng.Seed, $"act_{runState.CurrentActIndex + 1}_map"), runState.Act, width,
             runState.Players.Count > 1, replaceTreasureWithElites, runState.Act.HasSecondBoss);
+
+    /// <summary>Rollback changes only the RNG stream, not this map's width/treasure/second-boss policy.</summary>
+    public WideActMap Reroll(Rng rng, ActModel act, bool multiplayer) =>
+        new(rng, act, _width, multiplayer, _replaceTreasureWithElites, SecondBossMapPoint != null);
 
     private MapPoint GetOrCreatePoint(int col, int row)
     {

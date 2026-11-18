@@ -277,3 +277,92 @@ UI_SETTINGS = {
                                      "Не зависит от боевых эффектов.",
     },
 }
+
+# G0/G1: persistent explanations/results, not toast-only silent vetoes.
+_INTEGRITY_TIPS = {
+    "eng": {
+        "CHEST_RESULT.title": "Chest: {Moved}/{Total} fully completed, {Issues} need attention. Uncommitted entries are retained.",
+        "CHEST_RESULT_ITEM.title": "{Target}: {Status}",
+        "REWARD_UNLOAD.title": "Open deck / unload, then retry",
+        "REWARD_READY.title": "can take",
+        "REWARD_PAYMENT_BLOCKED.title": "requires {Cost} gold; available {Gold}. No card or payment committed",
+        "REWARD_OFFER_STALE.title": "offer is no longer available; close it without buying",
+        "REWARD_PAID_READY.title": "buy for {Cost} gold after the card is accepted; skip is free (no combat-reward alternatives)",
+        "REWARD_OVERLOAD.title": "blocked: overload above +10; unload first",
+        "REWARD_OPERATION_BLOCKED.title": "blocked: an earlier operation is unresolved; keep the log and inspect the run passport",
+        "REWARD_VETO.title": "blocked by {Source}",
+        "REWARD_CARD_STATE.title": "{Card} · weight {Weight} · {Reason}",
+        "REWARD_STATE.title": "Burden {Weight}/{Capacity}. A blocked pick does not spend the reward. Skip is a separate choice.",
+        "OPERATION_RESULT.title": "Operation: {Status}. See [ShopOperation] in the log for the exact result.",
+        "OPERATION_BLOCKED.title": "Operation outcome is uncertain. Click the Requiem badge: retry receipts (no repeated payment), or restore the host's pre-operation checkpoint after confirmation. The failed save is kept. Continue alone does not repair a partial effect.",
+        "GRANT_DEFERRED.title": "The card grant was not accepted. Its exact card is saved and will be offered again in a non-combat room. Unload first; an original starter is kept until the replacement is taken.",
+        "RUN_PASSPORT.title": "Run passport · actual artifacts and rules (not gameplay acceptance)",
+        "RUN_PASSPORT_CLOSE.title": "Close passport",
+        "RUN_ENABLED.title": "Requiem: ON",
+        "RUN_DISABLED.title": "Requiem: OFF",
+        "RUN_DEGRADED.title": "Requiem: DEGRADED",
+        "OP_STATUS_COMMITTED.title": "completed",
+        "OP_STATUS_REJECTED.title": "rejected — no commit",
+        "OP_STATUS_CANCELLED.title": "cancelled",
+        "OP_STATUS_ERROR.title": "error — inspect log",
+        "OP_STATUS_PARTIALCOMMIT.title": "partial / uncertain — inspect state before retrying",
+        "OP_STATUS_DUPLICATE.title": "already processed",
+        "OP_STATUS_STALE.title": "stale request",
+        "OP_STATUS_BUSY.title": "busy / blocked",
+    },
+    "rus": {
+        "CHEST_RESULT.title": "Сундук: полностью завершено {Moved}/{Total}, требуют внимания: {Issues}. Незавершённые записи сохранены.",
+        "CHEST_RESULT_ITEM.title": "{Target}: {Status}",
+        "REWARD_UNLOAD.title": "Открыть колоду / разгрузиться и повторить",
+        "REWARD_READY.title": "можно взять",
+        "REWARD_PAYMENT_BLOCKED.title": "нужно {Cost} золота; есть {Gold}. Карта не выдана, оплата не списана",
+        "REWARD_OFFER_STALE.title": "предложение больше недоступно; закройте его без покупки",
+        "REWARD_PAID_READY.title": "купить за {Cost} золота после получения карты; пропуск бесплатен (без альтернатив боевой награды)",
+        "REWARD_OVERLOAD.title": "нельзя: перегруз больше +10; сначала разгрузитесь",
+        "REWARD_OPERATION_BLOCKED.title": "нельзя: предыдущая операция не подтверждена; сохраните лог и проверьте паспорт забега",
+        "REWARD_VETO.title": "получение запрещает {Source}",
+        "REWARD_CARD_STATE.title": "{Card} · вес {Weight} · {Reason}",
+        "REWARD_STATE.title": "Груз {Weight}/{Capacity}. Отказ не расходует награду. Пропустить — отдельное решение.",
+        "OPERATION_RESULT.title": "Операция: {Status}. Точный результат записан в лог [ShopOperation].",
+        "OPERATION_BLOCKED.title": "Исход операции не подтверждён. Нажмите значок Реквиема: повторите сверку квитанций (без повторной оплаты) или подтвердите возврат к копии хоста до операции. Повреждённая попытка сохраняется отдельно. Обычный Continue не чинит частичный эффект.",
+        "GRANT_DEFERRED.title": "Карта дара не получена. Её экземпляр сохранён и будет предложен снова в комнате вне боя. Сначала разгрузитесь; старая стартовая карта остаётся до получения замены.",
+        "RUN_PASSPORT.title": "Паспорт забега · действительные артефакты и правила (не игровая приёмка)",
+        "RUN_PASSPORT_CLOSE.title": "Закрыть паспорт",
+        "RUN_ENABLED.title": "Реквием: ВКЛ",
+        "RUN_DISABLED.title": "Реквием: ВЫКЛ",
+        "RUN_DEGRADED.title": "Реквием: СБОЙ ПАТЧЕЙ",
+        "OP_STATUS_COMMITTED.title": "завершено",
+        "OP_STATUS_REJECTED.title": "отказ — без применения",
+        "OP_STATUS_CANCELLED.title": "отменено",
+        "OP_STATUS_ERROR.title": "ошибка — проверьте лог",
+        "OP_STATUS_PARTIALCOMMIT.title": "частично / не подтверждено — проверьте состояние до повтора",
+        "OP_STATUS_DUPLICATE.title": "уже обработано",
+        "OP_STATUS_STALE.title": "запрос устарел",
+        "OP_STATUS_BUSY.title": "занято / заблокировано",
+    },
+}
+_INTEGRITY_TIPS["eng"].update({
+    "RECOVERY_RETRY.title": "Retry receipt agreement (no new action)",
+    "RECOVERY_RESTORE.title": "Restore safe run checkpoint…",
+    "RECOVERY_HEADER.title": "Restore the whole run?",
+    "RECOVERY_BODY.title": "Return to the pre-operation copy on floor {Floor}. ALL later changes by ALL players are cancelled. The failed state is kept separately. No candles are spent. In co-op the host opens a saved-run lobby; clients rejoin it. This is a rollback, not a promise to repair individual fields.",
+    "RECOVERY_HOST.title": "Only the host can restore the run checkpoint. Ask the host to open the Requiem badge; do not repeat purchases.",
+    "RECOVERY_UNAVAILABLE.title": "No compatible safe checkpoint could be restored. Original files are kept. Keep the log and use the matching mod build / a known-good host backup; there is no unsafe unlock.",
+    "RECOVERY_BUSY.title": "An inventory action is still executing. Close its selection and wait for its result before restoring.",
+})
+_INTEGRITY_TIPS["rus"].update({
+    "RECOVERY_RETRY.title": "Повторить сверку квитанций (без действия)",
+    "RECOVERY_RESTORE.title": "Восстановить безопасную копию забега…",
+    "RECOVERY_HEADER.title": "Вернуть весь забег к копии?",
+    "RECOVERY_BODY.title": "Вернуться к копии до операции на этаже {Floor}. ВСЕ последующие изменения ВСЕХ игроков отменяются. Состояние неудачной попытки сохранится отдельно. Свечи не тратятся. В коопе хост откроет лобби загрузки; клиенты присоединятся заново. Это откат забега, а не обещание починить отдельные поля.",
+    "RECOVERY_HOST.title": "Восстановить копию забега может только хост. Попросите его открыть значок Реквиема; не повторяйте покупки.",
+    "RECOVERY_UNAVAILABLE.title": "Совместимую безопасную копию восстановить не удалось. Исходные файлы сохранены. Сохраните лог; используйте подходящую версию мода или проверенную копию хоста. Небезопасной разблокировки нет.",
+    "RECOVERY_BUSY.title": "Операция с вещами ещё выполняется. Закройте её выбор и дождитесь результата перед восстановлением.",
+})
+
+for _lang, _tips in _INTEGRITY_TIPS.items():
+    UI_TIPS[_lang].update(_tips)
+    # The UI checker requires both halves even when a call only renders the title.
+    for _key, _text in _tips.items():
+        if _key.endswith('.title'):
+            UI_TIPS[_lang].setdefault(_key.removesuffix('.title') + '.description', _text)

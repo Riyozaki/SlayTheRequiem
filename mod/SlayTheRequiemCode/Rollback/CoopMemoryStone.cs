@@ -175,7 +175,7 @@ public static class CoopMemoryStone
     /// и входим один раз (неудачный вход показывает окно ошибки — поэтому не «долбим» вход вслепую). Без Steam (LAN-отладка,
     /// ENet) — один вход на 127.0.0.1 после первой паузы. Если игрок ушёл с экрана или уже подключился — поиск прекращается.
     /// </summary>
-    private static async Task RejoinAsClient(ulong hostNetId)
+    internal static async Task RejoinAsClient(ulong hostNetId)
     {
         var platform = RunManager.Instance.NetService?.Platform ?? PlatformType.None;
         var myNetId = RequiemNet.LocalNetId;

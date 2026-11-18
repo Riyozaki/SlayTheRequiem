@@ -80,7 +80,10 @@ public static class PlatingFinalStep
             var reduced = CombatMath.ApplyPlating(damage, platingAmount, PlatingPower.PierceOf(dealer), sunderAmount);
             if (reduced == damage) return;
             // Потолок урона (Бесплотность и т. п.) Раскол не пробивает: прибавку не даём, если удар уже срезан потолком.
-            if (reduced > damage && modifiers.Any(m => m.ModifyDamageCap(target, props, dealer, cardSource) <= __result)) return;
+            // A ref Harmony parameter cannot be captured by a lambda (CS1628). Read it once; the formula and
+            // the cap comparison are deliberately unchanged by this compilation-only repair.
+            var incoming = __result;
+            if (reduced > damage && modifiers.Any(m => m.ModifyDamageCap(target, props, dealer, cardSource) <= incoming)) return;
             __result = reduced;
             if (plating != null && platingAmount != 0 && !modifiers.Contains(plating)) modifiers.Add(plating);
             if (sunder != null && sunderAmount != 0 && !modifiers.Contains(sunder)) modifiers.Add(sunder);

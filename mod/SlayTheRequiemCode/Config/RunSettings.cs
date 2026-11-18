@@ -31,9 +31,12 @@ public static class RunSettings
     private static RunSettingsData? _active;
     private static RunSettingsData? _fromHost;
     private static readonly Dictionary<ulong, PersonalChoices> LobbyChoices = new();
+    private static WeakReference<StartRunLobby>? _lobby;
+    private static StartRunLobby? Lobby => _lobby != null && _lobby.TryGetTarget(out var lobby) ? lobby : null;
 
     /// <summary>Снимок текущего забега; null — забега нет (или старое сохранение) и действуют настройки меню.</summary>
-    public static RunSettingsData? Active => _active;
+    public static RunSettingsData? Active => _active?.Clone();
+    public static string SourceName { get; private set; } = "menu (no run snapshot)";
 
     // ───── настройки, которые читает игровая логика ─────
 
@@ -113,7 +116,12 @@ public static class RunSettings
     {
         if (_active == null)
         {
+            if (RequiemNet.IsMultiplayer)
+                throw new InvalidOperationException("Multiplayer Requiem run requires the host lobby settings snapshot; local fallback is not safe");
             _active = FromConfig(MegaCrit.Sts2.Core.Context.LocalContext.NetId ?? RequiemNet.LocalNetId);
+            if (!RequiemNet.IsMultiplayer) _active.RunId = Guid.NewGuid().ToString("N");
+            SourceName = "local fallback (run started outside lobby)";
+            Debugging.RunDiagnostics.LaunchKind = "new";
             MainFile.Logger.Info("RunSettings: забег начат не из лобби — снимок взят из настроек этой машины.");
         }
         return _active.Encode();
@@ -125,6 +133,7 @@ public static class RunSettings
     private static RunSettingsData BuildHostSnapshot(StartRunLobby lobby)
     {
         var data = FromConfig(lobby.NetService.NetId);
+        data.RunId = Guid.NewGuid().ToString("N");
         foreach (var player in lobby.Players)
             if (player.id != lobby.NetService.NetId)
                 data.Personal[player.id] = LobbyChoices.TryGetValue(player.id, out var c) ? c : PersonalChoices.Random;
@@ -135,12 +144,17 @@ public static class RunSettings
     private static void BeginRun(StartRunLobby lobby)
     {
         var type = lobby.NetService.Type;
+        Debugging.RunDiagnostics.LaunchKind = "new";
+        SourceName = type == NetGameType.Client ? "host snapshot" : "host/local snapshot";
         if (type == NetGameType.Client)
         {
-            if (_fromHost == null)
-                MainFile.Logger.Warn("RunSettings: снимок настроек от хоста не пришёл (у хоста нет мода или старая версия?) — " +
-                                     "берутся настройки этой машины, возможен рассинхрон.");
-            _active = _fromHost ?? FromConfig(lobby.NetService.NetId);
+            if (_fromHost == null || string.IsNullOrEmpty(_fromHost.RunId))
+            {
+                SourceName = "MISSING HOST SNAPSHOT: launch rejected";
+                // Starting with local rules would already desynchronize combat, before operation guards can help.
+                throw new InvalidOperationException("Requiem host settings/run identity missing; update the same mod version on all peers and restart the lobby");
+            }
+            _active = _fromHost;
         }
         else
         {
@@ -155,13 +169,28 @@ public static class RunSettings
     private static void LoadRun(RunState? state)
     {
         _active = null;
+        SourceName = "saved rules not validated";
+        Debugging.RunDiagnostics.LaunchKind = "continue";
         if (state == null) return;
+        var codes = state.Players.Select(p => p.Relics.OfType<Grimoire>().FirstOrDefault()?.RunSettingsCode).ToList();
+        if (codes.Any(c => !string.IsNullOrEmpty(c) && RunSettingsData.Decode(c) == null))
+        {
+            SourceName = "INVALID OR NEWER SAVED RULES: Continue rejected; original save retained";
+            throw new InvalidOperationException("Saved Requiem rules are invalid or from a newer schema. No menu fallback or save rewrite. Restore the matching mod build or backup.");
+        }
+        var snapshots = codes.Select(RunSettingsData.Decode).OfType<RunSettingsData>().Select(s => s.Encode()).Distinct(StringComparer.Ordinal).ToList();
+        if (snapshots.Count > 1)
+        {
+            SourceName = "INCONSISTENT SAVED SNAPSHOTS: Continue rejected";
+            throw new InvalidOperationException("Saved Requiem rules disagree between players; refusing local fallback");
+        }
         foreach (var player in state.Players)
         {
             var code = player.Relics.OfType<Grimoire>().FirstOrDefault()?.RunSettingsCode;
             if (RunSettingsData.Decode(code) is { } data)
             {
                 _active = data;
+                SourceName = "saved run snapshot";
                 MainFile.Logger.Info($"RunSettings: загружен снимок забега {code}");
                 return;
             }
@@ -171,18 +200,26 @@ public static class RunSettings
             // Герои мода без Гримуара: забег шёл по ванильным правилам — не включать системы посреди забега.
             _active = FromConfig(null);
             _active.EnableRequiemSystems = false;
+            SourceName = "saved run without Requiem systems";
             MainFile.Logger.Info("RunSettings: в сохранении нет Гримуара — забег продолжается без систем Реквиема.");
             return;
         }
-        MainFile.Logger.Info("RunSettings: в сохранении нет снимка (старая версия мода) — действуют настройки этой машины.");
+        SourceName = "LEGACY RULES UNKNOWN: Continue rejected; original save retained";
+        throw new InvalidOperationException("This legacy Requiem save has no rules snapshot. Its rules cannot be reconstructed safely from a local menu. The save is not rewritten; use its original mod build or a known-good backup.");
     }
 
     /// <summary>Клиент: снимок хоста (до сообщения о старте забега).</summary>
     public static void OnHostSettings(string code, ulong senderId)
     {
-        if (RunSettingsData.Decode(code) is not { } data)
+        if (Lobby?.NetService is not INetClientGameService { NetClient: { } client } || senderId != client.HostNetId)
         {
-            MainFile.Logger.Warn($"RunSettings: не разобран снимок от {senderId}: «{code}»");
+            MainFile.Logger.Warn($"RunSettings: ignored non-host/out-of-lobby settings from {senderId}");
+            return;
+        }
+        _fromHost = null; // an invalid NEW host snapshot must not silently reuse a previous start attempt
+        if (code == null || code.Length > 16384 || RunSettingsData.Decode(code) is not { RunId.Length: > 0 } data)
+        {
+            MainFile.Logger.Warn($"RunSettings: invalid/missing run identity in host snapshot from {senderId}");
             return;
         }
         _fromHost = data;
@@ -190,9 +227,46 @@ public static class RunSettings
     }
 
     /// <summary>Хост: личный выбор клиента (при «Готов»).</summary>
-    public static void OnPersonalChoices(ulong senderId, PersonalChoices choices) => LobbyChoices[senderId] = choices;
+    public static void OnPersonalChoices(ulong senderId, PersonalChoices choices)
+    {
+        if (Lobby is not { } lobby || lobby.NetService.Type != NetGameType.Host
+            || senderId == lobby.NetService.NetId || !lobby.Players.Any(p => p.id == senderId)) return;
+        if (!Enum.IsDefined(typeof(PlatebearerOriginChoice), choices.PlatebearerOrigin)
+            || !Enum.IsDefined(typeof(SilentOriginChoice), choices.SilentOrigin)
+            || !Enum.IsDefined(typeof(RegentOriginChoice), choices.RegentOrigin)
+            || !Enum.IsDefined(typeof(BackgroundChoice), choices.Background))
+        {
+            MainFile.Logger.Warn($"RunSettings: invalid personal choices from {senderId}");
+            return;
+        }
+        LobbyChoices[senderId] = choices;
+    }
 
     // ───── патчи лобби и забега ─────
+
+    [CriticalPatch]
+    [HarmonyPatch(typeof(StartRunLobby), MethodType.Constructor, typeof(GameMode), typeof(INetGameService), typeof(IStartRunLobbyListener), typeof(int))]
+    public static class TrackStartLobby
+    {
+        [HarmonyPostfix]
+        public static void Postfix(StartRunLobby __instance)
+        {
+            LobbyMessageBridge.Ensure(__instance.NetService);
+            _lobby = new(__instance);
+            _fromHost = null;
+            LobbyChoices.Clear(); // no choices/nonce from a previously cancelled lobby
+        }
+    }
+
+    [HarmonyPatch(typeof(StartRunLobby), nameof(StartRunLobby.CleanUp))]
+    public static class ForgetStartLobby
+    {
+        [HarmonyPostfix]
+        public static void Postfix(StartRunLobby __instance)
+        {
+            if (ReferenceEquals(Lobby, __instance)) _lobby = null;
+        }
+    }
 
     /// <summary>Хост рассылает снимок до <c>LobbyBeginRunMessage</c>: сообщения надёжные и упорядоченные.</summary>
     [CriticalPatch]
@@ -209,7 +283,13 @@ public static class RunSettings
             var data = BuildHostSnapshot(__instance);
             _fromHost = data;
             try { CustomMessageWrapper.Send(new RunSettingsMessage { data = data.Encode() }, __instance.NetService); }
-            catch (Exception e) { MainFile.Logger.Error($"RunSettings: снимок не разослан: {e}"); }
+            catch (Exception e)
+            {
+                _fromHost = null;
+                SourceName = "HOST SNAPSHOT SEND FAILED: launch rejected";
+                MainFile.Logger.Error($"RunSettings: снимок не разослан, старт отменён: {e}");
+                throw; // fail before LobbyBeginRunMessage/local mutation, not a silent host-only start
+            }
         }
     }
 
@@ -248,7 +328,29 @@ public static class RunSettings
     public static class ApplyOnLoad
     {
         [HarmonyPrefix]
-        public static void Prefix(RunManager __instance, SerializableRun save) => LoadRun(__instance.DebugOnlyGetState());
+        public static void Prefix(RunManager __instance, SerializableRun save)
+        {
+            var state = __instance.DebugOnlyGetState();
+            LoadRun(state);
+            if (state == null) return;
+            // For old saves the SAVE start time is shared by peers. Back up the ORIGINAL payload before
+            // introducing identities/settings fields. Normal Continue preserves its timeline/revision exactly.
+            var packs = state.Players.Select(Alchemy.TravelPack.Of).OfType<Alchemy.TravelPack>().ToList();
+            var timelines = packs.Select(p => p.OperationRunId).Where(id => id.Length > 0).Distinct(StringComparer.Ordinal).ToList();
+            if (timelines.Count > 1) throw new InvalidOperationException("Saved Requiem operation timelines disagree; original save retained");
+            var needsMigration = packs.Any(p => p.OperationRunId.Length == 0) || _active is { RunId.Length: 0 };
+            if (needsMigration) OperationRecovery.BackupBeforeMigration(save); // a write failure aborts BEFORE mutation
+            if (_active is { RunId.Length: 0 })
+            {
+                _active.RunId = OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime)[..32].ToLowerInvariant();
+                var code = _active.Encode();
+                foreach (var grimoire in state.Players.SelectMany(p => p.Relics.OfType<Grimoire>())) grimoire.RunSettingsCode = code;
+                SourceName = "saved v1 rules + backed-up identity migration";
+            }
+            var timeline = timelines.FirstOrDefault() ?? (_active?.RunId is { Length: > 0 } id ? id
+                : OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime));
+            foreach (var pack in packs.Where(p => p.OperationRunId.Length == 0)) pack.OperationRunId = timeline;
+        }
     }
 
     /// <summary>Конец забега: снова действуют настройки меню.</summary>
@@ -260,6 +362,8 @@ public static class RunSettings
         {
             _active = null;
             _fromHost = null;
+            SourceName = "menu (no run snapshot)";
+            Debugging.RunDiagnostics.LaunchKind = "unknown";
         }
     }
 }

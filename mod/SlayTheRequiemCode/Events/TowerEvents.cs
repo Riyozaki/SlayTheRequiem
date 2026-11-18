@@ -122,16 +122,15 @@ public sealed class RenegadeApprenticeEvent : RequiemEvent
 
     private async Task Trade()
     {
-        await Pay(N("Cost"));
-        await OfferSpells(N("Spells"));
+        if (Owner!.Gold < N("Cost") || !await OfferSpells(N("Spells"), N("Cost"))) return;
         Finish("TRADED");
     }
 
     private async Task Seize()
     {
+        if (!await OfferSpells(N("Spells"))) return;
         await Hurt(N("Hp"));
         Sin();
-        await OfferSpells(N("Spells"));
         Finish("SEIZED");
     }
 }

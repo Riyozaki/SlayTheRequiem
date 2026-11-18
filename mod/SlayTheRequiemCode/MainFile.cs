@@ -24,6 +24,9 @@ public partial class MainFile : Node
     {
         var assembly = Assembly.GetExecutingAssembly();
 
+        InventoryIdentity.Initialize();
+        CardAcquisition.Initialize();
+        Alchemy.HerbalistPouch.Initialize();
         ModConfigRegistry.Register(ModId, new RequiemConfig());
         RequiemData.Load();
 

@@ -14,6 +14,9 @@ public static class MemoryStoneRules
     /// <summary>Значение «бесконечно» для числа Свечей.</summary>
     public const int Infinite = int.MaxValue;
 
+    public static bool CanCaptureImprint(bool ancientUnfinished, bool startingChoicesComplete, bool mutationInFlight) =>
+        !ancientUnfinished && startingChoicesComplete && !mutationInFlight;
+
     /// <summary>Свечей за забег по уровню «Реквием» (§2): 0 → ∞, 1–4 → 3, 5–7 → 2, 8–9 → 1, 10+ → 0.</summary>
     public static int CandlesFor(int requiemLevel) => requiemLevel switch
     {

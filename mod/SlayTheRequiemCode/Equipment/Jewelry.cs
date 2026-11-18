@@ -417,6 +417,12 @@ public sealed class AmuletOfTheWeaver : EquipmentRelic
     // Создаётся лениво: каноническая модель копируется в мутабельные — общий набор на всех был бы ошибкой.
     private HashSet<Creature>? _sneakTargets;
 
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _sneakTargets = null; // a copied amulet never owns another attack's in-flight targets
+    }
+
     // Подлость проверяем до удара: Невидимость снимается атакой.
     public override Task BeforeDamageReceived(PlayerChoiceContext choiceContext, Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {

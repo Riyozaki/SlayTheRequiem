@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using SlayTheRequiem.SlayTheRequiemCode.Debugging;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -26,48 +27,81 @@ public sealed class ShoutShelfPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    private sealed class Entry(CardModel card, int turns)
+    private CooldownShelf<CardModel, ICombatState> _shelf = new();
+
+    protected override void DeepCloneFields()
     {
-        public CardModel Card { get; } = card;
-        public int Turns { get; set; } = turns;
+        base.DeepCloneFields();
+        // Powers can be copied to another creature. Copying the list would still share the *physical cards*.
+        // A new power never owns another shelf's entitlements, even when cloned from a populated power.
+        _shelf = new();
     }
 
-    private readonly List<Entry> _shelf = [];
-
     public int Count => _shelf.Count;
+    public int NextTurns => _shelf.NextTurns;
 
-    /// <summary>Ходов до возвращения ближайшего Клича (для описания).</summary>
-    public int NextTurns => _shelf.Count == 0 ? 0 : _shelf.Min(e => e.Turns);
-
-    public void Put(CardModel card, int turns) => _shelf.Add(new Entry(card, turns));
+    public bool Put(CardModel card, int turns)
+    {
+        var combat = Owner.CombatState;
+        if (combat == null || card.Owner != Owner.Player || !_shelf.Put(card, combat, turns)) return false;
+        CardRewardTrace.Card("shout:shelved", card, $"turns={turns} shelf={Count}");
+        return true;
+    }
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
-        if (!participants.Contains(Owner) || Owner.Player == null || _shelf.Count == 0) return;
-        var ready = new List<CardModel>();
-        foreach (var entry in _shelf.ToList())
+        if (!participants.Contains(Owner) || Owner.Player == null || !Owner.IsAlive
+            || !ReferenceEquals(Owner.CombatState, combatState) || _shelf.Count == 0) return;
+        var before = Count;
+        foreach (var entry in _shelf.Tick(combatState))
         {
-            entry.Turns--;
-            if (entry.Turns > 0) continue;
-            _shelf.Remove(entry);
-            ready.Add(entry.Card);
-        }
-        foreach (var card in ready)
-        {
-            // Игра, отправляя карту «никуда» (PileType.None), снимает её с боя через RemoveFromCombat → RemoveFromState:
-            // HasBeenRemovedFromState = true, и CardPileCmd.Add молча отказывает (success = false). Из-за этого Кличи
-            // не возвращались в руку (плейтест 2026-11). Карта остаётся в CombatState — снимаем флаг, как RunState
-            // делает для украденных карт, и только потом кладём в руку (полная рука — игра сама отправит в сброс).
-            if (card.Owner == null || card.CombatState == null) continue;
+            var card = entry.Card;
+            // The shelf is recorded by AfterCardPlayed BEFORE native RemoveFromCombat(None). That command
+            // sets HasBeenRemovedFromState and Pile=null. Card.CombatState is therefore EXPECTED to be null.
+            // The owner creature and captured entry, not that computed property, identify the original combat.
+            if (card.Owner != Owner.Player)
+            {
+                CardRewardTrace.Card("shout:owner-changed", card, "entry dropped; never steal a card from another owner", force: true);
+                _shelf.Complete(card);
+                continue;
+            }
+            if (card.Pile != null)
+            {
+                // An intervening hook already moved the same card. Never pull it out of Exhaust/Deck or
+                // create a second return. The exact instance must be off-table for shelf restoration.
+                CardRewardTrace.Card("shout:externally-moved", card, "entry completed without another Add");
+                _shelf.Complete(card);
+                continue;
+            }
+            if (!CombatManager.Instance.IsInProgress || CombatManager.Instance.IsEnding) continue;
+            if (!combatState.ContainsCard(card)) combatState.AddCard(card, Owner.Player);
             card.HasBeenRemovedFromState = false;
-            var result = await CardPileCmd.Add(card, PileType.Hand);
-            if (!result.success) MainFile.Logger.Warn($"Клич {card.Id.Entry} не вернулся в руку.");
+            var committed = false;
+            try
+            {
+                // Add redirects a full hand into Discard. Its bool is not proof: VFX/hooks may throw after a move.
+                await CardPileCmd.Add(card, PileType.Hand);
+            }
+            catch (Exception e)
+            {
+                MainFile.Logger.Error($"[CardReward] phase=shout:return-exception card={card.Id}: {e}");
+            }
+            committed = card.Owner == Owner.Player && card.Pile?.Type is PileType.Hand or PileType.Discard;
+            CardRewardTrace.Card("shout:return-result", card, $"committed={committed}", force: !committed);
+            if (committed) _shelf.Complete(card); // failed returns stay due for the next owner turn
         }
-        if (ready.Count == 0) return;
+        if (Count == before) return;
         Flash();
-        if (_shelf.Count == 0) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -ready.Count, null, null, silent: true);
+        if (Count == 0) await PowerCmd.Remove(this);
+        else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, Count - before, null, null, silent: true);
     }
+
+    public override Task AfterCombatEnd(MegaCrit.Sts2.Core.Rooms.CombatRoom room)
+    {
+        _shelf.Clear(); // no stale combat/card references can cross a fight boundary
+        return Task.CompletedTask;
+    }
+
 }
 
 /// <summary>Правила полки: кто держит Кличи и сколько.</summary>
@@ -97,11 +131,10 @@ public static class Shouts
             await PowerCmd.Apply<ShoutShelfPower>(new ThrowingPlayerChoiceContext(), player.Creature, 1, player.Creature, null, silent: true);
             shelf = player.Creature.GetPower<ShoutShelfPower>();
         }
-        else
-        {
+        if (shelf == null || !shelf.Put(card, turns)) return;
+        // Apply starts at one; every later physical card adds exactly one, including repeated-play hooks.
+        if (shelf.Count > 1)
             await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), shelf, 1, null, null, silent: true);
-        }
-        shelf?.Put(card, turns);
     }
 }
 

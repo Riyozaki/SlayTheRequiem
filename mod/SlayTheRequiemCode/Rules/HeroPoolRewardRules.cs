@@ -23,14 +23,23 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 public sealed class HeroPoolRewardRules() : CustomSingletonModel(CustomSingletonModel.HookType.Run)
 {
     public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions) =>
-        RewardSwap.Guard(nameof(HeroPoolRewardRules), () => Modify(player, cardRewardOptions, creationOptions));
+        ModifyInOrder(player, cardRewardOptions, creationOptions);
+
+    // One coordinator: reflection/registration order of singleton models no longer changes rewards.
+    private static bool ModifyInOrder(Player player, List<CardCreationResult> options, CardCreationOptions creation)
+    {
+        var changed = RewardSwap.Guard(nameof(HeroPoolRewardRules), player, options, staged => Modify(player, staged, creation));
+        changed |= RewardSwap.Guard(nameof(SpellRewardRules), player, options, staged => SpellRewardRules.Modify(player, staged, creation));
+        changed |= RewardSwap.Guard(nameof(PathRewardRules), player, options, staged => PathRewardRules.Modify(player, staged, creation));
+        return changed;
+    }
 
     private static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
     {
         if (!RequiemMode.IsInSystem(player) || creationOptions.Source != CardCreationSource.Encounter) return false;
 
         var pool = player.Character.CardPool;
-        var unlocked = pool.GetUnlockedCards(player.UnlockState, player.RunState.CardMultiplayerConstraint).ToList();
+        var unlocked = pool.GetUnlockedCards(player.UnlockState, player.RunState.CardMultiplayerConstraint).OrderBy(c => c.Id.Entry, StringComparer.Ordinal).ToList();
         var own = unlocked.Where(VanillaPoolGuard.IsModCard).ToList();
         var vanilla = unlocked.Where(c => !VanillaPoolGuard.IsModCard(c)).Select(c => c.CanonicalInstance).ToHashSet();
         var pact = player.Relics.OfType<PactStage>().Any() ? PactCards() : new List<CardModel>();
@@ -71,6 +80,7 @@ public sealed class HeroPoolRewardRules() : CustomSingletonModel(CustomSingleton
             .Where(x => keys.Contains((x.Pool, x.Card.GetType().Name)))
             .Select(x => x.Card)
             .Distinct()
+            .OrderBy(c => c.Id.Entry, StringComparer.Ordinal)
             .ToList();
     }
 }

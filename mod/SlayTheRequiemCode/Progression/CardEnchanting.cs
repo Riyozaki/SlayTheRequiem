@@ -127,21 +127,25 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
         if (hero == null) return false;
         var power = new[] { 1, 2, 3 }.FirstOrDefault(p => hero.Stones(p) > 0);
         if (power == 0) return false;
-        if (!await EnchantFlow(Owner, () => Task.FromResult(hero.SpendStone(power)))) return false;
-        hero.Refresh();
-        return true;
+        var result = await EnchantFlow(Owner, () => hero.Stones(power) > 0,
+            () => Task.FromResult(hero.SpendStone(power)), InventoryLease);
+        return result.Changed;
     }
 
     /// <summary>
-    /// Зачаровать карту колоды (лагерь — за камень, Чародей — за золото): вид чар, карта (синхронно в коопе), оплата
-    /// (<paramref name="commit"/>; false — отмена), наложение.
+    /// Зачаровать карту колоды: синхронный выбор, повторная проверка цены/цели, наблюдаемое наложение, затем оплата.
+    /// Отмена/отказ не тратят цену; исключение после EnchantInternal — явный PartialCommit, без повторного наложения.
     /// </summary>
-    public static async Task<bool> EnchantFlow(Player owner, Func<Task<bool>> commit)
+    public static async Task<OperationResult> EnchantFlow(Player owner, Func<bool> canCommit, Func<Task<bool>> commit,
+        OperationGate.Lease? held = null)
     {
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null) return new(OperationStatus.Busy, "card-enchant", "Inventory synchronization blocked");
+        var room = owner.RunState.CurrentRoom;
         var perk = HeroRecord.Of(owner)?.Has(Skill.CraftEnchanting) == true;
         var kinds = Enum.GetValues<CardEnchant>().Where(k => k != CardEnchant.Double || perk).ToList();
         if (await CampMenu.Pick(owner, kinds.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
-                "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant kind) return false;
+                "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant kind) return new(OperationStatus.Cancelled, "card-enchant");
 
         var amount = 1;
         var attacksOnly = kind != CardEnchant.Lightened;
@@ -149,10 +153,10 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
         {
             var singles = Enum.GetValues<CardEnchant>().Where(k => k != CardEnchant.Double).ToList();
             if (await CampMenu.Pick(owner, singles.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
-                    "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant first) return false;
+                    "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant first) return new(OperationStatus.Cancelled, "card-enchant");
             var rest = singles.Where(k => TransformationRules.ValidDouble(first, k)).ToList();
             if (await CampMenu.Pick(owner, rest.Select(k => new CampMenu.Choice(PickFor(k), 0, 0, k)).ToList(),
-                    "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant second) return false;
+                    "SLAYTHEREQUIEM_CARD_ENCHANT_PROMPT") is not CardEnchant second) return new(OperationStatus.Cancelled, "card-enchant");
             amount = TransformationRules.EncodeDouble(first, second);
             attacksOnly = first != CardEnchant.Lightened || second != CardEnchant.Lightened;
         }
@@ -161,9 +165,34 @@ public sealed class CardEnchantRestSiteOption(Player owner) : RequiemRestSiteOpt
         var prefs = new CardSelectorPrefs(CardSelectorPrefs.EnchantSelectionPrompt, 1) { Cancelable = true };
         var picked = (await CardSelectCmd.FromDeckForEnchantment(owner, canonical, amount,
             c => c != null && (!attacksOnly || c.Type == CardType.Attack), prefs)).FirstOrDefault();
-        if (picked == null || !await commit()) return false;
-        CardCmd.Enchant(canonical.ToMutable(), picked, amount);
-        return true;
+        if (picked == null) return new(OperationStatus.Cancelled, "card-enchant");
+        return await EnchantSelected(owner, picked, canonical, amount,
+            () => ReferenceEquals(room, owner.RunState.CurrentRoom) && (!attacksOnly || picked.Type == CardType.Attack) && canCommit(), commit, lease);
+    }
+
+    /// <summary>Production adapter, also exercised by str_integrity without replacing the native selector or command.</summary>
+    internal static async Task<OperationResult> EnchantSelected(Player owner, CardModel card, EnchantmentModel canonical,
+        int amount, Func<bool> canCommit, Func<Task<bool>> commit, OperationGate.Lease? held = null)
+    {
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null) return new(OperationStatus.Busy, "card-enchant", "Inventory synchronization blocked");
+        if (InventoryGate.For(owner).Blocked || !RequiemMode.IsInSystem(owner) || owner.Creature.IsDead || MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress
+            || !Shops.ShopActionPolicy.OwnsCard(owner, card) || !canonical.CanEnchant(card) || amount <= 0 || !canCommit())
+            return OperationResult.Reject("card-enchant", "Card enchant target or payment changed after selection");
+        var key = InventoryIdentity.CardKey(card);
+        using var mutation = InventoryGate.Track(owner, lease, $"card-enchant:{key}");
+        var before = card.Enchantment;
+        var beforeAmount = before?.Amount;
+        var result = await TransferProtocol.MoveAsync(key,
+            () => Task.FromResult(CardCmd.Enchant(canonical.ToMutable(), card, amount) != null),
+            () => !ReferenceEquals(card.Enchantment, before) || card.Enchantment?.Amount != beforeAmount,
+            () => TransferProtocol.Finish(
+                async () => { if (!await commit()) throw new InvalidOperationException("Card enchant committed but payment was rejected"); },
+                () => { TravelPack.Of(owner)?.Refresh(); HeroRecord.Of(owner)?.Refresh(); return Task.CompletedTask; }));
+        MainFile.Logger.Info($"[InventoryOperation] card-enchant {key} {result.Status}: {result.Detail}");
+        if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(owner, $"Card enchant {key}: {result.Detail}");
+        mutation.Complete();
+        return result;
     }
 }
 

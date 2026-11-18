@@ -38,12 +38,9 @@ public sealed class SpellRules() : CustomSingletonModel(CustomSingletonModel.Hoo
 /// Заклинания в наградах за бой (08 §8.4): каждая карта награды с шансом «доли заклинаний» героя заменяется
 /// заклинанием школы с владением ≥ 1 и ступенью ≤ владение + 1. Латоносец с нулевым владением заклинаний в наградах не видит.
 /// </summary>
-public sealed class SpellRewardRules() : CustomSingletonModel(CustomSingletonModel.HookType.Run)
+public static class SpellRewardRules
 {
-    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions) =>
-        RewardSwap.Guard(nameof(SpellRewardRules), () => Modify(player, cardRewardOptions, creationOptions));
-
-    private static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
+    internal static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
     {
         if (!RequiemMode.IsInSystem(player) || creationOptions.Source != CardCreationSource.Encounter) return false;
 
@@ -59,7 +56,7 @@ public sealed class SpellRewardRules() : CustomSingletonModel(CustomSingletonMod
         {
             if (rng.NextDouble() >= share) continue;
             var taken = cardRewardOptions.Select(o => o.Card.CanonicalInstance).ToHashSet();
-            var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)));
+            var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)).OrderBy(c => c.Id.Entry, StringComparer.Ordinal));
             if (pick == null) break;
             RewardSwap.Replace(option, pick, player);
             changed = true;

@@ -60,14 +60,13 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     protected async Task ReplaceStarter<T>(CardTag tag) where T : CardModel
     {
         var old = Owner.Deck.Cards.FirstOrDefault(c => c.Rarity == CardRarity.Basic && c.Tags.Contains(tag));
-        if (old != null) await CardPileCmd.RemoveFromDeck(old, showPreview: false);
-        await AddToDeck<T>();
+        await CardAcquisition.AddOrDefer(Owner.RunState.CreateCard<T>(Owner), old);
     }
 
     protected async Task AddToDeck<T>() where T : CardModel
     {
         var card = Owner.RunState.CreateCard<T>(Owner);
-        await CardPileCmd.Add(card, PileType.Deck);
+        await CardAcquisition.AddOrDefer(card);
     }
 
     protected Task GivePotion<T>() where T : PotionModel => PotionCmd.TryToProcure<T>(Owner);

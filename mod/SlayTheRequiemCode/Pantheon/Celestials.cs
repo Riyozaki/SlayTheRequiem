@@ -78,13 +78,32 @@ public abstract class CelestialBlessing : BoonRelic
 
     public static RelicModel Create(Type type) => ModelDb.GetById<RelicModel>(ModelDb.GetId(type)).ToMutable();
 
-    /// <summary>Принять благословение бога, сняв прежнее (вместе с его ♥).</summary>
-    public static async Task Grant(Player player, Celestial god)
+    /// <summary>Observe the new blessing BEFORE revoking the old one; a failed obtain may not lose both.</summary>
+    public static async Task Grant(Player player, Celestial god, OperationGate.Lease? held = null)
     {
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null || InventoryGate.For(player).Blocked || !Enum.IsDefined(god)
+            || !RequiemMode.IsInSystem(player) || player.Creature.IsDead
+            || MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress)
+            throw new InvalidOperationException("Blessing change is not available in the current inventory/environment");
         var old = Of(player);
         if (old != null && old.God == god) return;
-        if (old != null) await old.RemoveSelf();
-        await RelicCmd.Obtain(Create(Blessings[(int)god]), player);
+        using var mutation = InventoryGate.Track(player, lease, $"blessing:{god}");
+        var fresh = Create(Blessings[(int)god]);
+        var result = await TransferProtocol.MoveAsync($"blessing:{god}",
+            async () => { await RelicCmd.Obtain(fresh, player); return true; },
+            () => player.Relics.Contains(fresh),
+            () => TransferProtocol.Finish(
+                async () =>
+                {
+                    if (old != null && player.Relics.Contains(old)) await old.RemoveSelf();
+                    if (old != null && player.Relics.Contains(old)) throw new InvalidOperationException("New blessing committed but the old blessing remains");
+                },
+                () => { Faith.RefreshAll(player); return Task.CompletedTask; }));
+        MainFile.Logger.Info($"[InventoryOperation] {result.Target} {result.Status}: {result.Detail}");
+        if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(player, $"{result.Target}: {result.Detail}");
+        mutation.Complete();
+        if (!result.Succeeded) throw new InvalidOperationException($"Blessing change {result.Status}: {result.Detail}");
     }
 }
 

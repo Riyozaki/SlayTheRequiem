@@ -8,19 +8,12 @@ using SlayTheRequiem.SlayTheRequiemCode.Shops;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Net;
 
-/// <summary>
-/// Действие в лавке (продажа, доверие, услуги, Заказ, провал кражи). Отправитель уже выполнил его у себя;
-/// получатели повторяют его для игрока-отправителя (<see cref="ShopActions.Apply"/>).
-/// Хост пересылает сообщение клиента остальным (<see cref="ShouldBroadcast"/>).
-/// </summary>
+/// <summary>Versioned, owner-authenticated request. Location buffering is still provided by BaseLib.</summary>
 public sealed class ShopActionMessage : ICustomTargetedMessage
 {
     public RunLocation location;
-    public int kind;
-    public int a;
-    public int b;
-    public string s = string.Empty;
-
+    public ShopRequest request = new("", "", 0, "", 0, 0, 0, "");
+    private int _protocol = ShopOperations.Protocol;
     public RunLocation Location => location;
     public bool IsRewardMessage => false;
     public bool ShouldBroadcast => true;
@@ -28,26 +21,55 @@ public sealed class ShopActionMessage : ICustomTargetedMessage
     public void Serialize(PacketWriter writer)
     {
         writer.Write(location);
-        writer.WriteInt(kind, 8);
-        writer.WriteInt(a);
-        writer.WriteInt(b);
-        writer.WriteString(s ?? string.Empty);
+        writer.WriteInt(ShopOperations.Protocol, 8);
+        writer.WriteString(request.Run); writer.WriteString(request.Id); writer.WriteInt(request.Revision);
+        writer.WriteString(request.Before); writer.WriteInt((int)request.Kind, 8);
+        writer.WriteInt(request.A); writer.WriteInt(request.B); writer.WriteString(request.S);
     }
-
     public void Deserialize(PacketReader reader)
     {
         location = reader.Read<RunLocation>();
-        kind = reader.ReadInt(8);
-        a = reader.ReadInt();
-        b = reader.ReadInt();
-        s = reader.ReadString();
+        _protocol = reader.ReadInt(8);
+        var run = reader.ReadString(); var id = reader.ReadString(); var revision = reader.ReadInt();
+        var before = reader.ReadString(); var kind = (ShopAction)reader.ReadInt(8);
+        request = new(run, id, revision, before, kind, reader.ReadInt(), reader.ReadInt(), reader.ReadString());
     }
-
     public void HandleMessage(ulong senderId)
     {
-        var player = RequiemNet.PlayerOf(senderId);
+        var player = RequiemNet.PlayerOf(senderId); // Never accept a player ID supplied in the request body.
         if (player == null || senderId == RequiemNet.LocalNetId) return;
-        TaskHelper.RunSafely(ShopActions.Apply(player, (ShopAction)kind, a, b, s));
+        if (_protocol != ShopOperations.Protocol)
+        { MainFile.Logger.Error($"[ShopOperation] Unsupported protocol {_protocol} from {senderId}"); return; }
+        TaskHelper.RunSafely(ShopOperations.Apply(player, request, location));
+    }
+}
+
+/// <summary>Each peer reports its actual result/digest. Mismatch or a missing peer blocks subsequent operations.</summary>
+public sealed class ShopActionReceiptMessage : ICustomTargetedMessage
+{
+    public RunLocation location;
+    public ulong playerId;
+    public string operationId = "";
+    public int status;
+    public int gold;
+    public string digest = "";
+    public RunLocation Location => location;
+    public bool IsRewardMessage => false;
+    public bool ShouldBroadcast => true;
+    public void Serialize(PacketWriter writer)
+    {
+        writer.Write(location); writer.WriteULong(playerId); writer.WriteString(operationId);
+        writer.WriteInt(status, 8); writer.WriteInt(gold); writer.WriteString(digest);
+    }
+    public void Deserialize(PacketReader reader)
+    {
+        location = reader.Read<RunLocation>(); playerId = reader.ReadULong(); operationId = reader.ReadString();
+        status = reader.ReadInt(8); gold = reader.ReadInt(); digest = reader.ReadString();
+    }
+    public void HandleMessage(ulong senderId)
+    {
+        if (RequiemNet.PlayerOf(playerId) is { } player)
+            ShopOperations.OnReceipt(player, operationId, senderId, status, gold, digest);
     }
 }
 
@@ -183,4 +205,17 @@ public sealed class PersonalChoicesMessage : ICustomMessage
 
     public void HandleMessage(ulong senderId) =>
         Config.RunSettings.OnPersonalChoices(senderId, new Core.PersonalChoices(platebearer, silent, regent, background));
+}
+
+
+/// <summary>Only the authenticated current host can request rejoining its restored checkpoint timeline.</summary>
+public sealed class InventoryRecoveryMessage : ICustomMessage
+{
+    public string timeline = "";
+    public string seed = "";
+    public bool ShouldBroadcast => false;
+    public bool ShouldBuffer => false;
+    public void Serialize(PacketWriter writer) { writer.WriteString(timeline); writer.WriteString(seed); }
+    public void Deserialize(PacketReader reader) { timeline = reader.ReadString(); seed = reader.ReadString(); }
+    public void HandleMessage(ulong senderId) => Rules.OperationRecovery.OnHostRestore(timeline, seed, senderId);
 }

@@ -48,15 +48,12 @@ public abstract class PathCard(int cost, CardType type, CardRarity rarity, Targe
 /// <summary>
 /// Карты Пути в наградах за бой (06 §2): у героя с Путём каждая карта награды с шансом 25 % заменяется картой его Пути.
 /// </summary>
-public sealed class PathRewardRules() : CustomSingletonModel(CustomSingletonModel.HookType.Run)
+public static class PathRewardRules
 {
     /// <summary>Подписные заклинания Повелителя стихии (карты его Пути).</summary>
     public static readonly Type[] ElementLordSpells = [typeof(Meteor), typeof(IceTomb), typeof(ChainLightning)];
 
-    public override bool TryModifyCardRewardOptions(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions) =>
-        RewardSwap.Guard(nameof(PathRewardRules), () => Modify(player, cardRewardOptions, creationOptions));
-
-    private static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
+    internal static bool Modify(Player player, List<CardCreationResult> cardRewardOptions, CardCreationOptions creationOptions)
     {
         if (!RequiemMode.IsInSystem(player) || creationOptions.Source != CardCreationSource.Encounter) return false;
         var path = Paths.PathOf(player);
@@ -73,7 +70,7 @@ public sealed class PathRewardRules() : CustomSingletonModel(CustomSingletonMode
         {
             if (rng.NextInt(100) >= TransformationRules.PathCardRewardPercent) continue;
             var taken = cardRewardOptions.Select(o => o.Card.CanonicalInstance).ToHashSet();
-            var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)));
+            var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)).OrderBy(c => c.Id.Entry, StringComparer.Ordinal));
             if (pick == null) break;
             RewardSwap.Replace(option, pick, player);
             changed = true;

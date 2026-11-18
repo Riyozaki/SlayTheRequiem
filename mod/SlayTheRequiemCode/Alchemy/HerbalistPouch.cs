@@ -1,3 +1,4 @@
+using System.Globalization;
 using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Players;
@@ -31,6 +32,14 @@ public sealed class HerbalistPouch : RequiemRelic
 
     private int[] _reagents = new int[AlchemyRules.ReagentCount];
 
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _reagents = (int[])_reagents.Clone();
+        _pendingBrews = new();
+        BrewTaken = false;
+    }
+
     /// <summary>Сохраняется массивом: индекс = <see cref="Reagent"/>.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int[] Reagents
@@ -39,6 +48,8 @@ public sealed class HerbalistPouch : RequiemRelic
         set
         {
             AssertMutable();
+            if (value != null && (value.Length > AlchemyRules.ReagentCount || value.Any(n => n < 0) || value.Sum(n => (long)n) > int.MaxValue))
+                throw new FormatException("Unsupported or invalid reagent array; refusing to truncate saved data");
             _reagents = new int[AlchemyRules.ReagentCount];
             if (value != null) Array.Copy(value, _reagents, Math.Min(value.Length, _reagents.Length));
             SyncVars();
@@ -64,11 +75,27 @@ public sealed class HerbalistPouch : RequiemRelic
         return fit;
     }
 
-    public bool TrySpend(IReadOnlyList<Reagent> ingredients)
+    /// <summary>One kit mutation before any display callback; a notification cannot leave half a purchased kit.</summary>
+    internal bool TryAddKit(IReadOnlyList<Reagent> reagents)
+    {
+        AssertMutable();
+        if (reagents.Count == 0 || reagents.Any(r => !Enum.IsDefined(r)) || AlchemyRules.Fit(Total, reagents.Count) != reagents.Count) return false;
+        foreach (var reagent in reagents) _reagents[(int)reagent]++;
+        SyncVars();
+        return true;
+    }
+
+    private bool TrySpendCore(IReadOnlyList<Reagent> ingredients)
     {
         AssertMutable();
         if (!AlchemyRules.CanAfford(_reagents, ingredients)) return false;
         foreach (var r in ingredients) _reagents[(int)r]--;
+        return true; // no callbacks/await between validation and all material mutations
+    }
+
+    public bool TrySpend(IReadOnlyList<Reagent> ingredients)
+    {
+        if (!TrySpendCore(ingredients)) return false;
         SyncVars();
         return true;
     }
@@ -85,15 +112,23 @@ public sealed class HerbalistPouch : RequiemRelic
     /// <summary>Пояс для ядов (docs/design/09 §1): +2 слота. Пока ядам не выделены отдельные слоты — общие слоты зелий.</summary>
     public const int BeltSlots = 2;
     private bool _beltGranted;
+    private int _beltTarget;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int BeltTarget { get => _beltTarget; set { AssertMutable(); _beltTarget = Math.Max(0, value); } }
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public bool BeltGranted { get => _beltGranted; set { AssertMutable(); _beltGranted = value; } }
 
     public override async Task AfterRoomEntered(AbstractRoom room)
     {
+        await CompleteSavedBrews();
         if (BeltGranted || !RequiemMode.IsInSystem(Owner)) return;
-        BeltGranted = true;
-        await PlayerCmd.GainMaxPotionCount(BeltSlots, Owner);
+        if (BeltTarget == 0) BeltTarget = checked(Owner.MaxPotionCount + BeltSlots);
+        try
+        {
+            if (Owner.MaxPotionCount < BeltTarget) await PlayerCmd.GainMaxPotionCount(BeltTarget - Owner.MaxPotionCount, Owner);
+        }
+        finally { BeltGranted = Owner.MaxPotionCount >= BeltTarget; }
     }
 
     // ───── выпадение ─────
@@ -127,30 +162,89 @@ public sealed class HerbalistPouch : RequiemRelic
 
     // ───── варка ─────
 
-    /// <summary>Предложенные в лагере варианты: зелье → его рецепт (списывается, когда зелье взято).</summary>
-    private readonly Dictionary<PotionModel, Reagent[]> _pendingBrews = new();
+    // The recipe travels WITH the offered potion. A save made by an insertion callback before our obtain hook
+    // can therefore reconcile materials after Continue. Unselected previews are not serialized into the player.
+    private static readonly SavedSpireField<PotionModel, string> BrewCost = new(() => "", "SlayTheRequiem_BrewCost");
+    internal static void Initialize() { _ = BrewCost; }
+    private Dictionary<PotionModel, Reagent[]> _pendingBrews = new();
     public bool BrewTaken { get; private set; }
+
+    internal static void MarkBrewCost(PotionModel potion, IReadOnlyList<Reagent> ingredients)
+    {
+        if (ingredients.Count is < 1 or > 3 || ingredients.Any(r => !Enum.IsDefined(r)))
+            throw new ArgumentException("Invalid brew recipe", nameof(ingredients));
+        BrewCost[potion] = string.Join(",", ingredients.Select(r => ((int)r).ToString(CultureInfo.InvariantCulture)));
+    }
+
+    internal static bool HasBrewCost(PotionModel potion) => !string.IsNullOrEmpty(BrewCost[potion]);
+    internal static void CancelBrewCost(PotionModel potion) => BrewCost[potion] = "";
 
     public void BeginBrew(IEnumerable<(PotionModel potion, Reagent[] ingredients)> offers)
     {
-        _pendingBrews.Clear();
+        if (_pendingBrews.Count > 0) throw new InvalidOperationException("Another camp brew is already active");
+        var staged = offers.ToDictionary(o => o.potion, o => (Reagent[])o.ingredients.Clone());
+        if (staged.Values.Any(a => a.Length is < 1 or > 3 || a.Any(r => !Enum.IsDefined(r))))
+            throw new ArgumentException("Invalid camp brew recipe", nameof(offers));
+        _pendingBrews = staged;
         BrewTaken = false;
-        foreach (var (potion, ingredients) in offers) _pendingBrews[potion] = ingredients;
+        foreach (var (potion, ingredients) in staged) MarkBrewCost(potion, ingredients);
     }
 
-    public void EndBrew() => _pendingBrews.Clear();
+    public void EndBrew()
+    {
+        foreach (var potion in _pendingBrews.Keys.Where(p => !Owner.PotionSlots.Contains(p))) CancelBrewCost(potion);
+        _pendingBrews.Clear(); // never clear a committed potion's unpaid saved obligation
+    }
 
     /// <summary>Из одной Варки берётся одно зелье: остальные варианты после выбора недоступны.</summary>
     public override bool ShouldProcurePotion(PotionModel potion, Player player) =>
-        player != Owner || !BrewTaken || !_pendingBrews.ContainsKey(potion);
+        player != Owner || !_pendingBrews.TryGetValue(potion, out var ingredients)
+            || !BrewTaken && AlchemyRules.CanAfford(_reagents, ingredients);
+
+    internal bool HasBrewCommit => BrewTaken || _pendingBrews.Keys.Any(p => Owner.PotionSlots.Contains(p));
+
+    internal void CompleteBrew()
+    {
+        // Do not early-return on BrewTaken: insufficient materials keep a recoverable debt, NOT a paid flag.
+        foreach (var potion in _pendingBrews.Keys.Where(p => Owner.PotionSlots.Contains(p))) CompleteBrew(potion);
+    }
+
+    internal void CompleteBrew(PotionModel potion)
+    {
+        if (potion.Owner != Owner || !Owner.PotionSlots.Contains(potion)) return;
+        if (_pendingBrews.ContainsKey(potion)) BrewTaken = true;
+        if (!HasBrewCost(potion)) return; // already paid, including a late notification/animation exception
+        var pieces = BrewCost[potion]!.Split(',');
+        if (pieces.Length is < 1 or > 3) throw new InvalidOperationException("Unknown saved brew-cost schema; debt retained");
+        var ingredients = pieces.Select(s => int.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out var n)
+            && Enum.IsDefined(typeof(Reagent), n) ? (Reagent)n : throw new InvalidOperationException("Invalid saved brew ingredient; debt retained")).ToArray();
+        if (!TrySpendCore(ingredients)) throw new InvalidOperationException("Brew was obtained but its materials changed; saved debt retained");
+        CancelBrewCost(potion); // raw material mutation + paid marker precede EVERY notification/await
+        SyncVars();
+        Flash();
+    }
+
+    internal async Task CompleteSavedBrews()
+    {
+        if (!Owner.PotionSlots.OfType<PotionModel>().Any(HasBrewCost)) return;
+        using var lease = await InventoryGate.For(Owner).Enter(allowBlocked: true);
+        foreach (var potion in Owner.PotionSlots.OfType<PotionModel>().Where(HasBrewCost).ToList())
+        {
+            try { CompleteBrew(potion); }
+            catch (Exception e) { InventoryGate.Block(Owner, $"Saved brew {potion.Id}: {e}"); }
+        }
+    }
+
+    public override Task AfterPotionProcured(PotionModel potion)
+    {
+        CompleteBrew(potion); // actual procure, not the later reward-completion flag; also used by the shop service
+        return Task.CompletedTask;
+    }
 
     public override Task AfterRewardTaken(Player player, Reward reward)
     {
-        if (player != Owner || BrewTaken || reward is not PotionReward { Potion: { } potion }) return Task.CompletedTask;
-        if (!_pendingBrews.TryGetValue(potion, out var ingredients)) return Task.CompletedTask;
-        TrySpend(ingredients);
-        BrewTaken = true;
-        Flash();
+        if (player == Owner && reward is PotionReward { Potion: { } potion }) CompleteBrew(potion);
         return Task.CompletedTask;
     }
+
 }

@@ -128,6 +128,12 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int StoneBlack { get => _stoneBlack; set { AssertMutable(); _stoneBlack = Math.Max(0, value); } }
 
+    private string _campVisitKey = "", _campCompletedOptions = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string CampVisitKey { get => _campVisitKey; set { AssertMutable(); _campVisitKey = value ?? ""; } }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string CampCompletedOptions { get => _campCompletedOptions; set { AssertMutable(); _campCompletedOptions = value ?? ""; } }
+
     /// <summary>Оставшиеся очки текущего привала.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int CampPoints { get => _campPoints; set { AssertMutable(); _campPoints = Math.Max(0, value); } }
@@ -266,6 +272,13 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     }
 
     // ───── навыки ─────
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _learned = _learned?.ToHashSet();
+        _schoolSpellsThisTurn = _schoolSpellsThisTurn == null ? null : (int[])_schoolSpellsThisTurn.Clone();
+    }
 
     private HashSet<Skill>? _learned;
     public IReadOnlySet<Skill> Learned => _learned ??= SkillTree.Parse(_skills);

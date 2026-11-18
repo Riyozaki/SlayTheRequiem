@@ -10,14 +10,16 @@ using MegaCrit.Sts2.Core.Entities.Potions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.PotionPools;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using SlayTheRequiem.SlayTheRequiemCode.Spells;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 
 // Свитки Чародейской лавки (docs/design/14 §2.3, 07 §3.4): одноразовое заклинание в слоте зелий (пояс).
 // Применение кладёт в руку карту-заклинание за 1 ⚡ и 0 ✦ с Истощением; владение школой не проверяется.
-// Ступень свитка — часть типа (сейв зелья хранит только id), заклинание тоже задаёт класс.
+// Ступень свитка и заклинание задаёт класс. SavedProperties сохраняют идентичность и защиту от повтора переписывания.
 
 /// <summary>Свиток: ступень I–III и заклинание, которое он сотворяет.</summary>
 public abstract class RequiemScroll : CustomPotionModel
@@ -52,14 +54,69 @@ public abstract class RequiemScroll : CustomPotionModel
     public static List<RequiemScroll> All() =>
         ModelDb.AllPotions.OfType<RequiemScroll>().OrderBy(s => s.Id.Entry, StringComparer.Ordinal).ToList();
 
-    /// <summary>Переписать свиток (Чародей, 40): заклинание свитка навсегда в колоду, свиток исчезает.</summary>
-    public static async Task<bool> Rewrite(Player player, RequiemScroll scroll)
+    private bool _rewriteCommitted;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public bool RewriteCommitted { get => _rewriteCommitted; set { AssertMutable(); _rewriteCommitted = value; } }
+
+    private string _rewriteClaimKey = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string RewriteClaimKey { get => _rewriteClaimKey; set { AssertMutable(); _rewriteClaimKey = value ?? ""; } }
+
+    /// <summary>
+    /// Shop OR library event: veto never spends the scroll/price. A durable q: claim is attached BEFORE obtain
+    /// hooks, so a save made during insertion reconciles the existing deck/chest card instead of creating another.
+    /// Payment follows an observed commit; RewriteCommitted precedes payment/discard. A partial paid result is NOT
+    /// retried as a new sale. Nested callers must explicitly borrow their inventory lease.
+    /// </summary>
+    public static async Task<OperationResult> Rewrite(Player player, RequiemScroll scroll, Func<Task>? pay = null,
+        OperationGate.Lease? held = null)
     {
-        var card = player.RunState.CreateCard(scroll.Spell, player);
-        await PotionCmd.Discard(scroll);
-        await CardPileCmd.Add(card, PileType.Deck);
-        return true;
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null) return new(OperationStatus.Busy, scroll.Id.Entry, "Inventory synchronization blocked");
+        if (InventoryGate.For(player).Blocked || !RequiemMode.IsInSystem(player) || player.Creature.IsDead || CombatManager.Instance.IsInProgress
+            || scroll.Owner != player || !player.PotionSlots.Contains(scroll)) return OperationResult.Reject(scroll.Id.Entry, "Stale scroll instance/environment");
+        if (scroll.RewriteCommitted) return new(OperationStatus.Stale, scroll.Id.Entry, "This scroll already committed a card; inspect the previous partial result");
+        var key = InventoryIdentity.PotionKey(scroll);
+        if (scroll.RewriteClaimKey.Length == 0) scroll.RewriteClaimKey = InventoryIdentity.NewClaimKey(player);
+        var claim = scroll.RewriteClaimKey;
+        var beforeGold = player.Gold;
+        bool HasCommit() => player.Deck.Cards.Any(c => CardAcquisition.ClaimKey(c) == claim)
+            || Alchemy.TravelPack.Of(player)?.StoredCards.Any(s => CardAcquisition.ClaimKey(s) == claim) == true;
+        CardModel? card = null;
+        if (!HasCommit())
+        {
+            card = player.RunState.CreateCard(scroll.Spell, player);
+            CardAcquisition.MarkClaim(card, claim);
+            CardAcquisition.BeginAdd(card);
+        }
+        var result = await TransferProtocol.MoveAsync(key,
+            async () => card == null || (await CardPileCmd.Add(card, PileType.Deck)).success,
+            HasCommit,
+            async () =>
+            {
+                using var mutation = InventoryGate.Track(player, lease, $"scroll-finalize:{key}");
+                scroll.RewriteCommitted = true; // BEFORE awaits: a failed finalizer cannot mint another card on retry/load.
+                Exception? error = null;
+                try { if (pay != null) await pay(); }
+                catch (Exception e) { error = e; }
+                try { await PotionCmd.Discard(scroll); }
+                catch (Exception e) { error = error == null ? e : new AggregateException(error, e); }
+                finally { if (card != null) CardAcquisition.CleanUncommitted(card, player); }
+                if (player.PotionSlots.Contains(scroll)) error = new InvalidOperationException("Card committed but scroll discard did not commit", error);
+                if (error != null) throw error;
+                foreach (var actual in player.Deck.Cards.Where(c => CardAcquisition.ClaimKey(c) == claim)) CardAcquisition.MarkClaim(actual, "");
+                mutation.Complete();
+            },
+            () =>
+            {
+                if (card != null) CardAcquisition.CleanUncommitted(card, player);
+                return Task.CompletedTask;
+            });
+        MainFile.Logger.Info($"[CardReward] phase=scroll-rewrite target={key} status={result.Status} {result.Detail}");
+        if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(player, $"Scroll rewrite {key}: {result.Detail}");
+        return result with { Gold = beforeGold - player.Gold };
     }
+
 }
 
 // ───── I (Новичок) ─────

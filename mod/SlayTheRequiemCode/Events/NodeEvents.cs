@@ -1,8 +1,10 @@
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Shops;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Events;
 
@@ -28,7 +30,7 @@ public sealed class LibraryEvent : NodeEvent
     protected override IEnumerable<(string Name, int Value)> Numbers =>
         [("Spells", 3), ("Copy", 30), ("Treatise", 95)];
 
-    private RequiemScroll? Scroll => Owner?.PotionSlots.OfType<RequiemScroll>().FirstOrDefault();
+    private RequiemScroll? Scroll => Owner?.PotionSlots.OfType<RequiemScroll>().FirstOrDefault(s => !s.RewriteCommitted);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions() =>
     [
@@ -44,14 +46,36 @@ public sealed class LibraryEvent : NodeEvent
         Finish("STUDIED");
     }
 
+    private bool _copyInFlight, _copyCompleted;
     private async Task Copy()
     {
-        if (Scroll is { } scroll)
+        if (_copyInFlight || _copyCompleted || Scroll is not { } scroll) return;
+        _copyInFlight = true;
+        var owner = Owner!;
+        var room = owner.RunState.CurrentRoom;
+        try
         {
-            await Pay(N("Copy"));
-            await RequiemScroll.Rewrite(Owner!, scroll);
+            var result = await CopyScroll(owner, scroll, N("Copy"),
+                () => !_copyCompleted && Owner == owner && ReferenceEquals(room, owner.RunState.CurrentRoom));
+            if (!result.Succeeded && MegaCrit.Sts2.Core.Context.LocalContext.IsMe(owner))
+                UI.NRequiemToast.Show(UI.RequiemUi.TipText("OPERATION_RESULT.title", ("Status", UI.RequiemUi.TipText($"OP_STATUS_{result.Status.ToString().ToUpperInvariant()}.title"))));
+            if (result.Changed) { _copyCompleted = true; Finish("COPIED"); }
         }
-        Finish("COPIED");
+        finally { _copyInFlight = false; }
+    }
+
+    internal static async Task<OperationResult> CopyScroll(Player owner, RequiemScroll scroll, int price, Func<bool> available)
+    {
+        using var lease = await InventoryGate.For(owner).Enter();
+        if (lease == null) return new(OperationStatus.Busy, scroll.Id.Entry, "Inventory synchronization blocked");
+        if (price <= 0 || owner.Gold < price || !available()) return OperationResult.Reject(scroll.Id.Entry, "Library offer/price changed");
+        return await RequiemScroll.Rewrite(owner, scroll, async () =>
+        {
+            if (owner.Gold < price || !available()) throw new InvalidOperationException("Library payment changed before commit");
+            var before = owner.Gold;
+            await PlayerCmd.LoseGold(price, owner);
+            if (OperationAccounting.Paid(before, owner.Gold) != price) throw new InvalidOperationException("Library payment amount mismatch");
+        }, lease);
     }
 
     private async Task Treatise()
