@@ -9,5 +9,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../../mod/SlayTheRequiemCode/Core/InvalidatedView.cs" Link="Core/InvalidatedView.cs" />
+    <Compile Include="../../../mod/SlayTheRequiemCode/Core/InvalidatedListView.cs" Link="Core/InvalidatedListView.cs" />
   </ItemGroup>
 </Project>

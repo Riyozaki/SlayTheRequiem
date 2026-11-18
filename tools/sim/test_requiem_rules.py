@@ -1650,7 +1650,7 @@ class M7SfxRules(unittest.TestCase):
         setting = config.split("public static bool RequiemSounds", 1)[1].split("\n    }", 1)[0]
         self.assertIn("get => _requiemSounds;", setting)
         self.assertIn("_requiemSounds = value; UI.RequiemMotion.SettingsChanged();", setting)
-        self.assertIn("if (!Enabled) { player.Stop(); player.QueueFree(); }", sfx)
+        self.assertIn("if (!Enabled) { player.Autoplay = false; player.Stop(); player.QueueFree(); }", sfx)
         sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
         import loc_ui
         self.assertEqual(loc_ui.UI_SETTINGS["rus"]["REQUIEM_SOUNDS.title"], "Звуки Реквиема")

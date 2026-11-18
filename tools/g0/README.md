@@ -44,9 +44,10 @@ python tools/g0/mod_build.py install --bundle .arena/builds/g1-001 --mods-dir "$
 
 ### Стадии build
 
-1. Git SHA, dirty и content hash входов `mod/`, `tools/`, `.github/`, `global.json`: включая неигнорируемые untracked
+1. Git SHA, dirty и content hash входов `mod/`, `tools/`, **`art/`**, `.github/`, `global.json`: включая неигнорируемые untracked
    файлы и сведения об удалённых tracked inputs. Это паспорт рабочей копии, не требование делать commit перед проверкой.
-2. Изолированный `output/project` с source inputs. Игнорируемые локальные `Directory.Build.props`, caches и старые
+2. Изолированный `output/project` с source inputs плюс внешний Compile-link тестов `tools/balance/Trace/Scenario.cs`
+   на правильном относительном пути под output. Игнорируемые локальные `Directory.Build.props`, caches и старые
    артефакты не копируются; file symlinks отвергаются. Внутри checkout output разрешён только под Git-ignore (`.arena/`).
 3. **Полный Release build игрового проекта**, отдельно xUnit проекта `Core/`. Сохраняются `dotnet-info.log`,
    **`build.log` и `build.binlog` со всеми warnings**, `core-tests.log`, `test-results/core.trx`.
@@ -61,7 +62,8 @@ python tools/g0/mod_build.py install --bundle .arena/builds/g1-001 --mods-dir "$
    загружаются через ResourceLoader, JSON/CSV проверяются через FileAccess. Исходники не маскируют отсутствующие ресурсы.
    Отчёт — `pack-check.json`, `game_runtime=false` остаётся false.
 7. Если inputs/DLL не изменились во время export, записывается `SlayTheRequiem.build.json`: toolchain/dependency versions,
-   hashes DLL/PCK/manifest и references/engine, дата экспорта, save schema **3**, shop protocol **1**,
+   hashes DLL/PCK/manifest и references/engine, дата экспорта, save schema **4**, shop protocol **2**,
+   session protocol **5**, creation journal **2**, economy revision **1**,
    список установленных (не «runtime-confirmed») модов. Любая неуспешная стадия не выпускает паспорт.
 
 Godot `ERROR`/`SCRIPT ERROR` фатальны даже при exit code 0. Warnings полного build всё равно требуют отдельного
@@ -92,7 +94,9 @@ str_factory smoke 2
 str_factory full 8
 ```
 
-`str_integrity` содержит **67 source cases**, factory — 216 smoke / 5712 full **на seed**. Они **ещё не запускались**.
+`str_integrity` содержит **92 подготовленных source cases**. Количество factory fixtures зависит от текущего
+каталога/режима/seeds и берётся из фактического `[CardFactorySuite]`, не старого числа в README. Эти native suites
+**ещё не запускались здесь**; наличие деклараций не засчитывается как исполнение.
 Изолированные non-local model fixtures не переключают RunManager на себя и не пишут пользовательские saves,
 но это всё равно первый запуск непроверенного игрового кода: не использовать ценный забег.
 Результаты нужны из `[IntegritySuite]` / `[CardFactorySuite]`, а не из счётчика сценариев в source.
@@ -159,8 +163,10 @@ binlog, saves и локальные абсолютные пути. Full logs/bin
 и упаковочные контрактные проверки выполняются при реализации.
 
 `str_trace on` включает цепочку pool → replacement → model → holder → actual portrait → selection → Add → combat-copy → draw.
-`str_metrics on` собирает до 256 последних кадров/обновлений награды без покадрового лога; `str_metrics status` выдаёт
-число, медиану, p95 и максимум в миллисекундах. Рядом сохранить `str_passport`; до запуска нет измеренного baseline.
+`str_metrics on` собирает до **1024** последних frame/reward/trait samples без покадрового лога; `off` замораживает
+снимок schema 2. Есть allocation/GC/node/memory deltas и hardware/context; `status` сериализует данные и сам аллоцирует.
+После одинакового warm-up использовать `reset`, не опрашивать status в capture loop. Полный протокол —
+[финальная приёмка](../../docs/release/FINAL_ACCEPTANCE.md). До native запуска измеренного engine baseline нет.
 
 При неопределённой операции: значок «Реквием» → повтор сверки квитанций / восстановление безопасной копии.
 `str_recover status|retry|restore` открывает те же пути. Повтор передаёт исходный immutable request/receipt, не выполняет

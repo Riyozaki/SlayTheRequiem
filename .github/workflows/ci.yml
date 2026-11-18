@@ -180,3 +180,12 @@ jobs:
           cat build-contracts.log
           if [ "$result" != 0 ]; then python tools/ci/report_test_failures.py build-contracts.log; fi
           exit "$result"
+      - name: Release archive and final-acceptance record contracts (synthetic only, not accepted gameplay)
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tools/release -v > release-contracts.log 2>&1
+          result=$?
+          cat release-contracts.log
+          if [ "$result" != 0 ]; then python tools/ci/report_test_failures.py release-contracts.log; fi
+          exit "$result"

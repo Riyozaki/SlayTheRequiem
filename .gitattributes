@@ -1,0 +1,5 @@
+# Collected evidence is hash-bound to the producer's exact bytes, including line endings.
+# Do not normalize/reformat it when checking out on another OS.
+docs/review/evidence/stage-three-quality-2026-11-18/** -text
+# The C# producer emits a terminal blank line; retain it rather than invalidate its receipt.
+docs/review/evidence/stage-three-quality-2026-11-18/ci-*/core/core-scenarios.md whitespace=-blank-at-eof

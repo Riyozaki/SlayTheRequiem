@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "scope": "Actual C# Core scenario output; NOT full mod build or native gameplay",
+  "source_commit": "6c1234da4f85db0ab447c1cbddd7c2d5288df0aa",
+  "annotation_parts": 8,
+  "annotation_bundle_sha256": "e0e7f1458fd686f9aac7378abc42393c45ec16db595128a172279eb931b3e97d",
+  "decompressed_bundle_bytes": 611069,
+  "file_sha256": {
+    "core-scenarios.json": "76afa0960095cacc7254c568273cfcc0fe18209e32cc545b2d6abd6a74c32331",
+    "core-scenarios.summary.json": "c585bb576ca9b805fc6456b8fef215741304f0dba64751ca779db66d9f6887b6",
+    "core-scenarios.md": "0ff781ba65cdf42bff63ba84c189a80ad22b86b22a45d238c742236b982a59a2"
+  },
+  "actual_native_runs": 0
+}

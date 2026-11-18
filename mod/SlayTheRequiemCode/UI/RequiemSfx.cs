@@ -93,7 +93,8 @@ public static class RequiemSfx
             Autoplay = true, // AddChildSafely может отложить добавление — звук начнётся, когда узел войдёт в дерево
         };
         player.Finished += player.QueueFree;
-        RequiemMotion.Watch(player, () => { if (!Enabled) { player.Stop(); player.QueueFree(); } });
+        // TreeEntered runs before _Ready/Autoplay. A deferred AddChild must not briefly start a muted sample.
+        RequiemMotion.Watch(player, () => { if (!Enabled) { player.Autoplay = false; player.Stop(); player.QueueFree(); } });
         game.AddChildSafely(player);
     }
 

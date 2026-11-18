@@ -7,7 +7,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Core;
 
 // Deliberately a collection/cache MICROBENCHMARK, not Godot/frame/FPS evidence. Baseline mirrors
 // NEnemyTraitChips at 65af8b3: collect + rank-sort + Aggregate signature on EVERY visible frame.
-// The candidate uses the ACTUAL production InvalidatedView<T> with one cached builder delegate.
+// The candidate uses the ACTUAL production InvalidatedListView<T> with one cached builder delegate and two reusable lists.
 // No game assembly, Godot node, rendered canvas, equipment hook or real DisplayAmount event is executed.
 const int Enemies = 5, Powers = 24, Frames = 12000, Repetitions = 7;
 var cases = new[] { new Workload("idle", 0, 0), new Workload("one-change-per-60-frames", 60, 0),
@@ -50,6 +50,7 @@ var summary = new
     baseline_is_collection_reimplementation = true, tiered_compilation_config = false,
     tiered_env_override = Environment.GetEnvironmentVariable("DOTNET_TieredCompilation") ?? Environment.GetEnvironmentVariable("COMPlus_TieredCompilation"),
     cache_sha256 = Hash("mod/SlayTheRequiemCode/Core/InvalidatedView.cs"),
+    list_cache_sha256 = Hash("mod/SlayTheRequiemCode/Core/InvalidatedListView.cs"),
     benchmark_sha256 = Hash("tools/perf/Views/Program.cs"), trials_sha256 = HashBytes(trialsBytes),
     runtime = RuntimeInformation.FrameworkDescription, os = RuntimeInformation.OSDescription,
     architecture = RuntimeInformation.ProcessArchitecture.ToString(), logical_processors = Environment.ProcessorCount,
@@ -101,7 +102,7 @@ static Sample Run(Workload work, bool optimized, int frames)
         Mutate(actors, work, frame);
         foreach (var actor in actors)
         {
-            if (optimized) actor.Cache.Refresh(actor.Build);
+            if (optimized) actor.Cache.Refresh();
             else
             {
                 builds++;
@@ -109,7 +110,7 @@ static Sample Run(Workload work, bool optimized, int frames)
             }
             // Every frame consumes a view, as _Draw would. No enumeration of the whole power model collection here.
             // Consume only a deterministic, order-independent count so baseline equal-rank ordering is irrelevant.
-            checksum = unchecked(checksum * 31 + (optimized ? actor.Cache.Value.Length : actor.Scratch.Count));
+            checksum = unchecked(checksum * 31 + (optimized ? actor.Cache.Value.Count : actor.Scratch.Count));
         }
     }
     var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
@@ -121,14 +122,12 @@ static Actor[] CreateActors(Action built)
 {
     var actors = Enumerable.Range(0, Enemies).Select(_ => new Actor(Powers)).ToArray();
     foreach (var actor in actors)
-        actor.Build = () =>
+        actor.Cache = new(items =>
         {
             built();
-            var items = new List<Power>();
             foreach (var power in actor.Powers) if (power.Trait && power.Amount != 0) items.Add(power);
             items.Sort(static (a, b) => { var rank = a.Rank.CompareTo(b.Rank); return rank != 0 ? rank : a.Key.CompareTo(b.Key); });
-            return items.ToArray();
-        };
+        });
     return actors;
 }
 
@@ -142,7 +141,7 @@ static void Mutate(Actor[] actors, Workload work, int frame)
         actor.Cache.Invalidate(); // simulated event; not the actual Godot/native subscription adapter
     }
     if (frame > 0 && work.RebindPeriod > 0 && frame % work.RebindPeriod == 0)
-        foreach (var actor in actors) actor.Cache.Reset([]);
+        foreach (var actor in actors) actor.Cache.Reset();
 }
 
 static void CollectBaseline(Actor actor)
@@ -161,9 +160,9 @@ static void VerifyViews(Workload work, int frames)
         Mutate(baseline, work, frame); Mutate(candidate, work, frame);
         for (var i = 0; i < Enemies; i++)
         {
-            CollectBaseline(baseline[i]); candidate[i].Cache.Refresh(candidate[i].Build);
+            CollectBaseline(baseline[i]); candidate[i].Cache.Refresh();
             var before = baseline[i].Scratch; var after = candidate[i].Cache.Value;
-            if (before.Count != after.Length) throw new InvalidOperationException("Stale membership: " + work.Name);
+            if (before.Count != after.Count) throw new InvalidOperationException("Stale membership: " + work.Name);
             foreach (var expected in before)
             {
                 var found = 0;
@@ -171,7 +170,7 @@ static void VerifyViews(Workload work, int frames)
                     if (actual.Key == expected.Key && actual.Rank == expected.Rank && actual.Amount == expected.Amount) found++;
                 if (found != 1) throw new InvalidOperationException("Missing/duplicate/wrong trait: " + work.Name);
             }
-            for (var j = 1; j < after.Length; j++)
+            for (var j = 1; j < after.Count; j++)
                 if (after[j - 1].Rank > after[j].Rank || after[j - 1].Rank == after[j].Rank && after[j - 1].Key >= after[j].Key)
                     throw new InvalidOperationException("Non-deterministic candidate ordering: " + work.Name);
         }
@@ -185,7 +184,6 @@ sealed class Actor(int count)
 {
     internal readonly Power[] Powers = Enumerable.Range(0, count).Select(i => new Power(i)).ToArray();
     internal readonly List<Power> Scratch = new();
-    internal readonly InvalidatedView<Power[]> Cache = new([]);
-    internal Func<Power[]> Build = null!;
+    internal InvalidatedListView<Power> Cache = null!;
     internal int Signature;
 }

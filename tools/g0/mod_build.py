@@ -36,6 +36,7 @@ CREATION_SCHEMA = 2
 ECONOMY_REVISION = 1
 # Core tests link this production scenario outside mod/. It must exist at the same relative path in staging.
 TEST_SUPPORT = ("tools/balance/Trace/Scenario.cs",)
+SOURCE_ROOTS = ("mod", "tools", "art", ".github", "global.json")
 ARTIFACTS = (f"{MOD_ID}.dll", f"{MOD_ID}.pck", f"{MOD_ID}.json")
 PASSPORT = f"{MOD_ID}.build.json"
 
@@ -171,7 +172,7 @@ def require_core_results(results: object) -> None:
 
 def source_inputs() -> list[bytes]:
     names = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--",
-                                     "mod", "tools", "art", ".github", "global.json"], cwd=ROOT).split(b"\0")
+                                     *SOURCE_ROOTS], cwd=ROOT).split(b"\0")
     return sorted(set(n for n in names if n))
 
 

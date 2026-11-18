@@ -104,7 +104,8 @@ public static class RunDiagnostics
         {
             schema = 1, recorded_at_utc = DateTime.UtcNow.ToString("O"), launch = LaunchKind,
             artifacts = Binaries(), game = ReleaseInfoManager.Instance.ReleaseInfo?.Version ?? "unknown",
-            seed = state?.Rng.StringSeed, act = state?.CurrentActIndex, floor = state?.TotalFloor,
+            seed = state?.Rng.StringSeed, run_id = RunSettings.Active?.RunId, act = state?.CurrentActIndex, floor = state?.TotalFloor,
+            network = new { role = Net.RequiemNet.Type.ToString(), local_net_id = Net.RequiemNet.LocalNetId },
             settings_source = RunSettings.SourceName, requested_snapshot = RunSettings.Active?.Encode(),
             effective_settings = effective.Encode(), degraded = PatchReport.Degraded, failed_patches = PatchReport.Failed,
             language = LocManager.Instance.Language,
@@ -112,7 +113,9 @@ public static class RunDiagnostics
                 sounds = RequiemConfig.RequiemSounds, compact_enemy_statuses = RequiemConfig.CompactEnemyStatuses,
                 paper_doll = RequiemConfig.ShowPaperDoll, metrics = TechnicalMetrics.Enabled, balance_trace = CardRewardTrace.Enabled },
             display = new { window = DisplayServer.WindowGetSize().ToString(), viewport = viewport?.GetVisibleRect().Size.ToString(),
-                content_scale_factor = window?.ContentScaleFactor, canvas_scale = viewport?.GetCanvasTransform().Scale.ToString() },
+                content_scale_factor = window?.ContentScaleFactor, canvas_scale = viewport?.GetCanvasTransform().Scale.ToString(),
+                vsync = DisplayServer.WindowGetVsyncMode().ToString(), screen_refresh_hz = DisplayServer.ScreenGetRefreshRate(),
+                max_fps = Godot.Engine.MaxFps },
             players = state?.Players.Select(p => new
             {
                 id = p.NetId, hero = p.Character.Id.Entry, requiem_level = Acts.RequiemLevel.Of(p),

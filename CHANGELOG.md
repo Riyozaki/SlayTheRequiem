@@ -1,9 +1,38 @@
 # Changelog
 
-Формат — по мотивам [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/). Версии появятся с первой сборки в игре;
-до этого — этапы [дорожной карты](docs/ROADMAP.md). Пометка **[к]** — код написан, в игре ещё не собирался.
+Формат — по мотивам [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/). Историческая сборка/PCK и плейтест
+пользователя уже были. Manifest пока `v0.0.1`; новые кандидаты различаются source/input/artifact hashes, не одной строкой
+версии. Историческая пометка **[к]** означает исходники, а не текущий игровой PASS.
 
-## [Unreleased] — Этап 8: полировка
+## [Unreleased] — Б1–Б3, ещё не принятый игровой релиз
+
+### Текущий исходный комплект — 18.11.2026
+
+- Б1: identities/pending/receipts/recovery для карт, наград, вещей, оплат и сейвов; защита от дублей/частичной выдачи,
+  host rules/личные выборы, отдельные полный build/export/load и безопасная установка. Прежний удачный плейтест
+  не выдаётся за проверку новых изменений.
+- Б2: мастер origin/background → бонус 60 золота / обычное зелье / удаление базовой → сводка, Нео отдельно;
+  full/short доступ к Пути, согласованные True/Reborn/Wanderer/Reaper, UI/цикл боя, 21 бой и контрмеры.
+  Девять source recipes и первая синтетическая экономика — кандидаты на native-калибровку, не девять принятых билдов.
+- Б3: 10 сохранённых AI-мастеров → шесть сцен карт и пары фаз Короля/форм Носителя Зверя; 20 map silhouettes/масок,
+  14 camp icons; prompts/reference-chain/редактируемые источники и pixel checks. Согласование оставшегося fallback/прав
+  и осмотр в игре не заменены таблицей наличия ресурсов.
+- Local reduced motion, lifecycle/cancellation для decorations, phase/death/Revive poses, persistent read-only полка;
+  SFX off останавливает свои players, включая deferred Autoplay, и не меняет механику. Actual mix ещё не принят.
+- Enemy chips: invalidation вместо collect/sort/hash каждого кадра; double-buffer builder убирает List/ToArray на
+  каждом изменении. Реальный C# microbenchmark отделён от Godot; schema-2 `str_metrics` и validator требуют frozen
+  native baseline/result на одинаковом hardware/settings. Никаких обещаний FPS без клиента.
+- Детерминированный unaccepted ZIP из проверенного G0 bundle: DLL/PCK/manifest/public passport, frozen source и docs;
+  без игровых DLL/private saves/logs. Финальные 257 требований, immutable candidate binding, hashes evidence, matching
+  run nonce/Host+Client/BaseLib identities, history и непубликующий `seal`.
+- [Установка/совместимость/старые saves](docs/release/INSTALL.md), [release notes/открытые ограничения](docs/release/RELEASE_NOTES.md),
+  [диагностика](docs/release/DIAGNOSTICS.md), [протокол финальной приёмки](docs/release/FINAL_ACCEPTANCE.md).
+
+**Статус:** новый full mod build/PCK/clean install/native matrix здесь BLOCKED отсутствием легальной build/runtime среды.
+Core/source/tool checks — отдельные подтверждения, не выпуск. Ручная/визуальная/двухклиентная приёмка — в самом конце.
+Публикация/merge не выполнялись. Точная идентичность автоматических checkpoints — в [отчёте Б3](docs/review/stage-three-quality-implementation-2026-11-18.md).
+
+### История этапа 8 (счётчики ниже относятся к моменту внесения)
 
 ### Добавлено
 - GitHub Actions: xUnit-тесты `Core/` на .NET 9, Python-зеркало правил, проверка локализации

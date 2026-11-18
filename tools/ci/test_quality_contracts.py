@@ -108,10 +108,13 @@ class QualitySourceContracts(unittest.TestCase):
 
     def test_cache_is_wired_to_native_presence_and_display_amount_events(self):
         code = source("UI/NEnemyTraitChips.cs")
-        for token in ("InvalidatedView<PowerModel[]>", "PowerApplied += Observe", "PowerApplied -= Observe",
+        for token in ("InvalidatedListView<PowerModel>", "PowerApplied += Observe", "PowerApplied -= Observe",
                       "PowerRemoved += Removed", "PowerRemoved -= Removed", "DisplayAmountChanged += Dirty",
-                      "DisplayAmountChanged -= Dirty", "_view.Reset([])", "_view.Refresh(_rebuild)"):
+                      "DisplayAmountChanged -= Dirty", "_view.Reset()", "_view.Refresh()"):
             self.assertIn(token, code)
+        builder = code.split("private void BuildTraits", 1)[1].split("public override void _Process", 1)[0]
+        self.assertNotIn("new List", builder)
+        self.assertNotIn("ToArray", builder)
         process = code.split("public override void _Process(double delta)", 1)[1].split("private void ReportHeight", 1)[0]
         self.assertNotRegex(process, r"\b(?:Collect|Sort|Aggregate|GetHashCode)\s*\(")
         self.assertIn("if (!_paintDirty) return", process)

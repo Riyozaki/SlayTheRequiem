@@ -1,0 +1,3718 @@
+{
+  "cases": [
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Каждый рецепт/ступень, токсины/настои, повторная еда/алкоголь и исключение дара → Доступ/выдача/замена эффекта по таблице; ингредиенты и заряд не уходят дважды",
+      "id": "ALCHEMY-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Load Texture2D для всех итоговых путей моделей/внешних иконок в новом PCK → Не только Exists: тип/размер корректны, путь/fallback залогированы; нет missing_power/beta/шаблона без зарегистрированного исключения",
+      "id": "ART-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Скриншот пользовательского `nope`, ID и runtime-путь → Конкретный сломанный путь установлен и исправлен; не подменён гипотезой «это наверняка card.png»",
+      "id": "ART-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-01",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-02",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-03",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-04",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-05",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-06",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-07",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-08",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-09",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Ironclad-10",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-01",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-02",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-03",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-04",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-05",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-06",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-07",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-08",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-09",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Regent-10",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-01",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-02",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-03",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-04",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-05",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-06",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-07",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-08",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-09",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "balance-observation",
+      "context": {
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real run observation: seed, deck/economy/act data and death/dead-hand/decline reason OR victory. PASS means recorded, not won or calibrated winrate.",
+      "id": "BALANCE-Silent-10",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Ironclad-1",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Ironclad-2",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Ironclad-3",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Regent-1",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Regent-2",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Regent-3",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Silent-1",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Silent-2",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "first-act",
+      "context": {
+        "act_completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Real instrumented first act, distinct origin/background/start bonus; explain every choice and denial. See B2 exit criteria.",
+      "id": "BETA-A1-Silent-3",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "Полный Release build с настоящими reference DLL игры 0.107.1 и закреплённым BaseLib → 0 ошибок; семантически компилируются **все** игровые файлы, в том числе `DefensePowers`; nullable-разбор сохранён отдельно",
+      "id": "BUILD-01",
+      "minimum_clients": 0,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "Независимый экспорт PCK и проверка его состава → Команда экспорта успешна; DLL/JSON/CSV/локализации/изображения соответствуют одному commit; WarnAndContinue не маскирует отсутствие/старость PCK",
+      "id": "BUILD-02",
+      "minimum_clients": 0,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Чистая установка, запуск/выход, новый забег каждого героя → Мод виден, версия определена, `str_patches` без неустановленных обязательных патчей; ресурсы/старт работают",
+      "id": "BUILD-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Контролируемый отказ critical/noncritical патча в тестовой среде → Critical → явный degraded/vanilla fallback без полумодового старта; noncritical → отдельная диагностика и определённое поведение",
+      "id": "BUILD-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Запуск мода с выключенными системами, затем новая сессия с включёнными → Ванильные пулы/поведение восстановлены; выключение не оставляет свои токены в наградах и старые UI-узлы",
+      "id": "BUILD-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "plate_shield",
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-plate_shield",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "plate_voice",
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-plate_voice",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "plate_weapon",
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-plate_weapon",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "regent_elements",
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-regent_elements",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "regent_mana",
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-regent_mana",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "regent_summons",
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-regent_summons",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "silent_hunt",
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-silent_hunt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "silent_poison",
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-silent_poison",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "build-direction",
+      "context": {
+        "direction": "silent_stealth",
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Play actual enabler/payoff/defense/draw/resource loop and resistance answer without mandatory rare. Record obtained access, rough turns and costs; recipe/source fixture alone is insufficient.",
+      "id": "BUILD-DIRECTION-silent_stealth",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Все действия лагеря, отмены вложенных меню, нехватка очков → Цена очков ровно один раз за успешное действие; UI/доступность обновились без повторного входа",
+      "id": "CAMP-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "По очереди все 6 обычных Кличей (включая BattleCry) и 2 временных Клича WorldEater на свободной полке; дождаться cooldown → Карта исчезла только со стола, есть на полке, вернулась ровно в назначенный ход и ровно один раз",
+      "id": "CARD-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Улучшенный/зачарованный Клич; изменённая временная цена → Сохранены постоянные свойства; временные свойства очищаются/сохраняются по штатному контракту, не по случайности пере-создания",
+      "id": "CARD-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Полка занята, сыграть следующий Клич → Он уходит в согласованную обычную стопку; нет дубля на полке",
+      "id": "CARD-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Возврат Клича при полной руке → Штатный fallback игры в сброс; карта не потеряна и не продублирована",
+      "id": "CARD-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Повтор/двойной розыгрыш Клича и redirected конечная стопка → Одна физическая карта, корректное число эффектов; перехват изгнанием/другим хуком не оставляет лишнюю запись",
+      "id": "CARD-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Враг погиб/герой умер/бой завершился до возвращения → Нет возврата в следующий бой, dangling UI или callback в уничтоженный узел",
+      "id": "CARD-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Ручной/авто/повторный розыгрыш атаки, X-атаки и заклинания → Энергия/◆/✦ списаны согласно серии и X-контракту, не дважды; надрыв и прогноз совпадают",
+      "id": "CARD-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Генерация карт свитком/призывом при 9/10/полной руке → Число карт и конечная стопка соответствуют лимиту игры; обещанный эффект не исчезает молча",
+      "id": "CARD-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Любая карта формы или подписная карта Пути при перегрузе +11 → Флаг и карта получены согласованно либо операция безопасно отложена/отменена; никакой «форма есть, карты нет»",
+      "id": "CARD-09",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Вампир: кормление до BloodLord под перегрузом, затем следующий бой/загрузка → BloodLord и `BloodLordStance` согласованы; повторная проверка выдаёт недостающее один раз, не множит карту",
+      "id": "CARD-10",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Замена стартовой карты предыстории, в том числе при Перерождении и отказе Add → Либо старая карта заменена новой, либо старая осталась; размер колоды не уменьшается из-за отказа",
+      "id": "CARD-11",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Все служебные токены меню/навыков/лавок в каталоге и обычных наградах → Видны в своём интерфейсе, не случайно попадают в боевые пулы; боевые карты не отфильтрованы как токены",
+      "id": "CARD-12",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Сущность уже получена, её подтверждённый Знак pending; retry/reload, затем намеренная потеря Знака → Выдаётся точный сохранённый instance, без replay Сущности/Перерождения; завершённый источник не создаёт второй Знак после потери/сундука; legacy без истории не угадывается",
+      "id": "CARD-13",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "2 клиента, разные локальные configs/личные выборы, начало и загрузка → Общие правила от host snapshot; личные происхождения/предыстории каждого сохранены и одинаково видны",
+      "id": "COOP-01",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Все платные/переносные действия у каждого игрока по очереди → Состояние игрока/отряда совпадает на клиентах; чужая локальная UI-ветка не расходует RNG или деньги",
+      "id": "COOP-02",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Повторное/запаздавшее сообщение в старой комнате, очередь/двойной клик → Неверный контекст отвергнут, дубликат не повторяет commit",
+      "id": "COOP-03",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Выход/таймаут союзника во время выбора/дверей/услуги → Определённая отмена/воздержание без вечного ожидания и частичной оплаты",
+      "id": "COOP-04",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Возврат Камня: оба согласны/один против/клиент вышел → Общие Свечи и согласованное решение, корректное лобби загрузки; нет отдельного тайного отката клиента",
+      "id": "COOP-05",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Полный 5-актный прогон и повторная загрузка 2-клиентного save → Ни расхождения состояния, ни зависшего финала/карты; сохранён trace критических действий",
+      "id": "COOP-06",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Late receipt после disposal/новой ошибки; rollback vote/scar/Go и старый async callback после нового run; закрыть Join во время Steam lookup → Старый epoch/round/timeline отвергнут; новая ошибка не очищается receipt; ровно один владелец restore, stale finally не меняет новый run и закрытый экран не выполняет Join",
+      "id": "COOP-07",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "coop-route",
+      "context": {
+        "act_count": 5,
+        "completed": true,
+        "debug_used": false
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Two actual processes, host and peer: full five-act victory, Continue and Memory Stone, final state and hashes agree; no debug skips.",
+      "id": "COOP-FULL-FIVE-ACTS",
+      "minimum_clients": 2,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "act_doors"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-act_doors",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "camp"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-camp",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "card_rewards"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-card_rewards",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "chest"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-chest",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "hero_creation"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-hero_creation",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "hero_sheet"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-hero_sheet",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "window-cycles",
+      "context": {
+        "cycles": 100,
+        "screen": "shop"
+      },
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 real open/close cycles after warm-up in disposable fixtures. Log stable checkpoints, node/subscription/managed/native memory counts after cleanup; no monotonic growth. Synthetic rebind test is not this case.",
+      "id": "CYCLES-shop",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Атака 10, Латы 3; затем vanilla Уязвимость ×1,5 → До Блока: 7 и 12 соответственно; перестановка слушателей не меняет итог",
+      "id": "DAMAGE-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Атака 10, Латы 3, Раскол 5; отдельно Пробитие 2 без Раскола → 12 и 9; отрицательные Латы/Раскол не обходят оговорённые caps",
+      "id": "DAMAGE-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Слабость, иммунитет/сопротивления разных ступеней, 0 и дробный урон → Формулы/округление согласованы; нулевой/иммунный удар не становится положительным из-за Раскола",
+      "id": "DAMAGE-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Бесплотность/другой damage cap, Латы и Раскол в разных сочетаниях → Не превышен cap; порядок защиты утверждён; модификаторы не вызываются с побочным эффектом второй раз",
+      "id": "DAMAGE-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Чистый урон с Латами/Расколом/Блоком/капом → Явно утверждённая семантика; настоящее поведение, описание и tooltip одинаковы",
+      "id": "DAMAGE-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Hand preview, наведение на разные цели, интент врага, настоящий удар → Одинаковый итог в одинаковом состоянии; нет случайного расхода ресурса/заряда на preview",
+      "id": "DAMAGE-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Multihit/AoE/повтор: ◆, яд на оружии, плащ, вампиризм, Уворот → Каждый эффект срабатывает нужное число раз, списания и лечение соответствуют фактическому урону",
+      "id": "DAMAGE-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Статусы в начало/конец хода, включая смерть от тика, реакцию и Хворь → Порядок стабилен, нет двойного тика/реакции; лечение под запретом не проходит обходным способом",
+      "id": "DAMAGE-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Скрытность и Подлый удар при 0 урона/промахе/повторе/нескольких целях → Условия раскрытия и усиления согласованы, отсутствует бесконечный бонус на серию",
+      "id": "DAMAGE-09",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Призыв/замена призыва/жертва; полный стол/нет живой цели → Состояния/лимиты соблюдены, не подвисает ожидание выбора, эффект не переносится в следующий бой",
+      "id": "DAMAGE-10",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "1920x1080",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-100-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "1920x1080",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-100-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "1920x1080",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-100-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "1920x1080",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-100-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "1920x1080",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-125-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "1920x1080",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-125-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "1920x1080",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-125-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "1920x1080",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1080-125-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "2560x1440",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-100-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "2560x1440",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-100-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "2560x1440",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-100-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "2560x1440",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-100-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "2560x1440",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-125-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "2560x1440",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-125-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "2560x1440",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-125-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "2560x1440",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-1440-125-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "1280x720",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-100-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "1280x720",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-100-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "1280x720",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-100-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "1280x720",
+        "ui_scale": 1.0
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-100-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "eng",
+        "resolution": "1280x720",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-125-eng-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "eng",
+        "resolution": "1280x720",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-125-eng-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "gamepad",
+        "language": "rus",
+        "resolution": "1280x720",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-125-rus-gamepad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "display",
+      "context": {
+        "input": "keyboard",
+        "language": "rus",
+        "resolution": "1280x720",
+        "ui_scale": 1.25
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Every new screen, long labels, focused confirm/back, scrolling, hover and resize; combat chips/intents/resources readable. Also inspect 32/64px icons on actual map and camp, not contact sheets.",
+      "id": "DISPLAY-720-125-rus-keyboard",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "ArchmageSimulacrum"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-ArchmageSimulacrum",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "AstrolabeKeeper"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-AstrolabeKeeper",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "AutomatonArchitect"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-AutomatonArchitect",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BarrowReaper"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BarrowReaper",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BarrowWailer"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BarrowWailer",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BlackWanderer"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BlackWanderer",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BloodCourtLord"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BloodCourtLord",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BoilerWyrm"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BoilerWyrm",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "BoneFrostWyrm"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-BoneFrostWyrm",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "ChaliceHierophant"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-ChaliceHierophant",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "ClockworkColossus"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-ClockworkColossus",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "CrimsonCountess"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-CrimsonCountess",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "DeepMasterSmith"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-DeepMasterSmith",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "EchoKnight"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-EchoKnight",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "EclipseWarden"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-EclipseWarden",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "FirstSummoner"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-FirstSummoner",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "GatebreakerEnvoy"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-GatebreakerEnvoy",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "KingUnderBarrow"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-KingUnderBarrow",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "LeyWyrm"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-LeyWyrm",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "NamelessShadow"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-NamelessShadow",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "encounter",
+      "context": {
+        "boss": "WorldEater"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "All cycles/thresholds from combat passport, exact equality and multiple crossed thresholds, preview=hit, counter access/full hand, cap 5, prevented/real death, entourage and victory cleanup. Fixtures allowed; not route credit.",
+      "id": "ENCOUNTER-WorldEater",
+      "minimum_clients": 1,
+      "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Обычный/элита/босс + призванный миньон/объект в каждом типе комнаты → Ресурсы, стойкость, аффиксы, HP и контроль по роли цели, а не непреднамеренно по одной комнате",
+      "id": "ENEMY-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Контроль/казнь главного босса, его свиты и специального объекта → Только утверждённые иммунитеты; объяснение недоступности до розыгрыша",
+      "id": "ENEMY-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Странник: 3 хода без атак, затем одна атака → Защитный бонус/его снятие по решению дизайна; временная стойка не оставляет скрытый +9 постоянных Лат",
+      "id": "ENEMY-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Странник в коопе: атаковал один/оба/никто → Общая фаза и защита синхронны, не зависят от порядка callback разных клиентов",
+      "id": "ENEMY-04",
+      "minimum_clients": 2,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Жнец: записать 12 ходов интентов/призыва → Период 3/4 по утверждённому канону; нет неконтролируемой бесконечной свиты",
+      "id": "ENEMY-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Все 12 боссов вариантов и все 9 супербоссовых/особых боёв: смерть/2-я фаза/призыв → Воспроизводимый победный исход, корректный финал свиты, нет зависших интентов и недоступных объектов",
+      "id": "ENEMY-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Уровни сложности 0/5/10, актовые бонусы, Save/Load/повторное Ensure → HP/урон/аффиксы применены ровно один раз; предельный affix-count конечен",
+      "id": "ENEMY-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "Fresh full build + all Core/content/tool tests on this exact input hash, no skipped/failed suites; CI is not the full mod build.",
+      "id": "FINAL-AUTOMATION",
+      "minimum_clients": 0,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "B1/B2 exit criteria accepted: start/recovery, numeric combat, three viable directions per hero and actual economy observations; smoke is not balance proof.",
+      "id": "FINAL-BETA",
+      "minimum_clients": 0,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "No open P0, no loss/dupe/wrong payment or progression-critical P1; record known noncritical limits and all remaining repros. Unresolved user nope/reward repro cannot be waved away.",
+      "id": "FINAL-BLOCKERS",
+      "minimum_clients": 0,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Clean-install/extract this immutable archive, only BaseLib+mod; all heroes new/Continue; no loose stale DLL/PCK. Record archive SHA and patch report. No source-backed pack-load substitute for runtime.",
+      "id": "FINAL-PACKAGE",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "Owner reviewed retained AI provenance and existing/third-party materials, license/distribution/attribution decisions explicit. No invented license or copied game resources.",
+      "id": "FINAL-RIGHTS",
+      "minimum_clients": 0,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "final-review",
+      "context": {},
+      "evidence": [
+        "review"
+      ],
+      "expected": "Review complete compiler/analyzer warnings with private log hash; no silently suppressed new nullability/API problems.",
+      "id": "FINAL-WARNINGS",
+      "minimum_clients": 0,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Clockwork"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Clockwork",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "DarkPact"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-DarkPact",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Herald"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Herald",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Lich"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Lich",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Righteous"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Righteous",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Vampire"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Vampire",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form",
+      "context": {
+        "form": "Werewolf"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Acquire → play → save/Continue → leave/restore visuals. Check form restrictions, grants and no repeated gifts; Righteous/Clockwork combinations and conflicts explained.",
+      "id": "FORM-Werewolf",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Ironclad-ClockworkDepths-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Ironclad-ClockworkDepths-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Ironclad-FrozenBarrows-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Ironclad-FrozenBarrows-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Regent-ClockworkDepths-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Regent-ClockworkDepths-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Regent-FrozenBarrows-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Regent-FrozenBarrows-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Silent-ClockworkDepths-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "ClockworkDepths",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Silent-ClockworkDepths-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "BloodCourt",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Silent-FrozenBarrows-BloodCourt",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "full-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "FrozenBarrows",
+          "Hive",
+          "StarTower",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed five-act SOLO victory, all transitions/final rewards; no debug skips or console rescue. Smoke, not balance proof.",
+      "id": "FULL-Silent-FrozenBarrows-StarTower",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Full run, все 4 сочетания дверей; short run → Правильные слоты актов, Путь/боссы/финал, доступный маршрут и последняя стоянка",
+      "id": "MAP-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Вентили/ключи/тайный путь/порталы/Тьма, до и после загрузки → Граф, доступность, значки и tooltip одинаково отражают состояние; нет softlock",
+      "id": "MAP-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Портал optional/always/off, отказ и согласие, секретный финал → Награда/переход/завершение ровно один раз; отказ не блокирует основной маршрут",
+      "id": "MAP-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Снимок начала акта → гибель → каждый из трёх шрамов → возврат → Ровно одна Свеча и один шрам, правильная Месть, новая карта и неизменные разрешённые вещи снимка",
+      "id": "MEMORY-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Перезапуск процесса между снимком/гибелью/предложением возврата → Совместимый отпечаток найден по seed/startTime/schema; не перепутан с другим забегом/профилем",
+      "id": "MEMORY-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Повреждённый/чужой snapshot, нет Свечей, режим бесконечных → Безопасное сообщение/отказ; не перезаписан живой run ошибочными данными; правила конца соблюдены",
+      "id": "MEMORY-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Поздняя event cleanup task/ошибка; start MapRoom; wide/специальная карта, second-boss/treasure policy, смена акта → Imprint только после stable successful задачи/старта; private API mismatch не даёт ложный imprint; policy/размеры сохранены, чужой/прошлый act не подставляется",
+      "id": "MEMORY-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Assassin"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Assassin",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Barbarian"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Barbarian",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Battlemage"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Battlemage",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "BlackKnight"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-BlackKnight",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Blightbringer"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Blightbringer",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Champion"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Champion",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "ElementLord"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-ElementLord",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Medium"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Medium",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Monk"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Monk",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "MysticArcher"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-MysticArcher",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Paladin"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Paladin",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Reborn"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Reborn",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "path",
+      "context": {
+        "path": "Reflector"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Legitimate offer/Essence/signature/Sign, pending grant/retry/reload and final effects. Reborn retains skills/treatises/loot and refunds only paid characteristics/mastery. Fixtures allowed, not a played build.",
+      "id": "PATH-Reflector",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "metrics",
+        "baseline_metrics",
+        "review"
+      ],
+      "expected": "4–6 врагов с 10+ чертами, большая рука, раскрытие подсказок → Сохранён baseline frame time/allocations; отдельно измерена доля модового UI, а не заявлено «вроде быстрее»",
+      "id": "PERF-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "100 открытий/закрытий каждого нового экрана (автоматизируемо) → Нет монотонного роста живых узлов/подписок/памяти после стабилизации и очистки",
+      "id": "PERF-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "metrics"
+      ],
+      "expected": "Полный 5-актный run с возвратом Камня и повторным созданием UI → Нет накопления чипов/таймеров/ресурсов; сравнение с начальным стабильным baseline",
+      "id": "PERF-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "metrics",
+        "baseline_metrics",
+        "review"
+      ],
+      "expected": "Профиль до/после invalidation/кэширования → Меньше работы в idle; те же результаты/подсказки; нет устаревших статов после gear/power/save-change",
+      "id": "PERF-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "presentation",
+      "context": {
+        "setting": "all_off"
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Change setting while idle/attack/death/phase/shelf-return/window transition is active; re-enter tree/Continue. Essential text/intents and mechanics unchanged, loops stopped/restored, no multihit/AoE audio pile-up. Listen to actual mix.",
+      "id": "PRESENTATION-all_off",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "presentation",
+      "context": {
+        "setting": "compact_toggle"
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Change setting while idle/attack/death/phase/shelf-return/window transition is active; re-enter tree/Continue. Essential text/intents and mechanics unchanged, loops stopped/restored, no multihit/AoE audio pile-up. Listen to actual mix.",
+      "id": "PRESENTATION-compact_toggle",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "presentation",
+      "context": {
+        "setting": "reduced_motion"
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Change setting while idle/attack/death/phase/shelf-return/window transition is active; re-enter tree/Continue. Essential text/intents and mechanics unchanged, loops stopped/restored, no multihit/AoE audio pile-up. Listen to actual mix.",
+      "id": "PRESENTATION-reduced_motion",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "presentation",
+      "context": {
+        "setting": "sound_off"
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Change setting while idle/attack/death/phase/shelf-return/window transition is active; re-enter tree/Continue. Essential text/intents and mechanics unchanged, loops stopped/restored, no multihit/AoE audio pile-up. Listen to actual mix.",
+      "id": "PRESENTATION-sound_off",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "presentation",
+      "context": {
+        "setting": "vfx_off"
+      },
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Change setting while idle/attack/death/phase/shelf-return/window transition is active; re-enter tree/Continue. Essential text/intents and mechanics unchanged, loops stopped/restored, no multihit/AoE audio pile-up. Listen to actual mix.",
+      "id": "PRESENTATION-vfx_off",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Базовые награды трёх героев с обычным запросом 3; повторить на выбранных seeds → Ровно 3 модели **и** 3 видимые карточки; выбор действительно добавляет выбранную в колоду",
+      "id": "REWARD-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Легально изменённое количество, reroll, альтернативная награда → Количество соответствует входному запросу/модификаторам, а не жёсткому числу 3; окно обновляется без старых узлов",
+      "id": "REWARD-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Каждый собственный боевой тип: factory → reward slot → NCard/tooltip → выбор → Нет исключений/нулевых визуалов/сырая локализация не обрывает построение следующих карт",
+      "id": "REWARD-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Hero/Spell/Path/Pact отдельно и совместно, низкое/высокое владение → Состав и редкость соответствуют утверждённому порядку, только доступные карты, нет дублей при достаточном пуле",
+      "id": "REWARD-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Upgrade исходной карты, специальное число улучшений и другие свойства → Перенос по явной политике; базовый факт upgrade уже должен сохраняться; нет случайной потери/копирования неподходящего эффекта",
+      "id": "REWARD-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Инъекция отказа/исключения на 1-м/2-м/3-м кандидате замены → Атомарный fallback либо явно описанный частичный результат; сообщения правдиво отражают оставшийся список",
+      "id": "REWARD-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Инъекция исключения в `RefreshOptions` и создании 1-й/3-й карточки → Лог содержит seed/floor/hero/source/count/IDs и точное место; нет молчаливых 0/2; доступен безопасный выход",
+      "id": "REWARD-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Опустошённая редкость/малый пул/все кандидаты уже заняты → Проверены allowed-rarity fallback и конечность выбора; количество и явный fallback соответствуют контракту",
+      "id": "REWARD-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Повторить жалобу игрока с его seed/конфигом/логом → Зафиксирована первопричина, затем тот же сценарий PASS; одной статистики проверок недостаточно",
+      "id": "REWARD-09",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Save/Load вне боя с формой/Путём/чарами/сундуком/заказом/навыками → Значимые свойства совпадают; статы не применены дважды, нет потерянных карт/вещей",
+      "id": "SAVE-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Старый save без snapshot настроек; snapshot новой/неподдержанной версии → Документированная миграция/явный отказ, не молчаливая игра под другим балансом",
+      "id": "SAVE-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Новый забег после выхода из другого, тот же/другой seed и герой → Сброшены static-кэши действий/голосований/карты/выбора; не применился старый контекст",
+      "id": "SAVE-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Primary/backup: BOM, escaped ModId, duplicate/unknown nested field, неверный тип, future/old native schema; ошибка MP canonicalize → Raw копии байт-идентичны; отказ не вызывает native repair/rename/перезапись; missing primary может читать backup, corrupt existing primary не заменяется молча старым",
+      "id": "SAVE-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Save внутри passive boon MaxHpChanged, затем Continue; normal sync/revoke; legacy Block без совместимого schema/protocol → Нельзя повторить HP delta/отозвать невыданное; uncertain callback имеет pending/recovery; foreign legacy obstruction явно отклоняется до rewrite, не импортируется навсегда",
+      "id": "SAVE-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Переписать свиток при normal/+11 Грузе и достаточном/недостаточном золоте → Успех: одна карта, один свиток/цена; отказ: ни золото, ни свиток не потеряны",
+      "id": "SHOP-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Полный пояс при варке/покупке; отмена выбора/исключение выдачи → Нет списания ингредиентов/денег за невыданное; не возникает лишней копии",
+      "id": "SHOP-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Заточка/перековка/перенос чар/зачарование карты и вещи → Preview = итог; переносимые свойства по контракту, материалы тратятся после успеха",
+      "id": "SHOP-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Заказ, смена акта/лавки, повторное посещение и загрузка → Заказ/остаток оплаты доставлены один раз, доверие и счётчики согласованы",
+      "id": "SHOP-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Продажа, кража успех/провал, очищение имени/проклятия → Правильная цена/штрафы/лимит за визит; удалён только выбранный предмет/карта",
+      "id": "SHOP-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Наставник: предел очков, родная/чужая школа, урок оружия → Не превышены лимиты; цена и реальные очки совпадают; данные сохранены",
+      "id": "SHOP-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "short-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "Hive",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Ironclad"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed short victory; Path after boss 1 without level-8 gate, final state clean. Not one of the 12 full routes.",
+      "id": "SHORT-Ironclad",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "short-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "Hive",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Regent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed short victory; Path after boss 1 without level-8 gate, final state clean. Not one of the 12 full routes.",
+      "id": "SHORT-Regent",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "short-route",
+      "context": {
+        "acts": [
+          "Foothills",
+          "Hive",
+          "Glory"
+        ],
+        "completed": true,
+        "debug_used": false,
+        "hero": "Silent"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Completed short victory; Path after boss 1 without level-8 gate, final state clean. Not one of the 12 full routes.",
+      "id": "SHORT-Silent",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Новый config, все три героя и все варианты происхождений/предысторий → Выбор показан; результат в статах, школах и колоде соответствует таблице; итог объяснён",
+      "id": "START-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Старый config с Random и явно выбранными вариантами → Существующий выбор не скрыто перезаписан; игрок видит предложение/возможность настройки; понятна причина отсутствия выбора",
+      "id": "START-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Ошибка/прерывание до и после каждого await выдачи (fixture) → Продолжение с последней подтверждённой стадии; происхождение/предыстория/карты/HP не дублируются",
+      "id": "START-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Нео отсутствует: новый профиль/другой старт/Пантеон off → Утверждённый отдельный бонус и обязательные шаги доступны; нет скрытой зависимости от эпохи Нео",
+      "id": "START-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Нео присутствует и выбирается Знамение/другой дар → Знамение/стартовый бонус не выдаются дважды; по отдельности понятны их роль и цена",
+      "id": "START-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Поздняя загрузка сейва с происхождением, но без предыстории → Безопасное восстановление недостающей стадии, а не вечный early return",
+      "id": "START-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Вложить характеристики в несколько школ, затем Перерождение → Очки и эффекты сходятся; ни бесплатного сохранённого mastery, ни стирания владения от трактата/происхождения",
+      "id": "START-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Смена предыстории с HP/картами/зельями/владением → Разовые эффекты остаются/заменяются строго по решению дизайна, а не из-за отсутствия OnRemoved",
+      "id": "START-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Выбор Пути в full/short run после согласованного босса → Появляется вовремя; Сущность/Знак/карта выданы один раз; неподходящие варианты объяснены",
+      "id": "START-09",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Получение обычной карты при excess 0/5/6/10/11; лёгкая/редкая карта → Явно утверждённые пороги и правило «текущий/проектируемый вес»; preview и результат одинаковы",
+      "id": "STORE-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Сложить и достать улучшенную зачарованную карту → Полный roundtrip свойств, одна запись/одна карта",
+      "id": "STORE-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Достать карту при excess +11 → Отказ не удаляет запись сундука; если разрешён специальный обход, это видимое согласованное правило",
+      "id": "STORE-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Достать несколько карт, лимит достигается посреди списка → Успешные перенесены по одному разу, отказанные сохранены; индексы после удаления не сместили чужие записи",
+      "id": "STORE-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "В сундук и назад: предмет с заточкой, чарами, зарядом; Save/Load между операциями → Свойства идентичны исходным; надетое ранее снаряжение не самопроизвольно снято; вес меняется ровно при переносе",
+      "id": "STORE-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Старое class-name содержимое сундука, дубликаты одного типа → Миграция даёт отдельные допустимые экземпляры без выдуманных upgrades; исходный сейв сохранён",
+      "id": "STORE-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Инъекция исключения на удалении/выдаче карты/реликвии → Нет потери или дублирования; транзакция согласована и диагностирована",
+      "id": "STORE-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Снять вещь в рюкзак, затем убрать в сундук; «Выбросить» вне боя → Снятая вещь продолжает весить; в сундуке не весит; подсказка не обещает обратного; удаляются только допустимые карты",
+      "id": "STORE-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "«Пёрышко» и мул: бонус, обувка, вход в лагерь, засада → Пересчёт вместимости/потери согласно правилам; никакого отрицательного веса или случайного повторного применения",
+      "id": "STORE-09",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "1280×720, 1920×1080, 2560×1440; разные UI scale; resize → Основные действия доступны, текст читаем, панели/карты не обрезаны",
+      "id": "UI-01",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Максимум действий лагеря и длинные RU/EN подписи → Категории/страницы/scroll не теряют кнопку; не требуется нечитаемое уменьшение",
+      "id": "UI-02",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Клавиатура/геймпад во всех новых экранах, открыть/назад/подтвердить → Видимый фокус, логичная навигация, доступная отмена; нет фокуса на скрытом vanilla-узле",
+      "id": "UI-03",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "4–6 врагов, много постоянных/временных сил, фаза/ресурсы/tooltip → Интенты и важные изменения видны; «+N» раскрывается без потери важных данных; нет наложения",
+      "id": "UI-04",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Все значки карты 32/64 px и все состояния на реальном пергаменте → Различимы без цвета; тип лавки узнаётся по силуэту; рёбра/легенда не противоречат кликабельности",
+      "id": "UI-05",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Создание/журнал/награда/полка/лавка → Новому игроку понятны статы/школы/вес/эффекты до необратимого действия; служебные состояния доступны без засорения панели",
+      "id": "UI-06",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Кукла на всех героях/формах, слоты оружия и возврат к обычному облику → Правильный хват/слой/масштаб; не остаётся старый спрайт после загрузки/смены формы",
+      "id": "UI-07",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "regression",
+      "context": {},
+      "evidence": [
+        "native_log",
+        "screenshot"
+      ],
+      "expected": "Reduced motion/VFX off/звук off, длинная сессия → Важная информация не исчезает вместе с эффектом; звук не дублируется, значения не зависят от визуальных флагов",
+      "id": "UI-08",
+      "minimum_clients": 1,
+      "source": "docs/review/regression-checklist-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "beast_alpha"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-beast_alpha",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "beast_hunter"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-beast_hunter",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "beast_stalker"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-beast_stalker",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "clockwork_orbs"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-clockwork_orbs",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "herald_three_stances"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-herald_three_stances",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "lich_necromancy"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-lich_necromancy",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    },
+    {
+      "category": "form-variant",
+      "context": {
+        "variant": "vampire_thirst_and_lord"
+      },
+      "evidence": [
+        "native_log"
+      ],
+      "expected": "Exercise the specific form branch/stance/resource and transition in both directions, including death/Revive and Continue; no stale sprite/bonus.",
+      "id": "VARIANT-vampire_thirst_and_lord",
+      "minimum_clients": 1,
+      "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "status": "NOT_RUN"
+    }
+  ],
+  "note": "All NOT_RUN. Manual/visual/two-client acceptance only at the final end. No accepted build or release is declared.",
+  "producer": "final-acceptance-plan-NOT-executed",
+  "requirements_sha256": "e83bc7d68b122cf813148fe7d52a1152c0258fb7024bf2e40e106c37f9faa2f5",
+  "schema": 1
+}

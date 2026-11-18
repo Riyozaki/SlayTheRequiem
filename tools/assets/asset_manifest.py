@@ -96,8 +96,8 @@ PLACEHOLDERS = {
 
 # Общие ассеты интерфейса, которые нужны вне моделей (см. docs/plan/art-ui-animation-spec.md §4).
 UI_ASSETS = [
-    ("images/ui/stamina.png", "◆ иконка ресурса (есть заглушка шаблона)"),
-    ("images/ui/mana.png", "✦ иконка ресурса (есть заглушка шаблона)"),
+    ("images/ui/stamina.png", "◆ собственная ресурсная иконка (редактируемый SVG)"),
+    ("images/ui/mana.png", "✦ собственная ресурсная иконка (редактируемый SVG)"),
     ("images/ui/burden.png", "⚖ иконка груза"),
     ("images/ui/stamina_cost_orb.png", "кружок цены ◆ на карте"),
     ("images/ui/weight_badge.png", "плашка веса карты"),
@@ -320,7 +320,7 @@ def build_rows():
         rows.append({"kind": "ui", "class": "", "id": os.path.splitext(os.path.basename(rel))[0], "group": "UI",
                      "title_rus": note, "title_eng": "", "asset": "ui", "path": rel,
                      "present": "own" if present else "no", "vanilla": "",
-                     "note": "заглушка шаблона — заменить" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
+                     "note": f"source: art/ui/{Path(rel).stem}.svg; native acceptance pending" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
     order = {k: i for i, k in enumerate(list(ASSETS) + ["boss_icon", "ui"])}
     rows.sort(key=lambda r: (order[r["kind"]], r["group"], r["class"]))
     return rows

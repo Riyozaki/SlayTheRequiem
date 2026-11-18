@@ -46,6 +46,15 @@ def source_hash(commit, name):
     return hashlib.sha256(data).hexdigest()
 
 
+def source_hashes(commit):
+    paths = {"cache": "mod/SlayTheRequiemCode/Core/InvalidatedView.cs", "benchmark": "tools/perf/Views/Program.cs"}
+    # Historical single-buffer checkpoints predate this helper; never silently attribute the new code to them.
+    helper = "mod/SlayTheRequiemCode/Core/InvalidatedListView.cs"
+    if subprocess.check_output(["git", "ls-tree", "--name-only", commit, "--", helper], cwd=ROOT).strip():
+        paths["list_cache"] = helper
+    return {key: source_hash(commit, path) for key, path in paths.items()}
+
+
 def verify(annotations, commit, hashes):
     """hashes come from the identified git object, not the annotation's own claims."""
     require(isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit), "Full source commit required")
@@ -63,7 +72,14 @@ def verify(annotations, commit, hashes):
                 and value.get("source_commit") == commit, "Wrong summary/trials identity")
     require(summary.get("producer") == "actual-csharp-cache-microbenchmark"
             and summary.get("scope") == "not-engine-not-FPS-not-native-event-validation", "Wrong producer/scope")
-    require(summary.get("cache_sha256") == hashes["cache"] and summary.get("benchmark_sha256") == hashes["benchmark"], "Source hashes disagree")
+    require(summary.get("cache_sha256") == hashes["cache"] and summary.get("benchmark_sha256") == hashes["benchmark"]
+            and summary.get("list_cache_sha256") == hashes.get("list_cache"), "Source hashes disagree")
+    require(summary.get("baseline_source_commit") == "65af8b30bb19ed86fd7e3a1ae45d319df45958d6"
+            and summary.get("baseline_is_collection_reimplementation") is True, "Wrong baseline/scope")
+    require(summary.get("tiered_compilation_config") is False and summary.get("tiered_env_override") is None,
+            "Unexpected tiered compilation setup")
+    require(all(isinstance(summary.get(key), str) and summary[key].strip() for key in ("runtime", "os", "architecture"))
+            and type(summary.get("logical_processors")) is int and summary["logical_processors"] > 0, "Missing measurement environment")
     require(packet.get("encoding") == "gzip-base64url" and isinstance(packet.get("data"), str)
             and re.fullmatch(r"[A-Za-z0-9_-]+", packet["data"]), "Invalid bounded trials encoding")
     try:
@@ -81,11 +97,13 @@ def verify(annotations, commit, hashes):
         require(type(summary.get(key)) is int and summary[key] == expected, "Wrong measurement configuration")
     cases = summary.get("cases")
     require(isinstance(cases, list) and len(cases) == 4 and all(isinstance(row, dict) for row in cases), "Four case summaries required")
-    require({case.get("workload") for case in cases} == set(WORKLOADS), "Wrong workload set")
+    require(all(isinstance(case.get("workload"), str) for case in cases)
+            and {case["workload"] for case in cases} == set(WORKLOADS), "Wrong workload set")
     for case in cases:
         work = case["workload"]
         observed = [row for row in trials if isinstance(row, dict) and row.get("workload") == work]
-        require(len(observed) == 7 and {row.get("trial") for row in observed} == set(range(7)), "Missing/duplicate trial")
+        require(len(observed) == 7 and all(type(row.get("trial")) is int for row in observed)
+                and {row["trial"] for row in observed} == set(range(7)), "Missing/duplicate trial")
         for row in observed:
             require(type(row["trial"]) is int and row.get("first") == ("baseline" if row["trial"] % 2 == 0 else "candidate"), "Trial order changed")
             for side in ("baseline", "candidate"):
@@ -99,8 +117,10 @@ def verify(annotations, commit, hashes):
         require(case.get("frame_count_checksums_equal") is True and case.get("synthetic_views_equal_each_frame") is True, "Producer correctness precheck did not pass")
         for side in ("baseline", "candidate"):
             expected = case.get(side)
-            require(isinstance(expected, dict), "Missing summary side")
-            require(abs(expected.get("median_ms", -1) - statistics.median(row[side]["Milliseconds"] for row in observed)) <= .000501, "Duration median mismatch")
+            require(isinstance(expected, dict) and type(expected.get("median_ms")) in (float, int)
+                    and math.isfinite(expected["median_ms"]), "Missing/invalid summary side")
+            require(all(type(expected.get(key)) is int and expected[key] >= 0 for key in ("allocated_bytes", "builds", "gc_collections")), "Invalid summary counts")
+            require(abs(expected["median_ms"] - statistics.median(row[side]["Milliseconds"] for row in observed)) <= .000501, "Duration median mismatch")
             require(expected.get("allocated_bytes") == statistics.median(row[side]["AllocatedBytes"] for row in observed), "Allocation median mismatch")
             require(expected.get("builds") == observed[0][side]["Builds"], "Build summary mismatch")
             require(expected.get("gc_collections") == sum(row[side][key] for row in observed for key in ("Gen0", "Gen1", "Gen2")), "GC summary mismatch")
@@ -119,8 +139,7 @@ def main():
     try:
         if not re.fullmatch(r"[0-9a-f]{40}", args.commit):
             raise ValueError("Use a full lowercase source SHA")
-        hashes = {key: source_hash(args.commit, path) for key, path in
-                  (("cache", "mod/SlayTheRequiemCode/Core/InvalidatedView.cs"), ("benchmark", "tools/perf/Views/Program.cs"))}
+        hashes = source_hashes(args.commit)
         summary, raw, receipt = verify(parse(args.annotations.read_bytes()), args.commit, hashes)
         if args.out.exists():
             raise ValueError("Use a fresh output directory")

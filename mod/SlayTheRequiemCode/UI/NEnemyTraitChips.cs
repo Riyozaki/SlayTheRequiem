@@ -25,27 +25,26 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
     private Creature? _creature;
     private Control? _anchor;
     private float _top;
-    private readonly InvalidatedView<PowerModel[]> _view = new([]);
+    private readonly InvalidatedListView<PowerModel> _view;
     private readonly HashSet<PowerModel> _observed = new(ReferenceEqualityComparer.Instance);
-    private readonly Func<PowerModel[]> _rebuild;
     private bool _listening, _paintDirty = true;
     private float _appear, _reportedHeight = -1;
     public event Action<float>? HeightChanged;
     public float ReportedHeight => Math.Max(0, _reportedHeight);
 
-    public NEnemyTraitChips() { Name = NodeName; _rebuild = BuildTraits; }
+    public NEnemyTraitChips() { Name = NodeName; _view = new(BuildTraits); }
 
     public void Bind(Creature creature, Control anchor, float top)
     {
         Unsubscribe();
         _creature = creature; _anchor = anchor; _top = top;
-        _view.Reset([]); _paintDirty = true; ReportHeight(0);
+        _view.Reset(); _paintDirty = true; ReportHeight(0);
         _appear = RequiemMotion.Enabled ? 0f : 1f;
         Subscribe();
     }
 
     public override void _EnterTree() { base._EnterTree(); Subscribe(); }
-    public override void _ExitTree() { Unsubscribe(); _view.Reset([]); base._ExitTree(); }
+    public override void _ExitTree() { Unsubscribe(); _view.Reset(); base._ExitTree(); }
 
     private void Subscribe()
     {
@@ -84,10 +83,9 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
 
     private void Dirty() { _view.Invalidate(); _paintDirty = true; }
 
-    private PowerModel[] BuildTraits()
+    private void BuildTraits(List<PowerModel> traits)
     {
         var started = Debugging.TechnicalMetrics.Start();
-        var traits = new List<PowerModel>();
         if (_creature != null)
             foreach (var power in _creature.Powers)
                 if (EnemyTraits.IsTrait(power) && power.Amount != 0) traits.Add(power);
@@ -97,23 +95,21 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
             var rank = Rank(a).CompareTo(Rank(b));
             return rank != 0 ? rank : string.Compare(a.Id.Entry, b.Id.Entry, StringComparison.Ordinal);
         });
-        var result = traits.ToArray();
         Debugging.TechnicalMetrics.TraitRebuilt(started);
-        return result;
     }
 
     public override void _Process(double delta)
     {
         var show = RunSettings.EnableRequiemSystems && RequiemConfig.CompactEnemyStatuses && _creature is { IsAlive: true }
                    && _anchor != null && IsInstanceValid(_anchor);
-        if (show) _view.Refresh(_rebuild);
-        show = show && _view.Value.Length > 0;
+        if (show) _view.Refresh();
+        show = show && _view.Value.Count > 0;
         if (Visible != show) { Visible = show; _paintDirty = true; }
         if (!show) { ReportHeight(0); return; }
 
         var width = _anchor!.Size.X;
         var fit = Math.Max(1, (int)((width + Gap) / (Icon + Gap)));
-        var size = new Vector2(width, RowHeight * Math.Max(1, (int)Math.Ceiling(_view.Value.Length / (double)fit)));
+        var size = new Vector2(width, RowHeight * Math.Max(1, (int)Math.Ceiling(_view.Value.Count / (double)fit)));
         if (Size != size) { Size = size; _paintDirty = true; }
         ReportHeight(size.Y);
         var pos = new Vector2(0, _anchor.Size.Y + _top);
@@ -146,7 +142,7 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
         var traits = _view.Value;
         var fit = Math.Max(1, (int)((Size.X + Gap) / (Icon + Gap)));
         var alpha = Mathf.Ease(_appear, 0.4f);
-        for (var i = 0; i < traits.Length; i++)
+        for (var i = 0; i < traits.Count; i++)
         {
             var p = traits[i];
             var x = i % fit * (Icon + Gap); var y = i / fit * RowHeight;
@@ -188,7 +184,7 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
 
     protected override IEnumerable<IHoverTip> Tips()
     {
-        _view.Refresh(_rebuild); // a hover between model mutation and _Process must not show the old amount/set
+        _view.Refresh(); // a hover between model mutation and _Process must not show the old amount/set
         var tips = new List<IHoverTip>();
         var reveal = EnemyTraits.Reveal;
         EnemyTraits.Reveal = true;
