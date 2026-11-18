@@ -153,8 +153,7 @@ public abstract class AbyssGift : BoonRelic, IAbyssalItem
     protected int Roll(int salt, int n) =>
         n <= 0 ? 0 : (int)(ShopRules.Fnv1a((Owner.RunState.Rng.StringSeed ?? string.Empty) + "|" + Prince, Owner.RunState.TotalFloor * 131 + salt) % (uint)n);
 
-    protected bool IsElite(ICombatState? state) => EnemySetup.RankOf(state) == EnemyRank.Elite;
-    protected bool IsBoss(ICombatState? state) => EnemySetup.RankOf(state) == EnemyRank.Boss;
+    protected bool IsElite(Creature creature) => EnemySetup.RoleOf(creature) == EnemyRole.Elite;
 }
 
 // ───────────── Повелитель Мора ─────────────
@@ -354,7 +353,7 @@ public sealed class GiftOfWebWeaver : AbyssGift
     public override async Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
     {
         if (VowDone || power is not VanillaPoison || amount <= 0 || applier != Owner.Creature || power.Owner.Monster == null) return;
-        if (!IsElite(power.Owner.CombatState) || !_poisonedElites.Add(power.Owner)) return;
+        if (!IsElite(power.Owner) || !_poisonedElites.Add(power.Owner)) return;
         await AdvanceVow();
     }
 
@@ -404,7 +403,7 @@ public sealed class GiftOfGateBreaker : AbyssGift, IPermanentApostasy
     public override async Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer, DamageResult result, ValueProp props, Creature target, CardModel? cardSource)
     {
         if (VowDone || !result.WasTargetKilled || dealer != Owner.Creature) return;
-        if (EnemySetup.IsAbyss(target) && IsElite(target.CombatState)) await AdvanceVow();
+        if (EnemySetup.IsAbyss(target) && IsElite(target)) await AdvanceVow();
     }
 }
 

@@ -18,7 +18,7 @@ public static class StaminaCosts
     {
         if (card is IRequiemCard custom) return Math.Max(0, custom.StaminaCost);
         if (RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var entry))
-            return entry.IsX ? Math.Max(0, play?.Resources.EnergyValue ?? 0) : entry.Stamina;
+            return entry.IsX ? Math.Max(0, play?.Resources.EnergyValue ?? OwnerOf(card)?.PlayerCombatState?.Energy ?? 0) : entry.Stamina;
         return 1;
     }
 

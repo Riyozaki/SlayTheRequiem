@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
@@ -13,7 +15,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Powers;
 
 /// <summary>
 /// Латы N: каждый удар атакой по носителю слабее на N (не ниже 1). Постоянны в бою.
-/// Применяются последним шагом расчёта урона (<see cref="PlatingFinalStep"/>): после Силы, Уязвимости и сопротивлений.
+/// Применяются после Силы, Уязвимости и сопротивлений, перед cap и Блоком (<see cref="PlatingFinalStep"/>).
 /// </summary>
 public sealed class PlatingPower : RequiemPower
 {
@@ -54,43 +56,70 @@ public sealed class SunderPower : RequiemPower
 }
 
 /// <summary>
-/// Латы и Раскол — последний шаг расчёта урона (02 §4.1: «каждый входящий удар уменьшается на значение Лат»).
-/// Раньше они были множителями в общей мультипликативной фазе, и итог зависел от порядка слушателей: 10 урона,
-/// Латы 3, Уязвимость — 10,5 или 12. Теперь сначала все множители игры и мода, потом Латы и Раскол, всегда одинаково.
-/// Постфикс на внутренний расчёт игры, поэтому одинаково работает и для удара, и для превью на карте и в намерении.
+/// Insert armor AFTER the native multiplicative loop and BEFORE its cap loop. Both the hit and every target
+/// preview call this same native method. Never re-enumerate or re-invoke ModifyDamageCap to guess whether a
+/// cap had fired: listeners may be stateful and a second invocation is not the native contract.
 /// </summary>
+[CriticalPatch]
 [HarmonyPatch(typeof(Hook), "ModifyDamageInternal")]
 public static class PlatingFinalStep
 {
-    [HarmonyPostfix]
-    public static void Postfix(Creature? target, Creature? dealer, ValueProp props, CardModel? cardSource,
-        ModifyDamageHookType modifyDamageHookType, ref decimal __result, ref List<AbstractModel> modifiers)
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
     {
-        try
+        var code = instructions.ToList();
+        var flag = AccessTools.Method(typeof(Enum), nameof(Enum.HasFlag), [typeof(Enum)]);
+        var cap = (int)ModifyDamageHookType.Cap;
+        // v0.107.1: ldarg 7 / box flags / ldc.i4.8 / box flags / call Enum.HasFlag.
+        // Requiring this exact semantic anchor is intentional: IL drift is a critical startup failure, NOT
+        // an excuse to quietly fall back to order-dependent armor or to patch a different decimal local.
+        var anchors = Enumerable.Range(4, Math.Max(0, code.Count - 4)).Where(i => code[i].Calls(flag)
+            && code[i - 1].opcode == OpCodes.Box && Equals(code[i - 1].operand, typeof(ModifyDamageHookType))
+            && code[i - 2].LoadsConstant(cap)
+            && code[i - 3].opcode == OpCodes.Box && Equals(code[i - 3].operand, typeof(ModifyDamageHookType))
+            && ArgumentIndex(code[i - 4]) == 7).Select(i => i - 4).ToList();
+        var locals = __originalMethod.GetMethodBody()?.LocalVariables;
+        if (anchors.Count != 1 || locals == null || locals.Count < 2 || locals[0].LocalType != typeof(decimal)
+            || locals[1].LocalType != typeof(List<AbstractModel>))
+            throw new InvalidOperationException("Damage IL changed: expected one cap-flag boundary and decimal/list locals 0/1");
+        var index = anchors[0];
+        var first = new CodeInstruction(OpCodes.Ldloc_0);
+        first.labels.AddRange(code[index].labels); code[index].labels.Clear();
+        first.blocks.AddRange(code[index].blocks); code[index].blocks.Clear();
+        code.InsertRange(index, new CodeInstruction[]
         {
-            if (!modifyDamageHookType.HasFlag(ModifyDamageHookType.Multiplicative)) return;
-            if (target == null || __result <= 0 || !props.IsPoweredAttack()) return;
-            var plating = target.GetPower<PlatingPower>();
-            var sunder = target.GetPower<SunderPower>();
-            if (plating == null && sunder == null) return;
-            var trueDamage = DamageTyping.Resolve(props, dealer, cardSource) == DamageType.True;
-            var platingAmount = trueDamage ? 0 : plating?.Amount ?? 0;
-            var sunderAmount = sunder?.Amount ?? 0;
-            var damage = (int)__result;
-            var reduced = CombatMath.ApplyPlating(damage, platingAmount, PlatingPower.PierceOf(dealer), sunderAmount);
-            if (reduced == damage) return;
-            // Потолок урона (Бесплотность и т. п.) Раскол не пробивает: прибавку не даём, если удар уже срезан потолком.
-            // A ref Harmony parameter cannot be captured by a lambda (CS1628). Read it once; the formula and
-            // the cap comparison are deliberately unchanged by this compilation-only repair.
-            var incoming = __result;
-            if (reduced > damage && modifiers.Any(m => m.ModifyDamageCap(target, props, dealer, cardSource) <= incoming)) return;
-            __result = reduced;
-            if (plating != null && platingAmount != 0 && !modifiers.Contains(plating)) modifiers.Add(plating);
-            if (sunder != null && sunderAmount != 0 && !modifiers.Contains(sunder)) modifiers.Add(sunder);
-        }
-        catch (Exception e)
-        {
-            MainFile.Logger.Warn($"Латы/Раскол: расчёт пропущен ({e.Message})");
-        }
+            first, new(OpCodes.Ldarg_2), new(OpCodes.Ldarg_3), new(OpCodes.Ldarg_S, (byte)5),
+            new(OpCodes.Ldarg_S, (byte)6), new(OpCodes.Ldarg_S, (byte)7), new(OpCodes.Ldloc_1),
+            new(OpCodes.Call, AccessTools.Method(typeof(PlatingFinalStep), nameof(BeforeCap))), new(OpCodes.Stloc_0),
+        });
+        return code;
+    }
+
+    private static int ArgumentIndex(CodeInstruction code)
+    {
+        if (code.opcode != OpCodes.Ldarg && code.opcode != OpCodes.Ldarg_S) return -1;
+        return code.operand is ParameterInfo p ? p.Position : Convert.ToInt32(code.operand);
+    }
+
+    internal static decimal BeforeCap(decimal damage, Creature? target, Creature? dealer, ValueProp props,
+        CardModel? cardSource, ModifyDamageHookType hookType, List<AbstractModel> modifiers)
+    {
+        if (!Config.RunSettings.EnableRequiemSystems || !hookType.HasFlag(ModifyDamageHookType.Multiplicative)
+            || target == null || damage <= 0m || !props.IsPoweredAttack()) return damage;
+        var plating = target.GetPower<PlatingPower>();
+        var sunder = target.GetPower<SunderPower>();
+        var guard = target.GetPower<WandererGuardPower>();
+        var curse = target.GetPower<CursedCryPower>();
+        var temporary = target.GetPower<TemporaryPlatingPower>();
+        var platingAmount = (plating?.Amount ?? 0) + (temporary?.Amount ?? 0) + (guard == null ? 0 : WandererGuardPower.PlatingBonus) - (curse?.Amount ?? 0);
+        var reduced = CombatMath.ArmorStage(damage, true, DamageTyping.Resolve(props, dealer, cardSource),
+            platingAmount, PlatingPower.PierceOf(dealer), sunder?.Amount ?? 0);
+        if (reduced == damage) return damage;
+        if (plating != null && plating.Amount != 0 && !modifiers.Contains(plating)) modifiers.Add(plating);
+        if (sunder != null && sunder.Amount != 0 && !modifiers.Contains(sunder)) modifiers.Add(sunder);
+        if (guard != null && !modifiers.Contains(guard)) modifiers.Add(guard);
+        if (curse != null && !modifiers.Contains(curse)) modifiers.Add(curse);
+        if (temporary != null && !modifiers.Contains(temporary)) modifiers.Add(temporary);
+        return reduced;
     }
 }

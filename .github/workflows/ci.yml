@@ -78,6 +78,8 @@ jobs:
         run: python tools/ci/check_loc.py
       - name: Content checker regressions (including dynamic creation localization)
         run: python -m unittest discover -s tools/ci -v
+      - name: Combat move typing, individual roles and declared entourage (source contracts)
+        run: python tools/ci/check_combat.py
       - name: C# syntax (all mod files)
         run: python tools/ci/check_csharp_syntax.py
       - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)

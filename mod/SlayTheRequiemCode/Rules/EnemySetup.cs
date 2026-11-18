@@ -3,7 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Rooms;
+using MegaCrit.Sts2.Core.Models;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
@@ -16,46 +16,95 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 /// </summary>
 public static class EnemySetup
 {
-    private static readonly ConditionalWeakTable<Creature, object> Done = new();
-
-    public static EnemyRank RankOf(ICombatState? combatState) => combatState?.Encounter?.RoomType switch
+    private sealed class Setup
     {
-        RoomType.Boss => EnemyRank.Boss,
-        RoomType.Elite => EnemyRank.Elite,
-        _ => EnemyRank.Normal,
-    };
+        internal bool Started;
+        internal readonly TaskCompletionSource Completion = new();
+    }
+    private static readonly ConditionalWeakTable<Creature, Setup> Done = new();
+    private sealed record SummonSource(Type Type, SummonSource? Previous) : IDisposable
+    {
+        public void Dispose() => Summoning.Value = Previous;
+    }
+    private static readonly AsyncLocal<SummonSource?> Summoning = new();
+    private static readonly ConditionalWeakTable<Creature, StrongBox<EnemyRole>> DeclaredSummons = new();
+
+    internal static IDisposable SummonScope(Type type)
+    {
+        var scope = new SummonSource(type, Summoning.Value);
+        Summoning.Value = scope;
+        return scope;
+    }
+
+    private static EnemyRole DeclaredRole(MonsterModel? monster) => monster is IEnemyRoleSource own ? own.CombatRole
+        : monster == null ? EnemyRole.Normal : RequiemData.MonsterEntry(monster.GetType().Name).Role;
+
+    public static EnemyRole RoleOf(Creature creature)
+    {
+        var declared = DeclaredRole(creature.Monster);
+        if (declared != EnemyRole.Prop && Summoning.Value?.Type == creature.Monster?.GetType())
+            DeclaredSummons.GetValue(creature, _ => new StrongBox<EnemyRole>(EnemyRole.Minion));
+        if (DeclaredSummons.TryGetValue(creature, out var summoned)) declared = summoned.Value;
+        return EnemyRoleRules.Resolve(declared, creature.IsSecondaryEnemy);
+    }
+
+    public static EnemyRank RankOf(Creature creature) => EnemyRoleRules.Rank(RoleOf(creature));
 
     public static async Task EnsureAll(ICombatState combatState)
     {
         foreach (var enemy in combatState.Enemies.ToList()) await Ensure(enemy, combatState);
     }
 
-    public static async Task Ensure(Creature creature, ICombatState? combatState)
+    public static Task Ensure(Creature creature, ICombatState? combatState)
     {
-        if (!RunSettings.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return;
-        if (Done.TryGetValue(creature, out _)) return;
-        Done.Add(creature, new object());
+        if (!RunSettings.EnableRequiemSystems || creature.Monster == null || !creature.IsAlive || !creature.IsEnemy) return Task.CompletedTask;
+        var setup = Done.GetValue(creature, _ => new Setup());
+        if (setup.Started) return setup.Completion.Task; // an in-flight/faulted setup is not a completed setup
+        setup.Started = true;
+        _ = Finish();
+        return setup.Completion.Task;
 
+        async Task Finish()
+        {
+            try { await Apply(creature, combatState); setup.Completion.TrySetResult(); }
+            catch (Exception e)
+            {
+                MainFile.Logger.Error($"Enemy setup interrupted for {creature.Monster.Id}; no partial-success retry: {e}");
+                setup.Completion.TrySetException(e);
+            }
+        }
+    }
+
+    private static async Task Apply(Creature creature, ICombatState? combatState)
+    {
         var ctx = new ThrowingPlayerChoiceContext();
-        var rank = RankOf(combatState ?? creature.CombatState);
+        var role = RoleOf(creature);
+        var rank = EnemyRoleRules.Rank(role);
         var entry = RequiemData.MonsterEntry(creature.Monster.GetType().Name);
 
         var state0 = combatState ?? creature.CombatState;
         var run0 = state0?.RunState;
+        // An explicit leader, not a boss ROOM, makes initial entourage secondary. Standalone rift
+        // creatures stay primary; a late MinionPower from CreatureCmd.Add cannot change their setup role.
+        if (role is EnemyRole.Minion or EnemyRole.Prop && !creature.IsSecondaryEnemy
+            && state0?.Encounter?.AllPossibleMonsters.Any(m => DeclaredRole(m) is EnemyRole.Boss or EnemyRole.Elite) == true)
+            await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.MinionPower>(ctx, creature, 1, null, null, silent: true);
         var hpMultiplier = (decimal)RunSettings.EnemyHpPercent / 100m
                            * RequiemLevelRules.EnemyHpMultiplier(Acts.RequiemLevel.Of(run0))
                            * (100 + ActHpBonusPercent(run0, rank)) / 100m;
-        if (hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)
+        if (EnemyRoleRules.ScalesHp(role) && hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)
             await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(creature.MaxHp, hpMultiplier));
 
-        await PowerCmd.Apply<EnemyStaminaPower>(ctx, creature, EnemyRules.StaminaPool(rank), null, null, silent: true);
-        if (EnemyRules.IsCaster(entry.AttackType))
-            await PowerCmd.Apply<EnemyManaPower>(ctx, creature, EnemyRules.CasterManaPool(rank), null, null, silent: true);
-
-        if (rank == EnemyRank.Boss)
-            await PowerCmd.Apply<UnshakeablePower>(ctx, creature, EnemyRules.BreakThreshold(creature.MaxHp), null, null, silent: true);
-        else
-            await PowerCmd.Apply<PoisePower>(ctx, creature, EnemyRules.Poise(rank, creature.MaxHp) + entry.PoiseBonus, null, null, silent: true);
+        if (EnemyRoleRules.UsesResources(role))
+        {
+            await PowerCmd.Apply<EnemyStaminaPower>(ctx, creature, EnemyRules.StaminaPool(rank), null, null, silent: true);
+            if (EnemyRules.IsCaster(entry.AttackType))
+                await PowerCmd.Apply<EnemyManaPower>(ctx, creature, EnemyRules.CasterManaPool(rank), null, null, silent: true);
+            if (rank == EnemyRank.Boss)
+                await PowerCmd.Apply<UnshakeablePower>(ctx, creature, EnemyRules.BreakThreshold(creature.MaxHp), null, null, silent: true);
+            else
+                await PowerCmd.Apply<PoisePower>(ctx, creature, EnemyRules.Poise(rank, creature.MaxHp) + entry.PoiseBonus, null, null, silent: true);
+        }
 
         if (entry.Plating > 0)
             await PowerCmd.Apply<PlatingPower>(ctx, creature, entry.Plating, null, null, silent: true);
@@ -73,7 +122,7 @@ public static class EnemySetup
             }
         }
 
-        if (run0 is { } run)
+        if (EnemyRoleRules.RollsAffixes(role) && run0 is { } run)
         {
             var kind = Acts.ActKinds.Current(run);
             var fullRun = Acts.ActKinds.IsFullRun(run);

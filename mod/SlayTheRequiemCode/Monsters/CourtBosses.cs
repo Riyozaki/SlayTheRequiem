@@ -19,6 +19,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// </summary>
 public sealed class CrimsonCountess : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<BloodThrall>()];
     public const int BaseHp = 420;
     public const int RoseDamage = 9;
     public const int RoseHits = 2;
@@ -159,6 +160,7 @@ public sealed class EclipseWarden : ActBossMonster
 /// </summary>
 public sealed class ChaliceHierophant : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<ChaliceAcolyte>()];
     public const int BaseHp = 400;
     public const int BeamDamage = 18;
     public const int BeamBleed = 2;
@@ -249,7 +251,6 @@ public sealed class CrimsonCountessBoss() : ActBossEncounter
 {
     public override string IconKey => "crimson_countess";
     protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<CrimsonCountess>()];
-    public override IEnumerable<MonsterModel> AllPossibleMonsters => [ModelDb.Monster<CrimsonCountess>(), ModelDb.Monster<BloodThrall>()];
 }
 
 public sealed class EclipseWardenBoss() : ActBossEncounter

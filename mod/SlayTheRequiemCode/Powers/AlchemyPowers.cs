@@ -233,27 +233,25 @@ public sealed class ConfusionPower : RequiemPower
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    private int _redirected;
-
-    /// <summary>Урон по героям (после Блока) не доходит до ♥ — копится и уходит в другого врага после атаки.</summary>
-    public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    /// <summary>Per-hit redirection. Preview is pure; the actual hit commits before HP loss, even for a
+    /// scripted explosion without an AttackCommand. Never keep a shared AfterAttack accumulator.</summary>
+    internal decimal MitigateHit(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (dealer != Owner || !target.IsPlayer || amount <= 0 || !props.IsCardOrMonsterMove()) return amount;
-        _redirected += (int)amount;
+        if (dealer != Owner || !target.IsPlayer || amount < 1m || !props.IsCardOrMonsterMove()) return amount;
+        if (!HitDefensePipeline.WillCommit) return 0m;
+        var owner = Owner;
+        var type = DamageTyping.Resolve(props, dealer, cardSource);
+        HitDefensePipeline.Defer(async () =>
+        {
+            if (owner.CombatState is not { } state) return;
+            var others = state.Enemies.Where(e => e.IsAlive && e != owner).ToList();
+            var victim = others.Count > 0 ? state.RunState.Rng.CombatTargets.NextItem(others) : owner;
+            if (victim is not { IsAlive: true }) return;
+            Flash();
+            using var element = DamageTyping.As(type);
+            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), victim, decimal.Floor(amount), ValueProp.Unpowered, null, null);
+        }, () => { });
         return 0m;
-    }
-
-    public override async Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
-    {
-        if (command.Attacker != Owner || Owner.CombatState == null) return;
-        var damage = _redirected;
-        _redirected = 0;
-        if (damage <= 0) return;
-        var others = Owner.CombatState.Enemies.Where(e => e.IsAlive && e != Owner).ToList();
-        var victim = others.Count > 0 ? Owner.CombatState.RunState.Rng.CombatTargets.NextItem(others) : Owner;
-        if (victim == null) return;
-        Flash();
-        await CreatureCmd.Damage(choiceContext, victim, damage, ValueProp.Unpowered, Owner, null);
     }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)

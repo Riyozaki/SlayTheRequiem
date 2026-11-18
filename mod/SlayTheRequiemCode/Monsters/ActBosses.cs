@@ -23,6 +23,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// </summary>
 public abstract class ActBossMonster : OwnArtMonster
 {
+    public override EnemyRole CombatRole => EnemyRole.Boss;
+
     public const string PhaseTwoArt = "p2";
 
     /// <summary>Порог фазы 2 в % ♥; 0 — у босса одна фаза (картинки меняет сам, напр. стойки).</summary>
@@ -103,6 +105,8 @@ public abstract class ActBossMonster : OwnArtMonster
 /// <summary>Свита боссов со своей картинкой.</summary>
 public abstract class OwnArtMinion : OwnArtMonster
 {
+    public override EnemyRole CombatRole => EnemyRole.Minion;
+
     protected override MonsterModel LookOf => ModelDb.Monster<MegaCrit.Sts2.Core.Models.Monsters.TheLost>();
 }
 

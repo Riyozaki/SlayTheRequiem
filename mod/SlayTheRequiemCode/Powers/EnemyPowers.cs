@@ -65,12 +65,6 @@ public abstract class EnemyResourcePower : RequiemPower
         }
         return Task.CompletedTask;
     }
-
-    protected static (int hits, int total) Measure(AttackCommand command)
-    {
-        var results = command.Results.ToList();
-        return (results.Count, results.Sum(hit => hit.Sum(r => r.TotalDamage)));
-    }
 }
 
 /// <summary>
@@ -93,16 +87,7 @@ public sealed class EnemyStaminaPower : EnemyResourcePower
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (dealer != Owner || !props.IsPoweredAttack() || OwnerIsCaster) return 1m;
-        return StaminaRules.DamageMultiplier(State);
-    }
-
-    public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
-    {
-        if (command.Attacker != Owner || OwnerIsCaster) return Task.CompletedTask;
-        var (hits, total) = Measure(command);
-        EnsureInit();
-        Set(Current - EnemyRules.AttackCost(hits, total));
-        return Task.CompletedTask;
+        return StaminaRules.DamageMultiplier(Rules.EnemyActionBudget.StaminaBeforePayment(Owner, DisplayAmount, Pool));
     }
 }
 
@@ -116,14 +101,9 @@ public sealed class EnemyManaPower : EnemyResourcePower
 
     protected override Task OnDepleted() => EnemyResponses.TryFocus(Owner);
 
-    public override Task AfterAttack(PlayerChoiceContext choiceContext, AttackCommand command)
-    {
-        if (command.Attacker != Owner) return Task.CompletedTask;
-        var (hits, total) = Measure(command);
-        EnsureInit();
-        Set(Current - EnemyRules.SpellCost(hits, total));
-        return Task.CompletedTask;
-    }
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        dealer == Owner && props.IsCardOrMonsterMove() ? Rules.EnemyActionBudget.ManaDamageMultiplier(Owner, DisplayAmount) : 1m;
+
 }
 
 /// <summary>Стойкость N: порог ошеломления. Растёт на 50 % после каждого ошеломления.</summary>

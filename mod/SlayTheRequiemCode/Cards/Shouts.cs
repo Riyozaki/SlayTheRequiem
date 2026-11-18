@@ -248,7 +248,8 @@ public sealed class SoulTear : RequiemCard, IShoutCard
         ArgumentNullException.ThrowIfNull(play.Target);
         await Hit(ctx, play.Target);
         var target = play.Target;
-        if (target.IsAlive && ShoutRules.SoulTearExecutes(target.CurrentHp, target.MaxHp, EnemySetup.RankOf(target.CombatState) == EnemyRank.Boss))
+        if (target.IsAlive && EnemyRoleRules.CanExecute(EnemySetup.RoleOf(target))
+            && ShoutRules.SoulTearExecutes(target.CurrentHp, target.MaxHp, false))
             await CreatureCmd.Kill(target);
     }
 }

@@ -135,6 +135,8 @@ STAGE7_ACTS = {
 
 # ───────────── силы: (класс, eng title, eng desc, rus title, rus desc) ─────────────
 STAGE7_POWERS = [
+    ("WandererGuardPower", "Duelist Guard", "Temporary, non-stacking: +3 Plating and +I elemental/magic resistance after a party turn without Attacks. The first party Attack uses the stance for all its hits/replays, then removes it. Permanent defenses remain.",
+     "Стойка дуэлянта", "Временно, без накопления: +3 Лат и +I сопротивлений стихиям/магии после хода отряда без Атак. Первая Атака отряда использует стойку для всех ударов/повторов, затем снимает её. Постоянная защита остаётся."),
     ("BannermanAffixPower", "Bannerman", "While it lives, other enemies' attacks deal 2 more damage.",
      "Знаменосец", "Пока он жив, атаки остальных врагов наносят на 2 урона больше."),
     ("AbsorberAffixPower", "Absorber", "Regains 1 [gold]Spell Absorption[/gold] at the start of each hero turn.",

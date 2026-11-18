@@ -110,6 +110,10 @@ CARDS = [
 
 # (класс, eng title, eng desc, rus title, rus desc) — {Amount} подставляется игрой.
 POWERS = [
+    ("PlatingPower", "Plating", "Each powered attack hit deals {Amount} less damage after multipliers and before caps and Block (minimum 1; a zero hit stays zero). Spells and True damage ignore it.",
+     "Латы", "Каждый силовой удар атакой слабее на {Amount} после множителей, до ограничения урона и Блока (не ниже 1; ноль остаётся нулём). Заклинания и чистый урон игнорируют Латы."),
+    ("SunderPower", "Sunder", "Effective Plating −{Amount}. Excess Sunder adds damage to EACH powered hit, before damage caps and Block. It does not change permanent Plating. True damage ignores both. −1 at the start of the target's turn.",
+     "Раскол", "Действующие Латы −{Amount}. Избыток Раскола усиливает КАЖДЫЙ силовой удар до ограничения урона и Блока. Постоянные Латы не изменяются. Чистый урон игнорирует оба эффекта. −1 в начале хода цели."),
     ("FireResistancePower", "Fire Resistance", "Fire damage and [gold]Burning[/gold] reduced by tier {Amount} (I −25%, II −50%, III −75%, IV immune; negative — vulnerable).",
      "Сопротивление огню", "Урон огнём и [gold]Горение[/gold] снижены на ступень {Amount} (I −25 %, II −50 %, III −75 %, IV иммунитет; отрицательная — уязвимость)."),
     ("FrostResistancePower", "Frost Resistance", "Frost damage and [gold]Chill[/gold] reduced by tier {Amount}.",
@@ -142,8 +146,8 @@ POWERS = [
      "Кровь стужи", "Накладываемый вами Озноб +{Amount}. Озноб на вас спадает целиком."),
     ("UnbreakablePower", "Unbreakable", "Cannot receive [gold]Stagger[/gold].",
      "Непоколебимость", "На вас не накладывается [gold]Шаткость[/gold]."),
-    ("DodgePower", "Dodge", "{Amount} times per combat, negate an enemy attack by spending 2 ◆.",
-     "Уворот", "{Amount} раз(а) за бой погасить атаку врага ценой 2 ◆."),
+    ("DodgePower", "Dodge", "{Amount} times per turn, negate one enemy attack HIT that would cost HP by spending 2 ◆. Block is used first.",
+     "Уворот", "{Amount} раз(а) за ход погасить один УДАР атаки врага, который должен снять ♥, ценой 2 ◆. Сначала тратится Блок."),
     ("WardPower", "Ward", "The first {Amount} HP damage each turn is paid with ✦ instead.",
      "Покров", "Первые {Amount} урона по ♥ за ход оплачиваются ✦."),
 ]

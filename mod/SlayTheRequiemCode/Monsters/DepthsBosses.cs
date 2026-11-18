@@ -76,6 +76,7 @@ public sealed class ClockworkColossus : ActBossMonster
 /// </summary>
 public sealed class AutomatonArchitect : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<BrassSentry>()];
     public const int BaseHp = 280;
     public const int MaxSentries = 2;
     public const int ReinforcePlating = 3;

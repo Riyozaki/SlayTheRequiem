@@ -467,6 +467,7 @@ public static partial class VanillaArt
         ["UnshakeablePower"] = "unmovable_power",
         ["VampiricAffixPower"] = "feeding_frenzy_power",
         ["VenomMasteryPower"] = "accelerant_power",
+        ["WandererGuardPower"] = "guarded_power",
         ["WardPower"] = "buffer_power",
         ["WeaknessPoisonPower"] = "enfeebling_touch_power",
         ["WindRhythmPower"] = "speedster_power",

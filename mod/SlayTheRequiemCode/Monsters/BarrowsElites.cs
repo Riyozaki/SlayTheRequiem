@@ -122,6 +122,7 @@ public sealed class PhantomBlade : RequiemMonster
 /// </summary>
 public sealed class FirstSnowPrince : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<IceAtronach>()];
     public const int SnowBladeDamage = 11;
     public const int SnowBladeBleed = 2;
     public const int BlizzardDamage = 5;

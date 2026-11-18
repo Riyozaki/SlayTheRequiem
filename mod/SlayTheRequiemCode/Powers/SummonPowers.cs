@@ -44,11 +44,11 @@ public abstract class SummonPower : RequiemPower
     protected abstract MonsterModel CreatureModel { get; }
 
     private int _pending;
-    private Creature? _pendingAttacker;
     private Creature? _pet;
     private int _turnsOnField;
     private bool _destroyed;
     private bool _syncing;
+    private Task? _spawning;
 
     /// <summary>Существо этого призыва, если оно стоит на поле.</summary>
     public Creature? Pet => _pet is { IsAlive: true } ? _pet : null;
@@ -66,8 +66,8 @@ public abstract class SummonPower : RequiemPower
     public static async Task Summon<T>(PlayerChoiceContext ctx, Creature hero, int hp, CardModel? source, Action<T>? setup = null) where T : SummonPower
     {
         var others = hero.Powers.OfType<SummonPower>().Where(p => p is not T && !p.IsCompanion).ToList();
-        foreach (var other in others.Take(SummonRules.Dismissals(others.Count, Slots(hero))).ToList())
-            await other.Dismiss();
+        if (!ModelDb.Power<T>().IsCompanion)
+            foreach (var other in others.Take(SummonRules.Dismissals(others.Count, Slots(hero))).ToList()) await other.Dismiss();
         await PowerCmd.Apply<T>(ctx, hero, hp, hero, source);
         if (hero.GetPower<T>() is not { } power) return;
         setup?.Invoke(power);
@@ -89,7 +89,12 @@ public abstract class SummonPower : RequiemPower
     /// <summary>Поставить существо (если его нет) и сверить его ♥ со стаками.</summary>
     public async Task EnsurePet()
     {
-        if (Pet == null) await SpawnPet();
+        if (Pet == null)
+        {
+            if (_spawning == null) _spawning = SpawnPet();
+            try { await _spawning; }
+            finally { _spawning = null; }
+        }
         await SyncPet();
     }
 
@@ -98,9 +103,10 @@ public abstract class SummonPower : RequiemPower
         var player = Owner.Player;
         var state = Owner.CombatState;
         if (player == null || state == null || Amount <= 0 || !CombatManager.Instance.IsInProgress) return;
+        Creature? pet = null;
         try
         {
-            var pet = state.CreateCreature((MonsterModel)CreatureModel.ToMutable(), Owner.Side, null);
+            pet = state.CreateCreature((MonsterModel)CreatureModel.ToMutable(), Owner.Side, null);
             await PlayerCmd.AddPet(pet, player);
             _pet = pet;
             _turnsOnField = 0;
@@ -113,9 +119,11 @@ public abstract class SummonPower : RequiemPower
         }
         catch (Exception e)
         {
-            // Без существа призыв всё равно работает — одной силой (как до M6).
-            MainFile.Logger.Info($"Summon {Kind}: существо не встало ({e.Message})");
-            _pet = null;
+            // AddPet callbacks may throw AFTER insertion. Keep that real body/bond; never create an
+            // orphan duplicate on the next EnsurePet. Without an inserted body the power stays playable.
+            _pet = pet != null && state.ContainsCreature(pet) && pet.IsAlive ? pet : null;
+            if (_pet?.Monster is SummonCreature body) body.Bond = this;
+            MainFile.Logger.Warn($"Summon {Kind}: body={(_pet == null ? "fallback" : "observed-inserted")} after callback failure: {e.Message}");
         }
     }
 
@@ -188,40 +196,35 @@ public abstract class SummonPower : RequiemPower
 
     // ───────────── удары по герою ─────────────
 
-    public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal decimal MitigateHit(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || dealer == null || dealer == Owner || !props.IsCardOrMonsterMove()) return amount;
         var absorbed = SummonRules.Absorb((int)amount, Amount, _pending);
         if (absorbed <= 0) return amount;
+        if (!HitDefensePipeline.WillCommit) return amount - absorbed;
         _pending += absorbed;
-        _pendingAttacker = dealer;
+        HitDefensePipeline.Defer(async () =>
+        {
+            _pending -= absorbed;
+            Flash();
+            if (dealer.IsAlive) await OnStruck(new ThrowingPlayerChoiceContext(), dealer);
+            var loss = SummonRules.ScaledLoss(absorbed, Modifiers(Owner).Sum(m => m.SummonDamageTakenPercent));
+            if (Pet is { } pet)
+            {
+                // Already resisted/blocked at the hero. Do NOT charge the hero's Block a second time via
+                // native pet-owner Block, reapply elemental modifiers, or drop the packet if its dealer died.
+                using var transfer = DamageTyping.As(DamageType.True);
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), pet, loss,
+                    ValueProp.Unpowered | ValueProp.Unblockable, null, null);
+            }
+            else if (loss >= Amount) await Destroyed();
+            else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -loss, null, null, silent: true);
+        }, () => _pending -= absorbed);
         return amount - absorbed;
     }
 
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (target == _pet && target != Owner)
-        {
-            await SyncFromPet(choiceContext);
-            return;
-        }
-        if (target != Owner || _pending <= 0) return;
-        var taken = _pending;
-        var attacker = _pendingAttacker;
-        _pending = 0;
-        _pendingAttacker = null;
-        Flash();
-        if (attacker != null && attacker.IsAlive) await OnStruck(choiceContext, attacker);
-        var loss = SummonRules.ScaledLoss(taken, Modifiers(Owner).Sum(m => m.SummonDamageTakenPercent));
-        if (Pet is { } pet)
-        {
-            // Удар виден на существе: вспышка, число урона; стаки сверятся в AfterDamageReceived существа.
-            await CreatureCmd.Damage(choiceContext, pet, loss, ValueProp.Unpowered, attacker, null);
-            return;
-        }
-        if (loss >= Amount) await Destroyed();
-        else await PowerCmd.ModifyAmount(choiceContext, this, -loss, null, null, silent: true);
-    }
+    public override Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        target == _pet && target != Owner ? SyncFromPet(choiceContext) : Task.CompletedTask;
 
     // ───────────── ход призыва ─────────────
 

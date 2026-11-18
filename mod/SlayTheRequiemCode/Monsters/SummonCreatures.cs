@@ -25,6 +25,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// </summary>
 public abstract class SummonCreature : OwnArtMonster
 {
+    public override EnemyRole CombatRole => EnemyRole.Minion; // pets are excluded from enemy setup regardless
+
     public const string StrikeMove = "SUMMON_STRIKE";
     public const string SlumberMove = "SUMMON_SLUMBER";
 

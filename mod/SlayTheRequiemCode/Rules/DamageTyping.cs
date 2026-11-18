@@ -28,8 +28,12 @@ public static class DamageTyping
     {
         if (Ambient.Value is { } ambient) return ambient;
         if (cardSource != null) return StaminaCosts.DamageTypeFor(cardSource);
-        if (dealer?.Monster != null && props.IsPoweredAttack())
-            return RequiemData.MonsterEntry(dealer.Monster.GetType().Name).AttackType;
+        if (dealer?.Monster != null && props.IsCardOrMonsterMove())
+        {
+            var declared = dealer.Monster is IEnemyDamageTypeSource typed ? typed.CurrentAttackType
+                : RequiemData.MonsterEntry(dealer.Monster.GetType().Name).AttackType;
+            return EnemyActionBudget.TypeOf(dealer, declared);
+        }
         return DamageType.Physical;
     }
 

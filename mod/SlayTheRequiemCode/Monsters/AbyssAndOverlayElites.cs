@@ -22,6 +22,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// <summary>Дремора: солдат Бездны — магический клинок и щит.</summary>
 public sealed class Dremora : RequiemMinion
 {
+    public override EnemyRole CombatRole => EnemyRole.Normal; // standalone rift; summoned instance is secondary
+
     public const int BladeDamage = 9;
     public const int ShieldBlock = 8;
     protected override int Hp => 34;
@@ -38,6 +40,8 @@ public sealed class Dremora : RequiemMinion
 /// <summary>Скамп Бездны: мелкий, Призрачный, бросает огонь.</summary>
 public sealed class AbyssScamp : RequiemMinion
 {
+    public override EnemyRole CombatRole => EnemyRole.Normal; // standalone rift; summoned instance is secondary
+
     public const int FireboltDamage = 5;
     protected override int Hp => 16;
     protected override MonsterModel LookOf => ModelDb.Monster<Parafright>();
@@ -56,6 +60,8 @@ public sealed class AbyssScamp : RequiemMinion
 /// <summary>Врата (объект 20 ♥): каждые 2 хода выпускают дремору; закрываются одним ударом ≥ 20 (или убийством).</summary>
 public sealed class AbyssGateObject : RequiemMinion
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<Dremora>()];
+    public override EnemyRole CombatRole => EnemyRole.Prop;
     public const int CloseThreshold = 20;
     protected override int Hp => 20;
     protected override MonsterModel LookOf => ModelDb.Monster<SoulNexus>();
@@ -84,6 +90,7 @@ public sealed class AbyssRiftNormal() : RequiemEncounter(RoomType.Monster)
 /// <summary>Военный вождь Бездны: 165 ♥, раз в 3 хода открывает Врата (объект 20 ♥), выпускающие дремору.</summary>
 public sealed class AbyssWarlord : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<AbyssGateObject>()];
     public const int CleaveDamage = 15;
     public const int WarCryStrength = 2;
     protected override int Hp => 165;
@@ -202,6 +209,7 @@ public sealed class BarrowPriest : RequiemMonster
     protected override string? CastAnim => null;
 
     private DamageType _mask = DamageType.Fire;
+    public override DamageType CurrentAttackType => _mask;
 
     public override async Task AfterAddedToRoom()
     {
@@ -216,7 +224,7 @@ public sealed class BarrowPriest : RequiemMonster
     [
         new MoveState("MASK_BOLT", async _ => { await Hit(MaskBoltDamage, MaskBoltHits, _mask, null); await ElementStatus(_mask, 3, 2, 2); },
             Multi(MaskBoltDamage, MaskBoltHits), new DebuffIntent()),
-        new MoveState("MASK_AURA", async _ => { await Blast(AuraDamage, _mask); await Block(14); }, new DefendIntent()),
+        new MoveState("MASK_AURA", async _ => { await Blast(AuraDamage, _mask); await Block(14); }, Atk(AuraDamage), new DefendIntent()),
     ];
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
@@ -230,6 +238,7 @@ public sealed class BarrowPriest : RequiemMonster
 /// <summary>Чемпион Костяного Трона: 180 ♥, Цепная молния (3 разрядом всем каждый ход); на 50 % неуязвим, пока живы 2 Щитоносца.</summary>
 public sealed class BoneChampion : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<BoneShieldbearer>()];
     public const int ChainLightning = 3;
     public const int GreatswordDamage = 18;
     protected override int Hp => 180;

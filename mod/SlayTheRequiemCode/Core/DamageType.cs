@@ -11,7 +11,7 @@ public enum DamageType
     Blight,
     Magic,
     Light,
-    /// <summary>Игнорирует Латы и сопротивления.</summary>
+    /// <summary>Игнорирует Латы/Раскол и сопротивления, но не обычный Блок, cap и особую неуязвимость.</summary>
     True,
 }
 

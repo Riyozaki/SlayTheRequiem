@@ -24,8 +24,11 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// ходы — цикл <see cref="Cycle"/> (или своя машина состояний), помощники ударов/статусов/призыва.
 /// Числа ходов — константы в классах врагов (docs/design/11 §5–6), чтобы их видели тесты и лок.
 /// </summary>
-public abstract class RequiemMonster : CustomMonsterModel
+public abstract class RequiemMonster : CustomMonsterModel, IEnemyRoleSource, IEnemyDamageTypeSource
 {
+    public virtual EnemyRole CombatRole => EnemyRole.Elite;
+    public virtual DamageType CurrentAttackType => MonsterMoveRules.TypeOf(NextMove?.Id ?? string.Empty);
+
     /// <summary>♥ (элиты — фиксированные, как в таблице 11 §5; надбавки акта/уровня добавляет EnemySetup).</summary>
     protected abstract int Hp { get; }
 
@@ -48,9 +51,14 @@ public abstract class RequiemMonster : CustomMonsterModel
     /// <summary>Цикл ходов по кругу (первый — начальный). Для ветвлений переопределите <see cref="GenerateMoveStateMachine"/>.</summary>
     protected virtual IReadOnlyList<MoveState> Cycle() => [];
 
+    /// <summary>All possible entourage, also used for encounter preloading and deterministic content validation.</summary>
+    public virtual IEnumerable<MonsterModel> SummonModels => [];
+
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
         var moves = Cycle();
+        if (moves.Count == 0 || moves.Select(m => m.Id).Distinct(StringComparer.Ordinal).Count() != moves.Count)
+            throw new InvalidOperationException($"Invalid move cycle: {GetType().Name}");
         for (var i = 0; i < moves.Count; i++) moves[i].FollowUpState = moves[(i + 1) % moves.Count];
         return new MonsterMoveStateMachine(moves.Cast<MonsterState>().ToList(), moves[0]);
     }
@@ -63,12 +71,12 @@ public abstract class RequiemMonster : CustomMonsterModel
 
     protected IEnumerable<Creature> Allies => Creature.CombatState?.Enemies.Where(e => e.IsAlive && e != Creature) ?? [];
 
-    protected bool BelowPercent(int percent) => Creature.CurrentHp * 100 < Creature.MaxHp * percent;
+    protected bool BelowPercent(int percent) => BossTimingRules.ThresholdReached(Creature.CurrentHp, Creature.MaxHp, percent);
 
     /// <summary>Удар по целям намерения (типом <paramref name="type"/>; физический — без обёртки).</summary>
     protected async Task Hit(int damage, int hits = 1, DamageType type = DamageType.Physical, string? fx = "vfx/vfx_attack_slash")
     {
-        using var _ = type == DamageType.Physical ? null : DamageTyping.As(type);
+        using var _ = DamageTyping.As(EnemyActionBudget.TypeOf(Creature, type));
         var cmd = DamageCmd.Attack(damage).FromMonster(this).WithAttackerAnim(AttackAnim, 0.35f);
         if (hits > 1) cmd = cmd.WithHitCount(hits).OnlyPlayAnimOnce();
         if (fx != null) cmd = cmd.WithHitFx(fx);
@@ -78,17 +86,19 @@ public abstract class RequiemMonster : CustomMonsterModel
     /// <summary>Удар по одной цели.</summary>
     protected async Task HitOne(Creature target, int damage, DamageType type = DamageType.Physical)
     {
-        using var _ = type == DamageType.Physical ? null : DamageTyping.As(type);
+        using var _ = DamageTyping.As(EnemyActionBudget.TypeOf(Creature, type));
         await DamageCmd.Attack(damage).FromMonster(this).Targeting(target).WithAttackerAnim(AttackAnim, 0.35f)
             .WithHitFx("vfx/vfx_attack_slash").Execute(null);
     }
 
-    /// <summary>Неблокируемый урон всем героям (взрывы, ауры): не атака, аффиксы не срабатывают.</summary>
+    /// <summary>Урон всем героям (взрывы, ауры): не силовая атака, аффиксы не срабатывают; обычный Блок сохраняется.</summary>
     protected async Task Blast(int damage, DamageType type)
     {
         using var _ = DamageTyping.As(type);
+        var isMove = IsPerformingMove;
+        if (isMove) EnemyActionBudget.Pay(Creature);
         foreach (var hero in Heroes.ToList())
-            await CreatureCmd.Damage(Ctx, hero, damage, ValueProp.Unpowered, Creature, null);
+            await CreatureCmd.Damage(Ctx, hero, damage, isMove ? ValueProp.Move | ValueProp.Unpowered : ValueProp.Unpowered, Creature, null);
     }
 
     protected Task Cast() => CastAnim == null ? Task.CompletedTask : CreatureCmd.TriggerAnim(Creature, CastAnim, 0.3f);
@@ -111,13 +121,15 @@ public abstract class RequiemMonster : CustomMonsterModel
 
     protected async Task DrainMana(int amount)
     {
-        foreach (var hero in Heroes.ToList()) await Mana.Lose(hero.Player, amount);
+        foreach (var hero in Heroes.ToList())
+            if (!await SpellInterception.InterceptEffect(Ctx, hero, Creature, null)) await Mana.Lose(hero.Player, amount);
     }
 
-    protected void DrainStamina(int amount)
+    protected async Task DrainStamina(int amount)
     {
         foreach (var hero in Heroes.ToList())
-            if (RequiemResource.Of<StaminaResource>(hero.Player) is { } stamina)
+            if (!await SpellInterception.InterceptEffect(Ctx, hero, Creature, null)
+                && RequiemResource.Of<StaminaResource>(hero.Player) is { } stamina)
                 stamina.Amount = Math.Max(0, stamina.Amount - amount);
     }
 
@@ -131,6 +143,8 @@ public abstract class RequiemMonster : CustomMonsterModel
     {
         var state = Creature.CombatState;
         if (state == null || state.Enemies.Count(e => e.IsAlive) >= MaxEnemies) return null;
+        if (!SummonModels.Any(m => m is T)) throw new InvalidOperationException($"Undeclared summon {typeof(T).Name} for {GetType().Name}");
+        using var source = EnemySetup.SummonScope(typeof(T));
         var slot = state.Encounter?.GetNextSlot(state);
         var minion = await CreatureCmd.Add<T>(state, string.IsNullOrEmpty(slot) ? null : slot);
         await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.MinionPower>(Ctx, minion, 1, Creature, null, silent: true);
@@ -170,7 +184,10 @@ public abstract class RequiemMonster : CustomMonsterModel
 }
 
 /// <summary>Свита/призыв: простой цикл, без своей логики.</summary>
-public abstract class RequiemMinion : RequiemMonster { }
+public abstract class RequiemMinion : RequiemMonster
+{
+    public override EnemyRole CombatRole => EnemyRole.Minion;
+}
 
 /// <summary>
 /// Энкаунтер элиты/супербосса этапа 7. <see cref="Acts"/> — ванильные акты, в пул элит которых он добавляется
@@ -184,7 +201,20 @@ public abstract class RequiemEncounter(RoomType roomType) : CustomEncounterModel
 
     protected abstract IReadOnlyList<MonsterModel> Lineup { get; }
 
-    public override IEnumerable<MonsterModel> AllPossibleMonsters => Lineup.Distinct();
+    public override IEnumerable<MonsterModel> AllPossibleMonsters => ExpandSummons(Lineup);
+
+    private static IEnumerable<MonsterModel> ExpandSummons(IEnumerable<MonsterModel> lineup)
+    {
+        var seen = new HashSet<Type>();
+        var queue = new Queue<MonsterModel>(lineup);
+        while (queue.TryDequeue(out var model))
+        {
+            if (!seen.Add(model.GetType())) continue;
+            yield return model;
+            if (model is RequiemMonster own)
+                foreach (var summon in own.SummonModels) queue.Enqueue(summon);
+        }
+    }
 
     protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters() =>
         Lineup.Select(m => (m.ToMutable(), (string?)null)).ToList();

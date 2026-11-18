@@ -19,6 +19,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// <summary>Вожак стаи: 60 ♥ + 2 волка. Волки встают через 2 хода, пока жив вожак; когда волков нет — вожак Неистов (+Сила).</summary>
 public sealed class PackLeader : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<PackWolf>()];
     public const int MaulDamage = 9;
     public const int MaulBleed = 2;
     public const int HowlStrength = 2;

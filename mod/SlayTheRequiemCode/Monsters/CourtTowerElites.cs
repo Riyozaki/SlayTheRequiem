@@ -180,6 +180,7 @@ public sealed class SorceressIlvarre : RequiemMonster
     protected override MonsterModel LookOf => ModelDb.Monster<OwlMagistrate>();
     protected override string? CastAnim => null;
 
+    public override DamageType CurrentAttackType => WeakestElement();
     private bool _healed;
 
     protected override IReadOnlyList<MoveState> Cycle() =>
@@ -190,7 +191,7 @@ public sealed class SorceressIlvarre : RequiemMonster
 
     private async Task Spell(IReadOnlyList<Creature> targets)
     {
-        var element = WeakestElement();
+        var element = EnemyActionBudget.TypeOf(Creature, CurrentAttackType);
         await Hit(SpellDamage, type: element, fx: null);
         await ElementStatus(element, 3, 2, 2);
     }
@@ -206,6 +207,7 @@ public sealed class SorceressIlvarre : RequiemMonster
 /// <summary>Отступник-Призыватель: 110 ♥, каждые 2 хода атронах (огонь/лёд/гроза по очереди); смерть призывателя рассеивает их.</summary>
 public sealed class RenegadeSummoner : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<FlameAtronachMinion>(), ModelDb.Monster<IceAtronach>(), ModelDb.Monster<StormAtronachMinion>()];
     public const int ArcDamage = 8;
     protected override int Hp => 110;
     protected override MonsterModel LookOf => ModelDb.Monster<DevotedSculptor>();

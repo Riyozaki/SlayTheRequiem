@@ -16,7 +16,11 @@ public abstract class ResistancePower : RequiemPower
     public override PowerStackType StackType => PowerStackType.Counter;
     public override bool AllowNegative => true;
 
-    public static int TierOf(Creature creature, DamageType type) => type switch
+    public static int TierOf(Creature creature, DamageType type) => BaseTier(creature, type)
+        + (type is DamageType.Fire or DamageType.Frost or DamageType.Shock or DamageType.Poison or DamageType.Blight or DamageType.Magic
+            && creature.HasPower<WandererGuardPower>() ? WandererGuardPower.ResistanceBonus : 0);
+
+    private static int BaseTier(Creature creature, DamageType type) => type switch
     {
         DamageType.Fire => creature.GetPowerAmount<FireResistancePower>(),
         DamageType.Frost => creature.GetPowerAmount<FrostResistancePower>(),

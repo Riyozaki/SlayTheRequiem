@@ -36,11 +36,13 @@ public static class StaminaRules
     /// </summary>
     public static Payment Pay(int current, int pool, int cost)
     {
-        if (cost < 0) cost = 0;
+        current = Math.Max(0, current);
+        pool = Math.Max(0, pool);
+        cost = Math.Max(0, cost);
         var state = StateFor(current, pool, cost);
         var spent = Math.Min(current, cost);
         var shortfall = cost - spent;
-        return new Payment(spent, shortfall, shortfall * OverstrainHpPerPoint, state, DamageMultiplier(state));
+        return new Payment(spent, shortfall, (int)Math.Min(int.MaxValue, (long)shortfall * OverstrainHpPerPoint), state, DamageMultiplier(state));
     }
 
     /// <summary>Прирост в начале хода, не выше пула.</summary>

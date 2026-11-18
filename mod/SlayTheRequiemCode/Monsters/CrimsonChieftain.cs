@@ -28,8 +28,9 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// (<see cref="PanicPower"/>: следующая атака без урона). При ♥ &lt; 50 % — <b>Адреналин</b>: −50 % физического урона на 1 ход (раз за бой).
 /// Облик — ванильные Рубиновые налётчики (своих спрайтов пока нет).
 /// </summary>
-public sealed class CrimsonChieftain : CustomMonsterModel
+public sealed class CrimsonChieftain : CustomMonsterModel, IEnemyRoleSource
 {
+    public EnemyRole CombatRole => EnemyRole.Elite;
     public const int SaberDamage = 11;
     public const int SaberLifestealPercent = 50;
     public const int DaggerDamage = 6;
@@ -115,8 +116,9 @@ public sealed class CrimsonChieftain : CustomMonsterModel
 }
 
 /// <summary>Разбойник шайки Багряных Ножей: пассивен под «Шайкой», потом — засада и удары ножом.</summary>
-public sealed class CrimsonBandit : CustomMonsterModel
+public sealed class CrimsonBandit : CustomMonsterModel, IEnemyRoleSource
 {
+    public EnemyRole CombatRole => EnemyRole.Minion;
     public const int AmbushDamage = 8;
     public const int StabDamage = 5;
     public const int StabBleed = 1;

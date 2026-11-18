@@ -50,11 +50,11 @@ UI_KEYWORDS = {
         "BLIGHT.title": "Blight",
         "BLIGHT.description": "Forbids healing and Regeneration; every Poison tick deals extra damage. Undead and constructs are immune." + _RES["eng"],
         "MAGIC.title": "Magic damage",
-        "MAGIC.description": "Pure magic: only magic resistance and Ward reduce it." + _RES["eng"],
+        "MAGIC.description": "Magic resistance reduces it. Ordinary Block, Ward, caps and special defenses still apply." + _RES["eng"],
         "LIGHT.title": "Light damage",
         "LIGHT.description": "×2 against undead, vampires and the Abyss, ignoring their spell absorption. Normal damage to others.",
         "TRUEDAMAGE.title": "True damage",
-        "TRUEDAMAGE.description": "Ignores Plating and all resistances.",
+        "TRUEDAMAGE.description": "Ignores Plating, Sunder and resistances, but not ordinary Block, damage caps (such as Intangible) or special invulnerability. Weak/Vulnerable and stamina still apply to powered attacks.",
     },
     "rus": {
         "STAMINA.title": "◆ Выносливость",
@@ -94,11 +94,11 @@ UI_KEYWORDS = {
         "BLIGHT.title": "Хворь",
         "BLIGHT.description": "Запрещает лечение и Регенерацию; каждый тик Яда больнее. Нежить и конструкты невосприимчивы." + _RES["rus"],
         "MAGIC.title": "Магический урон",
-        "MAGIC.description": "Чистая магия: снижают только сопротивление магии и Оберег." + _RES["rus"],
+        "MAGIC.description": "Снижается сопротивлением магии. Обычный Блок, Оберег, ограничения урона и особая защита сохраняются." + _RES["rus"],
         "LIGHT.title": "Урон светом",
         "LIGHT.description": "×2 по нежити, вампирам и Бездне, игнорируя их поглощение заклинаний. Остальным — обычный урон.",
         "TRUEDAMAGE.title": "Чистый урон",
-        "TRUEDAMAGE.description": "Игнорирует Латы и все сопротивления.",
+        "TRUEDAMAGE.description": "Игнорирует Латы, Раскол и сопротивления, но не обычный Блок, ограничение урона (например, Бесплотность) и особую неуязвимость. Слабость/Уязвимость и выносливость всё ещё действуют на силовые атаки.",
     },
 }
 

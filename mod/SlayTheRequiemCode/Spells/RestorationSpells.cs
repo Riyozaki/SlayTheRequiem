@@ -102,9 +102,9 @@ public sealed class TurnUndead : SpellCard
         foreach (var enemy in CombatState.HittableEnemies.Where(e => e.IsAlive).ToList())
         {
             var undead = EnemySetup.IsUndead(enemy);
-            if (undead && EnemySetup.RankOf(CombatState) != EnemyRank.Boss && enemy.CurrentHp <= Var(ThresholdVar))
+            if (undead && EnemyRoleRules.CanExecute(EnemySetup.RoleOf(enemy)) && enemy.CurrentHp <= Var(ThresholdVar))
             {
-                await CreatureCmd.Kill(enemy);
+                if (!await SpellInterception.InterceptEffect(ctx, enemy, Owner.Creature, this)) await CreatureCmd.Kill(enemy);
                 continue;
             }
             await Bolt(ctx, enemy, "vfx/vfx_attack_light");

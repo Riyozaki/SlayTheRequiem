@@ -43,10 +43,7 @@ public static class IntentCostPatch
 
             var caster = owner.HasPower<EnemyManaPower>();
             if (!caster && !owner.HasPower<EnemyStaminaPower>()) return;
-            var targets = TargetsRef(__instance) ?? Array.Empty<Creature>();
-            var hits = Math.Max(1, attack.Repeats);
-            var total = attack.GetTotalDamage(targets, owner);
-            var cost = caster ? EnemyRules.SpellCost(hits, total) : EnemyRules.AttackCost(hits, total);
+            var cost = Rules.EnemyActionBudget.CostOf(owner);
             var color = (caster ? RequiemUi.ManaColor : RequiemUi.StaminaColor).ToHtml(false);
             var label = LabelRef(__instance);
             if (label != null) label.Text += $" [color=#{color}]{(caster ? "✦" : "◆")}{cost}[/color]";
