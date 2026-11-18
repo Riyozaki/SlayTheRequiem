@@ -702,5 +702,15 @@
   "SLAYTHEREQUIEM-HUNTING_SHOT.title": "Hunting Shot",
   "SLAYTHEREQUIEM-HUNTING_SHOT.description": "[gold]Weapon[/gold]. Deal {Damage:diff()} damage.\nWith a bow or crossbow, apply {SunderPower:diff()} [gold]Sunder[/gold].",
   "SLAYTHEREQUIEM-COVERING_SHOT.title": "Covering Shot",
-  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Weapon[/gold]. Deal {Damage:diff()} damage. Gain {Block:diff()} [gold]Block[/gold].\nWith a bow or crossbow, draw 1 card."
+  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Weapon[/gold]. Deal {Damage:diff()} damage. Gain {Block:diff()} [gold]Block[/gold].\nWith a bow or crossbow, draw 1 card.",
+  "SLAYTHEREQUIEM-ENVOY_SIDESTEP.title": "Sidestep",
+  "SLAYTHEREQUIEM-ENVOY_SIDESTEP.description": "Requires 1 ◆, without HP overstrain or Attack discounts. Spend once per play series. Avoid the Envoy's fire circle this turn. Retain. Exhaust. A missing copy is supplied each turn.",
+  "SLAYTHEREQUIEM-CARRY_SOLAR_STANDARD.title": "Carry the Standard",
+  "SLAYTHEREQUIEM-CARRY_SOLAR_STANDARD.description": "Requires the Solar Standard on the field. Close the Abyss Gates. The Envoy's move damage to you is halved for the next enemy turn. Retain. Exhaust.",
+  "SLAYTHEREQUIEM-COCOON_SUNBEAM.title": "Sunbeam — Cocoon",
+  "SLAYTHEREQUIEM-COCOON_SUNBEAM.description": "Break the Blood Lord's current cocoon immediately. No damage, mana or school requirement. Retain. Exhaust. Supplied each cocoon phase.",
+  "SLAYTHEREQUIEM-TEAR_THE_WING.title": "Tear the Wing",
+  "SLAYTHEREQUIEM-TEAR_THE_WING.description": "Ground the World-Eater for 2 full enemy turns. Retain. Shout: normal shelf, 3-turn cooldown (reduced by bonuses). Full shelf: Discard; reissue never skips the cooldown. No ◆ or ✦.",
+  "SLAYTHEREQUIEM-CLEAR_THE_SKIES.title": "Clear Skies",
+  "SLAYTHEREQUIEM-CLEAR_THE_SKIES.description": "Cancel the next warned Meteor Rain, for the whole party. Retain. Shout: normal shelf, 3-turn cooldown (reduced by bonuses). Full shelf: Discard; reissue never skips the cooldown. No ◆ or ✦."
 }

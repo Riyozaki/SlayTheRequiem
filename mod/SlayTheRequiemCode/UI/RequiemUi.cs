@@ -147,10 +147,11 @@ public static class RequiemUi
 
     // ───── данные ─────
 
-    /// <summary>Платит ли карта ◆: атака персонажа в системе мода, кроме заклинаний, магических атак и Кличей.</summary>
+    /// <summary>Видимая цена ◆: обычные Атаки либо Навык с обязательной полной оплатой, без атакующих скидок.</summary>
     public static bool PaysStamina(CardModel card)
     {
-        if (!RunSettings.EnableRequiemSystems || card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return false;
+        if (!RunSettings.EnableRequiemSystems
+            || card is not IRequiredStaminaCard && (card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card))) return false;
         var owner = StaminaCosts.OwnerOf(card);
         return owner != null ? RequiemMode.IsInSystem(owner) : !HiddenHeroes.IsHiddenPool(card.Pool);
     }

@@ -65,8 +65,8 @@ public static class Loadout
         _ => 1,
     };
 
-    public static int CardWeight(CardModel card) =>
-        TransformationRules.CardWeightAfter(
+    public static int CardWeight(CardModel card) => card is Cards.EncounterCounterCard ? 0
+        : TransformationRules.CardWeightAfter(
             BurdenRules.DefaultCardWeight(card.Rarity.ToString(), card.Type == CardType.Curse, card.Type == CardType.Status),
             Progression.RequiemCardEnchantment.Has(card, CardEnchant.Lightened));
 

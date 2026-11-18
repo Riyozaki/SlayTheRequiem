@@ -1,6 +1,8 @@
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Monsters;
@@ -9,6 +11,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Acts;
+using SlayTheRequiem.SlayTheRequiemCode.Cards;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Resources;
@@ -18,7 +21,7 @@ using V = MegaCrit.Sts2.Core.Models.Powers;
 namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
 // Супербоссы Багрового портала (docs/design/11 §6). ♥ — ActRules.SuperbossHp; Непоколебимость/Слом даёт EnemySetup (ранг Boss).
-// Механики со своими картами в руке («Нести штандарт», «Сорвать крыло», «Солнечный луч») упрощены до правил на поле — этап 8.
+// Контркарты боя выдаются через combat-local entitlement: полная рука не теряет карту, нет выдачи в постоянную колоду.
 // Облик (M7 п. 1) — свой PNG (OwnArtMonster, tools/art/monsters/superbosses.py), вариант по состоянию — SuperbossLookRules;
 // LookOf остаётся откатом, если картинки нет. Свита — ванильные модели с перекраской фракции (CourtTintPatch ниже).
 
@@ -45,10 +48,46 @@ public abstract class SuperbossMonster : OwnArtMonster
     }
 
     protected int Turn { get; private set; }
+    private EncounterCardGrants _counters = new();
+    private int _grantWindow;
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _counters = new(); // no shared mutable entitlements across canonical clones/runs
+        Turn = 0;
+        _grantWindow = 0;
+        Guarding = false;
+    }
+
+    public virtual bool NeedsCounter(Type type) => false;
+    protected int NextCounterWindow() => ++_grantWindow;
+    protected void RequestCounter<T>(int window, Player? player = null) where T : EncounterCounterCard => _counters.Request<T>(this, window, player);
+    protected Task FlushCounters() => _counters.Flush(this);
+    protected virtual void PrepareCountersForTurn(Player player, int window) { }
+
+    public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
+    {
+        if (!Creature.IsAlive || Creature.CombatState?.Players.Contains(player) != true) return;
+        PrepareCountersForTurn(player, NextCounterWindow());
+        await FlushCounters();
+    }
+    public override Task BeforeCardPlayed(CardPlay cardPlay)
+    {
+        // Record before native/third-party AfterCardPlayed hooks can rescue a failed shelf insertion into
+        // Discard and re-enter our pile hook. Late recording would allow an early same-turn recall.
+        _counters.RecordPlay(this, cardPlay);
+        return Task.CompletedTask;
+    }
+    public override Task AfterCardPlayedLate(PlayerChoiceContext choiceContext, CardPlay cardPlay) => FlushCounters();
+    public override Task AfterCardChangedPilesLate(CardModel card, PileType oldPileType, AbstractModel? clonedBy) =>
+        oldPileType == PileType.Hand || card is EncounterCounterCard ? FlushCounters() : Task.CompletedTask;
+    public override Task AfterCombatEnd(CombatRoom room) => _counters.Clear(this);
 
     public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature != Creature || wasRemovalPrevented) return;
+        await _counters.Clear(this);
         foreach (var ally in Allies.Where(a => EnemySetup.RoleOf(a) is EnemyRole.Minion or EnemyRole.Prop).ToList())
             await CreatureCmd.Kill(ally);
     }
@@ -232,7 +271,8 @@ public sealed class BarrowReaperBoss() : SuperbossEncounter
 
 /// <summary>
 /// Мастер-кузнец Глубин: 320 ♥, Латы 5. Молот — Раскол 4 + Оглушение героя. Раз в 4 хода Плавильный взрыв — 30 огнём
-/// всем, если на поле остался хоть один вентиль (2 объекта: убейте — «закройте»). Каждые 2 хода паучки чинят 15 ♥ и +1 Латы
+/// всем, если открыт хоть один вентиль. Атака закрывает вентиль на 2 хода врагов; его также можно уничтожить.
+/// Каждые 2 хода паучки чинят 15 ♥ и +1 Латы
 /// (Озноб на кузнеце — вдвое меньше).
 /// </summary>
 public sealed class DeepMasterSmith : SuperbossMonster
@@ -251,10 +291,22 @@ public sealed class DeepMasterSmith : SuperbossMonster
     protected override IReadOnlyList<MoveState> Cycle() =>
     [
         new MoveState("FORGE_HAMMER", Hammer, Atk(HammerDamage), new DebuffIntent()),
-        new MoveState("OPEN_VALVES", async _ => { await Cast(); await Summon<SteamValve>(); await Summon<SteamValve>(); await Repair(); }, new SummonIntent(), new HealIntent()),
+        new MoveState("OPEN_VALVES", OpenValves, new SummonIntent(), new HealIntent()),
         new MoveState("FORGE_HAMMER_2", Hammer, Atk(HammerDamage), new DebuffIntent()),
-        new MoveState("SMELTING_BLAST", Smelt, Atk(SmeltingDamage)),
+        new MoveState("SMELTING_BLAST", Smelt, new SingleAttackIntent(() => CurrentSmeltingDamage)),
     ];
+
+    public int CurrentSmeltingDamage => BossCounterplayRules.SmeltingDamage(
+        Allies.Count(a => a.Monster is SteamValve && !a.HasPower<ValveClosedPower>()), SmeltingDamage);
+
+    private async Task OpenValves(IReadOnlyList<Creature> targets)
+    {
+        await Cast();
+        // Existing valves keep their closure timer; a new cycle cannot silently reopen them or grow past two.
+        var missing = Math.Max(0, 2 - Allies.Count(a => a.Monster is SteamValve));
+        for (var i = 0; i < missing; i++) await Summon<SteamValve>();
+        await Repair();
+    }
 
     private async Task Hammer(IReadOnlyList<Creature> targets)
     {
@@ -272,19 +324,28 @@ public sealed class DeepMasterSmith : SuperbossMonster
 
     private async Task Smelt(IReadOnlyList<Creature> targets)
     {
-        if (Allies.Any(a => a.Monster is SteamValve)) await Blast(SmeltingDamage, DamageType.Fire);
-        await KillMinions<SteamValve>();
+        var damage = CurrentSmeltingDamage; // exactly the same open/closed query as the intent
+        if (damage > 0) await Blast(damage, DamageType.Fire);
         await Repair();
     }
 }
 
-/// <summary>Вентиль (объект): не атакует; пока стоит хоть один — Плавильный взрыв кузнеца бьёт.</summary>
+/// <summary>Вентиль: атака по нему закрывает на два полных действия стороны врагов. Multihit лишь обновляет срок.</summary>
 public sealed class SteamValve : RequiemMinion
 {
     public override EnemyRole CombatRole => EnemyRole.Prop;
     protected override int Hp => 14;
     protected override MonsterModel LookOf => ModelDb.Monster<Noisebot>();
     protected override IReadOnlyList<MoveState> Cycle() => [new MoveState("HISS", _ => Task.CompletedTask, new SleepIntent())];
+
+    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
+    {
+        if (target != Creature || !Creature.IsAlive || dealer is not { IsPlayer: true }
+            || cardSource?.Type != CardType.Attack || !props.IsCardOrMonsterMove()) return;
+        var current = Creature.GetPowerAmount<ValveClosedPower>();
+        var desired = BossCounterplayRules.RefreshClosure(current);
+        if (current != desired) await PowerCmd.Apply<ValveClosedPower>(choiceContext, Creature, desired - current, dealer, cardSource);
+    }
 }
 
 public sealed class DeepMasterSmithBoss() : SuperbossEncounter
@@ -296,16 +357,16 @@ public sealed class DeepMasterSmithBoss() : SuperbossEncounter
 // ═════════════ Акт 3 — Посланник Разрушителя Врат ═════════════
 
 /// <summary>
-/// Посланник Разрушителя Врат: 420 ♥, Латы 3. Молот Бездны — Раскол 4 и Кровотечение 4. Огненный круг: герой, не сыгравший
+/// Посланник Разрушителя Врат: 420 ♥, Латы 3. Молот Бездны — Раскол 4 и Пробитие 4. Огненный круг: герой, не сыгравший
 /// за ход ни одного навыка, получает Горение 8. Врата каждые 3 хода; дважды при ♥ &lt; 30 % — полное лечение, если на поле есть Врата.
 /// </summary>
 public sealed class GatebreakerEnvoy : SuperbossMonster
 {
-    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<AbyssGateObject>()];
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<AbyssGateObject>(), ModelDb.Monster<SolarStandard>()];
     public const int Plating = 3;
     public const int HammerDamage = 20;
     public const int HammerSunder = 4;
-    public const int HammerBleed = 4;
+    public const int HammerPierce = 4;
     public const int CircleBurning = 8;
     public const int MaxFullHeals = 2;
 
@@ -314,8 +375,39 @@ public sealed class GatebreakerEnvoy : SuperbossMonster
     protected override string AttackAnim => "RamAttack";
     protected override string? CastAnim => "BombCast";
 
-    private readonly HashSet<ulong> _sidestepped = [];
+    private HashSet<ulong> _sidestepped = [];
     private int _fullHeals;
+    public bool HasStandard => Creature.IsAlive && Allies.Any(a => a.Monster is SolarStandard);
+    public override bool NeedsCounter(Type type) => type == typeof(EnvoySidestep) || type == typeof(CarrySolarStandard) && HasStandard;
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _sidestepped = [];
+        _fullHeals = 0;
+    }
+
+    public override async Task AfterAddedToRoom()
+    {
+        await base.AfterAddedToRoom();
+        await Buff<ArmorPiercingPower>(HammerPierce);
+        await Summon<SolarStandard>();
+    }
+
+    protected override void PrepareCountersForTurn(Player player, int window)
+    {
+        RequestCounter<EnvoySidestep>(window, player);
+        if (HasStandard) RequestCounter<CarrySolarStandard>(window, player);
+    }
+
+    public void Sidestep(Player player) => _sidestepped.Add(player.NetId);
+
+    public async Task CarryStandard(PlayerChoiceContext ctx, Creature hero, CardModel card)
+    {
+        if (!HasStandard || hero.Player == null || !Heroes.Contains(hero)) return;
+        await PowerCmd.Apply<SolarStandardGuardPower>(ctx, hero, 1, Creature, card);
+        await KillMinions<AbyssGateObject>();
+    }
 
     protected override IReadOnlyList<MoveState> Cycle() =>
     [
@@ -328,12 +420,15 @@ public sealed class GatebreakerEnvoy : SuperbossMonster
     {
         await Hit(HammerDamage, type: DamageType.Magic, fx: "vfx/vfx_attack_blunt");
         await Debuff<SunderPower>(HammerSunder);
-        await Debuff<BleedPower>(HammerBleed);
     }
 
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        if (cardPlay.Card.Type == CardType.Skill) _sidestepped.Add(cardPlay.Card.Owner.NetId);
+        // The issued Skill records success only AFTER its exact stamina payment. Failed payment/replay is
+        // not an ordinary free Skill fallback. Other Skills deliberately remain a second way to leave the circle.
+        if (cardPlay.Card.Type == CardType.Skill && cardPlay.Card is not EnvoySidestep
+            && Creature.CombatState?.Players.Contains(cardPlay.Card.Owner) == true)
+            _sidestepped.Add(cardPlay.Card.Owner.NetId);
         return Task.CompletedTask;
     }
 
@@ -355,6 +450,15 @@ public sealed class GatebreakerEnvoy : SuperbossMonster
     }
 }
 
+/// <summary>Visible, destructible standard. Never takes a boss's resources/HP overlay or attacks the heroes.</summary>
+public sealed class SolarStandard : RequiemMinion
+{
+    public override EnemyRole CombatRole => EnemyRole.Prop;
+    protected override int Hp => 30;
+    protected override MonsterModel LookOf => ModelDb.Monster<Noisebot>();
+    protected override IReadOnlyList<MoveState> Cycle() => [new MoveState("SUN_BANNER", _ => Task.CompletedTask, new SleepIntent())];
+}
+
 public sealed class GatebreakerEnvoyBoss() : SuperbossEncounter
 {
     public override Superboss Kind => Superboss.GatebreakerEnvoy;
@@ -365,7 +469,7 @@ public sealed class GatebreakerEnvoyBoss() : SuperbossEncounter
 
 /// <summary>
 /// Владыка Кровавого Двора: 450 ♥ (−10 %, если в этом акте побеждена Невеста). Каждый 2-й ход — Туман (атаки мимо, кроме Света
-/// и заклинаний); Регенерация 10 (Горение снимает); на 70/40/20 % — кокон: Неуязвим, пока живы 3 слуги-гаргульи.
+/// и площадных заклинаний); Регенерация 10 (Горение снимает); на 70/40/20 % — кокон: Неуязвим, пока живы 3 слуги-гаргульи.
 /// </summary>
 public sealed class BloodCourtLord : SuperbossMonster
 {
@@ -381,6 +485,15 @@ public sealed class BloodCourtLord : SuperbossMonster
     protected override MonsterModel LookOf => ModelDb.Monster<TheForgotten>();
 
     private int _cocoons;
+    public bool Cocooned => Creature.IsAlive && Creature.HasPower<InvulnerablePower>();
+    public override bool NeedsCounter(Type type) => type == typeof(CocoonSunbeam) && Cocooned;
+
+    public async Task BreakCocoon()
+    {
+        if (Creature.GetPower<InvulnerablePower>() is { } cocoon) await PowerCmd.Remove(cocoon);
+        RefreshLook();
+        await FlushCounters();
+    }
 
     public override async Task AfterAddedToRoom()
     {
@@ -429,11 +542,17 @@ public sealed class BloodCourtLord : SuperbossMonster
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Creature || !Creature.IsAlive || _cocoons >= CocoonThresholds.Length || !BelowPercent(CocoonThresholds[_cocoons])) return;
+        // A zero packet into the current immunity cannot consume another threshold/issue another phase card.
+        // Multiple thresholds crossed in one hit remain finite: the next positive hit after opening starts the next cocoon.
+        if (target != Creature || !Creature.IsAlive || _cocoons >= CocoonThresholds.Length
+            || !BossCounterplayRules.CanStartCocoon(Cocooned, result.UnblockedDamage, Creature.CurrentHp, Creature.MaxHp, CocoonThresholds[_cocoons])) return;
         _cocoons++;
-        for (var i = 0; i < 3; i++) await Summon<GargoyleServant>();
+        var missing = BossCounterplayRules.MissingCocoonGuards(Allies.Count(a => a.Monster is GargoyleServant));
+        for (var i = 0; i < missing; i++) await Summon<GargoyleServant>();
         await PowerCmd.Apply<InvulnerablePower>(choiceContext, Creature, 1, Creature, null);
+        RequestCounter<CocoonSunbeam>(NextCounterWindow());
         RefreshLook();
+        await FlushCounters();
     }
 }
 
@@ -456,8 +575,8 @@ public sealed class BloodCourtLordBoss() : SuperbossEncounter
 
 /// <summary>
 /// Первый Призыватель: 430 ♥. Цепь молний каждые 2 хода (8 ×3 разрядом, выжигание 2 ✦ за удар); каждое попадание —
-/// Слово подчинения (+15 % магического урона по герою, максимум 3); 2 раба-культиста. На 30 % — полное лечение (до 2 раз),
-/// пожирая одно из двух начальных драконьих яиц: разбейте яйца заранее.
+/// Слово подчинения (−I сопротивления магии за попадание, максимум −III); аура −I сопротивлений. Три видимых начальных яйца:
+/// на ≤30 % съедает одно и полностью лечится, не более трёх раз. Один культист в начале, второй — когда освободится место.
 /// </summary>
 public sealed class FirstSummoner : SuperbossMonster
 {
@@ -466,7 +585,7 @@ public sealed class FirstSummoner : SuperbossMonster
     public const int ChainHits = 3;
     public const int ChainManaBurn = 2;
     public const int TomeDamage = 15;
-    public const int MaxDevours = 2; // two finite initial eggs, never an invisible third resurrection
+    public const int MaxDevours = BossCounterplayRules.SummonerEggs; // all three are visible/attackable before the first threshold
 
     public override Superboss Kind => Superboss.FirstSummoner;
     protected override MonsterModel LookOf => ModelDb.Monster<KinPriest>();
@@ -478,8 +597,9 @@ public sealed class FirstSummoner : SuperbossMonster
     public override async Task AfterAddedToRoom()
     {
         await base.AfterAddedToRoom();
-        await Summon<DragonEgg>();
-        await Summon<DragonEgg>();
+        for (var i = 0; i < BossCounterplayRules.SummonerEggs; i++) await Summon<DragonEgg>();
+        await Summon<CultistThrall>(); // boss + three eggs + one cultist = the five-body limit
+        await PowerCmd.Apply<BlackBookAuraPower>(Ctx, Creature, 1, Creature, null);
     }
 
     protected override IReadOnlyList<MoveState> Cycle() =>
@@ -489,7 +609,7 @@ public sealed class FirstSummoner : SuperbossMonster
         {
             await Hit(TomeDamage, type: DamageType.Magic, fx: null);
             await Debuff<WordOfBindingPower>(1);
-            if (Allies.Count(a => a.Monster is CultistThrall) < 2) await Summon<CultistThrall>();
+            if (Allies.Count(a => a.Monster is CultistThrall) < BossCounterplayRules.SummonerCultists) await Summon<CultistThrall>();
         }, Atk(TomeDamage), new SummonIntent()),
     ];
 
@@ -505,11 +625,13 @@ public sealed class FirstSummoner : SuperbossMonster
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Creature || !Creature.IsAlive || _devours >= MaxDevours || !BelowPercent(30)) return;
+        if (target != Creature || !Creature.IsAlive || !BossCounterplayRules.CanDevour(_devours,
+            Allies.Count(a => a.Monster is DragonEgg), Creature.CurrentHp, Creature.MaxHp)) return;
         var egg = Allies.FirstOrDefault(a => a.Monster is DragonEgg);
         if (egg == null) return;
-        _devours++;
         await CreatureCmd.Kill(egg);
+        if (egg.IsAlive || !Creature.IsAlive) return; // a prevented sacrifice never buys a free full heal
+        _devours++;
         await Heal(Creature.MaxHp - Creature.CurrentHp);
     }
 }
@@ -535,19 +657,19 @@ public sealed class CultistThrall : RequiemMinion
 public sealed class FirstSummonerBoss() : SuperbossEncounter
 {
     public override Superboss Kind => Superboss.FirstSummoner;
-    protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<CultistThrall>(), ModelDb.Monster<FirstSummoner>(), ModelDb.Monster<CultistThrall>()];
+    protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<FirstSummoner>()];
 }
 
 // ═════════════ Акт 5 — Пожиратель Миров ═════════════
 
 /// <summary>
-/// Пожиратель Миров: 600 ♥, Латы 2. Цикл 6 ходов: крылья → вдох → метеоры → посадка → укус → взлёт.
-/// Фазы 90/65/50/25 % — пара Безликих жрецов (40 ♥, общий лимит поля сохраняется). Вдох честно предупреждает метеоры.
-/// Поглощение душ: живые жрецы на его ходу — +20 ♥.
+/// Пожиратель Миров: крылья → укус → предупреждающий вдох → метеоры (4/8/12).
+/// Выдаваемые Кличи: Сорвать крыло — два хода на земле; Ясное небо — отмена ближайших метеоров.
+/// На 90/65/50/25 % — жрецы. Живой жрец на ходу хозяина даёт лечение и призыв призрака (не сверх лимита поля).
 /// </summary>
 public sealed class WorldEater : SuperbossMonster
 {
-    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<FacelessPriest>()];
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<FacelessPriest>(), ModelDb.Monster<DevouredSoulGhost>()];
     public const int Plating = 2;
     public const int MeteorDamage = 25;
     public const int BiteDamage = 22;
@@ -561,6 +683,14 @@ public sealed class WorldEater : SuperbossMonster
     protected override string? CastAnim => null;
 
     private int _phase;
+    private bool _meteorCleared;
+    private bool _skiesUnlocked;
+    public bool Flying => Creature.IsAlive && Creature.HasPower<FlightPower>();
+    // Removing the cosmetic warning power alone must not disable the supplied answer to a warned intent.
+    public bool MeteorThreat => Creature.IsAlive && !_meteorCleared
+        && (Creature.HasPower<MeteorWarningPower>() || NextMove?.Id == "METEOR_RAIN");
+    public int CurrentMeteorDamage => BossCounterplayRules.MeteorDamage(_meteorCleared, MeteorDamage);
+    public override bool NeedsCounter(Type type) => type == typeof(TearTheWing) || type == typeof(ClearTheSkies) && _skiesUnlocked;
 
     public override async Task AfterAddedToRoom()
     {
@@ -568,39 +698,104 @@ public sealed class WorldEater : SuperbossMonster
         await PowerCmd.Apply<FlightPower>(Ctx, Creature, 1, Creature, null);
     }
 
-    protected override IReadOnlyList<MoveState> Cycle() =>
-    [
-        new MoveState("WING_STORM", _ => Hit(WingDamage, WingHits), Multi(WingDamage, WingHits)),
-        new MoveState("DEEP_BREATH", async _ => await Block(20), new DefendIntent(), new BuffIntent()),
-        new MoveState("METEOR_RAIN", _ => Blast(MeteorDamage, DamageType.Fire), Atk(MeteorDamage)),
-        new MoveState("LAND", Land, new StunIntent()),
-        new MoveState("DEVOURING_BITE", _ => Hit(BiteDamage), Atk(BiteDamage)),
-        new MoveState("TAKE_WING", async _ => { await PowerCmd.Apply<FlightPower>(Ctx, Creature, 1, Creature, null); RefreshLook(); }, new BuffIntent()),
-    ];
-
-    private async Task Land(IReadOnlyList<Creature> targets)
+    protected override void PrepareCountersForTurn(Player player, int window)
     {
+        RequestCounter<TearTheWing>(window, player);
+        if (_skiesUnlocked) RequestCounter<ClearTheSkies>(window, player);
+    }
+
+    protected override IReadOnlyList<MoveState> Cycle() => Enumerable.Range(1, BossCounterplayRules.WorldEaterCycleLength)
+        .Select(turn => BossCounterplayRules.WorldEaterMoveAt(turn) switch
+        {
+            WorldEaterMove.Wings => new MoveState("WING_STORM", _ => Hit(WingDamage, WingHits), Multi(WingDamage, WingHits)),
+            WorldEaterMove.Bite => new MoveState("DEVOURING_BITE", _ => Hit(BiteDamage), Atk(BiteDamage)),
+            WorldEaterMove.Breath => new MoveState("DEEP_BREATH", WarnMeteors, new DefendIntent(), new BuffIntent()),
+            _ => new MoveState("METEOR_RAIN", Meteors, new SingleAttackIntent(() => CurrentMeteorDamage)),
+        }).ToList();
+
+    private async Task WarnMeteors(IReadOnlyList<Creature> targets)
+    {
+        _meteorCleared = false;
+        _skiesUnlocked = true;
+        await Block(20);
+        await PowerCmd.Apply<MeteorWarningPower>(Ctx, Creature, 1, Creature, null);
+        RequestCounter<ClearTheSkies>(NextCounterWindow());
+        await FlushCounters(); // outside a player's Play phase this stays pending until their normal turn setup
+    }
+
+    private async Task Meteors(IReadOnlyList<Creature> targets)
+    {
+        var damage = CurrentMeteorDamage; // same cancellation query as the displayed intent
+        if (damage > 0) await Blast(damage, DamageType.Fire);
+        if (Creature.GetPower<MeteorWarningPower>() is { } warning) await PowerCmd.Remove(warning);
+        _meteorCleared = false;
+    }
+
+    public async Task ClearMeteors(PlayerChoiceContext ctx)
+    {
+        if (!MeteorThreat) return;
+        _meteorCleared = true;
+        if (Creature.GetPower<MeteorWarningPower>() is { } warning) await PowerCmd.Remove(warning);
+        Creature.PrepareForNextTurn(Heroes, rollNewMove: false);
+    }
+
+    public async Task Ground(PlayerChoiceContext ctx)
+    {
+        if (!Flying) return;
         if (Creature.GetPower<FlightPower>() is { } flight) await PowerCmd.Remove(flight);
+        var current = Creature.GetPowerAmount<GroundedByShoutPower>();
+        if (current != BossCounterplayRules.GroundedTurns)
+            await PowerCmd.Apply<GroundedByShoutPower>(ctx, Creature, BossCounterplayRules.GroundedTurns - current, Creature, null);
         RefreshLook();
     }
 
-    public override async Task AfterSideTurnStart(MegaCrit.Sts2.Core.Combat.CombatSide side, IReadOnlyList<Creature> participants, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
+    public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
+    {
+        if (side != CombatSide.Enemy || !Creature.IsAlive || Creature.GetPower<GroundedByShoutPower>() is not { } grounded) return;
+        if (BossCounterplayRules.TurnsAfterEnemyAction(grounded.Amount) == 0)
+        {
+            await PowerCmd.Remove(grounded);
+            await PowerCmd.Apply<FlightPower>(choiceContext, Creature, 1, Creature, null);
+            RefreshLook();
+        }
+        else await PowerCmd.Decrement(grounded);
+    }
+
+    public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
         await base.AfterSideTurnStart(side, participants, combatState);
-        if (side != MegaCrit.Sts2.Core.Combat.CombatSide.Enemy || !Creature.IsAlive) return;
-        if (Allies.Any(a => a.Monster is FacelessPriest)) await Heal(SoulDevour);
+        if (side != CombatSide.Enemy || !Creature.IsAlive) return;
+        if (Allies.Any(a => a.Monster is FacelessPriest))
+        {
+            await Heal(SoulDevour);
+            await Summon<DevouredSoulGhost>();
+        }
     }
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Creature || !Creature.IsAlive) return;
+        if (target != Creature || !Creature.IsAlive || result.UnblockedDamage <= 0) return;
         while (_phase < PriestPhases.Length && BelowPercent(PriestPhases[_phase]))
         {
             _phase++;
             await Summon<FacelessPriest>();
             await Summon<FacelessPriest>();
+            _skiesUnlocked = true;
+            RequestCounter<ClearTheSkies>(NextCounterWindow());
         }
+        await FlushCounters();
     }
+}
+
+/// <summary>Finite field body from Soul Devouring, not another priest or a hidden source of healing.</summary>
+public sealed class DevouredSoulGhost : RequiemMinion
+{
+    public const int TouchDamage = 6;
+    protected override int Hp => 20;
+    protected override MonsterModel LookOf => ModelDb.Monster<Parafright>();
+    protected override string? CastAnim => null;
+    protected override IReadOnlyList<MoveState> Cycle() =>
+        [new MoveState("DEVOUR_GHOST_TOUCH", _ => Hit(TouchDamage, type: DamageType.Magic, fx: null), Atk(TouchDamage))];
 }
 
 public sealed class FacelessPriest : RequiemMinion
@@ -609,6 +804,11 @@ public sealed class FacelessPriest : RequiemMinion
     public const int DrainDamage = 5;
     protected override int Hp => 40;
     protected override MonsterModel LookOf => ModelDb.Monster<CalcifiedCultist>();
+    public override async Task AfterAddedToRoom()
+    {
+        await base.AfterAddedToRoom();
+        await PowerCmd.Apply<SpellShieldPower>(Ctx, Creature, WardBlock, Creature, null);
+    }
     protected override IReadOnlyList<MoveState> Cycle() =>
     [
         new MoveState("FACELESS_WARD", async _ =>
@@ -616,6 +816,7 @@ public sealed class FacelessPriest : RequiemMinion
             var lord = Allies.FirstOrDefault(a => a.Monster is WorldEater);
             if (lord != null) await CreatureCmd.GainBlock(lord, WardBlock, ValueProp.Move, null);
             await Block(WardBlock);
+            await PowerCmd.Apply<SpellShieldPower>(Ctx, Creature, WardBlock, Creature, null);
         }, new DefendIntent()),
         new MoveState("SOUL_DRAIN", _ => Hit(DrainDamage, 2, DamageType.Magic, null), Multi(DrainDamage, 2)),
     ];

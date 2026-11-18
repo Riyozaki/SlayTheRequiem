@@ -75,7 +75,7 @@ public sealed class KingUnderBarrow : ActBossMonster
     public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         await base.AfterDeath(choiceContext, creature, wasRemovalPrevented, deathAnimLength);
-        if (creature.Monster is BarrowHuskarl && Creature.IsAlive)
+        if (!wasRemovalPrevented && !creature.IsAlive && creature.Monster is BarrowHuskarl && Creature.IsAlive)
             await PowerCmd.Apply<V.StrengthPower>(choiceContext, Creature, FallenOathStrength, Creature, null);
     }
 }

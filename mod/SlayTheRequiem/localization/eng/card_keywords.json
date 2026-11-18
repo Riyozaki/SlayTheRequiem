@@ -34,5 +34,7 @@
   "SLAYTHEREQUIEM-LIGHT.title": "Light damage",
   "SLAYTHEREQUIEM-LIGHT.description": "×2 against undead, vampires and the Abyss, ignoring their spell absorption. Normal damage to others.",
   "SLAYTHEREQUIEM-TRUEDAMAGE.title": "True damage",
-  "SLAYTHEREQUIEM-TRUEDAMAGE.description": "Ignores Plating, Sunder and resistances, but not ordinary Block, damage caps (such as Intangible) or special invulnerability. Weak/Vulnerable and stamina still apply to powered attacks."
+  "SLAYTHEREQUIEM-TRUEDAMAGE.description": "Ignores Plating, Sunder and resistances, but not ordinary Block, damage caps (such as Intangible) or special invulnerability. Weak/Vulnerable and stamina still apply to powered attacks.",
+  "SLAYTHEREQUIEM-REQUIREDSTAMINA.title": "◆ Required stamina",
+  "SLAYTHEREQUIEM-REQUIREDSTAMINA.description": "This Skill requires its full, fixed ◆ cost. Not enough stamina: it cannot be played; no HP overstrain. Attack discounts and Tired/Exhausted damage penalties do not apply. Replays pay only once."
 }

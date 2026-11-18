@@ -1752,11 +1752,11 @@ GHOSTLY_REDUCTION = 75
 MIRROR_REFLECT_PERCENT = 50
 MIRROR_PHYSICAL_MULTIPLIER = 1.5
 FLIGHT_MULTIPLIER = 0.5
-BINDING_PERCENT_PER_STACK, BINDING_MAX_STACKS = 15, 3
+BINDING_MAX_STACKS = 3
 
 
-def binding_multiplier(stacks: int) -> float:
-    return 1 + max(0, min(BINDING_MAX_STACKS, stacks)) * BINDING_PERCENT_PER_STACK / 100
+def binding_tier_penalty(stacks: int) -> int:
+    return -max(0, min(BINDING_MAX_STACKS, stacks))
 
 
 def bypasses_ghostly(is_spell: bool, damage_type: str, silver: bool) -> bool:
@@ -2529,7 +2529,7 @@ SUPERBOSS_VARIANTS = {"BlackWanderer": ["guard"], "BloodCourtLord": ["cocoon"], 
 ECHO_KNIGHT_ART = "echo_knight"
 SUPERBOSS_COURT = {"WraithThrall": "BlackWanderer", "BarrowDead": "BarrowReaper", "SteamValve": "DeepMasterSmith",
                    "GargoyleServant": "BloodCourtLord", "DragonEgg": "FirstSummoner", "CultistThrall": "FirstSummoner",
-                   "FacelessPriest": "WorldEater", "ShadowSoul": "NamelessShadow"}
+                   "FacelessPriest": "WorldEater", "DevouredSoulGhost": "WorldEater", "ShadowSoul": "NamelessShadow"}
 COURT_TINT = {
     "BlackWanderer": (0.60, 0.70, 0.82, 1.00),
     "BarrowReaper": (0.52, 0.80, 0.95, 1.00),

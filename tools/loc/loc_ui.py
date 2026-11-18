@@ -16,6 +16,8 @@ UI_KEYWORDS = {
         "STAMINA.description": "Attacks cost ◆ (the orb under the energy cost). Below half the pool you are [gold]Tired[/gold] "
                                "(−25% attack damage). An attack you cannot pay for leaves you [gold]Exhausted[/gold] (−50%) "
                                "and costs 2 HP per missing ◆. Carries over between turns and regenerates each turn.",
+        "REQUIREDSTAMINA.title": "◆ Required stamina",
+        "REQUIREDSTAMINA.description": "This Skill requires its full, fixed ◆ cost. Not enough stamina: it cannot be played; no HP overstrain. Attack discounts and Tired/Exhausted damage penalties do not apply. Replays pay only once.",
         "MANA.title": "✦ Mana",
         "MANA.description": "Spells cost ✦. Every hero has mana; the price depends on your mastery of the spell's school. "
                             "Combat starts at half the pool; unspent ✦ carries over.",
@@ -61,6 +63,8 @@ UI_KEYWORDS = {
         "STAMINA.description": "Атаки стоят ◆ (шар под ценой энергии). Меньше половины пула — [gold]Устал[/gold] (−25 % урона атак). "
                                "Не хватает на атаку — [gold]Изнурён[/gold] (−50 %) и −2 ОЗ за каждую недостающую ◆. "
                                "Копится между ходами и восстанавливается каждый ход.",
+        "REQUIREDSTAMINA.title": "◆ Обязательная выносливость",
+        "REQUIREDSTAMINA.description": "Навык требует полной фиксированной цены ◆. Не хватает — сыграть нельзя, без надрыва за ОЗ. Скидки на Атаки и штрафы урона Устал/Изнурён не действуют. Повторы платят один раз.",
         "MANA.title": "✦ Мана",
         "MANA.description": "Заклинания стоят ✦. Мана есть у всех героев; цена зависит от владения школой заклинания. "
                             "Бой начинается с половиной пула; непотраченная ✦ сохраняется.",

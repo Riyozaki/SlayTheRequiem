@@ -206,6 +206,12 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
             return true;
         }
 
+        if (canonicalPower is WordOfBindingPower)
+        {
+            modifiedAmount = BossCounterplayRules.BindingStacksToApply(target.GetPowerAmount<WordOfBindingPower>(), amount);
+            return modifiedAmount != amount;
+        }
+
         DamageType? element = canonicalPower switch
         {
             ChillPower => DamageType.Frost,

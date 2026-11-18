@@ -42,7 +42,7 @@ Native fixture-квоты stone/kit тоже берутся из этой пол
 - `RunSettingsData` по-прежнему envelope `v=1`, известный ключ `economy=0..1`. Нет ключа → **legacy 0**.
 - **Только NEW** получает `economy=1` через `StartupState.StampNewRules`; Continue/clone/rollback не обновляют баланс.
 - Будущая/отрицательная/нечисловая/дублированная ревизия, конфликт сохранённых копий или shadow extension отвергаются.
-- Session agreement **4** (creation **2**, shop operations **2**, save schema **4** без изменения).
+- На экономическом checkpoint — session agreement **4** (creation **2**, shop operations **2**, save schema **4** без изменения); поздний пакет контрмер использует session **5**.
   NEW lobby требует текущие creation/economy rules и текущий session offer всех peers. Проверка двух клиентов не исполнена.
 - Всем клиентам нужна одна и та же новая сборка. Открытие нового сейва старым DLL/downgrade не объявляется совместимым;
   сохранённый `v=1` и handshake NEW не являются обещанием защиты каждого старого resume-клиента.
@@ -114,8 +114,12 @@ Primary-boss factor отличает авторских 2/4 от заимств�
 308 C# grammar files / 0 ошибок, 133 Harmony targets / 0 ошибок, 1397 localization checks / 0 ошибок;
 3918 ключей на язык, regeneration идемпотентна; 899 моделей / 1958 asset references / 0 missing.
 Это не C# semantic/full-mod build. На первом checkpoint `c8c99ea` [CI 44252421687](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44252421687)
-уже исполнил **778/778 Core** и runner; все четыре jobs PASS. Полная длинная annotation-копия output оказалась
-обрезана и не использована как сырые данные: её транспорт разбит на маленькие проверяемые части, новый CI фиксируется отдельно.
+уже исполнил **778/778 Core** и runner; все четыре jobs PASS. Полные три файла теперь действительно сохранены в
+[evidence/core](evidence/stage-two-economy-2026-11-18/README.md) с успешного `20ddd2f` /
+[CI 44253669236](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44253669236): **778/778 Core**, четыре jobs PASS,
+8/8 частей, bundle SHA и JSON SHA проверены. Это actual C# output, не Python-реконструкция; локального TRX по-прежнему нет.
+Более ранние обрезанный длинный notice и неполный 9/12 набор не использованы как сырые полные данные.
+Checkpoint session 4 предшествует последующим контрмерам/session 5 и не проверяет их игровые адаптеры.
 Число тестов/сценариев не выводится из локальной грамматики или количества атрибутов.
 Полный game-facing build/PCK/native недоступен здесь без SDK/MegaDot и легальных compile DLL; исторические успешные
 сборка/PCK/плейтест автора этим не отменяются. Декомпилированные исходники не использованы как «легальные DLL».

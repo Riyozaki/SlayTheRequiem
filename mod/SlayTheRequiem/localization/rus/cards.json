@@ -702,5 +702,15 @@
   "SLAYTHEREQUIEM-HUNTING_SHOT.title": "Охотничий выстрел",
   "SLAYTHEREQUIEM-HUNTING_SHOT.description": "[gold]Оружейная[/gold]. Нанести {Damage:diff()} урона.\nС луком или арбалетом — наложить {SunderPower:diff()} [gold]Раскола[/gold].",
   "SLAYTHEREQUIEM-COVERING_SHOT.title": "Прикрывающий выстрел",
-  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Оружейная[/gold]. Нанести {Damage:diff()} урона. Получить {Block:diff()} [gold]Блока[/gold].\nС луком или арбалетом — взять 1 карту."
+  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Оружейная[/gold]. Нанести {Damage:diff()} урона. Получить {Block:diff()} [gold]Блока[/gold].\nС луком или арбалетом — взять 1 карту.",
+  "SLAYTHEREQUIEM-ENVOY_SIDESTEP.title": "Отступ",
+  "SLAYTHEREQUIEM-ENVOY_SIDESTEP.description": "Нужно 1 ◆, без надрыва и скидок на Атаки. Оплата один раз за серию повторов. Избежать огненного круга Посланника в этом ходу. Удержание. Изгнание. Недостающая карта выдаётся каждый ход.",
+  "SLAYTHEREQUIEM-CARRY_SOLAR_STANDARD.title": "Нести штандарт",
+  "SLAYTHEREQUIEM-CARRY_SOLAR_STANDARD.description": "Нужен Солнечный штандарт на поле. Закрыть Врата Бездны. Урон ходов Посланника по вам в следующем ходу врагов вдвое меньше. Удержание. Изгнание.",
+  "SLAYTHEREQUIEM-COCOON_SUNBEAM.title": "Солнечный луч — кокон",
+  "SLAYTHEREQUIEM-COCOON_SUNBEAM.description": "Немедленно раскрыть текущий кокон Кровавого Владыки. Без урона, маны и требования школы. Удержание. Изгнание. Выдаётся на каждой фазе кокона.",
+  "SLAYTHEREQUIEM-TEAR_THE_WING.title": "Сорвать крыло",
+  "SLAYTHEREQUIEM-TEAR_THE_WING.description": "Приземлить Пожирателя Миров на 2 полных хода врагов. Удержание. Клич: обычная полка, перезарядка 3 (меньше с бонусами). Полка занята — в сброс; повторная выдача не обходит перезарядку. Без ◆ и ✦.",
+  "SLAYTHEREQUIEM-CLEAR_THE_SKIES.title": "Ясное небо",
+  "SLAYTHEREQUIEM-CLEAR_THE_SKIES.description": "Отменить ближайший предупреждённый Метеоритный дождь для всего отряда. Удержание. Клич: обычная полка, перезарядка 3 (меньше с бонусами). Полка занята — в сброс; повторная выдача не обходит перезарядку. Без ◆ и ✦."
 }

@@ -145,6 +145,7 @@ MOD = {
     "BarrowDead": ("undead", 0, 0, "phys", "курганный мертвец"),
     "DeepMasterSmith": ("construct", 5, 5, "phys", "супербосс 2б «Мастер-кузнец Глубин»"),
     "SteamValve": ("construct", 0, 0, "phys", "вентиль (объект)"),
+    "SolarStandard": ("humanoid", 0, 0, "phys", "солнечный штандарт (объект)"),
     "GatebreakerEnvoy": ("abyss", 3, 5, "magic", "супербосс Улья «Посланник Разрушителя Врат»"),
     "BloodCourtLord": ("undead", 0, 5, "magic", "супербосс 4а «Владыка Кровавого Двора»"),
     "GargoyleServant": ("construct", 1, 0, "phys", "гаргулья-слуга"),
@@ -153,6 +154,7 @@ MOD = {
     "CultistThrall": ("cultist", 0, 0, "phys", "раб-культист"),
     "WorldEater": ("beast", 2, 6, "fire", "супербосс Славы «Пожиратель Миров»"),
     "FacelessPriest": ("cultist", 0, 0, "magic", "Безликий жрец"),
+    "DevouredSoulGhost": ("spirit", 0, 0, "magic", "призрак поглощённой души"),
     "NamelessShadow": ("spirit", 0, 6, "magic", "★ «Тень Без Имени»"),
     "ShadowSoul": ("spirit", 0, 0, "magic", "душа Тени"),
     "EchoKnight": ("spirit", 0, 3, "phys", "элита Безымянного предела «Рыцарь-эхо»"),
@@ -204,11 +206,11 @@ AbyssWarlord PlagueMother SwarmDevourer BarrowPriest BoneChampion AbyssBlackKnig
 VampireHunter LordsBride SorceressIlvarre RenegadeSummoner MirrorWarden StarExaminer EchoKnight ShopGuard""".split())
 MINIONS = set("""KinFollower TorchHeadAmalgam Wriggler GasBomb Ovicopter CrimsonBandit PackWolf IceAtronach
 RepairSpider MechanicTurret ReactorGuard SwarmlingBug BoneShieldbearer BloodThrall FlameAtronachMinion
-StormAtronachMinion WraithThrall BarrowDead GargoyleServant CultistThrall FacelessPriest BarrowHuskarl
+StormAtronachMinion WraithThrall BarrowDead GargoyleServant CultistThrall FacelessPriest DevouredSoulGhost BarrowHuskarl
 BrassSentry ChaliceAcolyte MirrorShard SpiritWolfSummon BeastWolfSummon BeastSabertoothSummon BeastBearSummon
 FlameAtronachSummon FrostAtronachSummon StormAtronachSummon RaisedDeadSummon AbyssGuardianSummon
 SpectralKnightSummon LoyalGuardSummon BoneThrallSummon""".split())
-PROPS = {"AbyssGateObject", "SteamValve", "DragonEgg", "ShadowSoul"}
+PROPS = {"AbyssGateObject", "SteamValve", "DragonEgg", "ShadowSoul", "SolarStandard"}
 # Dremora/Scamp also occur as ordinary enemies in AbyssRiftNormal. Their summoned instances acquire the
 # native secondary marker, not a global secondary flag that would auto-win their standalone encounter.
 MOD_NORMALS = {"Dremora", "AbyssScamp"}

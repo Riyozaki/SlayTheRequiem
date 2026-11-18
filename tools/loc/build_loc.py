@@ -25,6 +25,7 @@ from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS,
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
 from loc_creation import CREATION_SETTINGS, CREATION_TIPS  # noqa: E402
 from loc_builds import BUILD_CARDS, BUILD_REST_SITE, BUILD_TIPS  # noqa: E402
+from loc_counterplay import COUNTER_CARDS, COUNTER_POWERS, COUNTER_MONSTERS  # noqa: E402
 from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
 from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
@@ -217,8 +218,8 @@ def check_unique() -> None:
     """Один класс — один текст. Повтор с другим текстом молча перетирал первый
     (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
     tables = {
-        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS,
-        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS,
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS + COUNTER_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS + COUNTER_POWERS,
         "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
                   + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS,
     }
@@ -237,11 +238,11 @@ def main() -> None:
     check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS + COUNTER_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS + COUNTER_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
@@ -261,7 +262,7 @@ def main() -> None:
             if not relics.get(f"{PREFIX}{key}.flavor"):
                 relics[f"{PREFIX}{key}.flavor"] = texts[li]
         monsters = {}
-        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS, **M5_MONSTERS, **M5_SHOP_MONSTERS, **M6_SUMMON_MONSTERS}.items():
+        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS, **M5_MONSTERS, **M5_SHOP_MONSTERS, **M6_SUMMON_MONSTERS, **COUNTER_MONSTERS}.items():
             data = langs[lang]
             monsters[f"{PREFIX}{key}.name"] = data["name"]
             for move, title in data["moves"].items():

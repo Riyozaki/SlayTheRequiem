@@ -524,7 +524,8 @@ public class HeroCreationPeerProtocolTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    [InlineData(5)]
+    [InlineData(4)]
+    [InlineData(6)]
     public void Client_cannot_ready_for_an_old_unknown_or_future_host(int protocol)
     {
         Assert.Throws<InvalidOperationException>(() => StartupState.RequireHost(protocol));

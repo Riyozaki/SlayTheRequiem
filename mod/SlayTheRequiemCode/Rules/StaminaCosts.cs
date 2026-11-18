@@ -16,6 +16,7 @@ public static class StaminaCosts
     /// </summary>
     public static int BaseCostFor(CardModel card, CardPlay? play = null)
     {
+        if (card is IRequiredStaminaCard required) return Math.Max(0, required.RequiredStaminaCost);
         if (card is IRequiemCard custom) return Math.Max(0, custom.StaminaCost);
         if (RequiemData.Attacks != null && RequiemData.Attacks.TryGet(card.GetType().Name, out var entry))
             return entry.IsX ? Math.Max(0, play?.Resources.EnergyValue ?? OwnerOf(card)?.PlayerCombatState?.Energy ?? 0) : entry.Stamina;
@@ -25,6 +26,9 @@ public static class StaminaCosts
     /// <summary>Итоговая цена с учётом сил владельца («Сменить хват» и т.п.).</summary>
     public static int CostFor(CardModel card, CardPlay? play = null)
     {
+        // Encounter Skills pay their fixed, mandatory cost in OnPlay, not the Attack billing hook.
+        // Grip, weapon/relic discounts and Breathing affect Attacks, never this explicitly priced answer.
+        if (card is IRequiredStaminaCard required) return Math.Max(0, required.RequiredStaminaCost);
         var cost = BaseCostFor(card, play);
         // Чары «Дыхательная» (07 §6.2): −1 ◆.
         cost = TransformationRules.StaminaAfter(cost, Progression.RequiemCardEnchantment.Has(card, CardEnchant.Breathing));
@@ -78,4 +82,12 @@ public interface IRequiemCard
 {
     int StaminaCost { get; }
     DamageType DamageType { get; }
+}
+
+
+/// <summary>A Skill with an exact, mandatory ◆ price. No overstrain, attack discounts or damage-weariness UI.
+/// The card must check affordability and observe Spend's bool once per play series in its own OnPlay.</summary>
+public interface IRequiredStaminaCard
+{
+    int RequiredStaminaCost { get; }
 }

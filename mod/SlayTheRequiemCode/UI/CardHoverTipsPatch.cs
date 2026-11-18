@@ -38,9 +38,9 @@ public static class CardHoverTipsPatch
 
         if (RequiemUi.PaysStamina(card))
         {
-            yield return HoverTipFactory.FromKeyword(RequiemKeywords.Stamina);
+            yield return HoverTipFactory.FromKeyword(card is IRequiredStaminaCard ? RequiemKeywords.RequiredStamina : RequiemKeywords.Stamina);
             var cost = StaminaCosts.IsX(card) ? 0 : StaminaCosts.CostFor(card);
-            if (RequiemUi.StaminaStateFor(owner, cost) is { } st)
+            if (card is not IRequiredStaminaCard && RequiemUi.StaminaStateFor(owner, cost) is { } st)
             {
                 if (st.state == StaminaState.Tired) yield return HoverTipFactory.FromKeyword(RequiemKeywords.Tired);
                 if (st.state == StaminaState.Exhausted) yield return HoverTipFactory.FromKeyword(RequiemKeywords.Exhausted);

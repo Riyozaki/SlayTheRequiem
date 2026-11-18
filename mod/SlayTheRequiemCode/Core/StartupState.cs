@@ -4,7 +4,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 public static class StartupState
 {
     public const int Protocol = 2; // saved creation journal; NOT bumped by a UI choice-stream change
-    public const int SessionProtocol = 4; // B2.4 form/element choices + B2.5 saved economy policy; same build on all peers
+    public const int SessionProtocol = 5; // encounter-only card/model IDs and counterplay stream; same build on all peers
     public const int Complete = 4;
     public const string RulesKey = "hero_creation";
     // Control strings in the EXISTING RunSettingsMessage wire layout. Old BaseLib builds cannot decode an

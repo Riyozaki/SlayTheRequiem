@@ -869,7 +869,8 @@ class Stage7(unittest.TestCase):
         self.assertTrue(r.nameless_unlocked(mask, True))
         self.assertFalse(r.nameless_unlocked(mask, False))
         self.assertTrue(r.portal_mandatory(False, 10))
-        self.assertAlmostEqual(r.binding_multiplier(5), 1.45)
+        self.assertEqual(r.binding_tier_penalty(5), -3)
+        self.assertEqual(r.binding_tier_penalty(-1), 0)
         self.assertFalse(r.bypasses_ghostly(False, "physical", False))
 
 

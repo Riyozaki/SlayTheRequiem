@@ -27,9 +27,9 @@ public sealed class PlatingPower : RequiemPower
     // Сам расчёт — в PlatingFinalStep: последним шагом после всех множителей (Уязвимость, сопротивления),
     // чтобы результат не зависел от порядка слушателей хука.
 
-    /// <summary>Пробитие атакующего героя (Осколок Зверя, дар Князя Измены).</summary>
-    public static int PierceOf(Creature? dealer) =>
-        dealer?.Player == null ? 0 : Math.Max(0, dealer.Player.Relics.OfType<IPierceSource>().Sum(p => p.Pierce));
+    /// <summary>Пробитие атакующего: явная сила врага/героя плюс реликвии героя; один запрос для preview/hit.</summary>
+    public static int PierceOf(Creature? dealer) => dealer == null ? 0
+        : Math.Max(0, dealer.GetPowerAmount<ArmorPiercingPower>() + (dealer.Player?.Relics.OfType<IPierceSource>().Sum(p => p.Pierce) ?? 0));
 }
 
 /// <summary>Источник Пробития N у героя: его атаки игнорируют N Лат цели.</summary>

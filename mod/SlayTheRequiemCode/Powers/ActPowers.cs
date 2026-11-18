@@ -1,5 +1,6 @@
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
@@ -21,14 +22,10 @@ public static class ActPowerRules
     /// <summary>Зеркальный Страж: отражает 50 % урона заклинаний, физический урон по нему ×1.5.</summary>
     public const int MirrorReflectPercent = 50;
     public const decimal MirrorPhysicalMultiplier = 1.5m;
-    /// <summary>Полёт Пожирателя Миров: физические атаки по нему −50 %.</summary>
-    public const decimal FlightMultiplier = 0.5m;
-    /// <summary>Слово подчинения: +15 % магического урона по герою за стак, максимум 3.</summary>
-    public const int BindingPercentPerStack = 15;
-    public const int BindingMaxStacks = 3;
-
-    /// <summary>Множитель Слова подчинения.</summary>
-    public static decimal BindingMultiplier(int stacks) => 1m + Math.Clamp(stacks, 0, BindingMaxStacks) * BindingPercentPerStack / 100m;
+    /// <summary>Полёт: физические атаки ближнего боя по нему −50 %.</summary>
+    public const decimal FlightMultiplier = BossCounterplayRules.AerialMeleeMultiplier;
+    /// <summary>Слово подчинения: −I сопротивления магии за стак, максимум −III. Запрос — ResistancePower.</summary>
+    public const int BindingMaxStacks = BossCounterplayRules.BindingMaxStacks;
 
     /// <summary>Призрачность не замечает: заклинаний, нефизического урона, серебряного оружия.</summary>
     public static bool BypassesGhostly(bool isSpell, DamageType type, bool silver) => isSpell || type != DamageType.Physical || silver;
@@ -97,19 +94,23 @@ public sealed class PetrifiedPower : RequiemPower
     }
 }
 
-/// <summary>Полёт: физические атаки (не заклинания) по носителю −50 %. Счётчик — ходов в воздухе; 0 — «приземлён».</summary>
+/// <summary>Полёт: физические атаки ближнего боя по носителю −50 %. Длительность/приземление управляются конкретным боссом.</summary>
 public sealed class FlightPower : RequiemPower
 {
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
-        target == Owner && dealer is { IsPlayer: true } && props.IsPoweredAttack() && !MagicDamage.IsSpell(props, dealer, cardSource)
-            ? ActPowerRules.FlightMultiplier
-            : 1m;
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    {
+        if (target != Owner || dealer is not { IsPlayer: true }) return 1m;
+        var ranged = cardSource != null && EquipmentCombatRules.IsWeaponAttack(cardSource)
+            && Progression.HeroRecord.IsRanged(Progression.HeroRecord.Of(dealer.Player)?.MainHand ?? WeaponKind.None);
+        return BossCounterplayRules.FlightMultiplier(props.IsPoweredAttack(), MagicDamage.IsSpell(props, dealer, cardSource),
+            ranged, DamageTyping.Resolve(props, dealer, cardSource));
+    }
 }
 
-/// <summary>Туман (Владыка Кровавого Двора): атаки по носителю промахиваются, кроме Света и заклинаний. −1 в конце хода героев.</summary>
+/// <summary>Туман Владыки: удары промахиваются, кроме Света и площадных заклинаний. −1 в конце хода героев.</summary>
 public sealed class MistFormPower : RequiemPower
 {
     public override PowerType Type => PowerType.Buff;
@@ -117,9 +118,9 @@ public sealed class MistFormPower : RequiemPower
 
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
-        if (target != Owner || dealer is not { IsPlayer: true } || !props.IsPoweredAttack()) return 1m;
-        if (MagicDamage.IsSpell(props, dealer, cardSource) || DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Light) return 1m;
-        return 0m;
+        if (target != Owner || dealer is not { IsPlayer: true }) return 1m;
+        return BossCounterplayRules.MistMultiplier(props.IsCardOrMonsterMove(), MagicDamage.IsSpell(props, dealer, cardSource),
+            cardSource?.TargetType == TargetType.AllEnemies, DamageTyping.Resolve(props, dealer, cardSource));
     }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
@@ -128,14 +129,13 @@ public sealed class MistFormPower : RequiemPower
     }
 }
 
-/// <summary>Слово подчинения N (Первый Призыватель): магический урон по герою +15 % за стак (максимум 3).</summary>
+/// <summary>Слово подчинения N: сопротивление магии героя −N (максимум 3), без вычитания постоянной силы.
+/// Величину ограничивает глобальный TryModifyPowerAmountReceived; численный запрос — ResistancePower.TierOf.</summary>
 public sealed class WordOfBindingPower : RequiemPower
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
-        target == Owner && DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Magic ? ActPowerRules.BindingMultiplier(Amount) : 1m;
 }
 
 /// <summary>Проклятый клич (Жнец Курганов): Латы героя −N до конца боя (складывается).</summary>

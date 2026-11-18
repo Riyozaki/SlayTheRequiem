@@ -65,6 +65,7 @@ DecimillipedeSegmentMiddle,insect,2,0,-1,-1,0,1,0,phys,elite,
 DeepCenturion,construct,5,3,1,-1,-1,4,0,phys,elite,элита 2б «Центурион Глубин»
 DeepMasterSmith,construct,5,5,1,-1,-1,4,0,phys,boss,супербосс 2б «Мастер-кузнец Глубин»
 DevotedSculptor,cultist,0,0,0,0,0,0,1,phys,normal,
+DevouredSoulGhost,spirit,0,0,0,1,0,4,1,magic,minion,призрак поглощённой души
 DragonEgg,beast,0,0,-1,1,0,0,0,phys,prop,драконье яйцо (объект)
 Dremora,abyss,1,1,2,-1,0,4,0,fire,normal,дремора (Врата Бездны)
 EchoKnight,spirit,0,3,0,1,0,4,1,phys,elite,элита Безымянного предела «Рыцарь-эхо»
@@ -156,6 +157,7 @@ SludgeSpinner,insect,0,0,-1,-1,0,1,0,poison,normal,
 SlumberingBeetle,insect,2,4,-1,-1,0,1,0,phys,normal,панцирь
 SnappingJaxfruit,plant,0,0,-1,0,0,1,0,phys,normal,
 SneakyGremlin,humanoid,0,0,0,0,0,0,0,phys,normal,
+SolarStandard,humanoid,0,0,0,0,0,0,0,phys,prop,солнечный штандарт (объект)
 SorceressIlvarre,cultist,0,2,0,0,0,0,1,magic,elite,элита 4б «Чародейка Ильварре»
 SoulFysh,spirit,0,0,0,1,0,4,1,magic,boss,босс
 SoulNexus,spirit,0,0,0,1,0,4,1,magic,elite,

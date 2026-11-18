@@ -14,7 +14,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
 /// <summary>
 /// Алая Графиня: 420 ♥. Кровавая роза (Кровотечение), Бал масок (рабы крови, до 2), Алый поцелуй — лечится на весь снятый урон.
-/// Фаза 2 (50 %): истинный облик — Туман 1 (атаки мимо, кроме Света и заклинаний), Сила +3; рой мышей с вампиризмом 50 %,
+/// Фаза 2 (50 %): истинный облик — Туман 1 (атаки мимо, кроме Света и площадных заклинаний), Сила +3; рой мышей с вампиризмом 50 %,
 /// кровавый дождь, вечный поцелуй.
 /// </summary>
 public sealed class CrimsonCountess : ActBossMonster
@@ -216,6 +216,7 @@ public sealed class ChaliceHierophant : ActBossMonster
             return;
         }
         await CreatureCmd.Kill(victim);
+        if (victim.IsAlive || !Creature.IsAlive) return; // no completed sacrifice, no free heal/Strength
         await Heal(SacramentHeal);
         await Buff<V.StrengthPower>(SacramentStrength);
     }
