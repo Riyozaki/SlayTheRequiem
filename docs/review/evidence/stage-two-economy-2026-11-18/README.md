@@ -1,6 +1,6 @@
 # Б2.5 — evidence: source/content отдельно от Core и native
 
-`checks.json`: **29 checks, all exit 0 / 399 SHA256 inputs**. Снято на dirty исходниках после родителя `72ee189`;
+`checks.json`: **29 checks, all exit 0 / 399 SHA256 inputs**. Снято на dirty исходниках после родителя `c8c99ea`;
 `base_commit` не утверждает, что родитель содержит проверенные изменения: сверять `inputs_sha256`.
 В `logs/` только 29 перечисленных логов доступной локальной автоматики. 30 checker regressions (из них 10 parser,
 6 economy wiring), 35 build-safety, 151 rules Python; 308 C# grammar files / 0 errors; 133 Harmony targets / 0 errors;

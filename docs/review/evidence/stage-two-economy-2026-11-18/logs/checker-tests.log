@@ -1944,6 +1944,6 @@ test_quote_and_executor_must_not_bypass_the_saved_policy (test_economy.EconomyWi
 test_trace_must_not_turn_observation_into_a_gate_recovery_or_rng_draw (test_economy.EconomyWiringTests.test_trace_must_not_turn_observation_into_a_gate_recovery_or_rng_draw) ... ok
 
 ----------------------------------------------------------------------
-Ran 30 tests in 0.846s
+Ran 30 tests in 0.874s
 
 OK

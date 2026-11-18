@@ -113,8 +113,10 @@ Primary-boss factor отличает авторских 2/4 от заимств�
 30 checker regressions (10 parser + 6 economy wiring + прежние 14), 35 build-safety, 151 Python rules;
 308 C# grammar files / 0 ошибок, 133 Harmony targets / 0 ошибок, 1397 localization checks / 0 ошибок;
 3918 ключей на язык, regeneration идемпотентна; 899 моделей / 1958 asset references / 0 missing.
-Это не C# semantic/full-mod build. Core regressions и runner подключены к CI; итог текущего source checkpoint
-записывается после реального исполнения, а не выводится из этих локальных checks.
+Это не C# semantic/full-mod build. На первом checkpoint `c8c99ea` [CI 44252421687](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44252421687)
+уже исполнил **778/778 Core** и runner; все четыре jobs PASS. Полная длинная annotation-копия output оказалась
+обрезана и не использована как сырые данные: её транспорт разбит на маленькие проверяемые части, новый CI фиксируется отдельно.
+Число тестов/сценариев не выводится из локальной грамматики или количества атрибутов.
 Полный game-facing build/PCK/native недоступен здесь без SDK/MegaDot и легальных compile DLL; исторические успешные
 сборка/PCK/плейтест автора этим не отменяются. Декомпилированные исходники не использованы как «легальные DLL».
 

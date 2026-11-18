@@ -115,12 +115,17 @@ if (annotate)
     });
     using var compressed = new MemoryStream();
     using (var gzip = new GZipStream(compressed, CompressionLevel.SmallestSize, leaveOpen: true)) gzip.Write(bundle);
-    var packet = JsonSerializer.Serialize(new
-    {
-        schema = 1, producer = "core-scenario", encoding = "gzip-base64",
-        sha256 = Convert.ToHexString(SHA256.HashData(bundle)).ToLowerInvariant(),
-        data = Convert.ToBase64String(compressed.ToArray()),
-    });
-    if (packet.Length < 60000) Console.WriteLine("::notice title=B2.5 Core economic evidence::" + packet);
-    else Console.WriteLine("::warning::Core economy evidence exceeds the annotation budget; use the uploaded artifact instead.");
+    // Workflow-command annotations may be truncated near 4 KB and render escaped '+' differently.
+    // Small URL-safe ASCII parts survive that path; reassembly must verify every part and the bundle hash.
+    const int chunkChars = 1800, maxParts = 40;
+    var encoded = Convert.ToBase64String(compressed.ToArray()).Replace('+', '-').Replace('/', '_');
+    var parts = (encoded.Length + chunkChars - 1) / chunkChars;
+    var bundleHash = Convert.ToHexString(SHA256.HashData(bundle)).ToLowerInvariant();
+    if (parts <= maxParts)
+        for (var part = 0; part < parts; part++)
+        {
+            var data = encoded.Substring(part * chunkChars, Math.Min(chunkChars, encoded.Length - part * chunkChars));
+            Console.WriteLine($"::notice title=B2.5 Core economic evidence {part + 1}/{parts}::schema=1;producer=core-scenario;encoding=gzip-base64url;sha256={bundleHash};part={part + 1};total={parts};data={data}");
+        }
+    else Console.WriteLine("::warning::Core economy evidence exceeds the bounded annotation budget; use the uploaded artifact instead.");
 }
