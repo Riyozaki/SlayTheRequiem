@@ -41,12 +41,14 @@ public static class EnemySetup
 
     public static EnemyRole RoleOf(Creature creature)
     {
-        var declared = DeclaredRole(creature.Monster);
-        if (declared != EnemyRole.Prop && Summoning.Value?.Type == creature.Monster?.GetType())
+        if (DeclaredRole(creature.Monster) != EnemyRole.Prop && Summoning.Value?.Type == creature.Monster?.GetType())
             DeclaredSummons.GetValue(creature, _ => new StrongBox<EnemyRole>(EnemyRole.Minion));
-        if (DeclaredSummons.TryGetValue(creature, out var summoned)) declared = summoned.Value;
-        return EnemyRoleRules.Resolve(declared, creature.IsSecondaryEnemy);
+        return ObserveRole(creature);
     }
+
+    /// <summary>Same resolution without registering a summon. Diagnostics must not affect its setup role.</summary>
+    internal static EnemyRole ObserveRole(Creature creature) => EnemyRoleRules.Resolve(
+        DeclaredSummons.TryGetValue(creature, out var summoned) ? summoned.Value : DeclaredRole(creature.Monster), creature.IsSecondaryEnemy);
 
     public static EnemyRank RankOf(Creature creature) => EnemyRoleRules.Rank(RoleOf(creature));
 
@@ -89,11 +91,14 @@ public static class EnemySetup
         if (role is EnemyRole.Minion or EnemyRole.Prop && !creature.IsSecondaryEnemy
             && state0?.Encounter?.AllPossibleMonsters.Any(m => DeclaredRole(m) is EnemyRole.Boss or EnemyRole.Elite) == true)
             await PowerCmd.Apply<MegaCrit.Sts2.Core.Models.Powers.MinionPower>(ctx, creature, 1, null, null, silent: true);
-        var hpMultiplier = (decimal)RunSettings.EnemyHpPercent / 100m
-                           * RequiemLevelRules.EnemyHpMultiplier(Acts.RequiemLevel.Of(run0))
-                           * (100 + ActHpBonusPercent(run0, rank)) / 100m;
-        if (EnemyRoleRules.ScalesHp(role) && hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp)
-            await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(creature.MaxHp, hpMultiplier));
+        var authoredBoss = creature.Monster is Monsters.ActBossMonster or Monsters.SuperbossMonster;
+        var actHpBonus = ActHpBonusPercent(run0, rank, authoredBoss);
+        var hpMultiplier = EconomyRules.EnemyHpMultiplier(RunSettings.EnemyHpPercent, Acts.RequiemLevel.Of(run0), actHpBonus);
+        var hpBefore = creature.MaxHp;
+        var hpScaleRequested = EnemyRoleRules.ScalesHp(role) && hpMultiplier != 1m && creature.CurrentHp == creature.MaxHp;
+        if (hpScaleRequested)
+            await CreatureCmd.SetMaxAndCurrentHp(creature, EnemyRules.ScaledMaxHp(hpBefore, hpMultiplier));
+        var hpAfterScale = creature.MaxHp; // observed command result, not an assumption that every hook accepted it
 
         if (EnemyRoleRules.UsesResources(role))
         {
@@ -137,20 +142,19 @@ public static class EnemySetup
                     await ApplyAffix(ctx, creature, affix);
             }
         }
+        Debugging.BalanceTrace.EnemyReady(creature, run0, role, actHpBonus, hpMultiplier, hpBefore, hpAfterScale, hpScaleRequested);
     }
 
     /// <summary>
     /// Надбавка ♥ от акта (docs/design/13 §2): Улей/Слава с оверлеями и новые акты в полном забеге, ночь Кровавого Двора
     /// (только обычные и элиты). Супербоссы и боссы новых актов — по своим числам.
     /// </summary>
-    public static int ActHpBonusPercent(MegaCrit.Sts2.Core.Runs.IRunState? run, EnemyRank rank)
+    public static int ActHpBonusPercent(MegaCrit.Sts2.Core.Runs.IRunState? run, EnemyRank rank, bool authoredBoss = false)
     {
         if (run == null || run.Acts.Count == 0) return 0;
         var kind = Acts.ActKinds.Current(run);
-        var bonus = ActRules.EnemyHpBonusPercent(kind, Acts.ActKinds.IsFullRun(run));
-        if (kind == ActKind.BloodCourt && rank != EnemyRank.Boss && run.CurrentMapCoord is { } coord && ActRules.IsNight(coord.row))
-            bonus += ActRules.NightHpBonusPercent;
-        return bonus;
+        var night = run.CurrentMapCoord is { } coord && ActRules.IsNight(coord.row);
+        return EconomyRules.ActHpBonusPercent(kind, Acts.ActKinds.IsFullRun(run), rank, authoredBoss, night, RunSettings.EconomyRevision);
     }
 
     /// <summary>Выдать аффикс (docs/design/11 §2): маркер-сила и её числа.</summary>

@@ -37,6 +37,8 @@ public sealed class RunSettingsData
     public bool ShowVanillaOnlyHeroes { get; set; }
     public bool FiveActs { get; set; } = true;
     public bool ShortRun { get; set; }
+    /// <summary>0 in snapshots predating B2.5; stamped only for NEW runs. Never upgrade saved balance silently.</summary>
+    public int EconomyRevision { get; set; }
     public int ActVariant { get; set; }
     public int RequiemLevelSetting { get; set; } = -1;
     public int Superbosses { get; set; } = 1;
@@ -82,6 +84,8 @@ public sealed class RunSettingsData
         Add("vanhero", B(ShowVanillaOnlyHeroes));
         Add("five", B(FiveActs));
         Add("short", B(ShortRun));
+        if (EconomyRevision is < 0 or > EconomyRules.CurrentRevision) throw new FormatException("Unsupported economy revision");
+        Add("economy", EconomyRevision);
         Add("variant", ActVariant);
         Add("level", RequiemLevelSetting);
         Add("boss", Superbosses);
@@ -109,7 +113,7 @@ public sealed class RunSettingsData
         foreach (var (key, value) in Extensions.OrderBy(kv => kv.Key, StringComparer.Ordinal))
         {
             if (key.Length == 0 || key.Contains('=') || key.Contains(';') || value.Contains(';')
-                || key is "v" or "run" or "p" or "sys" or "ovs" or "hp" or "dodge" or "vanhero" or "five" or "short"
+                || key is "v" or "run" or "p" or "sys" or "ovs" or "hp" or "dodge" or "vanhero" or "five" or "short" or "economy"
                     or "variant" or "level" or "boss" or "wide" or "shop" or "theft" or "pantheon" or "camp" or "campn" or "stone" or "candles")
                 throw new FormatException("Invalid extension in saved rules");
             sb.Append(';').Append(key).Append('=').Append(value);
@@ -143,7 +147,7 @@ public sealed class RunSettingsData
                 if (!ParsePersonal(value, data.Personal)) return null;
                 continue;
             }
-            var known = booleanKeys.Contains(key) || key is "v" or "hp" or "variant" or "level" or "boss" or "campn" or "candles";
+            var known = booleanKeys.Contains(key) || key is "v" or "hp" or "economy" or "variant" or "level" or "boss" or "campn" or "candles";
             if (!known) { data.Extensions.Add(key, value); continue; }
             if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n)) return null;
             if (booleanKeys.Contains(key) && n is not (0 or 1)) return null;
@@ -157,6 +161,7 @@ public sealed class RunSettingsData
                 case "vanhero": data.ShowVanillaOnlyHeroes = n != 0; break;
                 case "five": data.FiveActs = n != 0; break;
                 case "short": data.ShortRun = n != 0; break;
+                case "economy": if (n is < 0 or > EconomyRules.CurrentRevision) return null; data.EconomyRevision = n; break;
                 case "variant": data.ActVariant = n; break;
                 case "level": data.RequiemLevelSetting = n; break;
                 case "boss": data.Superbosses = n; break;

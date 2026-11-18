@@ -32,6 +32,10 @@ public static class RunDiagnostics
         }
         catch (Exception e) { return "unavailable:" + e.GetType().Name; }
     }
+    // First call reads/hashes installed artifacts; subsequent calls reuse the same process-lifetime snapshot.
+    // This establishes recorded hash consistency, not signed provenance and not a no-IO performance guarantee.
+    internal static object BinaryIdentity() => Binaries();
+
     private static object Binaries()
     {
         if (_binaries != null) return _binaries;
@@ -78,6 +82,7 @@ public static class RunDiagnostics
             loaded_mods = ModManager.GetLoadedMods().Select(m => new { id = m.manifest?.id, version = m.manifest?.version,
                 dll_sha256 = m.assembly == null ? "none" : FileHash(m.assembly.Location) }).ToArray(),
             save_schema = SaveSchema, shop_protocol = Shops.ShopOperations.Protocol,
+            session_protocol = Core.StartupState.SessionProtocol, economy_policy_current = Core.EconomyRules.CurrentRevision,
         };
     }
 
@@ -107,7 +112,7 @@ public static class RunDiagnostics
                 background = p.Relics.OfType<BackgroundRelic>().FirstOrDefault()?.Id.Entry ?? "not-selected",
                 deferred_cards = TravelPack.Of(p)?.PendingCards.Count ?? 0,
                 operation_revision = TravelPack.Of(p)?.OperationRevision ?? 0,
-                operation_blocked = InventoryGate.For(p).Blocked,
+                operation_blocked = InventoryGate.ObserveBlocked(p),
                 operation_pending = TravelPack.Of(p)?.OperationPending ?? "",
                 pending_brew_costs = p.PotionSlots.OfType<MegaCrit.Sts2.Core.Models.PotionModel>().Count(HerbalistPouch.HasBrewCost),
             }).ToArray(),

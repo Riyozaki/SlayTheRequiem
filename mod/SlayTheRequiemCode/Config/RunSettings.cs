@@ -54,6 +54,7 @@ public static class RunSettings
     public static bool ShowVanillaOnlyHeroes => _active?.ShowVanillaOnlyHeroes ?? RequiemConfig.ShowVanillaOnlyHeroes;
     public static bool FiveActs => _active?.FiveActs ?? RequiemConfig.FiveActs;
     public static bool ShortRun => _active?.ShortRun ?? RequiemConfig.ShortRun;
+    public static int EconomyRevision => _active?.EconomyRevision ?? EconomyRules.CurrentRevision;
     public static ActVariantMode ActVariant => _active != null ? (ActVariantMode)_active.ActVariant : RequiemConfig.ActVariant;
     public static int RequiemLevelSetting => _active?.RequiemLevelSetting ?? RequiemConfig.RequiemLevelSetting;
     public static SuperbossMode Superbosses => _active != null ? (SuperbossMode)_active.Superbosses : RequiemConfig.Superbosses;

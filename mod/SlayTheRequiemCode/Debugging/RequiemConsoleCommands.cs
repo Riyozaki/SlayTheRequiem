@@ -399,7 +399,7 @@ public sealed class StrTraceCmd : RequiemConsoleCmd
 {
     public override string CmdName => "str_trace";
     public override string Args => "[on|off|status]";
-    public override string Description => "Slay the Requiem: trace reward models, holders, Add, combat copy, draw and shouts.";
+    public override string Description => "Slay the Requiem: read-only reward and economic/hero/enemy snapshots for final-cycle comparison.";
     public override bool IsNetworked => false;
     public override bool DebugOnly => false;
     public override CmdResult Process(Player? issuingPlayer, string[] args)
@@ -407,8 +407,13 @@ public sealed class StrTraceCmd : RequiemConsoleCmd
         var option = args.FirstOrDefault()?.ToLowerInvariant() ?? "status";
         if (option is not ("on" or "off" or "status") || args.Length > 1) return Fail("str_trace [on|off|status]");
         if (option != "status") CardRewardTrace.Enabled = option == "on";
-        if (CardRewardTrace.Enabled) RunDiagnostics.Log(RunManager.Instance.DebugOnlyGetState(), "trace-enabled");
-        return Ok($"[CardReward] trace={(CardRewardTrace.Enabled ? "ON" : "OFF")}; [ShopOperation] and forced failure diagnostics remain in the log.");
+        if (CardRewardTrace.Enabled)
+        {
+            var run = RunManager.Instance.DebugOnlyGetState();
+            RunDiagnostics.Log(run, "trace-enabled");
+            if (run != null) foreach (var player in run.Players) BalanceTrace.Snapshot("trace:enabled", player);
+        }
+        return Ok($"[CardReward]/[RequiemBalance] trace={(CardRewardTrace.Enabled ? "ON" : "OFF")}; [ShopOperation] and forced failure diagnostics remain in the log.");
     }
 }
 

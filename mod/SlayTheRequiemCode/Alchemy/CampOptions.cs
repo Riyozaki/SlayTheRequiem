@@ -68,6 +68,7 @@ public static class Camp
         hero.Refresh();
         Lists[player.NetId] = options;
         LastChosen.Remove(player.NetId);
+        Debugging.BalanceTrace.Snapshot("camp:begin", player);
     }
 
     public static void Choosing(Player player, RestSiteOption option) => LastChosen[player.NetId] = option;
@@ -118,6 +119,8 @@ public static class Camp
         MainFile.Logger.Info($"[InventoryOperation] {result.Target} {result.Status}: {result.Detail}");
         if (result.Status == OperationStatus.PartialCommit) InventoryGate.Block(player, $"{result.Target}: {result.Detail}");
         mutation.Complete();
+        mutation.Dispose(); // observation is after this scope's durable pending marker has been restored
+        Debugging.BalanceTrace.Snapshot("camp:result", player, $"{action}:{result.Status}:cost={cost}");
         return result.Changed;
     }
 

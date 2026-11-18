@@ -214,7 +214,7 @@ public static class ShopServices
         if (ledger == null || !MerchantLedger.Active(player)) return list;
         var trust = ledger.CurrentTrust;
         var gold = player.Gold;
-        var act = Acts.ActKinds.Tier(player.RunState);
+        var economy = ShopEconomy.Context(player.RunState);
         int Price(int basePrice) => ShopRules.ApplyTrust(basePrice, trust);
 
         void Paid<T>(int price, int amount, Func<Task> run) where T : CounterCard
@@ -223,10 +223,10 @@ public static class ShopServices
         }
 
         // Камень душ (Чародей, Ювелир): сила по акту.
-        void AddStone(int actIndex)
+        void AddStone()
         {
             if (Progression.HeroRecord.Of(player) == null) return;
-            var power = ShopRules.SoulStonePower(actIndex);
+            var power = EconomyRules.SoulStonePower(economy);
             var price = Price(ShopRules.SoulStonePrice(power));
             Paid<CounterSoulStone>(price, power, () => ShopActions.Perform(player, ShopAction.BuyStone, price, power));
         }
@@ -285,7 +285,7 @@ public static class ShopServices
 
                 if (HerbalistPouch.Of(player) is { } pouch)
                 {
-                    var kitPrice = Price(ShopRules.ReagentKitPrice(act));
+                    var kitPrice = Price(EconomyRules.ReagentKitPrice(economy));
                     var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
                     Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
                         () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
@@ -310,7 +310,7 @@ public static class ShopServices
                         var price = Price(ShopRules.EnchantServicePrice(own, ownStone: true));
                         Paid<CounterEnchantOwnStone>(price, own, () => ShopActions.Perform(player, ShopAction.EnchantItem, price, own, "own"));
                     }
-                    var shopStone = ShopRules.SoulStonePower(act);
+                    var shopStone = EconomyRules.SoulStonePower(economy);
                     var shopPrice = Price(ShopRules.EnchantServicePrice(shopStone, ownStone: false));
                     Paid<CounterEnchantShopStone>(shopPrice, shopStone, () => ShopActions.Perform(player, ShopAction.EnchantItem, shopPrice, shopStone, "shop"));
                 }
@@ -323,7 +323,7 @@ public static class ShopServices
                     var price = Price(ShopRules.CardEnchantPrice);
                     Paid<CounterEnchantCard>(price, 1, () => ShopActions.Perform(player, ShopAction.EnchantCard, price, 0));
                 }
-                AddStone(act);
+                AddStone();
                 break;
             }
             case ShopType.Jeweler:
@@ -338,7 +338,7 @@ public static class ShopServices
                     var price = Price(ShopRules.FacetPrice);
                     Paid<CounterFacet>(price, 0, () => ShopActions.Perform(player, ShopAction.Facet, price, 0));
                 }
-                AddStone(act);
+                AddStone();
                 break;
             }
             case ShopType.Temple:
@@ -389,7 +389,7 @@ public static class ShopServices
                 // Реагенты в лавках (09, M5 п. 5): Караван везёт и травы — тот же набор, что у Травницы.
                 if (HerbalistPouch.Of(player) != null)
                 {
-                    var kitPrice = Price(ShopRules.ReagentKitPrice(act));
+                    var kitPrice = Price(EconomyRules.ReagentKitPrice(economy));
                     var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
                     Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
                         () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
@@ -442,11 +442,11 @@ public static class ShopServices
     private static async Task OrderMenu(Player player, MerchantLedger ledger)
     {
         var shop = ledger.CurrentShop;
-        var act = Acts.ActKinds.Tier(player.RunState);
+        var economy = ShopEconomy.Context(player.RunState);
         var options = new List<Option>();
         foreach (var category in ShopRules.OrderOptions(shop))
         {
-            var price = ShopRules.ApplyTrust(ShopRules.OrderPrice(ShopRules.OrderItemPrice(category, act)), ledger.CurrentTrust);
+            var price = ShopRules.ApplyTrust(ShopRules.OrderPrice(EconomyRules.OrderItemPrice(category, economy)), ledger.CurrentTrust);
             Func<RunState, Player, CounterCard> make = category switch
             {
                 OrderCategory.Weapon => (s, p) => s.CreateCard<OrderWeapon>(p),
@@ -458,7 +458,7 @@ public static class ShopServices
                 _ => (s, p) => s.CreateCard<OrderEquipment>(p),
             };
             var cat = category;
-            options.Add(new Option(make, price, ShopRules.OrderTier(shop, act),
+            options.Add(new Option(make, price, EconomyRules.OrderTier(shop, economy),
                 () => ShopActions.Perform(player, ShopAction.PlaceOrder, (int)shop, (int)cat, price.ToString()), price <= player.Gold));
         }
         if (options.Count == 0) return;

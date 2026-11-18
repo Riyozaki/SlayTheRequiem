@@ -5,7 +5,7 @@ from tree_sitter import Language, Parser
 import tree_sitter_c_sharp as cs
 p=Parser(Language(cs.language()))
 bad=0;n=0
-for f in sorted(glob.glob('mod/**/*.cs',recursive=True)):
+for f in sorted(glob.glob('mod/**/*.cs',recursive=True) + glob.glob('tools/balance/Trace/**/*.cs',recursive=True)):
     n+=1
     t=p.parse(open(f,'rb').read())
     errs=[]

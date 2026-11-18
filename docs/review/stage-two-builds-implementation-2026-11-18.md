@@ -44,7 +44,9 @@
 - 3918 ключей на язык; 1397 проверок локализации / 0 ошибок. Генерация идемпотентна.
 - 151 Python rules + 35 build-safety tests PASS. Боевые source contracts: 53 typed moves / 199 ролей.
 - 342 карты: card audit 0 ошибок, одно прежнее предупреждение RendingCut; art fit 0 нарушений/дублей.
-- Новые Core regressions добавлены в BuildAccessTests; исполнение фиксируется отдельно последующим CI.
+- 27 новых cases BuildAccessTests исполнены в [CI 44248375664](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44248375664)
+  на `72ee189e8173555c2e5e590d05b7ea1775cd36ac`: **737 executed / 737 passed / 0 failed / 0 notExecuted**, все четыре jobs PASS.
+  Counters получены из annotation check `134612752731`; локальный TRX не скачан. Это не проверка последующих правок Б2.5.
 
 Подготовлены, но **не исполнены**, native cases: Regent NEW→Continue, scoped signature mastery, физические одинаковые
 кольца. Предыдущие семь боевых native fixtures тоже не запускались. В sandbox нет SDK и легальных compile DLL игры.

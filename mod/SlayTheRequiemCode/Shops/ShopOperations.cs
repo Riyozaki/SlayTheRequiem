@@ -242,6 +242,7 @@ public static class ShopOperations
         mutation.Complete(); // uncertainty is now represented by the persisted Block, or all peer receipts matched
         mutation.Dispose(); // dispose BEFORE reconciliation: the last receipt may have arrived during the scope
         CheckPeers(player, request.Id); // no new packet is necessary to reconcile an already complete receipt set
+        Debugging.BalanceTrace.Snapshot("shop:result", player, $"{request.Kind}:{result.Status}:gold_delta={result.Gold}");
         return result;
     }
 

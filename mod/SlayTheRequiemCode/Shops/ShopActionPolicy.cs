@@ -33,7 +33,7 @@ public static class ShopActionPolicy
         var ledger = MerchantLedger.Of(player);
         var shop = ledger?.CurrentShop ?? ShopType.Wanderer;
         var trust = ledger?.CurrentTrust ?? 0;
-        var act = Acts.ActKinds.Tier(player.RunState);
+        var economy = ShopEconomy.Context(player.RunState);
         var hero = HeroRecord.Of(player);
         var pouch = HerbalistPouch.Of(player);
         var price = 0;
@@ -90,7 +90,7 @@ public static class ShopActionPolicy
                 valid = At(ShopType.Herbalist, ShopType.Caravan) && pouch != null
                     && AlchemyRules.Fit(pouch.Total, ShopRules.ReagentKitSize) == ShopRules.ReagentKitSize
                     && s == string.Join(",", ShopServices.ReagentKit(player).Select(r => ((int)r).ToString(System.Globalization.CultureInfo.InvariantCulture)))
-                    && Paid(ShopRules.ReagentKitPrice(act));
+                    && Paid(EconomyRules.ReagentKitPrice(economy));
                 break;
             case ShopAction.SellReagents:
                 value = ShopRules.ReagentSellValue(pouch?.Total ?? 0);
@@ -101,7 +101,7 @@ public static class ShopActionPolicy
                 break;
             case ShopAction.PlaceOrder:
                 if (!Enum.IsDefined(typeof(OrderCategory), b)) return false;
-                price = ShopRules.ApplyTrust(ShopRules.OrderPrice(ShopRules.OrderItemPrice((OrderCategory)b, act)), trust);
+                price = ShopRules.ApplyTrust(ShopRules.OrderPrice(EconomyRules.OrderItemPrice((OrderCategory)b, economy)), trust);
                 valid = ledger != null && a == (int)shop && Enum.IsDefined(typeof(OrderCategory), b)
                     && ShopRules.CanOrder(trust) && !ledger.HasOrder && ShopRules.OrderOptions(shop).Contains((OrderCategory)b)
                     && int.TryParse(s, out var quoted) && quoted == price;
@@ -109,7 +109,7 @@ public static class ShopActionPolicy
             case ShopAction.EnchantItem:
                 valid = At(ShopType.Arcanist) && hero != null && Enchanting.Enchantable(player).Count > 0
                     && b is >= 1 and <= 3 && s is "own" or "shop"
-                    && (s == "own" ? hero.Stones(b) > 0 : b == ShopRules.SoulStonePower(act))
+                    && (s == "own" ? hero.Stones(b) > 0 : b == EconomyRules.SoulStonePower(economy))
                     && Paid(ShopRules.EnchantServicePrice(b, s == "own"));
                 break;
             case ShopAction.RewriteScroll:
@@ -120,7 +120,7 @@ public static class ShopActionPolicy
                 valid = At(ShopType.Arcanist) && player.Deck.Cards.Count > 0 && Paid(ShopRules.CardEnchantPrice);
                 break;
             case ShopAction.BuyStone:
-                valid = At(ShopType.Arcanist, ShopType.Jeweler) && hero != null && b == ShopRules.SoulStonePower(act)
+                valid = At(ShopType.Arcanist, ShopType.Jeweler) && hero != null && b == EconomyRules.SoulStonePower(economy)
                     && Paid(ShopRules.SoulStonePrice(b));
                 break;
             case ShopAction.Engrave:

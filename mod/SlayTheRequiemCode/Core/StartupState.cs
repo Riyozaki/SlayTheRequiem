@@ -4,7 +4,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 public static class StartupState
 {
     public const int Protocol = 2; // saved creation journal; NOT bumped by a UI choice-stream change
-    public const int SessionProtocol = 3; // B2.3 text-choice stream + equipment operation support
+    public const int SessionProtocol = 4; // B2.4 form/element choices + B2.5 saved economy policy; same build on all peers
     public const int Complete = 4;
     public const string RulesKey = "hero_creation";
     // Control strings in the EXISTING RunSettingsMessage wire layout. Old BaseLib builds cannot decode an
@@ -20,11 +20,16 @@ public static class StartupState
 
     // The rules envelope remains v1 for saved-run compatibility. A NEW lobby must explicitly agree to the
     // wizard's choice-stream protocol on both sides; legacy Random clients cannot silently execute another stream.
-    public static void StampNewRules(RunSettingsData data) => data.Extensions[RulesKey] = Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public static void StampNewRules(RunSettingsData data)
+    {
+        data.Extensions[RulesKey] = Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        data.EconomyRevision = EconomyRules.CurrentRevision;
+    }
     public static void RequireNewRules(RunSettingsData data)
     {
-        if (!data.Extensions.TryGetValue(RulesKey, out var value) || value != Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture))
-            throw new FormatException("Incompatible hero creation protocol; use the same mod build on every peer");
+        if (!data.Extensions.TryGetValue(RulesKey, out var value) || value != Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            || data.EconomyRevision != EconomyRules.CurrentRevision)
+            throw new FormatException("Incompatible hero creation/economy protocol; use the same mod build on every peer");
     }
     public static void RequirePeers(IEnumerable<ulong> peers, IReadOnlyDictionary<ulong, int> protocols)
     {

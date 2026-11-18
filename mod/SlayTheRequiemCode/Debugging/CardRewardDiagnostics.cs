@@ -154,6 +154,7 @@ public static class DrawTracePatch
             var cards = (await task).ToList();
             MainFile.Logger.Info($"[CardReward] phase=draw:result {CardRewardTrace.Context(player)} returned={cards.Count} before=[{before}] after=[{CardRewardTrace.Piles(player)}]");
             foreach (var card in cards) CardRewardTrace.Card("draw:card", card);
+            BalanceTrace.Snapshot("draw:after", player, $"returned={cards.Count}");
             return cards;
         }
         catch (Exception e) { MainFile.Logger.Error($"[CardReward] phase=draw:exception {CardRewardTrace.Context(player)} {e}"); throw; }

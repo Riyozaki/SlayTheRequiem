@@ -481,6 +481,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         var start = Food.StartStamina;
         if (start > 0) RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount(start);
         NoteCombatStart(combatState);
+        Debugging.BalanceTrace.Snapshot("combat:start-hero-hook", Owner);
     }
 
     protected override async Task OnTurnStarted(PlayerChoiceContext ctx)
@@ -690,6 +691,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         await AfterVictoryPaths(room);
         await SyncMaxHp();
         Refresh();
+        Debugging.BalanceTrace.Snapshot("combat:victory-pre-rewards", Owner, room.Encounter.GetType().Name);
     }
 
     public override async Task AfterRoomEntered(AbstractRoom room)
@@ -699,6 +701,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         RecordNativeSchools();
         NoteRoomVisit(room);
         Refresh();
+        Debugging.BalanceTrace.Snapshot("room:hero-hook", Owner);
     }
 
     internal void NoteRoomVisit(AbstractRoom room)

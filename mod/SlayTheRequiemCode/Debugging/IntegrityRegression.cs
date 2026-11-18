@@ -835,7 +835,7 @@ public static partial class IntegrityRegression
     private static async Task ShopStoneLateThrow()
     {
         var owner = ShopFixture(ShopType.Arcanist); var hero = HeroRecord.Of(owner)!;
-        var power = ShopRules.SoulStonePower(Acts.ActKinds.Tier(owner.RunState));
+        var power = EconomyRules.SoulStonePower(ShopEconomy.Context(owner.RunState));
         var price = ShopRules.ApplyTrust(ShopRules.SoulStonePrice(power), MerchantLedger.Of(owner)!.CurrentTrust);
         var (request, quote) = Quote(owner, ShopAction.BuyStone, price, power);
         var gold = owner.Gold; var stones = hero.Stones(power); SerializablePlayer? saved = null;
@@ -861,7 +861,7 @@ public static partial class IntegrityRegression
         var owner = ShopFixture(ShopType.Herbalist); var pouch = HerbalistPouch.Of(owner)!;
         pouch.Reagents = new int[AlchemyRules.ReagentCount];
         var kit = ShopServices.ReagentKit(owner);
-        var price = ShopRules.ApplyTrust(ShopRules.ReagentKitPrice(Acts.ActKinds.Tier(owner.RunState)), MerchantLedger.Of(owner)!.CurrentTrust);
+        var price = ShopRules.ApplyTrust(EconomyRules.ReagentKitPrice(ShopEconomy.Context(owner.RunState)), MerchantLedger.Of(owner)!.CurrentTrust);
         var encoded = string.Join(",", kit.Select(r => ((int)r).ToString(System.Globalization.CultureInfo.InvariantCulture)));
         var (request, quote) = Quote(owner, ShopAction.BuyReagents, price, 0, encoded); var gold = owner.Gold;
         void Fail() => throw new InvalidOperationException("kit display after all raw materials");
@@ -879,7 +879,7 @@ public static partial class IntegrityRegression
     private static async Task ShopStalePrice()
     {
         var owner = ShopFixture(ShopType.Arcanist); var hero = HeroRecord.Of(owner)!;
-        var power = ShopRules.SoulStonePower(Acts.ActKinds.Tier(owner.RunState));
+        var power = EconomyRules.SoulStonePower(ShopEconomy.Context(owner.RunState));
         var price = ShopRules.ApplyTrust(ShopRules.SoulStonePrice(power), MerchantLedger.Of(owner)!.CurrentTrust);
         var (request, quote) = Quote(owner, ShopAction.BuyStone, price, power); var before = hero.TotalStones;
         owner.Gold = 0;
@@ -939,7 +939,7 @@ public static partial class IntegrityRegression
     private static async Task ShopPaymentLateThrow()
     {
         var owner = ShopFixture(ShopType.Arcanist); var hero = HeroRecord.Of(owner)!;
-        var power = ShopRules.SoulStonePower(Acts.ActKinds.Tier(owner.RunState));
+        var power = EconomyRules.SoulStonePower(ShopEconomy.Context(owner.RunState));
         var price = ShopRules.ApplyTrust(ShopRules.SoulStonePrice(power), MerchantLedger.Of(owner)!.CurrentTrust);
         var (request, quote) = Quote(owner, ShopAction.BuyStone, price, power); var stones = hero.Stones(power); var gold = owner.Gold;
         void Fail() => throw new InvalidOperationException("GoldChanged after payment mutation");

@@ -36,6 +36,12 @@ public static class InventoryGate
         return state.Gate;
     }
 
+    /// <summary>Observation only: unlike For, does not mark an interrupted operation, allocate a gate or log.
+    /// A pending marker is reported separately by diagnostics; reading it must not finalize recovery policy.</summary>
+    internal static bool ObserveBlocked(Player player) =>
+        (Gates.TryGetValue(player, out var state) && state.Gate.Blocked)
+        || Alchemy.TravelPack.Of(player)?.OperationBlocked == true;
+
     /// <summary>
     /// Write-ahead uncertainty marker, NOT an atomic disk transaction or an automatic payment repair. A scope
     /// owns an existing lease; nested scopes preserve the outer marker. Complete only after observing/finalizing

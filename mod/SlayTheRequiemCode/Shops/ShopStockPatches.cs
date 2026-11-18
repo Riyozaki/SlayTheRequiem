@@ -18,7 +18,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 //
 // | Вид        | Карты героя (5)     | Бесцветные (2) | Реликвии (3)                          | Зелья (3)              |
 // |------------|---------------------|----------------|---------------------------------------|------------------------|
-// | Странник   | ваниль              | ваниль         | 2 ванильные + 1 снаряжение I–II       | ваниль                 |
+// | Странник   | ваниль              | ваниль         | 2 ванильные + снаряжение по сохранённой EconomyRules | ваниль         |
 // | Оружейник  | ваниль              | ваниль         | оружие + броня (класс героя) + щит/любое | ваниль              |
 // | Чародейская| 5 заклинаний        | ваниль         | Трактат + посох + ванильная           | 3 свитка               |
 // | Травница   | ваниль              | ваниль         | ваниль                                | 2 зелья + 1 яд Реквиема|
@@ -126,11 +126,11 @@ public static class ShopRelicsPatch
         var list = Relics(__instance);
         try
         {
-            var act = Acts.ActKinds.Tier(player.RunState);
-            var (min, max) = ShopRules.EquipmentTiers(shop.Value, act);
+            var economy = ShopEconomy.Context(player.RunState);
+            var (min, max) = EconomyRules.EquipmentTiers(shop.Value, economy);
             var taken = new HashSet<Type>();
             var order = ShopTypePatch.OrderFor(player);
-            var orderTier = ShopRules.OrderTier(shop.Value, act);
+            var orderTier = EconomyRules.OrderTier(shop.Value, economy);
             (int, int) Tiers(OrderCategory category) => order == category ? (orderTier, orderTier) : (min, max);
             switch (shop.Value)
             {
@@ -161,7 +161,7 @@ public static class ShopRelicsPatch
                 {
                     if (ShopStock.PickTreatise(player) is { } treatise) __instance.AddRelicEntry(ShopStock.RelicEntry(treatise, player));
                     else AddVanilla(__instance, RelicRarity.Shop);
-                    var (stLo, stHi) = ShopRules.StaffTiers(act);
+                    var (stLo, stHi) = EconomyRules.StaffTiers(economy);
                     if (ShopStock.PickStaff(player, stLo, stHi, taken) is { } staff) __instance.AddRelicEntry(ShopStock.RelicEntry(staff, player));
                     else AddVanilla(__instance, RelicFactory.RollRarity(player));
                     AddVanilla(__instance, RelicFactory.RollRarity(player));
@@ -209,7 +209,7 @@ public static class ShopRelicsPatch
                 case ShopType.Caravan:
                 {
                     var (lo, hi) = Tiers(OrderCategory.Equipment);
-                    var (eLo, eHi) = ShopRules.EquipmentTiers(ShopType.Armorer, act);
+                    var (eLo, eHi) = EconomyRules.EquipmentTiers(ShopType.Armorer, economy);
                     AddEquipment(__instance, Math.Max(lo, eLo), Math.Max(hi, eHi), e => e is WeaponRelic || e is ArmorRelic, taken, fallback: RelicRarity.Common);
                     AddEquipment(__instance, 1, 5, e => IsRing(e) || IsAmulet(e), taken, fallback: RelicRarity.Uncommon);
                     // «Экзотика из другого акта» (§2.8): ступенью выше витрины Оружейника.
@@ -261,11 +261,11 @@ public static class HerbalistPotionsPatch
         var list = Potions(__instance);
         try
         {
-            var act = Acts.ActKinds.Tier(player.RunState);
-            var tier = ShopRules.BrewTier(act);
+            var economy = ShopEconomy.Context(player.RunState);
+            var tier = EconomyRules.BrewTier(economy);
             var order = ShopTypePatch.OrderFor(player);
             var scrolls = new HashSet<Type>();
-            var scrollTier = ShopRules.ScrollTier(act);
+            var scrollTier = EconomyRules.ScrollTier(economy);
             // (вид, ступень): 0 — зелье, 1 — яд, 2 — свиток.
             (int Kind, int Tier)[] plan = shop.Value switch
             {
@@ -321,7 +321,7 @@ public static class EquipmentRestockPatch
         if (player == null || shop == null) return true;
         try
         {
-            var (min, max) = ShopRules.EquipmentTiers(shop.Value, Acts.ActKinds.Tier(player.RunState));
+            var (min, max) = EconomyRules.EquipmentTiers(shop.Value, ShopEconomy.Context(player.RunState));
             var taken = new HashSet<Type> { bought.GetType() };
             foreach (var entry in inventory?.RelicEntries ?? [])
                 if (entry.Model != null) taken.Add(entry.Model.GetType());
@@ -330,7 +330,7 @@ public static class EquipmentRestockPatch
             if (bought is Pantheon.ICelestialGarment) return true;
             if (bought is MageStaff)
             {
-                var (sLo, sHi) = ShopRules.StaffTiers(Acts.ActKinds.Tier(player.RunState));
+                var (sLo, sHi) = EconomyRules.StaffTiers(ShopEconomy.Context(player.RunState));
                 pick = ShopStock.PickStaff(player, sLo, sHi, taken);
             }
             else pick = ShopStock.PickEquipment(player, min, max, e => e.PriceCategory == category, taken);
