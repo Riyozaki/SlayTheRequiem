@@ -1,0 +1,357 @@
+{
+  "workflow": "ci.yml",
+  "run_id": 44239623951,
+  "code_source_commit": "f5028e7df2d3ad6b86f185ee37f01c99e932fbde",
+  "conclusion": "success",
+  "createdAt": "2026-11-18T04:46:23Z",
+  "headSha": "f5028e7df2d3ad6b86f185ee37f01c99e932fbde",
+  "jobs": [
+    {
+      "completedAt": "2026-11-18T04:46:48Z",
+      "conclusion": "success",
+      "databaseId": 134584030946,
+      "name": "Rules sim · Python",
+      "startedAt": "2026-11-18T04:46:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install numeric simulation dependency (no optional skipped suite)",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "unittest",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44239623951/job/134584030946"
+    },
+    {
+      "completedAt": "2026-11-18T04:46:48Z",
+      "conclusion": "success",
+      "databaseId": 134584031247,
+      "name": "Build/export/install safety contracts · Python (not full mod build)",
+      "startedAt": "2026-11-18T04:46:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "G0 tool contract tests",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44239623951/job/134584031247"
+    },
+    {
+      "completedAt": "2026-11-18T04:46:48Z",
+      "conclusion": "success",
+      "databaseId": 134584031370,
+      "name": "Core · xUnit (.NET 9)",
+      "startedAt": "2026-11-18T04:46:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-dotnet@v4",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "dotnet test",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Preserve Core TRX (no game files)",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-dotnet@v4",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44239623951/job/134584031370"
+    },
+    {
+      "completedAt": "2026-11-18T04:46:48Z",
+      "conclusion": "success",
+      "databaseId": 134584031545,
+      "name": "Localization, art, Harmony targets & C# syntax",
+      "startedAt": "2026-11-18T04:46:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned content-check dependencies",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Localization is up to date",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Localization coverage (eng = rus, every model has a title, model ids are unique)",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Content checker regressions (including dynamic creation localization)",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "C# syntax (all mod files)",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Vanilla art table is up to date (tools/art/vanilla_art.csv)",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Own art (M5, M7) — SVG sources match the generators, PNG present and sized (bosses, scenes, acts, relics, card portraits)",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Requiem sounds (M7) — data/sfx.csv events and vanilla FMOD paths, own WAVs match the synth",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Every model has its own or a vanilla image",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Card audit (card spec §7), design tables (docs/design 16/17/18/06) and card pools (19) match the code",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Vanilla attacks markup matches the game data (sts2_database)",
+          "number": 15,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Harmony patch targets exist in the game (decompiled v0.107.1)",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Vanilla relic rework covers every relic of the game (07 §7, data/vanilla_relics.csv)",
+          "number": 17,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 33,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 34,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 35,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44239623951/job/134584031545"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-11-18T04:46:57Z",
+  "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44239623951",
+  "core_counters": {
+    "total": 658,
+    "executed": 658,
+    "passed": 658,
+    "failed": 0,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "counter_source": {
+    "check_run_id": 134584031370,
+    "path": ".github",
+    "line": 699,
+    "message": "Core test result: {'total': '658', 'executed': '658', 'passed': '658', 'failed': '0', 'error': '0', 'timeout': '0', 'aborted': '0', 'inconclusive': '0', 'passedButRunAborted': '0', 'notRunnable': '0', 'notExecuted': '0', 'disconnected': '0', 'warning': '0', 'completed': '0', 'inProgress': '0', 'pending': '0'}",
+    "description": "Public successful TRX counters from the Core check annotation, not inferred from source attributes."
+  },
+  "artifacts": [
+    {
+      "id": 14398533082,
+      "name": "core-results-f5028e7df2d3ad6b86f185ee37f01c99e932fbde",
+      "size_in_bytes": 156691,
+      "expired": false,
+      "created_at": "2026-11-18T04:46:55Z",
+      "digest": "sha256:ca365ef71fa74c61665d96b062445ceb870483b01c951f6d12ce3a8856e0d00c"
+    }
+  ],
+  "raw_trx_downloaded_locally": false,
+  "raw_trx_note": "Not downloaded locally. Prior B2 artifact/raw-log download redirected to storage outside the sandbox allowlist and returned EOF; not retried in a loop. Public API metadata and TRX-derived annotation retained without signed redirects.",
+  "full_mod_build": false,
+  "pack_export": false,
+  "native_models_executed": false,
+  "game_acceptance": false,
+  "co_op": false
+}

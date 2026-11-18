@@ -1,0 +1,399 @@
+{
+  "code_source_commit": "f5028e7df2d3ad6b86f185ee37f01c99e932fbde",
+  "source_files": {
+    "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs": "23739dc6cb6add25c67f8393181e902a4a2fd29d64e1a6a908c34c060b35664a",
+    "mod/SlayTheRequiemCode/Debugging/IntegrityHeroCreation.cs": "d4d609e4cdb21d4c53e2c5bb906153cc6a75f2e2b81e7cb2da28b3a8f6c3b357"
+  },
+  "source_cases": 77,
+  "new_creation_cases": 10,
+  "compiled": false,
+  "executed": false,
+  "note": "Source inventory, not a test result. Confirmed-plan fixtures bypass only the real selector/ack screen and do not establish disk Continue/UI/replay/co-op correctness.",
+  "cases": [
+    {
+      "name": "empty-chest",
+      "method": "Empty",
+      "executed": false
+    },
+    {
+      "name": "card-properties-json-reload",
+      "method": "CardProperties",
+      "executed": false
+    },
+    {
+      "name": "batch-second-veto-boundary",
+      "method": "BatchVeto",
+      "executed": false
+    },
+    {
+      "name": "throw-after-store-detach",
+      "method": "ThrowAfterStore",
+      "executed": false
+    },
+    {
+      "name": "throw-after-chest-insert",
+      "method": "ThrowAfterTake",
+      "executed": false
+    },
+    {
+      "name": "duplicate-staves-no-equip",
+      "method": "DuplicateStaves",
+      "executed": false
+    },
+    {
+      "name": "legacy-and-opaque-relocation",
+      "method": "LegacyAndOpaque",
+      "executed": false
+    },
+    {
+      "name": "obtain-clone-and-reward-option",
+      "method": "ObtainClone",
+      "executed": false
+    },
+    {
+      "name": "saved-claim-reconciliation",
+      "method": "ClaimReconciliation",
+      "executed": false
+    },
+    {
+      "name": "scroll-clone-late-throw",
+      "method": "ScrollClone",
+      "executed": false
+    },
+    {
+      "name": "scroll-veto-no-payment",
+      "method": "ScrollVeto",
+      "executed": false
+    },
+    {
+      "name": "paid-offer-stale-gold-retry",
+      "method": "PaidOffer",
+      "executed": false
+    },
+    {
+      "name": "brew-fallback-exact-materials",
+      "method": "BrewFinalizer",
+      "executed": false
+    },
+    {
+      "name": "wire-request-receipt-roundtrip",
+      "method": "WireRoundTrip",
+      "executed": false
+    },
+    {
+      "name": "native-reward-veto-unload-retry",
+      "method": "NativeRewardRetry",
+      "executed": false
+    },
+    {
+      "name": "native-reward-clone-removal",
+      "method": "NativeRewardClone",
+      "executed": false
+    },
+    {
+      "name": "chest-restore-no-second-obtain",
+      "method": "RelocationNoObtain",
+      "executed": false
+    },
+    {
+      "name": "chest-interrupted-save-reconcile",
+      "method": "ChestInterruptedSave",
+      "executed": false
+    },
+    {
+      "name": "unknown-saved-property-keeps-source",
+      "method": "UnknownProperty",
+      "executed": false
+    },
+    {
+      "name": "pending-scope-no-duplicate",
+      "method": "PendingScope",
+      "executed": false
+    },
+    {
+      "name": "pending-replacement-debt-in-chest",
+      "method": "ReplacementInChest",
+      "executed": false
+    },
+    {
+      "name": "library-veto-affordability-retry",
+      "method": "LibraryRetry",
+      "executed": false
+    },
+    {
+      "name": "scroll-insertion-save-reconcile",
+      "method": "ScrollInterruptedSave",
+      "executed": false
+    },
+    {
+      "name": "brew-insertion-json-recovery",
+      "method": "BrewRecovery",
+      "executed": false
+    },
+    {
+      "name": "brew-late-notification-exact-once",
+      "method": "BrewLateThrow",
+      "executed": false
+    },
+    {
+      "name": "enchant-recheck-and-late-throw",
+      "method": "EnchantLateThrow",
+      "executed": false
+    },
+    {
+      "name": "camp-late-commit-consumes-action",
+      "method": "CampLateThrow",
+      "executed": false
+    },
+    {
+      "name": "saved-partial-block-survives-reload",
+      "method": "SavedBlock",
+      "executed": false
+    },
+    {
+      "name": "card-store-save-inside-detach",
+      "method": "CardStoreInterruptedSave",
+      "executed": false
+    },
+    {
+      "name": "relic-store-save-inside-detach",
+      "method": "RelicStoreInterruptedSave",
+      "executed": false
+    },
+    {
+      "name": "chest-live-identity-conflict",
+      "method": "ChestIdentityConflict",
+      "executed": false
+    },
+    {
+      "name": "interrupted-mutation-fails-closed",
+      "method": "InterruptedMutation",
+      "executed": false
+    },
+    {
+      "name": "shop-stone-late-commit-and-save",
+      "method": "ShopStoneLateThrow",
+      "executed": false
+    },
+    {
+      "name": "shop-kit-one-raw-commit",
+      "method": "ShopKitLateThrow",
+      "executed": false
+    },
+    {
+      "name": "shop-stale-price-no-effect",
+      "method": "ShopStalePrice",
+      "executed": false
+    },
+    {
+      "name": "shop-payment-late-throw",
+      "method": "ShopPaymentLateThrow",
+      "executed": false
+    },
+    {
+      "name": "legacy-card-take-insertion-save",
+      "method": "LegacyCardInterruptedTake",
+      "executed": false
+    },
+    {
+      "name": "legacy-relic-take-insertion-save",
+      "method": "LegacyRelicInterruptedTake",
+      "executed": false
+    },
+    {
+      "name": "abandoned-mutation-stays-blocked",
+      "method": "AbandonedMutation",
+      "executed": false
+    },
+    {
+      "name": "discard-rechecks-owner-and-overload",
+      "method": "DiscardStaleTarget",
+      "executed": false
+    },
+    {
+      "name": "blessing-obtain-before-revoke",
+      "method": "BlessingLateThrow",
+      "executed": false
+    },
+    {
+      "name": "chest-card-callback-unrelated-records",
+      "method": "CardChestCallbackUnrelated",
+      "executed": false
+    },
+    {
+      "name": "chest-card-callback-source-change",
+      "method": "CardChestCallbackSource",
+      "executed": false
+    },
+    {
+      "name": "chest-item-callback-unrelated-records",
+      "method": "ItemChestCallbackUnrelated",
+      "executed": false
+    },
+    {
+      "name": "chest-item-callback-source-change",
+      "method": "ItemChestCallbackSource",
+      "executed": false
+    },
+    {
+      "name": "chest-card-invalid-or-duplicate-identities",
+      "method": "InvalidChestIdentities",
+      "executed": false
+    },
+    {
+      "name": "chest-invalid-item-envelope-kept",
+      "method": "InvalidItemEnvelope",
+      "executed": false
+    },
+    {
+      "name": "shop-trade-late-source-removal",
+      "method": "ShopTradeLateThrow",
+      "executed": false
+    },
+    {
+      "name": "grant-veto-write-ahead-save",
+      "method": "GrantBeforeInsertSave",
+      "executed": false
+    },
+    {
+      "name": "grant-insertion-save-reconcile",
+      "method": "GrantInsertionSave",
+      "executed": false
+    },
+    {
+      "name": "pending-card-full-payload-restore",
+      "method": "PendingCardPayload",
+      "executed": false
+    },
+    {
+      "name": "pending-unknown-properties-kept",
+      "method": "PendingUnknownProperty",
+      "executed": false
+    },
+    {
+      "name": "pending-source-stale-choice",
+      "method": "PendingStaleChoice",
+      "executed": false
+    },
+    {
+      "name": "grant-source-change-keeps-claim",
+      "method": "GrantSourceChanged",
+      "executed": false
+    },
+    {
+      "name": "pending-claim-payload-collision",
+      "method": "PendingClaimCollision",
+      "executed": false
+    },
+    {
+      "name": "shout-native-removal-registration",
+      "method": "ShoutRegistration",
+      "executed": false
+    },
+    {
+      "name": "mandatory-source-veto-reload-once",
+      "method": "MandatorySourcePending",
+      "executed": false
+    },
+    {
+      "name": "mandatory-source-completed-never-reissued",
+      "method": "MandatorySourceCompleted",
+      "executed": false
+    },
+    {
+      "name": "legacy-start-none-not-replayed",
+      "method": "LegacyStartNone",
+      "executed": false
+    },
+    {
+      "name": "saved-future-schema-readonly-reject",
+      "method": "FutureSchemaReject",
+      "executed": false
+    },
+    {
+      "name": "timeline-rotation-keeps-unknown-properties",
+      "method": "TimelineOpaqueProperties",
+      "executed": false
+    },
+    {
+      "name": "receipt-epoch-and-mutation-disposal",
+      "method": "ReceiptDisposal",
+      "executed": false
+    },
+    {
+      "name": "mutable-service-clones-isolated",
+      "method": "ServiceCloneIsolation",
+      "executed": false
+    },
+    {
+      "name": "path-pending-sign-reload-no-issuer-replay",
+      "method": "PathPendingSign",
+      "executed": false
+    },
+    {
+      "name": "path-sign-late-insert-no-second-obtain",
+      "method": "PathSignLateInsert",
+      "executed": false
+    },
+    {
+      "name": "raw-native-read-preflight-no-repair",
+      "method": "RawSavePreflight",
+      "executed": false
+    },
+    {
+      "name": "boon-hp-writeahead-save-and-revoke",
+      "method": "BoonHpWriteAhead",
+      "executed": false
+    },
+    {
+      "name": "creation-refused-lease-same-room-retry",
+      "method": "CreationLeaseRetry",
+      "executed": false
+    },
+    {
+      "name": "creation-gold-receipt-not-replayed",
+      "method": "CreationGold",
+      "executed": false
+    },
+    {
+      "name": "creation-common-potion-exact-source",
+      "method": "CreationPotion",
+      "executed": false
+    },
+    {
+      "name": "creation-full-belt-bonus-only-retry",
+      "method": "CreationFullBelt",
+      "executed": false
+    },
+    {
+      "name": "creation-basic-exact-removal",
+      "method": "CreationRemoval",
+      "executed": false
+    },
+    {
+      "name": "creation-vagrant-preselected-removal",
+      "method": "CreationVagrant",
+      "executed": false
+    },
+    {
+      "name": "reborn-refund-retains-skills-treatises-loot",
+      "method": "RebornSources",
+      "executed": false
+    },
+    {
+      "name": "reborn-opaque-legacy-preflight",
+      "method": "RebornLegacy",
+      "executed": false
+    },
+    {
+      "name": "reborn-insertion-save-fails-closed",
+      "method": "RebornInterrupted",
+      "executed": false
+    },
+    {
+      "name": "creation-invalid-saved-source-readonly",
+      "method": "CreationPreflight",
+      "executed": false
+    }
+  ]
+}
