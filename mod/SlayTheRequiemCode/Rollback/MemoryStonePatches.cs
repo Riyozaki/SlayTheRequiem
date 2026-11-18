@@ -17,15 +17,14 @@ public static class GameOverMemoryStonePatch
     private static readonly AccessTools.FieldRef<NGameOverScreen, RunState> RunStateRef =
         AccessTools.FieldRefAccess<NGameOverScreen, RunState>("_runState");
 
-    // Игра 0.113: поле _serializableRun заменено на _result (PostRunProgressUpdateResult, сам забег — в .run).
-    private static readonly AccessTools.FieldRef<NGameOverScreen, MegaCrit.Sts2.Core.Entities.Save.PostRunProgressUpdateResult> ResultRef =
-        AccessTools.FieldRefAccess<NGameOverScreen, MegaCrit.Sts2.Core.Entities.Save.PostRunProgressUpdateResult>("_result");
+    private static readonly AccessTools.FieldRef<NGameOverScreen, SerializableRun> SaveRef =
+        AccessTools.FieldRefAccess<NGameOverScreen, SerializableRun>("_serializableRun");
 
     [HarmonyPostfix]
     public static void OfferReturn(NGameOverScreen __instance)
     {
         var state = RunStateRef(__instance);
-        var ended = ResultRef(__instance).run;
+        var ended = SaveRef(__instance);
         if (state == null || ended == null) return;
         CoopMemoryStone.OnGameOver(state);
         if (!MemoryStone.CanOffer(state, ended)) return;

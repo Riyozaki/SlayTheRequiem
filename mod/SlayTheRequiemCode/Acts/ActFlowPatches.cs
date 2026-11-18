@@ -4,6 +4,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Factories;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Singleton;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.RestSite;
 using MegaCrit.Sts2.Core.Nodes.Screens;
@@ -312,7 +313,7 @@ public static class PortalPromptPatch
             }
             if (enter)
             {
-                await RunManager.Instance.ProceedFromTerminalRewardsScreenAsync();
+                await RunManager.Instance.ProceedFromTerminalRewardsScreen();
                 return;
             }
             ProceedRef(screen).Disable();

@@ -495,9 +495,6 @@ public static class ShopServices
     public static bool CanSteal(Player player, MerchantEntry entry)
     {
         if (entry is MerchantCardRemovalEntry || !MerchantLedger.Active(player)) return false;
-        // Игра 0.113: покупки в лавке синхронизируются (MerchantSynchronizer), а покупка «без цены» по сети не передаётся —
-        // кража в коопе дала бы рассинхрон. Пока нет своего сетевого сообщения для кражи, в коопе она выключена.
-        if (RequiemNet.IsMultiplayer) return false;
         var enablers = player.Relics.OfType<ITheftEnabler>().ToList();
         var attempts = 1 + enablers.Sum(e => e.ExtraTheftAttempts);
         if (MerchantLedger.Of(player) is not { } ledger || ledger.TheftTriedHere(player.RunState, attempts)) return false;
@@ -528,7 +525,7 @@ public static class ShopServices
         if (ShopRules.TheftSucceeds(hash, price))
         {
             StealingNow = true;
-            try { return await entry.OnTryPurchaseUnsynchronized(inventory, ignoreCost: true); }
+            try { return await entry.OnTryPurchaseWrapper(inventory, ignoreCost: true); }
             finally { StealingNow = false; }
         }
 
@@ -567,20 +564,6 @@ public static class ShopServices
             ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.ForSpell(player, spell)))
             : 0;
 
-    /// <summary>
-    /// Обычная покупка локальным игроком. С игры 0.113 она идёт через <see cref="MerchantSynchronizer.PurchaseLocalEntry"/>:
-    /// синхронизатор рассылает покупку остальным игрокам и только потом выполняет её — поэтому окна подтверждения
-    /// (владение, перегруз, кража) стоят префиксами на PurchaseLocalEntry, ДО отправки сообщения.
-    /// </summary>
-    internal static Task<bool> BuyLocal(MerchantEntry entry) => RunManager.Instance.MerchantSynchronizer.PurchaseLocalEntry(entry);
-
-    /// <summary>Витрина игрока (для покупок мимо синхронизатора — только кража в одиночной игре).</summary>
-    internal static MerchantInventory? InventoryOf(Player player)
-    {
-        try { return RunManager.Instance.MerchantSynchronizer.GetInventoryFor(player); }
-        catch (Exception) { return null; }
-    }
-
     public static async Task<bool> ConfirmMasteryAndBuy(MerchantEntry entry, MerchantInventory? inventory, Player player)
     {
         if (entry is not MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell }) return false;
@@ -595,25 +578,25 @@ public static class ShopServices
             }))
             return false;
         MasteryConfirmed = true;
-        try { return await BuyLocal(entry); }
+        try { return await entry.OnTryPurchaseWrapper(inventory); }
         finally { MasteryConfirmed = false; }
     }
 }
 
-/// <summary>
-/// Кража: клик по товару, на который не хватает золота, при наличии источника кражи.
-/// Игра 0.113: перехватываем локальную покупку (<see cref="MerchantSynchronizer.PurchaseLocalEntry"/>) до рассылки по сети.
-/// </summary>
-[HarmonyPatch(typeof(MerchantSynchronizer), nameof(MerchantSynchronizer.PurchaseLocalEntry))]
+/// <summary>Кража: клик по товару, на который не хватает золота, при наличии источника кражи.</summary>
+[HarmonyPatch(typeof(MerchantEntry), nameof(MerchantEntry.OnTryPurchaseWrapper))]
 public static class MerchantTheftPatch
 {
+    private static readonly AccessTools.FieldRef<MerchantEntry, Player> PlayerRef =
+        AccessTools.FieldRefAccess<MerchantEntry, Player>("_player");
+
     [HarmonyPrefix]
-    public static bool OfferTheft(MerchantEntry entry, ref Task<bool> __result)
+    public static bool OfferTheft(MerchantEntry __instance, MerchantInventory? inventory, bool ignoreCost, ref Task<bool> __result)
     {
-        if (!entry.IsStocked || entry.EnoughGold) return true;
-        var player = entry.Player;
-        if (player == null || !LocalContext.IsMe(player) || !ShopServices.CanSteal(player, entry)) return true;
-        __result = ShopServices.TryTheft(entry, ShopServices.InventoryOf(player), player);
+        if (ignoreCost || !__instance.IsStocked || __instance.EnoughGold) return true;
+        var player = PlayerRef(__instance);
+        if (player == null || !LocalContext.IsMe(player) || !ShopServices.CanSteal(player, __instance)) return true;
+        __result = ShopServices.TryTheft(__instance, inventory, player);
         return false;
     }
 }
@@ -622,17 +605,20 @@ public static class MerchantTheftPatch
 /// Предупреждение о владении школой: заклинание выше владения (колдуется «С трудом» — ✦ ×1.5, или «С напряжением» — ✦ ×2
 /// и эффект ×0.75) покупается только после подтверждения.
 /// </summary>
-[HarmonyPatch(typeof(MerchantSynchronizer), nameof(MerchantSynchronizer.PurchaseLocalEntry))]
+[HarmonyPatch(typeof(MerchantEntry), nameof(MerchantEntry.OnTryPurchaseWrapper))]
 public static class SpellMasteryWarningPatch
 {
+    private static readonly AccessTools.FieldRef<MerchantEntry, Player> PlayerRef =
+        AccessTools.FieldRefAccess<MerchantEntry, Player>("_player");
+
     [HarmonyPrefix]
-    public static bool WarnAboutMastery(MerchantEntry entry, ref Task<bool> __result)
+    public static bool WarnAboutMastery(MerchantEntry __instance, MerchantInventory? inventory, bool ignoreCost, ref Task<bool> __result)
     {
-        if (ShopServices.MasteryConfirmed || !entry.IsStocked || !entry.EnoughGold) return true;
-        var player = entry.Player;
-        if (player == null || !LocalContext.IsMe(player) || !MerchantLedger.Active(player) || ShopServices.MasteryGap(player, entry) <= 0)
+        if (ignoreCost || ShopServices.MasteryConfirmed || !__instance.IsStocked || !__instance.EnoughGold) return true;
+        var player = PlayerRef(__instance);
+        if (player == null || !LocalContext.IsMe(player) || !MerchantLedger.Active(player) || ShopServices.MasteryGap(player, __instance) <= 0)
             return true;
-        __result = ShopServices.ConfirmMasteryAndBuy(entry, ShopServices.InventoryOf(player), player);
+        __result = ShopServices.ConfirmMasteryAndBuy(__instance, inventory, player);
         return false;
     }
 }

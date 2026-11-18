@@ -26,9 +26,8 @@ public static class RogueChestPatch
     private static readonly AccessTools.FieldRef<TreasureRoomRelicSynchronizer, RelicGrabBag> BagRef =
         AccessTools.FieldRefAccess<TreasureRoomRelicSynchronizer, RelicGrabBag>("_sharedGrabBag");
 
-    // Игра 0.113: _playerCollection заменён на _runState (IRunState).
-    private static readonly AccessTools.FieldRef<TreasureRoomRelicSynchronizer, IRunState> RunRef =
-        AccessTools.FieldRefAccess<TreasureRoomRelicSynchronizer, IRunState>("_runState");
+    private static readonly AccessTools.FieldRef<TreasureRoomRelicSynchronizer, IPlayerCollection> PlayersRef =
+        AccessTools.FieldRefAccess<TreasureRoomRelicSynchronizer, IPlayerCollection>("_playerCollection");
 
     [HarmonyPostfix]
     public static void Postfix(TreasureRoomRelicSynchronizer __instance)
@@ -37,7 +36,7 @@ public static class RogueChestPatch
         {
             var relics = CurrentRef(__instance);
             if (relics is not { Count: > 0 } || relics.Count >= MaxRelicsOnScreen) return;
-            var rogue = RunRef(__instance).Players.FirstOrDefault(p => RequiemMode.IsInSystem(p) && p.Relics.OfType<RogueBackground>().Any());
+            var rogue = PlayersRef(__instance).Players.FirstOrDefault(p => RequiemMode.IsInSystem(p) && p.Relics.OfType<RogueBackground>().Any());
             if (rogue == null) return;
             var run = rogue.RunState;
             var rng = new Rng(run.Rng.Seed, $"requiem_rogue_chest_{run.TotalFloor}");

@@ -103,7 +103,7 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
     protected Task GainMaxHp(int amount) => CreatureCmd.GainMaxHp(Owner!.Creature, amount);
 
     protected Task LoseMaxHp(int amount) =>
-        CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner!.Creature, Math.Min(amount, Owner!.Creature.MaxHp - 1), cardSource: null);
+        CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner!.Creature, Math.Min(amount, Owner!.Creature.MaxHp - 1), isFromCard: false);
 
     // ───── колода ─────
 
@@ -209,7 +209,7 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
 
     protected async Task Relic(RelicRarity? rarity = null)
     {
-        var relic = rarity is { } r ? RelicFactory.PullNextRelicFromFront(Owner!, r) : RelicFactory.PullNextRelicForRewardFromFront(Owner!);
+        var relic = rarity is { } r ? RelicFactory.PullNextRelicFromFront(Owner!, r) : RelicFactory.PullNextRelicFromFront(Owner!);
         await RelicCmd.Obtain(relic.ToMutable(), Owner!);
     }
 

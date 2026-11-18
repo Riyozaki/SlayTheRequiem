@@ -84,7 +84,7 @@ public abstract class SuperbossMonster : OwnArtMonster
         oldPileType == PileType.Hand || card is EncounterCounterCard ? FlushCounters() : Task.CompletedTask;
     public override Task AfterCombatEnd(CombatRoom room) => _counters.Clear(this);
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature != Creature || wasRemovalPrevented) return;
         await _counters.Clear(this);
@@ -529,9 +529,9 @@ public sealed class BloodCourtLord : SuperbossMonster
         }
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
-        await base.AfterDeath(choiceContext, creature, source, wasRemovalPrevented, deathAnimLength);
+        await base.AfterDeath(choiceContext, creature, wasRemovalPrevented, deathAnimLength);
         if (!wasRemovalPrevented && Creature.IsAlive && creature.Monster is GargoyleServant
             && !Allies.Any(a => a.Monster is GargoyleServant) && Creature.GetPower<InvulnerablePower>() is { } cocoon)
         {
@@ -875,9 +875,9 @@ public sealed class NamelessShadow : SuperbossMonster
     }
 
     /// <summary>Убита душа — неуязвимость спадает на ход.</summary>
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
-        await base.AfterDeath(choiceContext, creature, source, wasRemovalPrevented, deathAnimLength);
+        await base.AfterDeath(choiceContext, creature, wasRemovalPrevented, deathAnimLength);
         if (creature == Creature || creature.Monster is not ShadowSoul { Expired: false } || wasRemovalPrevented || !Creature.IsAlive) return;
         _exposedTurns = 1;
         if (Creature.GetPower<InvulnerablePower>() is { } inv) await PowerCmd.Remove(inv);

@@ -246,7 +246,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     }
 
     /// <summary>Павший враг — кандидат для «Поднять мертвеца».</summary>
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (!wasRemovalPrevented) Graveyard.Note(creature.CombatState, creature);
         return Task.CompletedTask;

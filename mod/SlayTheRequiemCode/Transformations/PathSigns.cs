@@ -23,7 +23,7 @@ public abstract class PathSign : EquipmentRelic, IResourceSource
     public abstract HeroPath Path { get; }
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool IsAllowedInShops => false;
-    protected override bool IsAllowedInternal(IRunState runState) => false;
+    public override bool IsAllowed(IRunState runState) => false;
     public override int Tier => 4;
 
     protected abstract Color Glow { get; }
