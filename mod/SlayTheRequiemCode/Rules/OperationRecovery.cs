@@ -27,8 +27,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 public static class OperationRecovery
 {
     private static bool _offering;
-    private static string PathFor(string name) => ProjectSettings.GlobalizePath(SaveManager.Instance.GetProfileScopedPath(
-        Path.Combine(UserDataPathProvider.SavesDir, name + (RequiemNet.IsMultiplayer ? "_coop" : "") + ".save")));
+    private static string PathFor(string name, bool? coop = null) => ProjectSettings.GlobalizePath(SaveManager.Instance.GetProfileScopedPath(
+        Path.Combine(UserDataPathProvider.SavesDir, name + ((coop ?? RequiemNet.IsMultiplayer) ? "_coop" : "") + ".save")));
     private static string Timeline(RunState state) => state.Players.Select(TravelPack.Of).OfType<TravelPack>()
         .Select(p => p.OperationRunId).FirstOrDefault(s => s.Length > 0) ?? "";
 
@@ -37,10 +37,10 @@ public static class OperationRecovery
     {
         if (RequiemNet.IsClient || !ReferenceEquals(owner.RunState, RequiemNet.State)) return;
         var state = RequiemNet.State;
-        if (state == null || CombatManager.Instance.IsInProgress || !RunManager.Instance.ShouldSave) return;
+        if (state == null || state.Map == null || MemoryStone.Restoring || CombatManager.Instance.IsInProgress || !RunManager.Instance.ShouldSave) return;
         var packs = state.Players.Select(TravelPack.Of).OfType<TravelPack>().ToList();
         // Concurrent owners form one recovery group. Never replace its known-safe checkpoint with a mid-effect save.
-        if (packs.Any(p => p.OperationPending.Length > 0 || p.OperationBlocked)) return;
+        if (packs.Any(p => p.OperationPending.Length > 0 || p.OperationBlocked || InventoryGate.IsMutating(p.Owner))) return;
         var timeline = Timeline(state);
         if (timeline.Length == 0) return; // startup has its own native pre-room save, before the run identity exists
         var save = RunManager.Instance.ToSave(state.CurrentRoom?.IsPreFinished == true ? state.CurrentRoom : null);
@@ -51,10 +51,26 @@ public static class OperationRecovery
     }
 
     /// <summary>Keep the entire pre-migration payload, including fields this version cannot interpret.</summary>
-    internal static void BackupBeforeMigration(SerializableRun save)
+    internal static void BackupBeforeMigration(SerializableRun save, bool coop)
     {
-        if (RequiemNet.IsClient) return;
-        AtomicSaveFile.Write(PathFor("requiem_before_migration"), JsonSerializationUtility.ToJson(save));
+        // Called before native IncrementNumReloads, even though the previous run's NetService may still be absent.
+        AtomicSaveFile.Write(PathFor("requiem_before_migration", coop), JsonSerializationUtility.ToJson(save));
+    }
+
+    /// <summary>Durable pre-application rollback state: a scar callback may save before the loaded map is assigned.</summary>
+    internal static void CapturePreparedRun(SerializableRun save, string operation, bool coop)
+    {
+        Config.RunSettings.ValidateSaved(save);
+        var packId = ModelDb.Relic<TravelPack>().Id;
+        var timelines = save.Players.SelectMany(p => p.Relics).Where(r => r.Id == packId)
+            .SelectMany(r => r.Props?.strings ?? new List<SavedProperties.SavedProperty<string>>())
+            .Where(p => p.name == nameof(TravelPack.OperationRunId)).Select(p => p.value).Distinct(StringComparer.Ordinal).ToList();
+        if (timelines.Count != 1 || timelines[0].Length == 0) throw new FormatException("Prepared recovery has no unique timeline");
+        var seed = save.SerializableRng?.Seed ?? throw new FormatException("Prepared recovery has no RNG seed");
+        var floor = save.MapPointHistory.Sum(act => act.Count);
+        var cp = RunCheckpoint.Create(seed, save.StartTime, timelines[0], save.CurrentActIndex, floor,
+            operation, JsonSerializationUtility.ToJson(save));
+        AtomicSaveFile.Write(PathFor("requiem_inventory_checkpoint", coop), cp.Encode());
     }
 
     private static RunCheckpoint? Read(RunState state)
@@ -62,10 +78,12 @@ public static class OperationRecovery
         try
         {
             var path = PathFor("requiem_inventory_checkpoint");
-            if (!File.Exists(path)) return null;
-            var cp = RunCheckpoint.Decode(File.ReadAllText(path));
             var live = RunManager.Instance.ToSave(null);
-            return cp?.Matches(state.Rng.StringSeed, live.StartTime, Timeline(state)) == true ? cp : null;
+            return AtomicSaveFile.ReadValidated(path, json =>
+            {
+                var cp = RunCheckpoint.Decode(json);
+                return cp?.Matches(state.Rng.StringSeed, live.StartTime, Timeline(state)) == true ? cp : null;
+            });
         }
         catch (Exception e) { MainFile.Logger.Error($"[InventoryRecovery] Checkpoint unavailable: {e}"); return null; }
     }
@@ -106,6 +124,7 @@ public static class OperationRecovery
             var parsed = JsonSerializationUtility.FromJson<SerializableRun>(cp.SaveJson);
             if (!parsed.Success || parsed.SaveData == null) throw new InvalidOperationException("Checkpoint native run payload is invalid");
             var save = parsed.SaveData;
+            Config.RunSettings.ValidateSaved(save);
             if (!MemoryStoneRules.IsSnapshotCompatible(save.SchemaVersion, SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>()))
                 throw new InvalidOperationException("Checkpoint game schema differs; original data retained");
             // Preserve the failure BEFORE touching the native current_run save or disconnecting anyone.
@@ -113,13 +132,14 @@ public static class OperationRecovery
             RotateTimeline(save);
             if (RequiemNet.IsMultiplayer)
             {
+                CapturePreparedRun(save, "inventory-recovery", coop: true);
                 await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
                 CustomMessageWrapper.Send(new InventoryRecoveryMessage { timeline = Timeline(state), seed = state.Rng.StringSeed });
                 await Task.Delay(500);
                 await NGame.Instance.ReturnToMainMenu();
                 NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.StartHost(save);
             }
-            else await MemoryStone.ReturnSingleplayer(save);
+            else await MemoryStone.ReturnSingleplayer(save, "inventory-recovery");
         }
         catch (Exception e)
         {
@@ -137,13 +157,12 @@ public static class OperationRecovery
         {
             var source = player.Relics.FirstOrDefault(r => r.Id == id);
             if (source == null) continue;
-            var pack = (TravelPack)RelicModel.FromSerializable(source);
-            pack.OperationRunId = timeline;
-            pack.OperationRevision = 0;
-            pack.OperationPending = "";
-            pack.OperationBlocked = false;
-            pack.OperationFailure = "";
-            source.Props = SavedProperties.From(pack);
+            var props = source.Props ??= new SavedProperties();
+            SavedPropertyWrite.Text(props, nameof(TravelPack.OperationRunId), timeline);
+            SavedPropertyWrite.Int(props, nameof(TravelPack.OperationRevision), 0);
+            SavedPropertyWrite.Text(props, nameof(TravelPack.OperationPending), "");
+            SavedPropertyWrite.Bool(props, nameof(TravelPack.OperationBlocked), false);
+            SavedPropertyWrite.Text(props, nameof(TravelPack.OperationFailure), "");
         }
     }
 

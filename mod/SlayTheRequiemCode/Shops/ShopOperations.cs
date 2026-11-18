@@ -31,6 +31,7 @@ public static class ShopOperations
         public bool Executing;
         public bool ReceiptTimeoutOnly;
         public bool RetryingReceipt;
+        public long ReceiptFailureEpoch;
         public ShopRequest? PendingConfirmation;
         public RunLocation ConfirmationLocation;
         public readonly OperationJournal<ShopRequest, Receipt> Local = new();
@@ -239,6 +240,7 @@ public static class ShopOperations
             result = new(OperationStatus.PartialCommit, request.Id, "Local result exists, multiplayer agreement NOT confirmed; retry receipts or restore checkpoint from run badge", result.Gold);
         else state.PendingConfirmation = null;
         mutation.Complete(); // uncertainty is now represented by the persisted Block, or all peer receipts matched
+        // Receipt reconciliation runs only after the mutation marker is disposed, never inside a partial callback.
         return result;
     }
 
@@ -266,6 +268,7 @@ public static class ShopOperations
             && localResult.Result.Status is not (OperationStatus.PartialCommit or OperationStatus.Stale or OperationStatus.Busy);
         Block(player, $"Missing or mismatched receipt op={request.Id}. Retry receipts; otherwise restore the host checkpoint using the run badge.");
         state.ReceiptTimeoutOnly = onlyTimeout;
+        state.ReceiptFailureEpoch = InventoryGate.FailureEpoch(player);
         return false;
     }
 
@@ -320,6 +323,7 @@ public static class ShopOperations
                 return;
             }
         if (!state.ReceiptTimeoutOnly || state.PendingConfirmation is not { } request || request.Id != id
+            || InventoryGate.IsMutating(player) || state.ReceiptFailureEpoch != InventoryGate.FailureEpoch(player)
             || TravelPack.Of(player) is not { } pack) return;
         var expected = player.RunState.Players.Select(p => p.NetId).Where(p => p != RequiemNet.LocalNetId).ToList();
         if (!expected.All(peers.ContainsKey)) return;
@@ -329,7 +333,7 @@ public static class ShopOperations
             expected.Select(p => new OperationReceiptProof(peers[p].Result.Status, peers[p].Result.Gold, peers[p].Digest)).ToList())) return;
         state.ReceiptTimeoutOnly = false;
         state.PendingConfirmation = null;
-        InventoryGate.ClearReceiptBlock(player); // no Add/payment/service is repeated
+        InventoryGate.ClearReceiptBlock(player, state.ReceiptFailureEpoch); // no Add/payment/service is repeated
     }
 
     public static async Task RetryReceipts(Player player)

@@ -35,6 +35,22 @@ public sealed record RunCheckpoint(int Version, string Seed, long StartTime, str
 /// <summary>Same-directory atomic replacement. Never truncate a working save; keep its previous generation.</summary>
 public static class AtomicSaveFile
 {
+    /// <summary>Try complete generations in order; a damaged/foreign current file must not hide a valid backup.</summary>
+    public static T? ReadValidated<T>(string path, Func<string, T?> decode, int maxBytes = 32 * 1024 * 1024) where T : class
+    {
+        foreach (var candidate in new[] { path, path + ".previous" })
+        {
+            try
+            {
+                if (!File.Exists(candidate) || new FileInfo(candidate).Length > maxBytes) continue;
+                var value = decode(File.ReadAllText(candidate));
+                if (value != null) return value;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or FormatException or JsonException) { }
+        }
+        return null;
+    }
+
     public static void Write(string path, string text, bool keepPrevious = true)
     {
         var full = Path.GetFullPath(path);

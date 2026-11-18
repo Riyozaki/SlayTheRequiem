@@ -76,6 +76,24 @@ public static class CardAcquisition
         return key.Length == 0 ? null : owner.Deck.Cards.FirstOrDefault(c => ClaimKey(c) == key);
     }
 
+    /// <summary>Idempotent issuer/effect entitlement, including a save before the issuer's completed flag.</summary>
+    internal static async Task GrantOnceOrDefer(RelicModel issuer, CardModel card, string effect, CardModel? replacing = null)
+    {
+        var owner = card.Owner ?? throw new InvalidOperationException("Mandatory grant has no owner");
+        if (issuer.Owner != owner) throw new InvalidOperationException("Foreign mandatory grant issuer");
+        var pack = TravelPack.Of(owner) ?? throw new InvalidOperationException("Mandatory grant has no durable store");
+        var source = InventoryIdentity.RelicKey(issuer) + "/" + effect;
+        try
+        {
+            if (pack.HasMandatorySource(source)) return; // completed OR pending; neither permits a second acquisition
+            if (replacing != null) Replacement[card] = InventoryIdentity.CardKey(replacing);
+            OperationRecovery.Capture(owner, "mandatory-source:" + source);
+            pack.PrepareMandatorySource(source, card);
+            await AddOrDefer(card, replacing);
+        }
+        finally { CleanUncommitted(card, owner); }
+    }
+
     /// <summary>One-time grants cannot disappear on a burden veto. Keep a durable claim, not an orphan in RunState.</summary>
     public static async Task<bool> AddOrDefer(CardModel card, CardModel? replacing = null)
     {

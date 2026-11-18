@@ -80,7 +80,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
     /// <summary>Довести выданный запас ♥ до текущего набора.</summary>
     public async Task SyncMaxHp()
     {
-        if (Owner?.Creature == null) return;
+        if (Owner?.Creature == null || InventoryGate.For(Owner).Blocked) return;
         var target = ActiveBoon.MaxHp;
         var delta = target - _grantedMaxHp;
         if (delta == 0) return;

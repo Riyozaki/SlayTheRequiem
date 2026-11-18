@@ -52,6 +52,9 @@ public sealed class RunSettingsData
     /// <summary>Личный выбор по сетевому id игрока.</summary>
     public Dictionary<ulong, PersonalChoices> Personal { get; } = new();
 
+    /// <summary>Unique unknown v1 keys survive Clone/migration; this is not permission to read a future schema.</summary>
+    public Dictionary<string, string> Extensions { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Личный выбор игрока; неизвестный игрок — всё «Случайно».</summary>
     public PersonalChoices ChoicesFor(ulong netId) => Personal.TryGetValue(netId, out var c) ? c : PersonalChoices.Random;
 
@@ -90,7 +93,11 @@ public sealed class RunSettingsData
         Add("campn", CampBuildingsUnlocked);
         Add("stone", B(EnableMemoryStone));
         Add("candles", MemoryStoneCandles);
-        if (Guid.TryParseExact(RunId, "N", out var runId)) sb.Append(";run=").Append(runId.ToString("N"));
+        if (RunId.Length > 0)
+        {
+            if (!Guid.TryParseExact(RunId, "N", out var runId)) throw new FormatException("Invalid saved run identity");
+            sb.Append(";run=").Append(runId.ToString("N"));
+        }
         if (Personal.Count > 0)
         {
             // Порядок по id — одинаковая строка на всех машинах.
@@ -98,6 +105,14 @@ public sealed class RunSettingsData
                 string.Create(CultureInfo.InvariantCulture,
                     $"{kv.Key}:{kv.Value.PlatebearerOrigin},{kv.Value.SilentOrigin},{kv.Value.RegentOrigin},{kv.Value.Background}"));
             sb.Append(";p=").Append(string.Join("|", entries));
+        }
+        foreach (var (key, value) in Extensions.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            if (key.Length == 0 || key.Contains('=') || key.Contains(';') || value.Contains(';')
+                || key is "v" or "run" or "p" or "sys" or "ovs" or "hp" or "dodge" or "vanhero" or "five" or "short"
+                    or "variant" or "level" or "boss" or "wide" or "shop" or "theft" or "pantheon" or "camp" or "campn" or "stone" or "candles")
+                throw new FormatException("Invalid extension in saved rules");
+            sb.Append(';').Append(key).Append('=').Append(value);
         }
         return sb.ToString();
     }
@@ -129,7 +144,7 @@ public sealed class RunSettingsData
                 continue;
             }
             var known = booleanKeys.Contains(key) || key is "v" or "hp" or "variant" or "level" or "boss" or "campn" or "candles";
-            if (!known) continue;
+            if (!known) { data.Extensions.Add(key, value); continue; }
             if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n)) return null;
             if (booleanKeys.Contains(key) && n is not (0 or 1)) return null;
             switch (key)

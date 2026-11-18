@@ -63,6 +63,10 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _vigorFights;
     private int _meditation;
     private int _nodesSinceRest;
+    private string _fatigueVisitKey = "";
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string FatigueVisitKey { get => _fatigueVisitKey; set { AssertMutable(); _fatigueVisitKey = value ?? ""; } }
     private int _stoneSmall, _stoneLarge, _stoneBlack;
     private int _campPoints;
     private bool _artisanUsed;
@@ -679,7 +683,10 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         await base.AfterRoomEntered(room);
         if (!RequiemMode.IsInSystem(Owner)) return;
         RecordNativeSchools();
-        if (room.RoomType != RoomType.RestSite) NodesSinceRest++;
+        var visit = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{Owner.RunState.CurrentActIndex}:{Owner.RunState.TotalFloor}");
+        if (StartupState.ShouldCountVisit(FatigueVisitKey, visit, room.RoomType != RoomType.RestSite)) NodesSinceRest++;
+        FatigueVisitKey = visit;
         Refresh();
     }
 

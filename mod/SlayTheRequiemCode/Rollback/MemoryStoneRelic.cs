@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using HarmonyLib;
 using SlayTheRequiem.SlayTheRequiemCode.Acts;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -154,45 +155,55 @@ public sealed class MemoryStoneRelic : RequiemRelic
     /// он хранится в наборе комнат акта, а не в карте. Карту строит Камень первого игрока системы — один раз,
     /// одинаково у всех игроков коопа (всё зависит только от зерна забега и счётчика откатов).
     /// </summary>
-    public override ActMap ModifyGeneratedMap(IRunState runState, ActMap map, int actIndex)
+    internal static ActMap RerollBeforeModifiers(IRunState runState, ActMap map, int actIndex)
     {
-        if (_mapRerollAct1 != actIndex + 1 || !IsMutable) return map;
         var leader = runState.Players.Select(Of).FirstOrDefault(s => s != null);
-        if (leader != this) return map;
+        if (leader == null || leader._mapRerollAct1 != actIndex + 1) return map;
         try
         {
-            var rng = new Rng(runState.Rng.Seed, MemoryStoneRules.MapRngName(actIndex, _rollbacks));
-            // Special maps (Golden Compass, Nameless Limit, other mods) keep their own generation policy.
-            // The input here already passed the act's CustomCreateMap, so preserve that map's actual shape.
-            ActMap fresh = map switch
-            {
-                WideActMap wide => wide.Reroll(rng, runState.Act, runState.Players.Count > 1),
-                StandardActMap => new StandardActMap(rng, runState.Act, runState.Players.Count > 1,
-                    !map.GetAllMapPoints().Any(p => p.PointType == MapPointType.Treasure), map.SecondBossMapPoint != null),
-                _ => map,
-            };
-            foreach (var p in runState.Players) if (Of(p) is { } stone) stone._mapRerollAct1 = 0;
-            MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти: новая карта акта {actIndex + 1} (откат {_rollbacks}).");
+            var rng = new Rng(runState.Rng.Seed, MemoryStoneRules.MapRngName(actIndex, leader._rollbacks));
+            // Run BEFORE native early and late modifiers, not halfway through their listener enumeration.
+            // Golden Compass can still replace the map; Fur Coat and other late quest hooks see the final map.
+            var fresh = RerollBaseMap(runState, map, rng);
+            foreach (var player in runState.Players) if (Of(player) is { } stone) stone._mapRerollAct1 = 0;
+            MainFile.Logger.Info($"[MemoryStone] map act={actIndex + 1} rollback={leader._rollbacks} policy={(ReferenceEquals(fresh, map) ? "special-map-retained" : fresh.GetType().Name)}");
             return fresh;
         }
         catch (Exception e)
         {
-            MainFile.Logger.Warn($"[SlayTheRequiem] Камень Памяти: новая карта не построена ({e.Message}) — карта по зерну акта.");
+            MainFile.Logger.Error($"[MemoryStone] Map reroll failed; original map/flags retained: {e}");
             return map;
         }
     }
+
+    internal static ActMap RerollBaseMap(IRunState state, ActMap map, Rng rng) => map switch
+    {
+        WideActMap wide => wide.Reroll(rng, state.Act, state.Players.Count > 1),
+        StandardActMap => new StandardActMap(rng, state.Act, state.Players.Count > 1,
+            !map.GetAllMapPoints().Any(p => p.PointType == MapPointType.Treasure), map.SecondBossMapPoint != null),
+        _ => map, // special CustomCreateMap / other mods keep their own generation policy
+    };
 
     // ───── отложенные Шрамы ─────
 
     public override async Task AfterMapGenerated(ActMap map, int actIndex)
     {
         if (!IsMutable || Owner == null || (_pendingFlesh | _pendingSoul | _pendingPurse) == 0) return;
-        var flesh = _pendingFlesh;
-        var soul = _pendingSoul;
-        var purse = _pendingPurse;
-        _pendingFlesh = _pendingSoul = _pendingPurse = 0;
-        await MemoryStone.ApplyScars(Owner, flesh, soul, purse);
-        Flash();
+        using var lease = await InventoryGate.For(Owner).Enter();
+        if (lease == null) return; // an interrupted saved scar application must use its pre-application checkpoint
+        using var mutation = InventoryGate.Track(Owner, lease, "memory-stone:scars");
+        try
+        {
+            await MemoryStone.ApplyScars(Owner, _pendingFlesh, _pendingSoul, _pendingPurse);
+            _pendingFlesh = _pendingSoul = _pendingPurse = 0; // only after the whole observed application
+            mutation.Complete();
+            Flash();
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(Owner, $"Scar application interrupted; restore the prepared rollback checkpoint: {e}");
+            mutation.Complete(); // persisted Block represents the uncertainty, never retry partial scars in place
+        }
     }
 
     // ───── Месть ─────
@@ -224,4 +235,15 @@ public sealed class MemoryStoneRelic : RequiemRelic
         if (DynamicVars.TryGetValue("FleshScars", out var f)) f.BaseValue = _fleshScars;
         InvokeDisplayAmountChanged();
     }
+}
+
+
+/// <summary>Preserve the native early → late map modifier pipeline around the rerolled base map.</summary>
+[CriticalPatch]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.ModifyGeneratedMap))]
+public static class MemoryStoneMapBoundaryPatch
+{
+    [HarmonyPrefix]
+    public static void Prefix(IRunState runState, ref ActMap map, int actIndex) =>
+        map = MemoryStoneRelic.RerollBeforeModifiers(runState, map, actIndex);
 }

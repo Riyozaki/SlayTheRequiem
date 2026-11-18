@@ -23,7 +23,7 @@ public static class RunLifecycle
         RunManager.Instance.RunStarted += OnRunStarted;
         RunManager.Instance.RoomEntered += () =>
         {
-            MemoryStone.TryTakeImprint();
+            MemoryStone.OnRoomEntered();
             Debugging.RunDiagnostics.Log(RunManager.Instance.DebugOnlyGetState(), "room");
         };
     }

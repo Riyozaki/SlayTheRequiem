@@ -109,9 +109,28 @@ public static class Paths
     /// <summary>Принять Путь: Сущность и Знак.</summary>
     public static async Task Grant(Player player, HeroPath path)
     {
-        if (path == HeroPath.None || Of(player) != null) return;
-        await RelicCmd.Obtain(Forms.Create(EssenceType(path)), player);
-        if (SignType(path) is { } sign) await RelicCmd.Obtain(Forms.Create(sign), player);
+        using var lease = await InventoryGate.For(player).Enter();
+        if (lease == null || path == HeroPath.None || Of(player) != null) return;
+        using var mutation = InventoryGate.Track(player, lease, "path:" + path);
+        try
+        {
+            var essence = Forms.Create(EssenceType(path));
+            await RelicCmd.Obtain(essence, player);
+            if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
+            if (SignType(path) is { } sign)
+            {
+                var item = Forms.Create(sign);
+                await RelicCmd.Obtain(item, player);
+                if (!player.Relics.Contains(item)) throw new InvalidOperationException("Path sign did not commit");
+            }
+            mutation.Complete();
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(player, $"Path grant interrupted; restore its pre-transition checkpoint: {e}");
+            mutation.Complete();
+            throw;
+        }
     }
 }
 
@@ -381,7 +400,7 @@ public sealed class ElementLordEssence : PathEssence
             _ => typeof(ChainLightning),
         };
         var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(spell));
-        await CardAcquisition.AddOrDefer(Owner.RunState.CreateCard(canonical, Owner));
+        await CardAcquisition.GrantOnceOrDefer(this, Owner.RunState.CreateCard(canonical, Owner), "element-signature");
     }
 
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)

@@ -93,6 +93,9 @@ public enum StonePhase
 /// <summary>Сообщение экрана поражения в коопе: голосование и Шрамы. Забег уже окончен — без привязки к месту.</summary>
 public sealed class MemoryStoneMessage : ICustomMessage
 {
+    public const int Protocol = 1;
+    private int _protocol = Protocol;
+    public string run = "";
     public int phase;
     public int round;
     public int value;
@@ -103,21 +106,20 @@ public sealed class MemoryStoneMessage : ICustomMessage
 
     public void Serialize(PacketWriter writer)
     {
-        writer.WriteInt(phase, 8);
-        writer.WriteInt(round);
-        writer.WriteInt(value);
-        writer.WriteInt(extra);
+        writer.WriteInt(Protocol, 8);
+        writer.WriteString(run);
+        writer.WriteInt(phase, 8); writer.WriteInt(round); writer.WriteInt(value); writer.WriteInt(extra);
     }
-
     public void Deserialize(PacketReader reader)
     {
-        phase = reader.ReadInt(8);
-        round = reader.ReadInt();
-        value = reader.ReadInt();
-        extra = reader.ReadInt();
+        _protocol = reader.ReadInt(8);
+        run = reader.ReadString();
+        phase = reader.ReadInt(8); round = reader.ReadInt(); value = reader.ReadInt(); extra = reader.ReadInt();
     }
-
-    public void HandleMessage(ulong senderId) => CoopMemoryStone.OnMessage((StonePhase)phase, round, value, extra, senderId);
+    public void HandleMessage(ulong senderId)
+    {
+        if (_protocol == Protocol) CoopMemoryStone.OnMessage((StonePhase)phase, round, value, extra, run, senderId);
+    }
 }
 
 /// <summary>Фаза голосования «двух дверей» (docs/design/13 §2).</summary>

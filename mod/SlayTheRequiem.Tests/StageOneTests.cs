@@ -209,3 +209,104 @@ public class CampVisitStateTests
         Assert.Contains("HEAL", resumed.CompletedOptions);
     }
 }
+
+public class SavedSnapshotContractTests
+{
+    [Fact]
+    public void No_grimoire_means_disabled_or_vanilla_not_local_menu_rules() => Assert.Null(SavedRulesSnapshot.Read([]).Rules);
+
+    [Fact]
+    public void Missing_peer_copy_can_only_use_the_single_consistent_saved_snapshot()
+    {
+        var code = new RunSettingsData { EnemyHpPercent = 95, RunId = "1234567890abcdef1234567890abcdef" }.Encode();
+        var result = SavedRulesSnapshot.Read([code, null, ""]);
+        Assert.True(result.MissingCopies);
+        Assert.Equal(code, result.Rules!.Encode());
+        Assert.False(SavedRulesSnapshot.Read([code, code]).MissingCopies);
+        Assert.Throws<FormatException>(() => SavedRulesSnapshot.Read([null, ""]));
+        Assert.Throws<FormatException>(() => SavedRulesSnapshot.Read([code, "v=2"]));
+        Assert.Throws<FormatException>(() => SavedRulesSnapshot.Read([code, new RunSettingsData { EnemyHpPercent = 120 }.Encode()]));
+    }
+
+    [Fact]
+    public void Unknown_current_schema_keys_and_personal_snapshots_survive_migration_and_clone()
+    {
+        var saved = RunSettingsData.Decode("v=1;hp=95;extension=opaque=payload;p=7:1,2,3,4")!;
+        var clone = saved.Clone();
+        Assert.Equal("opaque=payload", clone.Extensions["extension"]);
+        clone.Extensions["extension"] = "changed";
+        clone.Personal[7] = default;
+        Assert.Equal("opaque=payload", saved.Extensions["extension"]);
+        Assert.Equal(new PersonalChoices(1, 2, 3, 4), saved.Personal[7]);
+        Assert.Throws<FormatException>(() => new RunSettingsData { RunId = "broken" }.Clone());
+        Assert.Throws<FormatException>(() => new RunSettingsData { EnemyHpPercent = 9999 }.Clone());
+    }
+
+    [Fact]
+    public void Legacy_declared_startup_is_not_replayed_and_continue_does_not_add_fatigue()
+    {
+        Assert.Equal(4, StartupState.LegacyPhase(true));
+        Assert.Equal(0, StartupState.LegacyPhase(false));
+        Assert.True(StartupState.IsComplete(4, true));
+        Assert.False(StartupState.IsComplete(3, true));
+        Assert.False(StartupState.ShouldCountVisit("1:30", "1:30", true));
+        Assert.True(StartupState.ShouldCountVisit("1:30", "1:31", true));
+        Assert.False(StartupState.ShouldCountVisit("1:30", "1:31", false));
+    }
+}
+
+public class MandatoryGrantSourceTests
+{
+    [Fact]
+    public void Sources_not_types_own_distinct_claims_and_completed_sources_survive_json()
+    {
+        var sources = new Dictionary<string, string> { ["r:1/bite"] = "q:3", ["r:2/bite"] = "q:4" };
+        var saved = MandatoryGrantLedger.Write(sources);
+        var back = MandatoryGrantLedger.Read(saved);
+        Assert.Equal(2, back.Count);
+        Assert.Equal("q:3", back["r:1/bite"]);
+        back["r:1/bite"] = "q:5";
+        Assert.Equal("q:3", MandatoryGrantLedger.Read(saved)["r:1/bite"]);
+        Assert.Equal("q:3", sources["r:1/bite"]);
+        Assert.Empty(MandatoryGrantLedger.Read(""));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("{\"version\":2,\"sources\":{}}")]
+    [InlineData("{\"version\":1,\"sources\":{},\"future\":42}")]
+    [InlineData("{\"version\":1,\"sources\":{\"source\":\"q:1\",\"source\":\"q:2\"}}")]
+    [InlineData("{\"version\":1,\"sources\":{\"a\":\"q:1\",\"b\":\"q:1\"}}")]
+    [InlineData("{\"version\":1,\"sources\":{\"source\":\"q:01\"}}")]
+    [InlineData("{\"version\":1,\"sources\":{\"source\":\"q:0\"}}")]
+    public void Unknown_or_ambiguous_sources_are_rejected_without_a_lossy_rewrite(string text) =>
+        Assert.Throws<FormatException>(() => MandatoryGrantLedger.Read(text));
+}
+
+public class CheckpointGenerationTests
+{
+    [Fact]
+    public void Corrupt_or_foreign_current_generation_does_not_hide_the_matching_previous_copy()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "str-generation-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(directory, "checkpoint.save");
+        var expected = RunCheckpoint.Create("seed", 123, "attempt", 1, 20, "test", "{\"opaque\":42}");
+        try
+        {
+            AtomicSaveFile.Write(path, expected.Encode());
+            AtomicSaveFile.Write(path, "corrupt-json");
+            RunCheckpoint? Decode(string text)
+            {
+                var cp = RunCheckpoint.Decode(text);
+                return cp?.Matches("seed", 123, "attempt") == true ? cp : null;
+            }
+            Assert.Equal(expected, AtomicSaveFile.ReadValidated(path, Decode));
+            File.WriteAllText(path, RunCheckpoint.Create("other", 123, "attempt", 1, 20, "test", "{}").Encode());
+            Assert.Equal(expected, AtomicSaveFile.ReadValidated(path, Decode));
+            File.Delete(path + ".previous");
+            Assert.Null(AtomicSaveFile.ReadValidated(path, Decode));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+    }
+}

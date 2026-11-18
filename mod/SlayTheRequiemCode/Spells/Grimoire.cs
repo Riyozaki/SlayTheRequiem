@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Models;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
@@ -77,17 +78,39 @@ public sealed class Grimoire : RequiemRelic
     }
 
     private bool _starting;
-    private int _startPhase;
+    private int _startPhase, _startProtocol;
     private string _originChoiceId = "", _backgroundChoiceId = "";
 
     /// <summary>0/1: origin not selected/selected; 2/3: origin committed/background selected; 4: complete.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
-    public int StartPhase { get => _startPhase; set { AssertMutable(); _startPhase = value; } }
+    public int StartPhase
+    {
+        get => _startPhase;
+        set { AssertMutable(); if (value is < 0 or > StartupState.Complete) throw new FormatException("Invalid saved startup phase"); _startPhase = value; }
+    }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int StartProtocol
+    {
+        get => _startProtocol;
+        set { AssertMutable(); if (value is < 0 or > StartupState.Protocol) throw new FormatException("Unsupported saved startup protocol"); _startProtocol = value; }
+    }
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public string OriginChoiceId { get => _originChoiceId; set { AssertMutable(); _originChoiceId = value ?? ""; } }
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public string BackgroundChoiceId { get => _backgroundChoiceId; set { AssertMutable(); _backgroundChoiceId = value ?? ""; } }
-    public bool StartingChoicesComplete => OriginGranted && StartPhase == 4;
+    public bool StartingChoicesComplete => StartupState.IsComplete(StartPhase, OriginGranted);
+
+    internal void MigrateLegacyStart()
+    {
+        if (!StartupState.NeedsLegacyMigration(StartProtocol)) return;
+        StartPhase = StartupState.LegacyPhase(OriginGranted);
+        if (OriginGranted)
+        {
+            OriginChoiceId = Owner.Relics.OfType<OriginRelic>().FirstOrDefault()?.Id.Entry ?? "none";
+            BackgroundChoiceId = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault()?.Id.Entry ?? "none";
+        }
+        StartProtocol = StartupState.Protocol;
+    }
 
     protected override void DeepCloneFields()
     {
@@ -203,3 +226,30 @@ public abstract class TreatiseRelic : RequiemRelic
 [Pool(typeof(SharedRelicPool))] public sealed class TreatiseOfAlteration : TreatiseRelic { public override SpellSchool School => SpellSchool.Alteration; }
 [Pool(typeof(SharedRelicPool))] public sealed class TreatiseOfConjuration : TreatiseRelic { public override SpellSchool School => SpellSchool.Conjuration; }
 [Pool(typeof(SharedRelicPool))] public sealed class TreatiseOfIllusion : TreatiseRelic { public override SpellSchool School => SpellSchool.Illusion; }
+
+
+/// <summary>
+/// MapRoom intentionally skips AfterRoomEntered in the game. Finish startup even for a no-Ancient start, then
+/// expose the act boundary only AFTER every native act listener and our startup tasks completed.
+/// </summary>
+[CriticalPatch]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.AfterActEntered))]
+public static class StartupActBoundaryPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(IRunState runState, ref Task __result) => __result = Finish(__result, runState);
+
+    private static async Task Finish(Task native, IRunState runState)
+    {
+        await native;
+        if (!ReferenceEquals(runState, Net.RequiemNet.State)) return;
+        if (runState.CurrentRoom is MegaCrit.Sts2.Core.Rooms.MapRoom room)
+            foreach (var player in runState.Players)
+            {
+                if (!RequiemMode.IsInSystem(player)) continue;
+                if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
+                if (Mastery.GrimoireOf(player) is { StartingChoicesComplete: false } grimoire) await grimoire.AfterRoomEntered(room);
+            }
+        Rollback.MemoryStone.AfterActHooksCompleted(runState);
+    }
+}

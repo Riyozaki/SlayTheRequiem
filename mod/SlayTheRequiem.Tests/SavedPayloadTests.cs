@@ -112,7 +112,9 @@ public sealed class SavedPayloadTests
     [Fact]
     public void Malformed_json_is_an_explicit_failure_not_an_empty_payload()
     {
-        Assert.Throws<JsonException>(() => SavedPayload.Preserves("not-json", "{}"));
-        Assert.Throws<JsonException>(() => SavedPayload.Equivalent("{}", "not-json"));
+        // JsonReaderException derives from JsonException; the contract is an explicit JSON failure, not
+        // System.Text.Json's private implementation subtype (xUnit Throws<T> requires an exact type).
+        Assert.ThrowsAny<JsonException>(() => SavedPayload.Preserves("not-json", "{}"));
+        Assert.ThrowsAny<JsonException>(() => SavedPayload.Equivalent("{}", "not-json"));
     }
 }

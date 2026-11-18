@@ -56,7 +56,20 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
     private List<SerializableCard> _storedCards = new();
     private string _storedItems = ""; // v1 compatibility: do NOT remove or reinterpret this saved field
     private string _storedItemData = "";
-    private int _instanceSequence, _operationRevision;
+    private int _instanceSequence, _operationRevision, _dataSchema, _shopProtocol;
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int DataSchema
+    {
+        get => _dataSchema;
+        set { AssertMutable(); if (value is < 0 or > Debugging.RunDiagnostics.SaveSchema) throw new FormatException("Unsupported Requiem save schema"); _dataSchema = value; }
+    }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int ShopProtocol
+    {
+        get => _shopProtocol;
+        set { AssertMutable(); if (value is < 0 or > Shops.ShopOperations.Protocol) throw new FormatException("Unsupported Requiem operation protocol"); _shopProtocol = value; }
+    }
     private ConditionalWeakTable<CardModel, SerializableCard> _cardPreviews = new();
     private ConditionalWeakTable<RelicModel, StoredItemRecord> _itemPreviews = new();
 
@@ -402,6 +415,7 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
             if (!TryItems(out var items, out var error)) return OperationResult.Reject(key, error);
             var index = items.FindIndex(i => i.Key == key);
             if (index < 0) return OperationResult.Reject(key, "Stale chest instance");
+            OperationRecovery.Capture(Owner, "chest:take-item");
             if (InventoryIdentity.FindRelic(Owner, key) is { } existing)
             {
                 if (items[index].Payload.Length == 0 || !SavedPayload.Preserves(items[index].Payload,
@@ -461,6 +475,7 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
         try
         {
             if (!TryItems(out var items, out var error)) { MainFile.Logger.Error($"[Chest] {error}"); return 0; }
+            OperationRecovery.Capture(Owner, "chest:event-loss");
             var lose = CampRules.ChestLoss(_storedCards.Count + items.Count);
             for (var n = 0; n < lose; n++)
             {
@@ -478,6 +493,36 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
 
     private bool CanTransfer => RequiemMode.IsInSystem(Owner) && Owner.Creature.IsAlive && !CombatManager.Instance.IsInProgress
         && !InventoryGate.For(Owner).Blocked;
+
+    private string _mandatoryGrantSources = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string MandatoryGrantSources { get => _mandatoryGrantSources; set { AssertMutable(); _mandatoryGrantSources = value ?? ""; } }
+
+    internal bool HasMandatorySource(string source)
+    {
+        MandatoryGrantLedger.ValidateSource(source);
+        return MandatoryGrantLedger.Read(_mandatoryGrantSources).ContainsKey(source);
+    }
+
+    internal void PrepareMandatorySource(string source, CardModel card)
+    {
+        var sources = MandatoryGrantLedger.Read(_mandatoryGrantSources);
+        MandatoryGrantLedger.ValidateSource(source);
+        if (sources.ContainsKey(source)) throw new InvalidOperationException("Mandatory source already prepared");
+        if (sources.Count >= MandatoryGrantLedger.MaxEntries) throw new InvalidOperationException("Mandatory source journal full");
+        if (!CardAcquisition.IsDeferredClaim(card)) CardAcquisition.MarkClaim(card, InventoryIdentity.NewClaimKey(Owner));
+        sources.Add(source, CardAcquisition.ClaimKey(card));
+        var journal = MandatoryGrantLedger.Write(sources); // validate/encode BEFORE changing either durable source
+        PrepareDeferredCard(card);
+        _mandatoryGrantSources = journal; // synchronous write-ahead pair, before any await
+    }
+
+    internal void CancelMandatorySources(string prefix)
+    {
+        var claims = MandatoryGrantLedger.Read(_mandatoryGrantSources).Where(kv => kv.Key.StartsWith(prefix, StringComparison.Ordinal))
+            .Select(kv => kv.Value).ToHashSet(StringComparer.Ordinal);
+        _pendingCards.RemoveAll(s => claims.Contains(CardAcquisition.ClaimKey(s))); // deliberate source revocation, e.g. shedding a form
+    }
 
     private List<SerializableCard> _pendingCards = new();
     private bool _offeringPending;

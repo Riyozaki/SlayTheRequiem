@@ -15,6 +15,7 @@ public static class InventoryGate
     {
         internal readonly OperationGate Gate = new();
         internal int Mutations;
+        internal long FailureEpoch;
     }
     private static readonly ConditionalWeakTable<Player, State> Gates = new();
     public static OperationGate For(Player player)
@@ -72,9 +73,12 @@ public static class InventoryGate
     internal static bool IsMutating(Player player) => Gates.TryGetValue(player, out var state) && state.Mutations > 0;
 
     // Only ShopOperations' matching immutable receipts may use this. Partial effects require checkpoint restore.
-    internal static void ClearReceiptBlock(Player player)
+    internal static long FailureEpoch(Player player) => Gates.GetValue(player, _ => new State()).FailureEpoch;
+
+    internal static void ClearReceiptBlock(Player player, long expectedEpoch)
     {
         var state = Gates.GetValue(player, _ => new State());
+        if (state.FailureEpoch != expectedEpoch || IsMutating(player)) return;
         if (Alchemy.TravelPack.Of(player) is { } pack)
         {
             pack.OperationBlocked = false;
@@ -88,6 +92,7 @@ public static class InventoryGate
     {
         var gate = For(player);
         var first = !gate.Blocked;
+        Gates.GetValue(player, _ => new State()).FailureEpoch++;
         gate.Blocked = true;
         if (Alchemy.TravelPack.Of(player) is { } pack)
         {

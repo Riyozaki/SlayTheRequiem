@@ -5,6 +5,8 @@ using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Multiplayer.Game.Lobby;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Saves.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
@@ -34,7 +36,7 @@ public static class RunSettings
     private static WeakReference<StartRunLobby>? _lobby;
     private static StartRunLobby? Lobby => _lobby != null && _lobby.TryGetTarget(out var lobby) ? lobby : null;
 
-    /// <summary>Снимок текущего забега; null — забега нет (или старое сохранение) и действуют настройки меню.</summary>
+    /// <summary>Защитная копия снимка текущего забега; null — забега нет и действуют настройки меню.</summary>
     public static RunSettingsData? Active => _active?.Clone();
     public static string SourceName { get; private set; } = "menu (no run snapshot)";
 
@@ -165,47 +167,92 @@ public static class RunSettings
         MainFile.Logger.Info($"RunSettings: забег начат с настройками {_active.Encode()}");
     }
 
-    /// <summary>Загрузка забега: снимок из Гримуаров. Нет Гримуара у героя мода — забег начат с выключенными системами.</summary>
+    /// <summary>No model setters, menu fallback, disk write or RNG use. Runs BEFORE native reload-counter writes.</summary>
+    internal static SavedRulesSnapshot ValidateSaved(SerializableRun save)
+    {
+        var grimoireId = ModelDb.Relic<Grimoire>().Id;
+        var packId = ModelDb.Relic<Alchemy.TravelPack>().Id;
+        var codes = new List<string?>();
+        foreach (var player in save.Players)
+        {
+            var grimoires = player.Relics.Where(r => r.Id == grimoireId).ToList();
+            if (grimoires.Count > 1) throw new FormatException("Duplicate saved Grimoire; no save rewrite");
+            if (grimoires.Count == 1) codes.Add(SavedString(grimoires[0].Props, nameof(Grimoire.RunSettingsCode)));
+            foreach (var pack in player.Relics.Where(r => r.Id == packId))
+            {
+                if (SavedInt(pack.Props, nameof(Alchemy.TravelPack.DataSchema)) is < 0 or > Debugging.RunDiagnostics.SaveSchema
+                    || SavedInt(pack.Props, nameof(Alchemy.TravelPack.ShopProtocol)) is < 0 or > Shops.ShopOperations.Protocol)
+                    throw new FormatException("Newer Requiem save/protocol; use the matching build, original save retained");
+            }
+        }
+        var timelines = save.Players.SelectMany(p => p.Relics).Where(r => r.Id == packId)
+            .Select(r => SavedString(r.Props, nameof(Alchemy.TravelPack.OperationRunId)))
+            .Where(id => !string.IsNullOrEmpty(id)).Distinct(StringComparer.Ordinal).ToList();
+        if (timelines.Count > 1) throw new FormatException("Conflicting saved Requiem timelines; original save retained");
+        return SavedRulesSnapshot.Read(codes);
+    }
+
+    private static string? SavedString(SavedProperties? props, string name)
+    {
+        var values = props?.strings?.Where(p => p.name == name).ToList();
+        if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
+        return values is { Count: 1 } ? values[0].value : null;
+    }
+    private static int SavedInt(SavedProperties? props, string name)
+    {
+        var values = props?.ints?.Where(p => p.name == name).ToList();
+        if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
+        return values is { Count: 1 } ? values[0].value : 0;
+    }
+
+    /// <summary>Loading a disabled/vanilla run never enables Requiem from the local menu.</summary>
     private static void LoadRun(RunState? state)
     {
         _active = null;
         SourceName = "saved rules not validated";
         Debugging.RunDiagnostics.LaunchKind = "continue";
         if (state == null) return;
-        var codes = state.Players.Select(p => p.Relics.OfType<Grimoire>().FirstOrDefault()?.RunSettingsCode).ToList();
-        if (codes.Any(c => !string.IsNullOrEmpty(c) && RunSettingsData.Decode(c) == null))
+        var result = SavedRulesSnapshot.Read(state.Players.SelectMany(p => p.Relics.OfType<Grimoire>())
+            .Select(g => (string?)g.RunSettingsCode).ToList());
+        _active = result.Rules ?? new RunSettingsData { EnableRequiemSystems = false };
+        SourceName = result.Rules == null ? "saved run without Requiem systems" : "saved run snapshot";
+        MainFile.Logger.Info($"RunSettings: {SourceName} {_active.Encode()}");
+    }
+
+    /// <summary>Backup precedes migration AND the game's IncrementNumReloads. Ordinary Continue preserves timeline/revision.</summary>
+    internal static void PrepareSavedRun(RunState state, SerializableRun save, bool coop, bool keepBackup)
+    {
+        var validation = ValidateSaved(save);
+        LoadRun(state);
+        var grimoires = state.Players.SelectMany(p => p.Relics.OfType<Grimoire>()).ToList();
+        var packs = state.Players.Select(Alchemy.TravelPack.Of).OfType<Alchemy.TravelPack>().ToList();
+        var timelines = packs.Select(p => p.OperationRunId).Where(id => id.Length > 0).Distinct(StringComparer.Ordinal).ToList();
+        if (timelines.Count > 1) throw new FormatException("Saved Requiem operation timelines disagree; original save retained");
+        var records = state.Players.Select(Progression.HeroRecord.Of).OfType<Progression.HeroRecord>().ToList();
+        var needsMigration = validation.MissingCopies || grimoires.Any(g => StartupState.NeedsLegacyMigration(g.StartProtocol))
+            || records.Any(r => r.FatigueVisitKey.Length == 0) || packs.Any(p => p.OperationRunId.Length == 0
+                || p.DataSchema < Debugging.RunDiagnostics.SaveSchema || p.ShopProtocol < Shops.ShopOperations.Protocol)
+            || validation.Rules is { RunId.Length: 0 };
+        if (needsMigration && keepBackup) OperationRecovery.BackupBeforeMigration(save, coop);
+        if (validation.Rules != null && _active is { RunId.Length: 0 })
+            _active.RunId = OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime)[..32].ToLowerInvariant();
+        if (validation.Rules != null && _active != null)
         {
-            SourceName = "INVALID OR NEWER SAVED RULES: Continue rejected; original save retained";
-            throw new InvalidOperationException("Saved Requiem rules are invalid or from a newer schema. No menu fallback or save rewrite. Restore the matching mod build or backup.");
+            var code = _active.Encode();
+            foreach (var grimoire in grimoires) grimoire.RunSettingsCode = code;
         }
-        var snapshots = codes.Select(RunSettingsData.Decode).OfType<RunSettingsData>().Select(s => s.Encode()).Distinct(StringComparer.Ordinal).ToList();
-        if (snapshots.Count > 1)
+        foreach (var grimoire in grimoires) grimoire.MigrateLegacyStart();
+        foreach (var record in records.Where(r => r.FatigueVisitKey.Length == 0))
+            record.FatigueVisitKey = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{state.CurrentActIndex}:{state.TotalFloor}");
+        var timeline = timelines.FirstOrDefault() ?? (_active?.RunId is { Length: > 0 } id ? id
+            : OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime));
+        foreach (var pack in packs)
         {
-            SourceName = "INCONSISTENT SAVED SNAPSHOTS: Continue rejected";
-            throw new InvalidOperationException("Saved Requiem rules disagree between players; refusing local fallback");
+            if (pack.OperationRunId.Length == 0) pack.OperationRunId = timeline;
+            pack.DataSchema = Debugging.RunDiagnostics.SaveSchema;
+            pack.ShopProtocol = Shops.ShopOperations.Protocol;
         }
-        foreach (var player in state.Players)
-        {
-            var code = player.Relics.OfType<Grimoire>().FirstOrDefault()?.RunSettingsCode;
-            if (RunSettingsData.Decode(code) is { } data)
-            {
-                _active = data;
-                SourceName = "saved run snapshot";
-                MainFile.Logger.Info($"RunSettings: загружен снимок забега {code}");
-                return;
-            }
-        }
-        if (state.Players.Any(p => RequiemMode.IsParticipant(p.Character)) && !state.Players.Any(p => p.Relics.OfType<Grimoire>().Any()))
-        {
-            // Герои мода без Гримуара: забег шёл по ванильным правилам — не включать системы посреди забега.
-            _active = FromConfig(null);
-            _active.EnableRequiemSystems = false;
-            SourceName = "saved run without Requiem systems";
-            MainFile.Logger.Info("RunSettings: в сохранении нет Гримуара — забег продолжается без систем Реквиема.");
-            return;
-        }
-        SourceName = "LEGACY RULES UNKNOWN: Continue rejected; original save retained";
-        throw new InvalidOperationException("This legacy Requiem save has no rules snapshot. Its rules cannot be reconstructed safely from a local menu. The save is not rewritten; use its original mod build or a known-good backup.");
+        if (needsMigration) SourceName = "saved rules + backed-up legacy metadata migration";
     }
 
     /// <summary>Клиент: снимок хоста (до сообщения о старте забега).</summary>
@@ -322,35 +369,39 @@ public static class RunSettings
         }
     }
 
-    /// <summary>Загрузка (одиночная, кооп, возврат Камнем Памяти): снимок из сохранения.</summary>
+    // Validation at InitializeSavedRun alone is TOO LATE: SetUpSaved* writes NumReloads first.
+    [CriticalPatch]
+    [HarmonyPatch(typeof(RunState), nameof(RunState.FromSerializable))]
+    public static class ValidateBeforeDeserialization
+    {
+        [HarmonyPrefix]
+        public static void Prefix(SerializableRun save) => ValidateSaved(save);
+    }
+
+    [CriticalPatch]
+    [HarmonyPatch(typeof(RunManager), nameof(RunManager.SetUpSavedSingleplayer))]
+    public static class PrepareSingleplayerLoad
+    {
+        [HarmonyPrefix]
+        public static void Prefix(RunState state, SerializableRun save) => PrepareSavedRun(state, save, coop: false, keepBackup: true);
+    }
+
+    [CriticalPatch]
+    [HarmonyPatch(typeof(RunManager), nameof(RunManager.SetUpSavedMultiplayer))]
+    public static class PrepareMultiplayerLoad
+    {
+        [HarmonyPrefix]
+        public static void Prefix(RunState state, LoadRunLobby lobby) =>
+            PrepareSavedRun(state, lobby.Run, coop: true, keepBackup: lobby.NetService.Type != NetGameType.Client);
+    }
+
+    /// <summary>Reassert saved rules for replay/native load paths as well. All migrating load paths ran earlier.</summary>
     [CriticalPatch]
     [HarmonyPatch(typeof(RunManager), "InitializeSavedRun")]
     public static class ApplyOnLoad
     {
         [HarmonyPrefix]
-        public static void Prefix(RunManager __instance, SerializableRun save)
-        {
-            var state = __instance.DebugOnlyGetState();
-            LoadRun(state);
-            if (state == null) return;
-            // For old saves the SAVE start time is shared by peers. Back up the ORIGINAL payload before
-            // introducing identities/settings fields. Normal Continue preserves its timeline/revision exactly.
-            var packs = state.Players.Select(Alchemy.TravelPack.Of).OfType<Alchemy.TravelPack>().ToList();
-            var timelines = packs.Select(p => p.OperationRunId).Where(id => id.Length > 0).Distinct(StringComparer.Ordinal).ToList();
-            if (timelines.Count > 1) throw new InvalidOperationException("Saved Requiem operation timelines disagree; original save retained");
-            var needsMigration = packs.Any(p => p.OperationRunId.Length == 0) || _active is { RunId.Length: 0 };
-            if (needsMigration) OperationRecovery.BackupBeforeMigration(save); // a write failure aborts BEFORE mutation
-            if (_active is { RunId.Length: 0 })
-            {
-                _active.RunId = OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime)[..32].ToLowerInvariant();
-                var code = _active.Encode();
-                foreach (var grimoire in state.Players.SelectMany(p => p.Relics.OfType<Grimoire>())) grimoire.RunSettingsCode = code;
-                SourceName = "saved v1 rules + backed-up identity migration";
-            }
-            var timeline = timelines.FirstOrDefault() ?? (_active?.RunId is { Length: > 0 } id ? id
-                : OperationIdentity.LegacyNonce(state.Rng.StringSeed, save.StartTime));
-            foreach (var pack in packs.Where(p => p.OperationRunId.Length == 0)) pack.OperationRunId = timeline;
-        }
+        public static void Prefix(RunManager __instance) => LoadRun(__instance.DebugOnlyGetState());
     }
 
     /// <summary>Конец забега: снова действуют настройки меню.</summary>
