@@ -299,7 +299,7 @@ public static class RunSettings
         {
             if (senderId == hostLobby.NetService.NetId || !hostLobby.Players.Any(p => p.id == senderId)) return;
             if (code == StartupState.LobbyQuery) OfferStartupProtocol(hostLobby, senderId);
-            else if (code == StartupState.LobbyAgreement) OnStartupProtocol(senderId, StartupState.Protocol);
+            else if (code == StartupState.LobbyAgreement) OnStartupProtocol(senderId, StartupState.SessionProtocol);
             else if (code != null && code.StartsWith(StartupState.LobbyPrefix, StringComparison.Ordinal)) LobbyStartupProtocols.Remove(senderId);
             return; // a client can never install rules on the host
         }
@@ -310,7 +310,7 @@ public static class RunSettings
         }
         if (code == StartupState.LobbyOffer)
         {
-            _hostStartupProtocol = StartupState.Protocol;
+            _hostStartupProtocol = StartupState.SessionProtocol;
             CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyAgreement }, Lobby!.NetService);
             return;
         }
@@ -347,7 +347,7 @@ public static class RunSettings
         if (Lobby is not { } lobby || lobby.NetService.Type != NetGameType.Host || senderId == lobby.NetService.NetId
             || !lobby.Players.Any(p => p.id == senderId)) return;
         LobbyStartupProtocols.Remove(senderId);
-        if (protocol == StartupState.Protocol) LobbyStartupProtocols[senderId] = protocol;
+        if (protocol == StartupState.SessionProtocol) LobbyStartupProtocols[senderId] = protocol;
         else MainFile.Logger.Error($"RunSettings: incompatible hero creation protocol {protocol} from {senderId}");
     }
 
@@ -458,7 +458,7 @@ public static class RunSettings
         public static bool Prefix(StartRunLobby __instance, bool ready)
         {
             if (!ready || __instance.NetService.Type != NetGameType.Client) return true;
-            if (_hostStartupProtocol != StartupState.Protocol)
+            if (_hostStartupProtocol != StartupState.SessionProtocol)
             {
                 CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyQuery }, __instance.NetService);
                 RefuseStartup("No compatible host capability yet; ready again after all peers use the same build");

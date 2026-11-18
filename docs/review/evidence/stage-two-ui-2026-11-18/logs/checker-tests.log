@@ -1,0 +1,13 @@
+test_current_generated_texts_include_every_dynamic_key (test_check_loc.CreationLocalizationTests.test_current_generated_texts_include_every_dynamic_key) ... ok
+test_enumerated_dynamic_keys_follow_new_enum_members (test_check_loc.CreationLocalizationTests.test_enumerated_dynamic_keys_follow_new_enum_members) ... ok
+test_literal_conditional_switch_and_enum_keys_are_all_covered (test_check_loc.CreationLocalizationTests.test_literal_conditional_switch_and_enum_keys_are_all_covered) ... ok
+test_missing_dynamic_key_and_parameter_drift_are_detected (test_check_loc.CreationLocalizationTests.test_missing_dynamic_key_and_parameter_drift_are_detected) ... ok
+test_translated_gold_amount_matches_the_production_bonus_constant (test_check_loc.CreationLocalizationTests.test_translated_gold_amount_matches_the_production_bonus_constant) ... ok
+test_dotted_literals_are_checked_in_shop_and_reward_code_too (test_check_loc.JournalLocalizationTests.test_dotted_literals_are_checked_in_shop_and_reward_code_too) ... ok
+test_every_branch_slot_cast_state_and_journal_string_exists (test_check_loc.JournalLocalizationTests.test_every_branch_slot_cast_state_and_journal_string_exists) ... ok
+test_missing_branch_label_and_placeholder_drift_fail (test_check_loc.JournalLocalizationTests.test_missing_branch_label_and_placeholder_drift_fail) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.048s
+
+OK

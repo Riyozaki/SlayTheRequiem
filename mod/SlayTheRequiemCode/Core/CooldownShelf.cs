@@ -17,6 +17,9 @@ public sealed class CooldownShelf<TCard, TCombat> where TCard : class where TCom
     private readonly List<Entry> _entries = new();
     public int Count => _entries.Count;
     public int NextTurns => _entries.Count == 0 ? 0 : _entries.Min(e => e.Turns);
+    public IReadOnlyList<(TCard Card, int Turns)> Snapshot(TCombat combat) => _entries
+        .Where(e => ReferenceEquals(e.Combat, combat)).Select(e => (e.Card, e.Turns)).ToArray();
+
     public bool Contains(TCard card) => _entries.Any(e => ReferenceEquals(e.Card, card));
     public bool Contains(TCard card, TCombat combat) => _entries.Any(e => ReferenceEquals(e.Card, card) && ReferenceEquals(e.Combat, combat));
 

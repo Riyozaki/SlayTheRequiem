@@ -16,6 +16,14 @@ public partial class NRunStatusBadge : CanvasLayer
 {
     public override void _Process(double delta) => TechnicalMetrics.SampleFrame(delta);
 
+    public override void _UnhandledInput(InputEvent input)
+    {
+        if (input is not InputEventKey { Pressed: true, Echo: false, Keycode: Key.H }
+            && input is not InputEventJoypadButton { Pressed: true, ButtonIndex: JoyButton.LeftStick }) return;
+        if (RequiemNet.State is { } run && LocalContext.GetMe(run) is { } owner && RequiemMode.IsInSystem(owner)
+            && HeroJournal.Show(owner)) GetViewport().SetInputAsHandled();
+    }
+
     public override void _Ready()
     {
         Layer = 95;
@@ -27,6 +35,13 @@ public partial class NRunStatusBadge : CanvasLayer
         badge.Text = RequiemUi.TipText(PatchReport.Degraded ? "RUN_DEGRADED.title" : RunSettings.EnableRequiemSystems ? "RUN_ENABLED.title" : "RUN_DISABLED.title");
         badge.TooltipText = RequiemUi.TipText("RUN_PASSPORT.title") + "\n" + RunSettings.SourceName;
         root.AddChild(badge);
+        if (RequiemNet.State is { } run && LocalContext.GetMe(run) is { } owner && RequiemMode.IsInSystem(owner))
+        {
+            var journal = RequiemKit.MakeButton(RequiemUi.TipText("UI.journal.button.title"), 18, new Vector2(176, 38));
+            journal.Position = new Vector2(20, 124);
+            journal.Pressed += () => HeroJournal.Show(owner);
+            root.AddChild(journal);
+        }
         var panel = RequiemKit.Panel();
         root.AddChild(panel);
         panel.SetAnchorsPreset(Control.LayoutPreset.Center);

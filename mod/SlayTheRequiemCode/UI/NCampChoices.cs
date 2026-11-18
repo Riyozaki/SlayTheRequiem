@@ -1,154 +1,164 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.RestSite;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.RestSite;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Net;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.UI;
 
-/// <summary>
-/// Новое меню лагеря (плейтест 2026-11: «элементы лагеря одного размера и не влезают в экран»). Лагерь Реквиема
-/// добавляет к ванильным «Отдыху» и «Ковке» до 12 действий, а ванильный ряд <c>%ChoicesContainer</c> рассчитан на 3–4.
-/// <para>
-/// Этот контейнер подменяет ванильный (то же поле <c>_choicesContainer</c>, поэтому вся логика игры — выбор, синхронизация
-/// в коопе, подсветка, блокировка — работает как была): ванильные кнопки <see cref="NRestSiteButton"/> раскладываются
-/// рядами по категориям — Отдых, Ремесло, Магия, Снаряжение, Особое, — с подписью над рядом. Если рядов много, кнопки
-/// уменьшаются, чтобы всё влезло. Появление — рядами снизу вверх.
-/// </para>
-/// </summary>
+/// <summary>Scrollable category grid WITHOUT reparenting native buttons: native disable/selection/synchronizer and
+/// DefaultFocusedControl still see their direct children. No 0.42-scale unreadable fit-to-all fallback.</summary>
 public partial class NCampChoices : Container
 {
     public enum Category { Rest, Craft, Magic, Gear, Special }
+    private const float LabelHeight = 36, Gap = 18, CostHeight = 32;
+    private readonly Dictionary<NRestSiteButton, Vector2> _positions = new();
+    private readonly Dictionary<Category, float> _categories = new();
+    private readonly HashSet<ulong> _wired = new();
+    private readonly List<(NRestSiteButton Button, int Cost)> _costs = new();
+    private float _contentHeight, _offset;
+    internal VScrollBar ScrollBar { get; set; } = null!;
 
-    private const float LabelHeight = 30f;
-    private const float RowGap = 10f;
-    private const float ColGap = 14f;
-    private static readonly Vector2 FallbackButton = new(190, 210);
-
-    private readonly List<(Category cat, float y, float x0, float x1)> _rows = new();
-    private bool _animated;
-
-    public static Category CategoryOf(RestSiteOption option)
+    public static Category CategoryOf(RestSiteOption option) => option.OptionId.ToUpperInvariant().Replace("SLAYTHEREQUIEM_", "") switch
     {
-        var id = option.OptionId.ToUpperInvariant().Replace("SLAYTHEREQUIEM_", "");
-        return id switch
-        {
-            "HEAL" or "SHORT_REST" or "MEDITATE" or "PRAY" or "WARM" => Category.Rest,
-            "SMITH" or "FORGE" or "BREW" or "COOK" or "DIG" or "MEND" => Category.Craft,
-            "ENCHANT" or "CARD_ENCHANT" => Category.Magic,
-            "CHEST" or "TRAIN" or "LIFT" => Category.Gear,
-            _ => Category.Special,
-        };
-    }
-
-    public override void _Notification(int what)
+        "HEAL" or "SHORT_REST" or "MEDITATE" or "PRAY" or "WARM" => Category.Rest,
+        "SMITH" or "FORGE" or "BREW" or "COOK" or "DIG" or "MEND" => Category.Craft,
+        "ENCHANT" or "CARD_ENCHANT" => Category.Magic,
+        "CHEST" or "TRAIN" or "LIFT" => Category.Gear,
+        _ => Category.Special,
+    };
+    internal static string CategoryTitle(Category category) => category switch
     {
-        if (what == NotificationSortChildren) Arrange();
+        Category.Rest => RequiemUi.TipText("CAMP_CAT_REST.title"),
+        Category.Craft => RequiemUi.TipText("CAMP_CAT_CRAFT.title"),
+        Category.Magic => RequiemUi.TipText("CAMP_CAT_MAGIC.title"),
+        Category.Gear => RequiemUi.TipText("CAMP_CAT_GEAR.title"),
+        _ => RequiemUi.TipText("CAMP_CAT_SPECIAL.title"),
+    };
+    public override void _Notification(int what) { if (what == NotificationSortChildren) Arrange(); }
+    public override void _Ready() { ClipContents = true; MouseFilter = MouseFilterEnum.Pass; }
+    public override void _GuiInput(InputEvent input)
+    {
+        if (input is not InputEventMouseButton { Pressed: true } wheel) return;
+        if (wheel.ButtonIndex is not (MouseButton.WheelDown or MouseButton.WheelUp)) return;
+        SetOffset(_offset + (wheel.ButtonIndex == MouseButton.WheelDown ? 100 : -100)); AcceptEvent();
     }
-
+    internal void SetOffset(double value)
+    {
+        _offset = (float)Math.Clamp(value, 0, Math.Max(0, _contentHeight - Size.Y));
+        foreach (var (button, position) in _positions)
+            if (IsInstanceValid(button) && !button.IsQueuedForDeletion()) button.Position = position - new Vector2(0, _offset);
+        if (ScrollBar != null && IsInstanceValid(ScrollBar) && ScrollBar.Value != _offset) ScrollBar.SetValueNoSignal(_offset);
+        QueueRedraw();
+    }
+    internal void GoTo(Category category)
+    {
+        if (!_categories.TryGetValue(category, out var top)) return;
+        SetOffset(top);
+        _positions.Keys.FirstOrDefault(b => CategoryOf(b.Option) == category)?.GrabFocus();
+    }
+    private void Reveal(NRestSiteButton button)
+    {
+        if (_positions.TryGetValue(button, out var p))
+            SetOffset(UiLayoutRules.ScrollIntoView(_offset, p.Y - LabelHeight, p.Y + button.Size.Y + CostHeight, Size.Y, _contentHeight));
+    }
     private void Arrange()
     {
-        var buttons = GetChildren().OfType<NRestSiteButton>().Where(b => b.Option != null).ToList();
-        _rows.Clear();
-        if (buttons.Count == 0) return;
-
-        var baseSize = buttons.Select(b => Max(b.GetCombinedMinimumSize(), b.Size)).Aggregate(Vector2.Zero, Max);
-        if (baseSize.X < 40 || baseSize.Y < 40) baseSize = FallbackButton;
-
-        var groups = buttons.GroupBy(b => CategoryOf(b.Option)).OrderBy(g => g.Key).Select(g => (g.Key, g.ToList())).ToList();
-        // Мало кнопок — один ряд без подписей, как в ванили.
-        var flat = buttons.Count <= 5;
-        if (flat) groups = [(Category.Rest, buttons)];
-        var labelH = flat ? 0f : LabelHeight;
-
-        var widest = groups.Max(g => g.Item2.Count);
-        var scaleW = (Size.X - (widest - 1) * ColGap) / (widest * baseSize.X);
-        var scaleH = (Size.Y - groups.Count * (labelH + RowGap)) / (groups.Count * baseSize.Y);
-        var scale = Math.Clamp(Math.Min(1f, Math.Min(scaleW, scaleH)), 0.42f, 1f);
-        var cell = baseSize * scale;
-
-        var totalH = groups.Count * (cell.Y + labelH) + (groups.Count - 1) * RowGap;
-        var y = Math.Max(0, Size.Y - totalH); // ряды прижаты к низу, как ванильные кнопки
-        foreach (var (cat, row) in groups)
+        var buttons = GetChildren().OfType<NRestSiteButton>().Where(b => !b.IsQueuedForDeletion() && b.Option != null).ToList();
+        _positions.Clear(); _categories.Clear(); _costs.Clear();
+        if (buttons.Count == 0) { _contentHeight = 0; SetOffset(0); return; }
+        var baseSize = new Vector2(Math.Max(190, buttons.Max(b => Math.Max(b.Size.X, b.GetCombinedMinimumSize().X))),
+            Math.Max(210, buttons.Max(b => Math.Max(b.Size.Y, b.GetCombinedMinimumSize().Y))));
+        var columns = UiLayoutRules.Columns(Size.X, baseSize.X, Gap);
+        var y = 0f;
+        foreach (var group in buttons.GroupBy(b => CategoryOf(b.Option)).OrderBy(g => g.Key))
         {
-            var rowW = row.Count * cell.X + (row.Count - 1) * ColGap;
-            var x = (Size.X - rowW) / 2;
-            _rows.Add((cat, y, x, x + rowW));
-            y += labelH;
-            foreach (var b in row)
+            _categories[group.Key] = y; y += LabelHeight;
+            var list = group.ToList();
+            for (var i = 0; i < list.Count; i++)
             {
-                b.Size = baseSize;
-                b.Scale = Vector2.One * scale;
-                b.Position = new Vector2(x, y);
-                x += cell.X + ColGap;
+                var button = list[i]; var col = i % columns; var row = i / columns;
+                var rowCount = Math.Min(columns, list.Count - row * columns);
+                var x = (Size.X - rowCount * baseSize.X - (rowCount - 1) * Gap) / 2 + col * (baseSize.X + Gap);
+                var position = new Vector2(x, y + row * (baseSize.Y + CostHeight + Gap));
+                _positions[button] = position; button.Size = baseSize; button.Scale = Vector2.One;
+                var cost = button.Option switch { RequiemRestSiteOption own => own.Cost, ForeignRestSiteOption foreign => foreign.Cost, _ => 0 };
+                _costs.Add((button, cost));
+                button.TooltipText = RequiemText.Plain(button.Option.Description.GetFormattedText()) + "\n"
+                    + RequiemUi.TipText("UI.campCost.title", ("Cost", cost));
+                if (_wired.Add(button.GetInstanceId())) button.FocusEntered += () => Reveal(button);
             }
-            y += cell.Y + RowGap;
+            y += (float)Math.Ceiling(list.Count / (double)columns) * (baseSize.Y + CostHeight + Gap);
         }
-        QueueRedraw();
-        if (!_animated) CallDeferred(MethodName.AnimateRows);
-    }
-
-    private void AnimateRows()
-    {
-        _animated = true;
-        var order = 0;
-        foreach (var b in GetChildren().OfType<NRestSiteButton>().OrderByDescending(b => b.Position.Y).ThenBy(b => b.Position.X))
+        _contentHeight = y;
+        if (ScrollBar != null && IsInstanceValid(ScrollBar))
+        { ScrollBar.MaxValue = Math.Max(Size.Y, y); ScrollBar.Page = Size.Y; ScrollBar.Visible = y > Size.Y; }
+        SetOffset(_offset);
+        // Native UpdateRestSiteOptions wires a horizontal row. Replace AFTER sort with spatial up/down neighbors.
+        var ordered = _positions.Keys.OrderBy(b => _positions[b].Y).ThenBy(b => _positions[b].X).ToList();
+        for (var i = 0; i < ordered.Count; i++)
         {
-            var target = b.Position;
-            b.Position = target + new Vector2(0, 36);
-            b.CreateTween().TweenProperty(b, "position", target, 0.35).SetDelay(0.04 * order++)
-                .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
+            var button = ordered[i]; var p = _positions[button];
+            button.FocusNeighborLeft = ordered[(i + ordered.Count - 1) % ordered.Count].GetPath();
+            button.FocusNeighborRight = ordered[(i + 1) % ordered.Count].GetPath();
+            NRestSiteButton Neighbor(bool up) => ordered.Where(b => up ? _positions[b].Y < p.Y : _positions[b].Y > p.Y)
+                .OrderBy(b => Math.Abs(_positions[b].Y - p.Y)).ThenBy(b => Math.Abs(_positions[b].X - p.X)).FirstOrDefault()
+                ?? ordered[up ? ordered.Count - 1 : 0];
+            button.FocusNeighborTop = Neighbor(true).GetPath(); button.FocusNeighborBottom = Neighbor(false).GetPath();
         }
     }
-
     public override void _Draw()
     {
-        if (_rows.Count <= 1 && GetChildren().OfType<NRestSiteButton>().Count() <= 5) return;
         var font = RequiemUi.Font;
-        foreach (var (cat, y, x0, x1) in _rows)
+        foreach (var (category, top) in _categories)
         {
-            var title = RequiemUi.TipText(TitleKey(cat));
-            var mid = (x0 + x1) / 2;
-            var baseline = new Vector2(x0, y + LabelHeight - 8);
-            DrawStringOutline(font, baseline, title, HorizontalAlignment.Center, x1 - x0, 20, 6, new Color(0, 0, 0, 0.85f));
-            DrawString(font, baseline, title, HorizontalAlignment.Center, x1 - x0, 20, StsColors.gold);
-            // Тонкие линии по бокам подписи — как разделители в ванильных меню.
-            var half = Math.Min(160f, (x1 - x0) / 2 - 10);
-            var textHalf = font.GetStringSize(title, HorizontalAlignment.Left, -1, 20).X / 2 + 12;
-            if (half > textHalf + 8)
-            {
-                var ly = y + LabelHeight - 15;
-                var line = new Color(StsColors.gold, 0.45f);
-                DrawLine(new Vector2(mid - half, ly), new Vector2(mid - textHalf, ly), line, 2f);
-                DrawLine(new Vector2(mid + textHalf, ly), new Vector2(mid + half, ly), line, 2f);
-            }
+            var y = top - _offset + 25;
+            DrawString(font, new Vector2(0, y), CategoryTitle(category), HorizontalAlignment.Center, Size.X, 23, StsColors.gold);
+        }
+        foreach (var (button, cost) in _costs)
+        {
+            if (!_positions.TryGetValue(button, out var p)) continue;
+            var text = RequiemUi.TipText("UI.campCost.title", ("Cost", cost));
+            DrawString(font, new Vector2(p.X, p.Y - _offset + button.Size.Y + 23), text,
+                HorizontalAlignment.Center, button.Size.X, 20, button.Option.IsEnabled ? StsColors.gold : RequiemKit.Dim);
         }
     }
-
-    private static string TitleKey(Category cat) => cat switch
-    {
-        Category.Rest => "CAMP_CAT_REST.title",
-        Category.Craft => "CAMP_CAT_CRAFT.title",
-        Category.Magic => "CAMP_CAT_MAGIC.title",
-        Category.Gear => "CAMP_CAT_GEAR.title",
-        _ => "CAMP_CAT_SPECIAL.title",
-    };
-
-    private static Vector2 Max(Vector2 a, Vector2 b) => new(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
 }
 
-/// <summary>Подмена ванильного ряда кнопок лагеря на <see cref="NCampChoices"/> — перед первой раскладкой кнопок.</summary>
+/// <summary>Header is a sibling: the vanilla engine may delete every child of _choicesContainer on refresh.</summary>
+public partial class NCampHeader : VBoxContainer
+{
+    internal NCampChoices Menu = null!;
+    private Label _points = null!;
+    public override void _Ready()
+    {
+        _points = NHeroCreationScreen.MakeText("", 23); AddChild(_points);
+        var row = new HFlowContainer(); AddChild(row);
+        foreach (var cat in Enum.GetValues<NCampChoices.Category>())
+        {
+            var category = cat;
+            var button = RequiemKit.MakeButton(NCampChoices.CategoryTitle(cat), 19, new Vector2(0, 40));
+            button.Pressed += () => Menu.GoTo(category); row.AddChild(button);
+        }
+    }
+    public override void _Process(double delta)
+    {
+        if (RequiemNet.State is { } run && LocalContext.GetMe(run) is { } owner)
+            _points.Text = RequiemUi.TipText("UI.campPoints.title", ("Points", Camp.Points(owner)), ("Budget", Camp.Budget(owner)));
+    }
+}
+
 [HarmonyPatch(typeof(NRestSiteRoom), "UpdateRestSiteOptions")]
 public static class CampChoicesPatch
 {
-    private static readonly AccessTools.FieldRef<NRestSiteRoom, Control> ContainerRef =
-        AccessTools.FieldRefAccess<NRestSiteRoom, Control>("_choicesContainer");
-
-    private static readonly AccessTools.FieldRef<NRestSiteRoom, Control> ScreenRef =
-        AccessTools.FieldRefAccess<NRestSiteRoom, Control>("_choicesScreen");
-
+    private static readonly AccessTools.FieldRef<NRestSiteRoom, Control> ContainerRef = AccessTools.FieldRefAccess<NRestSiteRoom, Control>("_choicesContainer");
+    private static readonly AccessTools.FieldRef<NRestSiteRoom, Control> ScreenRef = AccessTools.FieldRefAccess<NRestSiteRoom, Control>("_choicesScreen");
     [HarmonyPrefix]
     public static void Prefix(NRestSiteRoom __instance)
     {
@@ -157,28 +167,19 @@ public static class CampChoicesPatch
             if (!RunSettings.EnableRequiemSystems) return;
             var old = ContainerRef(__instance);
             if (old == null || old is NCampChoices || old.GetParent() is not Control parent) return;
-            // Родитель-Container перехватил бы размер и позицию — тогда вешаем меню прямо на экран выбора
-            // (он плавно гаснет/появляется вместе с выбором, так что анимации ванили сохраняются).
             if (parent is Container) parent = ScreenRef(__instance) ?? parent;
             if (parent is Container) return;
-
-            var menu = new NCampChoices { Name = "RequiemCampChoices", MouseFilter = Control.MouseFilterEnum.Ignore, TopLevel = false };
+            var menu = new NCampChoices { Name = "RequiemCampChoices" };
             parent.AddChild(menu);
-            if (old.GetParent() == parent) parent.MoveChild(menu, old.GetIndex());
-            // Шире и выше ванильного ряда: на всю ширину экрана, вверх — до 30 % высоты.
-            var view = __instance.GetViewportRect().Size;
-            var rect = old.GetGlobalRect();
-            var top = Math.Min(rect.Position.Y, view.Y * 0.30f);
-            var bottom = Math.Max(rect.End.Y, top + 260);
-            menu.GlobalPosition = new Vector2(view.X * 0.04f, top);
-            menu.Size = new Vector2(view.X * 0.92f, bottom - top);
+            menu.AnchorLeft = .04f; menu.AnchorRight = .94f; menu.AnchorTop = .32f; menu.AnchorBottom = .79f;
+            var bar = new VScrollBar { AnchorLeft = .95f, AnchorRight = .965f, AnchorTop = .32f, AnchorBottom = .79f };
+            parent.AddChild(bar); menu.ScrollBar = bar; bar.ValueChanged += menu.SetOffset;
+            var header = new NCampHeader { Name = "RequiemCampHeader", Menu = menu };
+            parent.AddChild(header);
+            header.AnchorLeft = .05f; header.AnchorRight = .95f; header.AnchorTop = .17f; header.AnchorBottom = .30f;
             foreach (var child in old.GetChildren()) child.QueueFree();
-            old.Visible = false;
-            ContainerRef(__instance) = menu;
+            old.Visible = false; ContainerRef(__instance) = menu;
         }
-        catch (Exception e)
-        {
-            MainFile.Logger.Warn($"UI: меню лагеря: {e.Message}");
-        }
+        catch (Exception e) { MainFile.Logger.Warn($"[CampUI] {e}"); }
     }
 }

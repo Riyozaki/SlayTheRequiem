@@ -71,3 +71,29 @@ class CreationLocalizationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class JournalLocalizationTests(unittest.TestCase):
+    def test_every_branch_slot_cast_state_and_journal_string_exists(self):
+        errors = []
+        self.assertGreaterEqual(check_loc.check_journal_keys(errors), 70)
+        self.assertEqual([], errors)
+
+    def test_dotted_literals_are_checked_in_shop_and_reward_code_too(self):
+        errors = []
+        check_loc.check_ui_keys(errors)
+        self.assertEqual([], errors)
+
+    def test_missing_branch_label_and_placeholder_drift_fail(self):
+        tables = {lang: json.loads((Path(check_loc.LOC) / lang / "static_hover_tips.json").read_text()) for lang in ("eng", "rus")}
+        for failure in ("missing", "parameter"):
+            bad = deepcopy(tables)
+            if failure == "missing": del bad["rus"][check_loc.PREFIX + "UI.branch.Conjuration.title"]
+            else: bad["rus"][check_loc.PREFIX + "UI.journal.progress.title"] = "{Typo}"
+            with tempfile.TemporaryDirectory() as temp:
+                for lang, table in bad.items():
+                    dest = Path(temp) / lang / "static_hover_tips.json"; dest.parent.mkdir(parents=True)
+                    dest.write_text(json.dumps(table))
+                with patch.object(check_loc, "LOC", temp):
+                    errors = []; check_loc.check_journal_keys(errors)
+            self.assertTrue(errors)

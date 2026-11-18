@@ -366,3 +366,8 @@ for _lang, _tips in _INTEGRITY_TIPS.items():
     for _key, _text in _tips.items():
         if _key.endswith('.title'):
             UI_TIPS[_lang].setdefault(_key.removesuffix('.title') + '.description', _text)
+
+# Б2.3: readable sheets use the same generated table, including enum labels.
+from loc_journal import SHEET_TIPS
+for _lang, _tips in SHEET_TIPS.items():
+    UI_TIPS[_lang].update(_tips)

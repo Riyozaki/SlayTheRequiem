@@ -29,6 +29,7 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
     private readonly List<PowerModel> _traits = new();
     private int _signature;
     private float _appear;
+    public event Action<float>? HeightChanged;
 
     public NEnemyTraitChips() => Name = NodeName;
 
@@ -48,8 +49,10 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
         Visible = show;
         if (!show) return;
 
-        var size = new Vector2(_anchor!.Size.X, RowHeight);
-        if (Size != size) Size = size;
+        var width = _anchor!.Size.X;
+        var fit = Math.Max(1, (int)((width + Gap) / (Icon + Gap)));
+        var size = new Vector2(width, RowHeight * Math.Max(1, (int)Math.Ceiling(_traits.Count / (double)fit)));
+        if (Size != size) { Size = size; HeightChanged?.Invoke(size.Y); }
         var pos = new Vector2(0, _anchor.Size.Y + _top);
         if (Position != pos) Position = pos;
         // Мягкое появление при смене набора черт (аффикс снят, сопротивление выросло).
@@ -84,25 +87,19 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
     public override void _Draw()
     {
         var fit = Math.Max(1, (int)((Size.X + Gap) / (Icon + Gap)));
-        var shown = _traits.Count > fit ? fit - 1 : _traits.Count;
+        var shown = _traits.Count;
         var alpha = Mathf.Ease(_appear, 0.4f);
         for (var i = 0; i < shown; i++)
         {
             var p = _traits[i];
-            var x = i * (Icon + Gap);
-            var rect = new Rect2(x, 1, Icon, Icon);
+            var x = i % fit * (Icon + Gap); var y = i / fit * RowHeight;
+            var rect = new Rect2(x, y + 1, Icon, Icon);
             DrawRect(rect.Grow(1.5f), new Color(0, 0, 0, 0.72f * alpha));
             DrawRect(rect.Grow(0.5f), BorderOf(p) with { A = alpha }, filled: false, width: 1.5f);
             if (IconOf(p) is { } tex) DrawTextureRect(tex, rect, false, new Color(1, 1, 1, alpha));
             if (ShowsAmount(p))
-                DrawOutlined(p.DisplayAmount.ToString(), new Vector2(x, Icon + 1), Icon + 4, 11,
+                DrawOutlined(p.DisplayAmount.ToString(), new Vector2(x, y + Icon + 1), Icon + 4, 11,
                     StsCream with { A = alpha }, HorizontalAlignment.Right);
-        }
-        if (shown < _traits.Count)
-        {
-            var x = shown * (Icon + Gap);
-            DrawRect(new Rect2(x, 1, Icon, Icon).Grow(1.5f), new Color(0, 0, 0, 0.72f * alpha));
-            DrawOutlined($"+{_traits.Count - shown}", new Vector2(x, Icon - 4), Icon, 12, StsCream with { A = alpha });
         }
     }
 
@@ -142,6 +139,7 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
     protected override IEnumerable<IHoverTip> Tips()
     {
         var tips = new List<IHoverTip>();
+        var reveal = EnemyTraits.Reveal;
         EnemyTraits.Reveal = true;
         try
         {
@@ -149,7 +147,7 @@ public partial class NEnemyTraitChips : NRequiemHoverWidget
         }
         finally
         {
-            EnemyTraits.Reveal = false;
+            EnemyTraits.Reveal = reveal;
         }
         return tips;
     }

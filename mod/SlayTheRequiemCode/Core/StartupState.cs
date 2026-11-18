@@ -3,18 +3,19 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 /// <summary>Persisted startup decisions are separate from the declaration of completed legacy grants.</summary>
 public static class StartupState
 {
-    public const int Protocol = 2;
+    public const int Protocol = 2; // saved creation journal; NOT bumped by a UI choice-stream change
+    public const int SessionProtocol = 3; // B2.3 text-choice stream + equipment operation support
     public const int Complete = 4;
     public const string RulesKey = "hero_creation";
     // Control strings in the EXISTING RunSettingsMessage wire layout. Old BaseLib builds cannot decode an
     // unknown custom-message type, so negotiate before Ready without adding/sending a new message class.
     public const string LobbyPrefix = "!STR/hero-creation/";
     public const string LobbyQuery = LobbyPrefix + "query";
-    public static string LobbyOffer => LobbyPrefix + "host/" + Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    public static string LobbyAgreement => LobbyPrefix + "peer/" + Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public static string LobbyOffer => LobbyPrefix + "host/" + SessionProtocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public static string LobbyAgreement => LobbyPrefix + "peer/" + SessionProtocol.ToString(System.Globalization.CultureInfo.InvariantCulture);
     public static void RequireHost(int protocol)
     {
-        if (protocol != Protocol) throw new InvalidOperationException("Host did not advertise the current hero creation protocol; update the same mod build on every peer");
+        if (protocol != SessionProtocol) throw new InvalidOperationException("Host did not advertise the current hero creation protocol; update the same mod build on every peer");
     }
 
     // The rules envelope remains v1 for saved-run compatibility. A NEW lobby must explicitly agree to the
@@ -27,7 +28,7 @@ public static class StartupState
     }
     public static void RequirePeers(IEnumerable<ulong> peers, IReadOnlyDictionary<ulong, int> protocols)
     {
-        if (peers.Any(id => !protocols.TryGetValue(id, out var protocol) || protocol != Protocol))
+        if (peers.Any(id => !protocols.TryGetValue(id, out var protocol) || protocol != SessionProtocol))
             throw new InvalidOperationException("A peer has not agreed to this hero creation protocol; update the same mod build and ready again");
     }
     public static bool IsComplete(int phase, bool originGranted) => phase == Complete && originGranted;

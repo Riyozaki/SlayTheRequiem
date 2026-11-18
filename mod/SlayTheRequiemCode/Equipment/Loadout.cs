@@ -25,9 +25,8 @@ public static class Loadout
     public static void Equip(Player player, EquipmentRelic item)
     {
         var others = Equipped(player).Where(r => r != item).ToList();
-        var displaced = EquipmentRules.Displaced(others.Select(r => r.Describe()).ToList(), item.Describe());
-        foreach (var old in others.Where(r => displaced.Any(d => d.Key == r.GetType().Name && d.Slot == r.Slot)))
-            old.IsStowed = true;
+        var displaced = EquipmentRules.DisplacedIndices(others.Select(r => r.Describe()).ToArray(), item.Describe());
+        foreach (var index in displaced) others[index].IsStowed = true;
         item.IsStowed = false;
         PaperDoll.Refresh(player); // в бою («Сменить хват») — сразу на модели
     }

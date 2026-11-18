@@ -19,7 +19,7 @@ public static class ShopActionPolicy
 {
     public static bool Environment(Player player, ShopAction kind) =>
         RequiemMode.IsInSystem(player) && player.Creature.IsAlive && !CombatManager.Instance.IsInProgress
-        && (kind == ShopAction.DiscardCard || player.RunState.CurrentRoom is MerchantRoom && MerchantLedger.Active(player)
+        && (kind is ShopAction.DiscardCard or ShopAction.ChangeEquipment || player.RunState.CurrentRoom is MerchantRoom && MerchantLedger.Active(player)
             && MerchantLedger.Of(player)?.CurrentFloor == player.RunState.TotalFloor);
 
     public static bool OwnsCard(Player player, CardModel card) =>
@@ -46,6 +46,10 @@ public static class ShopActionPolicy
         bool valid;
         switch (kind)
         {
+            case ShopAction.ChangeEquipment:
+                valid = a == 0 && b is 0 or 1 && Item(s) is { } gear && gear.IsMutable && gear.Owner == player
+                    && player.Relics.Contains(gear) && gear.Slot != EquipSlot.None && gear.IsStowed != (b == 1);
+                break;
             case ShopAction.DiscardCard:
                 valid = InventoryIdentity.FindCard(player, s) is { } card && UI.DeckDiscard.CanExecute(player, card);
                 break;

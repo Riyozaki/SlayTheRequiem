@@ -24,7 +24,7 @@ public sealed record ShopRequest(string Run, string Id, int Revision, string Bef
 /// </summary>
 public static class ShopOperations
 {
-    public const int Protocol = 1;
+    public const int Protocol = 2;
     private sealed class State
     {
         public bool LocalBusy;

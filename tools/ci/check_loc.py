@@ -116,7 +116,7 @@ def check_models(errors: list) -> int:
         file, field = target
         if file not in tables:
             p = os.path.join(LOC, "eng", file)
-            tables[file] = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+            tables[file] = json.loads(Path(p).read_text(encoding="utf-8")) if os.path.exists(p) else {}
         checked += 1
         if f"{PREFIX}{snake(name)}.{field}" not in tables[file]:
             errors.append(f"{path}: {name} — нет {file} → {PREFIX}{snake(name)}.{field}")
@@ -135,10 +135,21 @@ def check_ui_keys(errors: list) -> int:
     for lang in ("eng", "rus"):
         for file in ("card_keywords.json", "static_hover_tips.json"):
             p = os.path.join(LOC, lang, file)
-            tables[(lang, file)] = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+            tables[(lang, file)] = json.loads(Path(p).read_text(encoding="utf-8")) if os.path.exists(p) else {}
     for path in glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True):
-        src = open(path, encoding="utf-8-sig").read()
+        src = Path(path).read_text(encoding="utf-8-sig")
         wanted = [("card_keywords.json", name.upper()) for name in KEYWORD.findall(src)]
+        # Fully specified dotted keys are not just their first uppercase segment (UI.journal.foo != UI).
+        complete = re.compile(r'(?:TipLoc|TipText)\(\$?"([^"{\n]+\.(?:title|description))"')
+        for literal in complete.findall(src):
+            checked += 1
+            for lang in ("eng", "rus"):
+                if PREFIX + literal not in tables[(lang, "static_hover_tips.json")]:
+                    errors.append(f"{os.path.relpath(path, ROOT)}: нет {lang} → {PREFIX}{literal}")
+        src = complete.sub("", src)
+        src = src.replace('TipText("UI.journal."', "")
+        # Finite UI enum families are checked exhaustively below, not as a wildcard 'UI.title'.
+        src = re.sub(r'(?:TipLoc|TipText)\(\$"UI\.[^"]+"', "", src)
         if os.sep + "UI" + os.sep in path:
             # Плоские ключи экранов («DOORS.title», «DOORS.{Key(kind)}.foes»): строка целиком, без полей title/description.
             for literal in FLAT_TIP.findall(src):
@@ -222,6 +233,24 @@ def check_creation_keys(errors: list) -> int:
     return len(keys)
 
 
+def check_journal_keys(errors: list) -> int:
+    source = Path(CODE, "UI", "HeroJournal.cs").read_text(encoding="utf-8")
+    keys = {"UI.journal." + key for key in re.findall(r'\bT\("([A-Za-z]+)"', source)}
+    for a, b in re.findall(r'\bT\([^;\n]*?\?\s*"([A-Za-z]+)"\s*:\s*"([A-Za-z]+)"', source):
+        keys.update(("UI.journal." + a, "UI.journal." + b))
+    for family, path, enum in (("branch", "ProgressionRules.cs", "SkillBranch"), ("slot", "Equipment.cs", "EquipSlot"),
+                               ("cast", "SpellAffinity.cs", "CastState")):
+        keys.update("UI." + family + "." + name for name in enum_names(str(Path(CODE, "Core", path)), enum))
+    tables = {lang: json.loads(Path(LOC, lang, "static_hover_tips.json").read_text()) for lang in ("eng", "rus")}
+    for key in keys:
+        name = PREFIX + key + ".title"
+        for lang, table in tables.items():
+            if name not in table: errors.append(f"Journal: нет {lang} → {name}")
+        placeholders = [set(re.findall(r"\{([A-Za-z]\w*)\}", table.get(name, ""))) for table in tables.values()]
+        if placeholders[0] != placeholders[1]: errors.append(f"Journal: RU/EN parameter mismatch → {name}")
+    return len(keys)
+
+
 def main() -> int:
     errors: list = []
     check_parity(errors)
@@ -229,6 +258,7 @@ def main() -> int:
     checked += check_moves(errors)
     checked += check_ui_keys(errors)
     checked += check_creation_keys(errors)
+    checked += check_journal_keys(errors)
     for e in errors:
         print("✗", e)
     print(f"Моделей проверено: {checked}; ошибок: {len(errors)}")

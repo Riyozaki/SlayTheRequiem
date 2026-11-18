@@ -131,7 +131,19 @@ public static class RequiemUi
         return loc;
     }
 
-    public static string TipText(string key, params (string name, decimal value)[] vars) => TipLoc(key, vars).GetFormattedText();
+    public static string TipText(string key, params (string name, object value)[] vars)
+    {
+        var loc = Tip(key);
+        foreach (var (name, value) in vars)
+        {
+            if (value is LocString nested) loc.Add(name, nested);
+            else if (value is bool flag) loc.Add(name, flag);
+            else if (value is byte or short or int or long or float or double or decimal)
+                loc.Add(name, Convert.ToDecimal(value, System.Globalization.CultureInfo.InvariantCulture));
+            else loc.Add(name, value?.ToString() ?? "");
+        }
+        return loc.GetFormattedText();
+    }
 
     // ───── данные ─────
 

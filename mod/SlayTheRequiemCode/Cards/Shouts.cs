@@ -39,6 +39,7 @@ public sealed class ShoutShelfPower : RequiemPower
 
     public int Count => _shelf.Count;
     public int NextTurns => _shelf.NextTurns;
+    public IReadOnlyList<(CardModel Card, int Turns)> Entries => Owner.CombatState is { } combat ? _shelf.Snapshot(combat) : [];
     internal bool ContainsCaptured(CardModel card, ICombatState combat) => _shelf.Contains(card, combat);
 
     public bool Put(CardModel card, int turns)
@@ -134,20 +135,23 @@ public static class Shouts
         (player.Creature.GetPower<ShoutShelfPower>()?.Count ?? 0) < Capacity(player);
 
     /// <summary>Положить разыгранный Клич на полку (вызывается из <see cref="RequiemCard"/> после розыгрыша).</summary>
-    public static async Task Shelve(CardModel card, IShoutCard shout)
+    public static async Task<bool> Shelve(CardModel card, IShoutCard shout)
     {
         var player = card.Owner;
         var turns = CooldownOf(player, shout);
         var shelf = player.Creature.GetPower<ShoutShelfPower>();
+        if (shelf != null && player.Creature.CombatState is { } combat && shelf.ContainsCaptured(card, combat)) return true;
+        if (!HasRoom(player)) return false;
         if (shelf == null)
         {
             await PowerCmd.Apply<ShoutShelfPower>(new ThrowingPlayerChoiceContext(), player.Creature, 1, player.Creature, null, silent: true);
             shelf = player.Creature.GetPower<ShoutShelfPower>();
         }
-        if (shelf == null || !shelf.Put(card, turns)) return;
+        if (shelf == null || !shelf.Put(card, turns)) return false;
         // Apply starts at one; every later physical card adds exactly one, including repeated-play hooks.
         if (shelf.Count > 1)
             await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), shelf, 1, null, null, silent: true);
+        return true;
     }
 }
 

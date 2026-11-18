@@ -8,6 +8,8 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Equipment;
+using SlayTheRequiem.SlayTheRequiemCode.Shops;
 using SlayTheRequiem.SlayTheRequiemCode.Monsters;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
@@ -107,6 +109,45 @@ public static partial class IntegrityRegression
         FixturePower<MinionPower>(prop, 1);
         Require(EnemySetup.RoleOf(prop) == EnemyRole.Prop && !EnemyRoleRules.UsesResources(EnemySetup.RoleOf(prop)), "Prop lost its object role");
         return Task.CompletedTask;
+    }
+
+    private static Task CombatStatusCancellation()
+    {
+        var (owner, combat, enemy) = CombatFixture<BarrowDead>();
+        var shield = FixturePower<SpellShieldPower>(owner.Creature, 6);
+        var power = ModelDb.Power<SunderPower>().ToMutable();
+        decimal Preview()
+        {
+            using var type = DamageTyping.As(DamageType.Fire);
+            return Hook.ModifyHpLost(owner.RunState, combat, owner.Creature, 9, ValueProp.Move, enemy, null, HpLossHookPhase.All, out _);
+        }
+        var outer = PowerDefensePipeline.Enter();
+        try
+        {
+            Require(shield.ProtectStatus(power, 2, enemy) == 0 && Preview() == 5, "Outer status reservation missing");
+            var inner = PowerDefensePipeline.Enter();
+            try { Require(shield.ProtectStatus(power, 3, enemy) == 0 && Preview() == 8, "Nested status reused outer reservation"); }
+            finally { PowerDefensePipeline.Restore(inner); PowerDefensePipeline.Cancel(inner); }
+            Require(Preview() == 5, "Abandoned inner status did not release just its own reservation");
+        }
+        finally { PowerDefensePipeline.Restore(outer); PowerDefensePipeline.Cancel(outer); }
+        Require(Preview() == 3 && shield.Amount == 6, "Veto/fault stranded status ward or consumed preview");
+        return Task.CompletedTask;
+    }
+
+    private static async Task JournalEquipmentOperation()
+    {
+        var owner = Fixture(); var other = Fixture();
+        var item = (OakStaff)ModelDb.Relic<OakStaff>().ToMutable(); item.IsStowed = true;
+        owner.AddRelicInternal(item, silent: true);
+        var key = InventoryIdentity.RelicKey(item); var weight = Loadout.TotalWeight(owner);
+        Require(!ShopActionPolicy.TryQuote(other, ShopAction.ChangeEquipment, 0, 0, key, out _, out _), "Journal accepted another owner's item");
+        var (request, quote) = Quote(owner, ShopAction.ChangeEquipment, 0, 0, key);
+        using var lease = await InventoryGate.For(owner).Enter();
+        Require((await ShopOperations.ExecuteGuarded(owner, request, quote, lease!)).Succeeded && item.IsEquipped,
+            "Journal bypassed or failed actual equipment executor");
+        Require(!ShopActionPolicy.TryQuote(owner, ShopAction.ChangeEquipment, 0, 0, key, out _, out _), "Repeated equip still quoted as a fresh mutation");
+        Require(Loadout.TotalWeight(owner) == weight && owner.Relics.Contains(item), "Equip cloned, removed or unloaded the item");
     }
 
     private static Task CombatActionPrice()

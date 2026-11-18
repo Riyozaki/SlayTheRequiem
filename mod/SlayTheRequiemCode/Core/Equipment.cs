@@ -67,21 +67,21 @@ public static class EquipmentRules
     /// Какие предметы надо снять, чтобы надеть <paramref name="item"/>: при переполнении слота — самый ранний,
     /// двуручное снимает левую руку, предмет в левую руку снимает двуручное.
     /// </summary>
-    public static IReadOnlyList<EquipItem> Displaced(IReadOnlyList<EquipItem> equipped, EquipItem item)
+    public static IReadOnlyList<EquipItem> Displaced(IReadOnlyList<EquipItem> equipped, EquipItem item) =>
+        DisplacedIndices(equipped, item).Select(i => equipped[i]).ToArray();
+
+    /// <summary>Indices, not type/record equality: two identical rings are still two physical items.</summary>
+    public static IReadOnlyList<int> DisplacedIndices(IReadOnlyList<EquipItem> equipped, EquipItem item)
     {
-        var result = new List<EquipItem>();
-        if (item.Slot == EquipSlot.None) return result;
-
-        var sameSlot = equipped.Where(e => e.Slot == item.Slot).ToList();
-        var overflow = sameSlot.Count - SlotCapacity(item.Slot) + 1;
-        if (overflow > 0) result.AddRange(sameSlot.Take(overflow));
-
+        if (item.Slot == EquipSlot.None) return [];
+        var indices = Enumerable.Range(0, equipped.Count).ToArray();
+        var sameSlot = indices.Where(i => equipped[i].Slot == item.Slot).ToArray();
+        var result = sameSlot.Take(Math.Max(0, sameSlot.Length - SlotCapacity(item.Slot) + 1)).ToList();
         if (item.Slot == EquipSlot.MainHand && IsTwoHanded(item.Weapon))
-            result.AddRange(equipped.Where(e => e.Slot == EquipSlot.OffHand));
+            result.AddRange(indices.Where(i => equipped[i].Slot == EquipSlot.OffHand));
         if (item.Slot == EquipSlot.OffHand)
-            result.AddRange(equipped.Where(e => e.Slot == EquipSlot.MainHand && IsTwoHanded(e.Weapon)));
-
-        return result.Distinct().ToList();
+            result.AddRange(indices.Where(i => equipped[i].Slot == EquipSlot.MainHand && IsTwoHanded(equipped[i].Weapon)));
+        return result.Distinct().ToArray();
     }
 
     /// <summary>Бонус урона оружия по ступени I–V (docs/design/07 §3.1).</summary>

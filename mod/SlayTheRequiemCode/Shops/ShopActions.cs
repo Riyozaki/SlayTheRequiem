@@ -86,6 +86,9 @@ public enum ShopAction
 
     /// <summary>a = индекс карты в колоде, s = id карты (сверка). Не только в лавке: любое место вне боя.</summary>
     DiscardCard = 28,
+
+    /// <summary>Owned equipment instance: b=0 equip, b=1 stow. Outside combat; no price or obtain clone.</summary>
+    ChangeEquipment = 29,
 }
 
 /// <summary>All entry points go through the revisioned executor. Execute is deliberately not a public bypass.</summary>
@@ -451,6 +454,14 @@ public static class ShopActions
                     return await TransferProtocol.MoveAsync(request.Id,
                         async () => { await CardPileCmd.RemoveFromDeck(card, showPreview: LocalContext.IsMe(player)); return true; },
                         () => !player.Deck.Cards.Contains(card), () => CleanRemoved([card]));
+                }
+                case ShopAction.ChangeEquipment:
+                {
+                    Check();
+                    var item = Item(s)!;
+                    if (b == 1) Loadout.Stow(item); else Loadout.Equip(player, item);
+                    TravelPack.Of(player)?.Refresh(); HeroRecord.Of(player)?.Refresh();
+                    return Done();
                 }
                 default: return OperationResult.Reject(request.Id, "Unknown operation");
             }

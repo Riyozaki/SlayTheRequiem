@@ -29,10 +29,8 @@ public static class SpellInterception
         internal bool Active = true;
         internal DamageType? ObservedElement;
     }
-    private sealed record PowerAttempt(Creature Target, Creature? Dealer, CardModel? Card, bool HostileSpell);
     private static readonly ConditionalWeakTable<CardModel, Cast> Cards = new();
     private static readonly ConditionalWeakTable<Creature, Cast> Monsters = new();
-    private static readonly ConditionalWeakTable<PowerModel, PowerAttempt> Powers = new();
 
     public static void Begin(CardModel card)
     {
@@ -106,14 +104,13 @@ public static class SpellInterception
         var spell = amount > 0m && power.Type == PowerType.Debuff && Hostile(target, dealer)
             && (card is SpellCard || cast?.ObservedElement is { } e && e is not (DamageType.Physical or DamageType.True)
                 || dealer?.Monster is { IsPerformingMove: true } && EnemyRules.IsCaster(DamageTyping.Resolve(ValueProp.Move, dealer, card)));
-        Powers.AddOrUpdate(power, new PowerAttempt(target, dealer, card, spell));
+        PowerDefensePipeline.Track(power, target, dealer, card, spell);
         if (spell) await InterceptEffect(new ThrowingPlayerChoiceContext(), target, dealer, card);
     }
 
     internal static decimal ProtectPower(PowerModel power, Creature target, Creature? giver, decimal amount, ref IEnumerable<AbstractModel> modifiers)
     {
-        if (!Powers.TryGetValue(power, out var attempt)) return amount;
-        Powers.Remove(power);
+        if (PowerDefensePipeline.Take(power) is not { } attempt) return amount;
         if (!Config.RunSettings.EnableRequiemSystems || !attempt.HostileSpell || attempt.Target != target || attempt.Dealer != giver || amount <= 0m) return amount;
         if (Current(giver, attempt.Card, false)?.Targets.IsAbsorbed(target) == true) return 0m;
         if (target.GetPower<SpellShieldPower>() is not { } shield) return amount;

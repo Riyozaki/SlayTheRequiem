@@ -116,7 +116,7 @@ public abstract class OrderCard : CounterCard
 /// </summary>
 public static class ShopServices
 {
-    private sealed record Option(Func<RunState, Player, CounterCard> Make, int Price, int Amount, Func<Task> Run);
+    private sealed record Option(Func<RunState, Player, CounterCard> Make, int Price, int Amount, Func<Task> Run, bool Enabled = true);
 
     private static bool _open;
 
@@ -219,7 +219,7 @@ public static class ShopServices
 
         void Paid<T>(int price, int amount, Func<Task> run) where T : CounterCard
         {
-            if (price <= gold) list.Add(new Option((s, p) => s.CreateCard<T>(p), price, amount, run));
+            list.Add(new Option((s, p) => s.CreateCard<T>(p), price, amount, run, price <= gold));
         }
 
         // Камень душ (Чародей, Ювелир): сила по акту.
@@ -447,7 +447,6 @@ public static class ShopServices
         foreach (var category in ShopRules.OrderOptions(shop))
         {
             var price = ShopRules.ApplyTrust(ShopRules.OrderPrice(ShopRules.OrderItemPrice(category, act)), ledger.CurrentTrust);
-            if (price > player.Gold) continue;
             Func<RunState, Player, CounterCard> make = category switch
             {
                 OrderCategory.Weapon => (s, p) => s.CreateCard<OrderWeapon>(p),
@@ -460,7 +459,7 @@ public static class ShopServices
             };
             var cat = category;
             options.Add(new Option(make, price, ShopRules.OrderTier(shop, act),
-                () => ShopActions.Perform(player, ShopAction.PlaceOrder, (int)shop, (int)cat, price.ToString())));
+                () => ShopActions.Perform(player, ShopAction.PlaceOrder, (int)shop, (int)cat, price.ToString()), price <= player.Gold));
         }
         if (options.Count == 0) return;
         var picked = await Choose(player, options);
@@ -469,49 +468,26 @@ public static class ShopServices
 
     private static async Task<Option?> Choose(Player player, IReadOnlyList<Option> options)
     {
-        var paged = options.Count > 3;
-        var perPage = paged ? 2 : 3;
-        var page = 0;
-        for (var guard = 0; guard < 32; guard++)
-        {
-            var slice = options.Skip(page * perPage).Take(perPage).ToList();
-            var index = await Show(player, slice, paged);
-            if (index == -2)
-            {
-                page = (page + 1) * perPage >= options.Count ? 0 : page + 1;
-                continue;
-            }
-            return index >= 0 && index < slice.Count ? slice[index] : null;
-        }
-        return null;
-    }
-
-    /// <summary>Показать карты услуг: индекс выбранной, −1 — пропуск, −2 — «Ещё…».</summary>
-    private static async Task<int> Show(Player player, List<Option> slice, bool withMore)
-    {
         var state = RequiemNet.State;
-        if (state == null) return -1;
+        if (state == null || options.Count == 0) return null;
         var cards = new List<CardModel>();
         try
         {
-            foreach (var option in slice)
+            var choices = new List<UI.NHeroCreationScreen.Choice>();
+            for (var i = 0; i < options.Count; i++)
             {
-                var card = option.Make(state, player);
-                card.SetDisplay(option.Price, option.Amount);
-                cards.Add(card);
+                var option = options[i]; var card = option.Make(state, player);
+                card.SetDisplay(option.Price, option.Amount); cards.Add(card);
+                var description = UI.RequiemText.Plain(card.GetDescriptionForPile(PileType.None)) + "\n"
+                    + UI.RequiemUi.TipText("UI.servicePrice.title", ("Gold", option.Price))
+                    + (option.Enabled ? "" : "\n" + UI.RequiemUi.TipText("UI.noGold.title"));
+                choices.Add(new(i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title.GetFormattedText(), description, option.Enabled));
             }
-            if (withMore) cards.Add(state.CreateCard<CounterMore>(player));
-
-            // Экран напрямую (а не CardSelectCmd): выбор чисто локальный, PlayerChoiceSynchronizer не нужен.
-            var chosen = await RequiemNet.ChooseCard(cards, canSkip: true);
-            if (chosen == null) return -1;
-            if (chosen is CounterMore) return -2;
-            return cards.IndexOf(chosen);
+            var index = await UI.NHeroCreationScreen.ChooseLocal(player, UI.RequiemUi.TipText("SHOP_TAB_SERVICES.title"),
+                UI.RequiemUi.TipText("UI.serviceHint.title"), choices);
+            return index >= 0 && index < options.Count && options[index].Enabled ? options[index] : null;
         }
-        finally
-        {
-            foreach (var card in cards) state.RemoveCard(card);
-        }
+        finally { foreach (var card in cards) state.RemoveCard(card); }
     }
 
     // ───── кража (14 §1) ─────

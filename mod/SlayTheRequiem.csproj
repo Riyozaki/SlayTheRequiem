@@ -87,7 +87,7 @@
         <AssemblyMetadata Include="SourceTreeHash" Value="$(SourceTreeHash)" />
         <AssemblyMetadata Include="GitDirty" Value="$(GitDirty)" />
         <AssemblyMetadata Include="SaveSchema" Value="4" />
-        <AssemblyMetadata Include="ShopProtocol" Value="1" />
+        <AssemblyMetadata Include="ShopProtocol" Value="2" />
     </ItemGroup>
 
     <Target Name="CheckDependencyPaths">

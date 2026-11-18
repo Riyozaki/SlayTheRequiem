@@ -41,7 +41,7 @@ public abstract partial class NRequiemHoverWidget : Control
     }
 
     protected static HoverTip MakeTip(string key, params (string, decimal)[] vars) =>
-        new(RequiemUi.TipLoc($"{key}.title", vars), RequiemUi.TipText($"{key}.description", vars));
+        new(RequiemUi.TipLoc($"{key}.title", vars), RequiemUi.TipLoc($"{key}.description", vars).GetFormattedText());
 
     /// <summary>Текст с обводкой (DrawString + DrawStringOutline).</summary>
     protected void DrawOutlined(string text, Vector2 baseline, float width, int size, Color color,

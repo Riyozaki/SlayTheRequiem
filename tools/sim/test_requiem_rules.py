@@ -1537,7 +1537,11 @@ class M7VfxLooks(unittest.TestCase):
         self.assertIn("RequiemVfx.Overstrain(player.Creature)", self.src("Rules", "RequiemCombatRules.cs"))
         self.assertIn("RequiemVfx.Quiet()", self.src("Rules", "RequiemCombatRules.cs"))
         self.assertIn("RequiemVfx.Broken(Owner)", self.src("Powers", "EnemyPowers.cs"))
-        self.assertIn("RequiemVfx.Dodge(Owner)", self.src("Powers", "ArmorPowers.cs"))
+        dodge = self.src("Powers", "ArmorPowers.cs")
+        # Deferred per-hit receipt captures the original owner before nested power callbacks.
+        self.assertIn("var owner = Owner;", dodge)
+        self.assertIn("HitDefensePipeline.Defer(async () =>", dodge)
+        self.assertIn("RequiemVfx.Dodge(owner)", dodge)
         self.assertIn("RequiemVfx.Summon(pet, Kind)", self.src("Powers", "SummonPowers.cs"))
         self.assertIn("RequiemVfx.Shout(", self.src("Progression", "HeroRecord.cs"))
         self.assertIn("RequiemVfx.Rewind(", self.src("Rollback", "MemoryStone.cs"))

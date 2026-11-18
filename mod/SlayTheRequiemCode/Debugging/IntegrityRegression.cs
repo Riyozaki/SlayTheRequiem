@@ -146,6 +146,8 @@ public static partial class IntegrityRegression
             ("path-sign-late-insert-no-second-obtain", PathSignLateInsert),
             ("raw-native-read-preflight-no-repair", RawSavePreflight),
             ("boon-hp-writeahead-save-and-revoke", BoonHpWriteAhead),
+            ("combat-status-veto-nested-reservation-cancel", CombatStatusCancellation),
+            ("journal-equipment-instance-authority", JournalEquipmentOperation),
             ("combat-native-armor-cap-true", CombatNativeArmor),
             ("combat-pure-hp-preview-no-reservations", CombatHpPreview),
             ("combat-absorption-preview-cast-replay-light", CombatAbsorption),

@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -36,8 +35,6 @@ public sealed class SpellShieldPower : RequiemPower
 
     private int _pending;
     private int _pendingStatus;
-    private sealed record StatusReceipt(int Used, Creature? Dealer);
-    private readonly ConditionalWeakTable<PowerModel, Stack<StatusReceipt>> _statuses = new();
 
     internal decimal MitigateHit(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
@@ -63,22 +60,23 @@ public sealed class SpellShieldPower : RequiemPower
         var used = SpellDefenseRules.WardUsed(amount, Amount - _pending - _pendingStatus);
         if (used <= 0) return amount;
         _pendingStatus += used;
-        _statuses.GetValue(power, _ => new()).Push(new StatusReceipt(used, dealer));
+        var owner = Owner;
+        try
+        {
+            PowerDefensePipeline.Defer(async () =>
+            {
+                _pendingStatus -= used;
+                Flash();
+                if (used >= Amount) await PowerCmd.Remove(this);
+                else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -used, null, null, silent: true);
+                await Transformations.ReflectorEssence.OnWardAbsorbed(new ThrowingPlayerChoiceContext(), owner, dealer, used);
+            }, () => _pendingStatus -= used);
+        }
+        catch { _pendingStatus -= used; throw; }
         return amount - used;
     }
 
-    public override async Task AfterModifyingPowerAmountReceived(PowerModel power)
-    {
-        if (!_statuses.TryGetValue(power, out var stack) || !stack.TryPop(out var receipt)) return;
-        var used = receipt.Used;
-        var dealer = receipt.Dealer;
-        _pendingStatus -= used; // detach before reflection/nested applications, never flush a sibling receipt
-        var owner = Owner;
-        Flash();
-        if (used >= Amount) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -used, null, null, silent: true);
-        await Transformations.ReflectorEssence.OnWardAbsorbed(new ThrowingPlayerChoiceContext(), owner, dealer, used);
-    }
+    public override Task AfterModifyingPowerAmountReceived(PowerModel power) => PowerDefensePipeline.Commit();
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {

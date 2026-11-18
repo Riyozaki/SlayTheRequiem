@@ -515,18 +515,19 @@ public class HeroCreationPeerProtocolTests
             Assert.Null(RunSettingsData.Decode(value));
             Assert.DoesNotContain("v=", value);
         });
-        Assert.EndsWith("/" + StartupState.Protocol, StartupState.LobbyOffer);
-        Assert.EndsWith("/" + StartupState.Protocol, StartupState.LobbyAgreement);
+        Assert.EndsWith("/" + StartupState.SessionProtocol, StartupState.LobbyOffer);
+        Assert.EndsWith("/" + StartupState.SessionProtocol, StartupState.LobbyAgreement);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
-    [InlineData(3)]
+    [InlineData(2)]
+    [InlineData(4)]
     public void Client_cannot_ready_for_an_old_unknown_or_future_host(int protocol)
     {
         Assert.Throws<InvalidOperationException>(() => StartupState.RequireHost(protocol));
-        StartupState.RequireHost(StartupState.Protocol);
+        StartupState.RequireHost(StartupState.SessionProtocol);
     }
 
     [Fact]
@@ -549,7 +550,7 @@ public class HeroCreationPeerProtocolTests
     [Fact]
     public void Missing_old_future_or_disconnected_peer_agreement_cannot_authorize_a_new_run()
     {
-        var peers = new Dictionary<ulong, int> { [11] = StartupState.Protocol, [12] = StartupState.Protocol };
+        var peers = new Dictionary<ulong, int> { [11] = StartupState.SessionProtocol, [12] = StartupState.SessionProtocol };
         StartupState.RequirePeers([11, 12], peers);
         StartupState.RequirePeers([], peers); // singleplayer
         Assert.Throws<InvalidOperationException>(() => StartupState.RequirePeers([11, 12, 13], peers));
@@ -557,7 +558,7 @@ public class HeroCreationPeerProtocolTests
         Assert.Throws<InvalidOperationException>(() => StartupState.RequirePeers([11, 12], peers));
         peers[12] = 1;
         Assert.Throws<InvalidOperationException>(() => StartupState.RequirePeers([11, 12], peers));
-        peers[12] = StartupState.Protocol + 1;
+        peers[12] = StartupState.SessionProtocol + 1;
         Assert.Throws<InvalidOperationException>(() => StartupState.RequirePeers([11, 12], peers));
     }
 }

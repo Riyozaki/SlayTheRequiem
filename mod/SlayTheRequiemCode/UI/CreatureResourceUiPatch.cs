@@ -34,6 +34,7 @@ public static class CreatureResourceUiPatch
             if (anchor == null) return;
 
             float shift;
+            NEnemyTraitChips? traitWidget = null;
             if (creature.IsPlayer)
             {
                 if (!RequiemMode.IsInSystem(creature)) return;
@@ -53,7 +54,7 @@ public static class CreatureResourceUiPatch
                 // Компактные черты врага (Латы, Устойчивость, сопротивления, аффиксы) — строкой под точками ◆/✦.
                 if (RequiemConfig.CompactEnemyStatuses)
                 {
-                    var traits = new NEnemyTraitChips();
+                    var traits = traitWidget = new NEnemyTraitChips();
                     traits.Bind(creature, anchor, shift + 1);
                     anchor.AddChild(traits);
                     shift += NEnemyTraitChips.RowHeight + 2;
@@ -65,7 +66,16 @@ public static class CreatureResourceUiPatch
             if (powers != null && !powers.HasMeta(ShiftedMeta))
             {
                 powers.SetMeta(ShiftedMeta, true);
+                var baseY = powers.Position.Y;
                 powers.Position += new Vector2(0, shift);
+                if (traitWidget != null)
+                {
+                    var beforeTraits = shift - NEnemyTraitChips.RowHeight;
+                    traitWidget.HeightChanged += height =>
+                    {
+                        if (Godot.GodotObject.IsInstanceValid(powers)) powers.Position = new Vector2(powers.Position.X, baseY + beforeTraits + height);
+                    };
+                }
             }
         }
         catch (Exception e)
