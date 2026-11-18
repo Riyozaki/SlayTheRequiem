@@ -39,12 +39,24 @@ public sealed class ShoutShelfPower : RequiemPower
 
     public int Count => _shelf.Count;
     public int NextTurns => _shelf.NextTurns;
+    internal bool ContainsCaptured(CardModel card, ICombatState combat) => _shelf.Contains(card, combat);
 
     public bool Put(CardModel card, int turns)
     {
         var combat = Owner.CombatState;
         if (combat == null || card.Owner != Owner.Player || !_shelf.Put(card, combat, turns)) return false;
         CardRewardTrace.Card("shout:shelved", card, $"turns={turns} shelf={Count}");
+        return true;
+    }
+
+    /// <summary>Production adapter shared with isolated native-model regressions; never adopts an uncaptured card.</summary>
+    internal bool PrepareReturn(CardModel card, ICombatState combat)
+    {
+        var player = Owner.Player;
+        if (player == null || !_shelf.Contains(card, combat) || !ReferenceEquals(Owner.CombatState, combat)
+            || !ShoutRules.CanRestoreCaptured(card.Owner == player, card.Owner == null, card.HasBeenRemovedFromState, card.Pile != null)) return false;
+        if (card.Owner == null || !combat.ContainsCard(card)) combat.AddCard(card, player);
+        card.HasBeenRemovedFromState = false;
         return true;
     }
 
@@ -56,10 +68,12 @@ public sealed class ShoutShelfPower : RequiemPower
         foreach (var entry in _shelf.Tick(combatState))
         {
             var card = entry.Card;
-            // The shelf is recorded by AfterCardPlayed BEFORE native RemoveFromCombat(None). That command
-            // sets HasBeenRemovedFromState and Pile=null. Card.CombatState is therefore EXPECTED to be null.
-            // The owner creature and captured entry, not that computed property, identify the original combat.
-            if (card.Owner != Owner.Player)
+            // The shelf is captured BEFORE None cleanup. The supported game's RemoveFromState sets
+            // HasBeenRemovedFromState/Pile=null; a further CombatState.RemoveCard also clears Owner.
+            // Only this shelf's exact instance in its captured combat may reclaim that unowned removed card.
+            // An explicit transfer to a different player is never permission to steal it back.
+            if (card.Owner != null && card.Owner != Owner.Player
+                || card.Owner == null && !card.HasBeenRemovedFromState)
             {
                 CardRewardTrace.Card("shout:owner-changed", card, "entry dropped; never steal a card from another owner", force: true);
                 _shelf.Complete(card);
@@ -74,11 +88,10 @@ public sealed class ShoutShelfPower : RequiemPower
                 continue;
             }
             if (!CombatManager.Instance.IsInProgress || CombatManager.Instance.IsEnding) continue;
-            if (!combatState.ContainsCard(card)) combatState.AddCard(card, Owner.Player);
-            card.HasBeenRemovedFromState = false;
             var committed = false;
             try
             {
+                if (!PrepareReturn(card, combatState)) continue;
                 // Add redirects a full hand into Discard. Its bool is not proof: VFX/hooks may throw after a move.
                 await CardPileCmd.Add(card, PileType.Hand);
             }

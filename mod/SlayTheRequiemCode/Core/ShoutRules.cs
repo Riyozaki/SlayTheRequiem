@@ -14,6 +14,10 @@ public static class ShoutRules
     /// <summary>Сколько Кличей может перезаряжаться одновременно.</summary>
     public static int ShelfCapacity(bool skald) => skald ? 2 : 1;
 
+    /// <summary>Only a captured physical card may be restored; null Owner after explicit native removal is legal.</summary>
+    public static bool CanRestoreCaptured(bool ownerMatches, bool ownerMissing, bool removed, bool inAnyPile) =>
+        !inAnyPile && (ownerMatches || ownerMissing && removed);
+
     /// <summary>Разрыв души: добивает не-босса с ♥ ниже 25 %.</summary>
     public static bool SoulTearExecutes(int hp, int maxHp, bool boss) => !boss && hp > 0 && hp * 4 < maxHp;
 }

@@ -310,3 +310,98 @@ public class CheckpointGenerationTests
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
     }
 }
+
+public class NativeBoundaryPolicyTests
+{
+    [Theory]
+    [InlineData(true, false, true, false, true)]
+    [InlineData(true, false, false, false, true)]
+    [InlineData(false, true, true, false, true)]
+    [InlineData(false, true, false, false, false)]
+    [InlineData(false, false, true, false, false)]
+    [InlineData(true, false, true, true, false)]
+    [InlineData(false, true, true, true, false)]
+    public void Shelf_uses_captured_ownership_not_a_null_computed_combat_property(bool matches, bool missing, bool removed, bool piled, bool expected) =>
+        Assert.Equal(expected, ShoutRules.CanRestoreCaptured(matches, missing, removed, piled));
+
+    [Fact]
+    public void Receipt_unblock_cannot_overtake_mutation_disposal_or_a_new_failure()
+    {
+        Assert.False(ReceiptRecoveryPolicy.CanClear(7, 7, 1, "shop:42"));
+        Assert.False(ReceiptRecoveryPolicy.CanClear(7, 7, 0, "shop:42"));
+        Assert.False(ReceiptRecoveryPolicy.CanClear(7, 8, 0, ""));
+        Assert.True(ReceiptRecoveryPolicy.CanClear(7, 7, 0, ""));
+    }
+
+    private static readonly HashSet<string> Fields = ["schema_version", "players", "start_time"];
+
+    [Theory]
+    [InlineData("{\"schema_version\":18,\"players\":[],\"future_mod\":{\"charges\":[1,2]}}")]
+    [InlineData("{\"schema_version\":19,\"players\":[]}")]
+    [InlineData("{\"schema_version\":18,\"schema_version\":17,\"players\":[]}")]
+    [InlineData("{\"schema_version\":18,\"players\":[{\"gold\":1,\"gold\":2}]}")]
+    [InlineData("{\"schema_version\":\"18\",\"players\":[]}")]
+    [InlineData("{\"players\":[]}")]
+    public void Unknown_future_or_duplicate_native_fields_refuse_before_native_reserialization(string original) =>
+        Assert.Throws<FormatException>(() => RawRunDocument.Validate(System.Text.Encoding.UTF8.GetBytes(original), Fields, 18));
+
+    [Fact]
+    public void Original_save_backup_is_byte_identical_including_BOM_whitespace_and_newlines()
+    {
+        var body = System.Text.Encoding.UTF8.GetBytes("{\r\n  \"schema_version\": 18, \"players\": []\r\n}\r\n");
+        var original = new byte[] { 0xef, 0xbb, 0xbf }.Concat(body).ToArray();
+        RawRunDocument.Validate(original, Fields, 18);
+        var directory = Path.Combine(Path.GetTempPath(), "str-raw-" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(directory, "backup.save");
+        try
+        {
+            AtomicSaveFile.WriteBytes(path, original);
+            Assert.Equal(original, File.ReadAllBytes(path));
+            AtomicSaveFile.WriteBytes(path, body);
+            Assert.Equal(original, File.ReadAllBytes(path + ".previous"));
+            Assert.Equal(body, File.ReadAllBytes(path));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+    }
+}
+
+public class AsyncBoundaryTests
+{
+    [Fact]
+    public async Task Cleanup_registered_after_the_notification_must_complete_before_the_boundary()
+    {
+        var late = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var registered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var calls = 0;
+        IReadOnlyList<Task> Snapshot()
+        {
+            if (++calls == 1) return [Task.CompletedTask];
+            registered.TrySetResult();
+            return [Task.CompletedTask, late.Task];
+        }
+        var boundary = AsyncTaskBoundary.Settle(Snapshot, () => true);
+        await registered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        Assert.False(boundary.IsCompleted);
+        late.SetResult();
+        Assert.True(await boundary.WaitAsync(TimeSpan.FromSeconds(3)));
+    }
+
+    [Fact]
+    public async Task Fault_cancel_or_changed_room_cannot_be_a_confirmed_imprint()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(() => AsyncTaskBoundary.Settle(
+            () => [Task.FromException(new InvalidOperationException("cleanup failed"))], () => true));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => AsyncTaskBoundary.Settle(
+            () => [Task.FromCanceled(new CancellationToken(canceled: true))], () => true));
+        var called = false;
+        Assert.False(await AsyncTaskBoundary.Settle(() => { called = true; return []; }, () => false));
+        Assert.False(called);
+    }
+
+    [Fact]
+    public async Task A_task_set_that_never_stabilizes_is_not_silently_accepted()
+    {
+        var count = 0;
+        Assert.False(await AsyncTaskBoundary.Settle(() => [Task.FromResult(++count)], () => true));
+    }
+}

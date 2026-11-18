@@ -78,7 +78,8 @@ public static class InventoryGate
     internal static void ClearReceiptBlock(Player player, long expectedEpoch)
     {
         var state = Gates.GetValue(player, _ => new State());
-        if (state.FailureEpoch != expectedEpoch || IsMutating(player)) return;
+        if (!ReceiptRecoveryPolicy.CanClear(expectedEpoch, state.FailureEpoch, state.Mutations,
+            Alchemy.TravelPack.Of(player)?.OperationPending ?? "")) return;
         if (Alchemy.TravelPack.Of(player) is { } pack)
         {
             pack.OperationBlocked = false;

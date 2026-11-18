@@ -22,7 +22,7 @@ class BundleTests(unittest.TestCase):
                          "save_schema": b.SAVE_SCHEMA, "shop_protocol": b.SHOP_PROTOCOL,
                          "artifacts": {name: {"sha256": b.sha(self.bundle / name), "bytes": (self.bundle / name).stat().st_size}
                                        for name in b.ARTIFACTS},
-                         "proof": {"full_mod_build": True, "core_tests": True, "pack_export": True,
+                         "proof": {"full_mod_build": True, "core_tests": True, "core_test_results": {"total": 1, "executed": 1, "passed": 1, "failed": 0}, "pack_export": True,
                                    "pack_resource_loader": {"checked": 1, "failed": [], "isolated_project": True}}}
         self.save()
         self.mods = self.root / "game/mods"
@@ -277,6 +277,36 @@ class PreflightTests(unittest.TestCase):
                 with self.assertRaises(b.BuildError):
                     self.probe()
             path.write_bytes(original)
+
+
+class StageResultTests(unittest.TestCase):
+    def test_empty_skipped_or_failed_core_report_cannot_be_a_successful_build(self):
+        for counters in (None, {}, {"total": 0, "executed": 0, "passed": 0},
+                         {"total": 2, "executed": 1, "passed": 1, "notExecuted": 1},
+                         {"total": 2, "executed": 2, "passed": 1, "failed": 1},
+                         {"total": True, "executed": True, "passed": True}):
+            with self.subTest(counters=counters), self.assertRaises(b.BuildError):
+                b.require_core_results(counters)
+
+    def test_real_trx_counter_shape_is_parsed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "core.trx"
+            path.write_text('<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><ResultSummary>'
+                            '<Counters total="17" executed="17" passed="17" failed="0" notExecuted="0" />'
+                            '</ResultSummary></TestRun>', encoding="utf-8")
+            self.assertEqual(17, b.core_results(path)["passed"])
+            path.write_text("not xml", encoding="utf-8")
+            with self.assertRaises(b.BuildError):
+                b.core_results(path)
+
+    def test_zero_exit_code_cannot_hide_a_godot_script_or_resource_error(self):
+        import sys
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "engine.log"
+            for message in ("ERROR: missing imported texture", "SCRIPT ERROR: bad parser"):
+                with self.subTest(message=message), self.assertRaises(b.BuildError):
+                    b.run([sys.executable, "-c", "print(" + repr(message) + ")"], log, engine=True)
+            self.assertIn("import complete", b.run([sys.executable, "-c", "print('import complete')"], log, engine=True))
 
 
 if __name__ == "__main__":

@@ -28,8 +28,24 @@ jobs:
           cat core-tests.log
           if [ "$result" != 0 ]; then
             python3 tools/ci/report_test_failures.py core-tests.log --trx .arena-ci/test-results/core.trx
+            exit "$result"
           fi
-          exit "$result"
+          python3 tools/ci/report_test_failures.py core-tests.log --trx .arena-ci/test-results/core.trx --success
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools/g0')
+          import mod_build
+          print(mod_build.core_results(Path('.arena-ci/test-results/core.trx')))
+          PY
+      - name: Preserve Core TRX (no game files)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-results-${{ github.sha }}
+          path: .arena-ci/test-results/core.trx
+          if-no-files-found: warn
+          retention-days: 30
 
   sim:
     name: Rules sim · Python

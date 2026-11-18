@@ -516,7 +516,13 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
             shoutCard.ShelvedByThisPlay = false;
             // Хуки ModifyCardPlayResultPileTypeAndPosition могли перенаправить карту (в изгнание, в колоду) —
             // тогда она не «нигде», и полка дала бы её копию в руку при живом оригинале.
-            if (cardPlay.ResultPile == PileType.None) await Shouts.Shelve(card, shout);
+            if (cardPlay.ResultPile == PileType.None && !await Shouts.Shelve(card, shout) && card.Pile?.Type == PileType.Play)
+            {
+                // The result pile was selected before AfterCardPlayed. If applying the shelf was vetoed or
+                // another hook filled it, moving out of Play prevents native None cleanup from losing the card.
+                Debugging.CardRewardTrace.Card("shout:shelf-unavailable", card, "preserving original in Discard", force: true);
+                await CardPileCmd.Add(card, PileType.Discard);
+            }
         }
         if (card is SpellCard spell)
         {

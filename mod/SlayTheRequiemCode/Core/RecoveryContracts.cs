@@ -51,7 +51,10 @@ public static class AtomicSaveFile
         return null;
     }
 
-    public static void Write(string path, string text, bool keepPrevious = true)
+    public static void Write(string path, string text, bool keepPrevious = true) =>
+        WriteBytes(path, System.Text.Encoding.UTF8.GetBytes(text), keepPrevious);
+
+    public static void WriteBytes(string path, ReadOnlySpan<byte> bytes, bool keepPrevious = true)
     {
         var full = Path.GetFullPath(path);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
@@ -61,9 +64,7 @@ public static class AtomicSaveFile
         {
             using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                using var writer = new StreamWriter(stream, new System.Text.UTF8Encoding(false), leaveOpen: true);
-                writer.Write(text);
-                writer.Flush();
+                stream.Write(bytes);
                 stream.Flush(flushToDisk: true);
             }
             if (keepPrevious && File.Exists(full)) File.Copy(full, previous, overwrite: true);
@@ -76,6 +77,9 @@ public static class AtomicSaveFile
 public sealed record OperationReceiptProof(OperationStatus Status, int Gold, string Digest);
 public static class ReceiptRecoveryPolicy
 {
+    public static bool CanClear(long expectedEpoch, long currentEpoch, int activeMutations, string pending) =>
+        expectedEpoch == currentEpoch && activeMutations == 0 && pending.Length == 0;
+
     /// <summary>Only a receipt-only timeout, never a partial effect or stale operand, is recoverable without reloading.</summary>
     public static bool CanResume(bool receiptTimeoutOnly, int requestRevision, int savedRevision, string currentDigest,
         OperationReceiptProof local, int expectedPeers, IReadOnlyList<OperationReceiptProof> peers) =>

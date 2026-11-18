@@ -109,6 +109,7 @@ public static class Paths
     /// <summary>Принять Путь: Сущность и Знак.</summary>
     public static async Task Grant(Player player, HeroPath path)
     {
+        if (!Enum.IsDefined(path)) throw new ArgumentOutOfRangeException(nameof(path));
         using var lease = await InventoryGate.For(player).Enter();
         if (lease == null || path == HeroPath.None || Of(player) != null) return;
         using var mutation = InventoryGate.Track(player, lease, "path:" + path);

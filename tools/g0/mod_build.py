@@ -17,10 +17,12 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
 import uuid
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 MOD_ID = "SlayTheRequiem"
@@ -57,7 +59,7 @@ def read_object(path: Path) -> dict:
     return info
 
 
-def run(command: list[str], log: Path, *, env: dict | None = None, cwd: Path = ROOT) -> str:
+def run(command: list[str], log: Path, *, env: dict | None = None, cwd: Path = ROOT, engine: bool = False) -> str:
     # No shell interpolation of user-supplied paths; a failing stage is always fatal.
     with log.open("w", encoding="utf-8") as output:
         output.write("Command: " + repr(command) + "\n")
@@ -72,7 +74,11 @@ def run(command: list[str], log: Path, *, env: dict | None = None, cwd: Path = R
             code = proc.wait()
         if code:
             raise BuildError(f"Stage failed ({code}); see {log.name}")
-    return "".join(lines)
+    text = "".join(lines)
+    # Godot sometimes returns 0 despite a resource/script/import failure. That is NOT a usable export.
+    if engine and re.search(r"(?im)^\s*(?:SCRIPT ERROR:|ERROR:)", text):
+        raise BuildError(f"Engine reported errors despite exit code 0; see {log.name}")
+    return text
 
 
 def output(command: list[str]) -> str:
@@ -138,6 +144,26 @@ def preflight(args: argparse.Namespace) -> dict:
             "godot": godot_version, "sdk_path": sdk, "data": data, "mods": mods}
 
 
+def core_results(path: Path) -> dict[str, int]:
+    try:
+        counters = ET.parse(path).getroot().find(".//{*}Counters")
+        if counters is None:
+            raise BuildError("Core TRX has no result counters")
+        results = {key: int(value) for key, value in counters.attrib.items()}
+    except (ET.ParseError, ValueError, OSError) as e:
+        raise BuildError("Core TRX is missing or malformed") from e
+    require_core_results(results)
+    return results
+
+
+def require_core_results(results: object) -> None:
+    if not isinstance(results, dict) or any(type(v) is not int or v < 0 for v in results.values()) \
+            or results.get("total", 0) < 1 or results.get("total") != results.get("executed") \
+            or results.get("executed") != results.get("passed") \
+            or any(results.get(key, 0) != 0 for key in ("failed", "error", "aborted", "timeout", "notExecuted", "notRunnable", "disconnected")):
+        raise BuildError("Core tests did not all execute and pass; see core-tests.log and core.trx")
+
+
 def source_inputs() -> list[bytes]:
     names = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--",
                                      "mod", "tools", ".github", "global.json"], cwd=ROOT).split(b"\0")
@@ -164,7 +190,9 @@ def pack_resources(project: Path | None = None) -> list[dict]:
         if not path.is_file():
             continue
         kind = {".png": "texture", ".jpg": "texture", ".jpeg": "texture", ".wav": "audio",
-                ".ogg": "audio", ".json": "json", ".csv": "csv"}.get(path.suffix.lower())
+                ".ogg": "audio", ".mp3": "audio", ".webp": "texture", ".svg": "texture",
+                ".ttf": "resource", ".otf": "resource", ".tscn": "resource", ".tres": "resource", ".gdshader": "resource",
+                ".json": "json", ".csv": "csv"}.get(path.suffix.lower())
         if kind:
             resources.append({"path": "res://" + path.relative_to(project).as_posix(), "kind": kind})
     if not resources:
@@ -228,16 +256,17 @@ def build(args: argparse.Namespace) -> Path:
     run([facts["sdk_path"], "test", str(project / "SlayTheRequiem.Tests/SlayTheRequiem.Tests.csproj"),
          "-c", "Release", "--logger", "trx;LogFileName=core.trx", "--results-directory", str(bundle / "test-results")],
         bundle / "core-tests.log", env=env)
+    tests = core_results(bundle / "test-results/core.trx")
     shutil.copy2(dll, bundle / dll.name)
     pdb = managed / f"{MOD_ID}.pdb"
     if pdb.is_file():
         shutil.copy2(pdb, bundle / pdb.name)
     shutil.copy2(project / f"{MOD_ID}.json", bundle / f"{MOD_ID}.json")
     run([str(args.godot.resolve()), "--headless", "--editor", "--path", str(project), "--import"],
-        bundle / "import.log", env=env)
+        bundle / "import.log", env=env, engine=True)
     pck = bundle / f"{MOD_ID}.pck"
     run([str(args.godot.resolve()), "--headless", "--path", str(project), "--export-pack", "BasicExport", str(pck)],
-        bundle / "export.log", env=env)
+        bundle / "export.log", env=env, engine=True)
     if not pck.is_file() or pck.stat().st_size < 16:
         raise BuildError("Export returned without a nonempty PCK")
     # EMPTY project: source assets cannot hide a broken pack.
@@ -249,7 +278,7 @@ def build(args: argparse.Namespace) -> Path:
     resources = pack_resources(project)
     write_json(required, resources)
     run([str(args.godot.resolve()), "--headless", "--path", str(check_project), "--script", "verify_pack.gd", "--",
-         str(pck), str(required), str(bundle / "pack-check.json")], bundle / "pack-check.log", env=env)
+         str(pck), str(required), str(bundle / "pack-check.json")], bundle / "pack-check.log", env=env, engine=True)
     report = read_object(bundle / "pack-check.json")
     if report.get("failed") != [] or report.get("checked", 0) != len(resources) or report.get("isolated_project") is not True:
         raise BuildError("PCK resource verification did not pass")
@@ -270,7 +299,7 @@ def build(args: argparse.Namespace) -> Path:
                 "dependencies": {**{name: sha(facts["data"] / name) for name in ("sts2.dll", "0Harmony.dll")},
                                  "installed_baselib_sha256": sha(facts["mods"] / "BaseLib/BaseLib.dll")},
                 "artifacts": {name: {"sha256": sha(bundle / name), "bytes": (bundle / name).stat().st_size} for name in ARTIFACTS},
-                "proof": {"full_mod_build": True, "core_tests": True, "pack_export": True, "pack_resource_loader": report,
+                "proof": {"full_mod_build": True, "core_tests": True, "core_test_results": tests, "pack_export": True, "pack_resource_loader": report,
                           "game_runtime": False, "co_op": False},
                 "logs": ["dotnet-info.log", "build.log", "build.binlog", "core-tests.log", "test-results/core.trx", "import.log", "export.log", "pack-check.log"]}
     write_json(bundle / PASSPORT, passport)
@@ -289,6 +318,7 @@ def verify_bundle(bundle: Path) -> dict:
     proof = passport.get("proof", {})
     if not isinstance(proof, dict) or not all(proof.get(stage) is True for stage in ("full_mod_build", "core_tests", "pack_export")):
         raise BuildError("Incomplete build/test/export proof")
+    require_core_results(proof.get("core_test_results"))
     report = proof.get("pack_resource_loader")
     if not isinstance(report, dict) or report.get("failed") != [] or report.get("isolated_project") is not True \
             or type(report.get("checked")) is not int or report["checked"] < 1:

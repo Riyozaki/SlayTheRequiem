@@ -53,8 +53,23 @@ public static class OperationRecovery
     /// <summary>Keep the entire pre-migration payload, including fields this version cannot interpret.</summary>
     internal static void BackupBeforeMigration(SerializableRun save, bool coop)
     {
-        // Called before native IncrementNumReloads, even though the previous run's NetService may still be absent.
-        AtomicSaveFile.Write(PathFor("requiem_before_migration", coop), JsonSerializationUtility.ToJson(save));
+        // Called before native IncrementNumReloads, even though NetService may still be absent. Read the
+        // ORIGINAL disk bytes, not ToJson(save): the latter has already discarded unknown native JSON fields.
+        var native = ProjectSettings.GlobalizePath(SaveManager.Instance.GetProfileScopedPath(
+            Path.Combine(UserDataPathProvider.SavesDir, RunSaveReadGuard.NativeFile(coop))));
+        var source = File.Exists(native) ? native : native + ".backup";
+        if (File.Exists(source))
+        {
+            RunSaveReadGuard.CopyExact(source, PathFor("requiem_before_migration", coop));
+            if (File.Exists(native + ".backup"))
+                RunSaveReadGuard.CopyExact(native + ".backup", PathFor("requiem_before_migration_native_backup", coop));
+        }
+        else
+        {
+            // An in-memory host/replay input has no original disk document. Name it honestly, never pass
+            // native reserialization off as a byte-for-byte backup of an on-disk save.
+            AtomicSaveFile.Write(PathFor("requiem_before_migration_native_object", coop), JsonSerializationUtility.ToJson(save));
+        }
     }
 
     /// <summary>Durable pre-application rollback state: a scar callback may save before the loaded map is assigned.</summary>

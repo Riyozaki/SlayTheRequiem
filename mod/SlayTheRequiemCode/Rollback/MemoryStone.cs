@@ -60,8 +60,9 @@ public static class MemoryStone
     private static bool _actEntrySettled;
     private static EventRoom? _settledAncient;
     private static EventRoom? _checkingAncient;
-    private static readonly AccessTools.FieldRef<EventSynchronizer, List<Task>> PendingEventTasks =
-        AccessTools.FieldRefAccess<EventSynchronizer, List<Task>>("_pendingOptionTasks");
+    private static IReadOnlyList<Task> PendingEventTasks(EventSynchronizer synchronizer) =>
+        AccessTools.Field(typeof(EventSynchronizer), "_pendingOptionTasks")?.GetValue(synchronizer) is List<Task> tasks
+            ? tasks.ToArray() : throw new MissingFieldException("Event task adapter incompatible; no Memory Stone imprint will be taken");
 
     /// <summary>Arm, do not assume that entering the room completed its Ancient/startup decisions.</summary>
     public static void RequestImprint()
@@ -112,13 +113,12 @@ public static class MemoryStone
     {
         try
         {
-            // StateChanged fires INSIDE EventOption.Chosen, before the synchronizer registers a synchronously
-            // completed task/history. Yield, then await a snapshot without clearing native task bookkeeping.
-            await Task.Yield();
-            var tasks = PendingEventTasks(RunManager.Instance.EventSynchronizer).ToArray();
-            await Task.WhenAll(tasks);
-            if (!ReferenceEquals(RequiemNet.State?.CurrentRoom, room) || !room.IsPreFinished
-                || !RunManager.Instance.EventSynchronizer.Events.All(e => e.IsFinished)) return;
+            // StateChanged fires INSIDE EventOption.Chosen, before task registration/history. Cleanup can
+            // append another task; stabilize the full set without clearing or swallowing native bookkeeping.
+            var state = RequiemNet.State;
+            bool Current() => state != null && ReferenceEquals(state, RequiemNet.State) && ReferenceEquals(state.CurrentRoom, room);
+            if (!await AsyncTaskBoundary.Settle(() => PendingEventTasks(RunManager.Instance.EventSynchronizer), Current)
+                || !room.IsPreFinished || !RunManager.Instance.EventSynchronizer.Events.All(e => e.IsFinished)) return;
             _settledAncient = room;
             TryTakeImprint();
         }

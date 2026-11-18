@@ -240,7 +240,8 @@ public static class ShopOperations
             result = new(OperationStatus.PartialCommit, request.Id, "Local result exists, multiplayer agreement NOT confirmed; retry receipts or restore checkpoint from run badge", result.Gold);
         else state.PendingConfirmation = null;
         mutation.Complete(); // uncertainty is now represented by the persisted Block, or all peer receipts matched
-        // Receipt reconciliation runs only after the mutation marker is disposed, never inside a partial callback.
+        mutation.Dispose(); // dispose BEFORE reconciliation: the last receipt may have arrived during the scope
+        CheckPeers(player, request.Id); // no new packet is necessary to reconcile an already complete receipt set
         return result;
     }
 

@@ -16,6 +16,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("log", type=Path)
     parser.add_argument("--trx", type=Path, nargs="*")
+    parser.add_argument("--success", action="store_true", help="Emit counters without inventing an error after a successful command")
     args = parser.parse_args()
     reported = False
     for path in args.trx or []:
@@ -31,7 +32,7 @@ def main() -> None:
         counters = root.find(".//{*}Counters")
         if counters is not None:
             annotation("notice", f"Core test result: {counters.attrib}")
-    if not reported and args.log.is_file():
+    if not reported and not args.success and args.log.is_file():
         annotation("error", "Test command failed. Log tail:\n" + args.log.read_text(encoding="utf-8", errors="replace")[-12000:])
 
 

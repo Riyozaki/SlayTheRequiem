@@ -23,6 +23,8 @@ using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using MegaCrit.Sts2.Core.Unlocks;
 using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
+using SlayTheRequiem.SlayTheRequiemCode.Cards;
+using SlayTheRequiem.SlayTheRequiemCode.Spells;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
@@ -131,6 +133,14 @@ public static class IntegrityRegression
             ("pending-source-stale-choice", PendingStaleChoice),
             ("grant-source-change-keeps-claim", GrantSourceChanged),
             ("pending-claim-payload-collision", PendingClaimCollision),
+            ("shout-native-removal-registration", ShoutRegistration),
+            ("mandatory-source-veto-reload-once", MandatorySourcePending),
+            ("mandatory-source-completed-never-reissued", MandatorySourceCompleted),
+            ("legacy-start-none-not-replayed", LegacyStartNone),
+            ("saved-future-schema-readonly-reject", FutureSchemaReject),
+            ("timeline-rotation-keeps-unknown-properties", TimelineOpaqueProperties),
+            ("receipt-epoch-and-mutation-disposal", ReceiptDisposal),
+            ("mutable-service-clones-isolated", ServiceCloneIsolation),
         };
         var failures = 0;
         try
@@ -1128,6 +1138,123 @@ public static class IntegrityRegression
         finally { owner.RelicRemoved -= Fail; }
     }
 
+    private static Task ShoutRegistration()
+    {
+        var owner = Fixture(); owner.ResetCombatState();
+        var combat = new CombatState(runState: owner.RunState); combat.AddPlayer(owner);
+        var shelf = (ShoutShelfPower)ModelDb.Power<ShoutShelfPower>().ToMutable();
+        shelf.ApplyInternal(owner.Creature, 1, silent: true);
+        var card = combat.CreateCard<UnrelentingForce>(owner);
+        owner.PlayerCombatState!.PlayPile.AddInternal(card, silent: true);
+        Require(shelf.Put(card, 1) && !shelf.Put(card, 1), "Repeated play duplicated the shelf instance");
+        card.RemoveFromState(); // normal None cleanup in 0.107.1
+        Require(shelf.PrepareReturn(card, combat) && card.Owner == owner && !card.HasBeenRemovedFromState, "Native removed card could not return");
+        card.RemoveFromState(); combat.RemoveCard(card); // explicit scope removal also clears Owner
+        Require(card.Owner == null && shelf.PrepareReturn(card, combat) && card.Owner == owner && combat.ContainsCard(card), "Captured null-owner entitlement was discarded");
+        var clone = (ShoutShelfPower)shelf.MutableClone();
+        Require(clone.Count == 0 && shelf.Count == 1, "Cloned shelf shared physical card entitlements");
+        owner.PlayerCombatState.ExhaustPile.AddInternal(card, silent: true);
+        Require(!shelf.PrepareReturn(card, combat), "Shelf pulled a card out of Exhaust");
+        card.RemoveFromCurrentPile(silent: true);
+        var foreign = Fixture(); combat.RemoveCard(card); combat.AddCard(card, foreign);
+        Require(!shelf.PrepareReturn(card, combat) && card.Owner == foreign, "Shelf stole a foreign card");
+        return Task.CompletedTask;
+    }
+
+    private static async Task MandatorySourcePending()
+    {
+        var owner = Fixture(); FillToExcess(owner, 11);
+        await CardAcquisition.GrantOnceOrDefer(Pack(owner), owner.RunState.CreateCard<Bash>(owner), "adapter-once");
+        Require(Pack(owner).PendingCards.Count == 1, "Mandatory veto lost its source");
+        var restored = Reload(owner);
+        await CardAcquisition.GrantOnceOrDefer(Pack(restored), restored.RunState.CreateCard<Bash>(restored), "adapter-once");
+        Require(Pack(restored).PendingCards.Count == 1 && !restored.Deck.Cards.Any(c => c is Bash && CardAcquisition.IsDeferredClaim(c)),
+            "Reload replayed a prepared mandatory source");
+    }
+
+    private static async Task MandatorySourceCompleted()
+    {
+        var owner = Fixture();
+        await CardAcquisition.GrantOnceOrDefer(Pack(owner), owner.RunState.CreateCard<Bash>(owner), "adapter-once");
+        Require(owner.Deck.Cards.Count == 1 && Pack(owner).PendingCards.Count == 0, "Mandatory acquisition did not finish");
+        var granted = owner.Deck.Cards[0]; granted.RemoveFromCurrentPile(silent: true); owner.RunState.RemoveCard(granted);
+        var restored = Reload(owner);
+        await CardAcquisition.GrantOnceOrDefer(Pack(restored), restored.RunState.CreateCard<Bash>(restored), "adapter-once");
+        Require(restored.Deck.Cards.Count == 0 && Pack(restored).PendingCards.Count == 0, "Consumed completed grant was issued again");
+    }
+
+    private static Task LegacyStartNone()
+    {
+        var owner = Fixture(); var grimoire = Mastery.GrimoireOf(owner)!;
+        var hp = owner.Creature.MaxHp; var deck = owner.Deck.Cards.Count;
+        grimoire.StartProtocol = 0; grimoire.StartPhase = 0; grimoire.OriginGranted = true;
+        grimoire.MigrateLegacyStart();
+        Require(grimoire.StartingChoicesComplete && grimoire.OriginChoiceId == "none" && grimoire.BackgroundChoiceId == "none",
+            "Legacy completed 'none' decision became unfinished");
+        var restored = Reload(owner); var after = Mastery.GrimoireOf(restored)!; after.MigrateLegacyStart();
+        Require(after.StartingChoicesComplete && restored.Creature.MaxHp == hp && restored.Deck.Cards.Count == deck,
+            "Continue replayed a declared-completed legacy startup");
+        return Task.CompletedTask;
+    }
+
+    private static Task FutureSchemaReject()
+    {
+        var owner = Fixture(); var save = new SerializableRun { Players = [owner.ToSerializable()] };
+        var pack = save.Players[0].Relics.Single(r => r.Id == Pack(owner).Id);
+        SavedPropertyWrite.Int(pack.Props ??= new SavedProperties(), nameof(TravelPack.DataSchema), RunDiagnostics.SaveSchema + 1);
+        var before = Json(save);
+        try { Config.RunSettings.ValidateSaved(save); throw new InvalidOperationException("Future schema was accepted"); }
+        catch (FormatException) { Require(before == Json(save), "Read-only saved validation mutated the original native object"); }
+        return Task.CompletedTask;
+    }
+
+    private static Task TimelineOpaqueProperties()
+    {
+        var owner = Fixture(); var save = new SerializableRun { Players = [owner.ToSerializable()] };
+        var pack = save.Players[0].Relics.Single(r => r.Id == Pack(owner).Id);
+        var props = pack.Props ??= new SavedProperties();
+        SavedPropertyWrite.Text(props, "unavailable_external_field", "opaque-future-payload");
+        SavedPropertyWrite.Int(props, nameof(TravelPack.OperationRevision), 19);
+        OperationRecovery.RotateTimeline(save);
+        Require(props.strings!.Single(p => p.name == "unavailable_external_field").value == "opaque-future-payload"
+            && props.ints!.Single(p => p.name == nameof(TravelPack.OperationRevision)).value == 0
+            && props.strings.Single(p => p.name == nameof(TravelPack.OperationRunId)).value.Length > 0,
+            "Timeline rotation round-tripped away an unrelated saved property");
+        return Task.CompletedTask;
+    }
+
+    private static async Task ReceiptDisposal()
+    {
+        var owner = Fixture();
+        using var lease = await InventoryGate.For(owner).Enter();
+        using var mutation = InventoryGate.Track(owner, lease!, "adapter-receipt");
+        InventoryGate.Block(owner, "receipt timeout");
+        var epoch = InventoryGate.FailureEpoch(owner);
+        InventoryGate.ClearReceiptBlock(owner, epoch);
+        Require(InventoryGate.For(owner).Blocked, "Receipt cleared an active mutation");
+        mutation.Complete(); mutation.Dispose();
+        InventoryGate.ClearReceiptBlock(owner, epoch);
+        Require(!InventoryGate.For(owner).Blocked && !Pack(owner).OperationBlocked, "Matching receipts stayed blocked after mutation disposal");
+        InventoryGate.Block(owner, "new independent partial failure");
+        InventoryGate.ClearReceiptBlock(owner, epoch);
+        Require(InventoryGate.For(owner).Blocked, "Stale receipt cleared a newer failure");
+    }
+
+    private static Task ServiceCloneIsolation()
+    {
+        var owner = Fixture(); var other = Fixture();
+        var pouch = HerbalistPouch.Of(owner)!; pouch.Add(Reagent.Bloodmoss, 2);
+        var copy = (HerbalistPouch)pouch.MutableClone(); copy.Reagents[0] = 7;
+        Require(pouch.Count(Reagent.Bloodmoss) == 2 && HerbalistPouch.Of(other)!.Total == 0, "Pouch clones/players share reagents");
+        var ledger = MerchantLedger.Of(owner)!; ledger.Spent[0] = 100;
+        var ledgerCopy = (MerchantLedger)ledger.MutableClone(); ledgerCopy.Spent[0] = 200;
+        Require(ledger.Spent[0] == 100 && MerchantLedger.Of(other)!.Spent[0] == 0, "Merchant clones/players share payment counters");
+        var record = HeroRecord.Of(owner)!; _ = record.Learned;
+        var recordCopy = (HeroRecord)record.MutableClone();
+        Require(!ReferenceEquals(record.Learned, recordCopy.Learned), "HeroRecord clones share the learned-skill set");
+        return Task.CompletedTask;
+    }
+
     private static Task WireRoundTrip()
     {
         var run = OperationIdentity.RunKey("seed", "saved-nonce", ulong.MaxValue);
@@ -1142,6 +1269,11 @@ public static class IntegrityRegression
         Require(ack.location == receipt.location && ack.playerId == receipt.playerId && ack.operationId == receipt.operationId
             && ack.status == receipt.status && ack.gold == receipt.gold && ack.digest == receipt.digest && reader.BitPosition == writer.BitPosition,
             "Receipt wire layout changed");
+        var stone = new MemoryStoneMessage { run = OperationIdentity.Hash("attempt"), phase = (int)StonePhase.Go, round = 23, value = 1, extra = 3 };
+        writer.Reset(); stone.Serialize(writer); reader.Reset(writer.Buffer); var stoneCopy = new MemoryStoneMessage(); stoneCopy.Deserialize(reader);
+        Require(stoneCopy.run == stone.run && stoneCopy.phase == stone.phase && stoneCopy.round == stone.round
+            && stoneCopy.value == stone.value && stoneCopy.extra == stone.extra && reader.BitPosition == writer.BitPosition,
+            "Authenticated Memory Stone packet lost its attempt identity or phase");
         return Task.CompletedTask;
     }
 }

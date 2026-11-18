@@ -104,6 +104,8 @@ public sealed class Grimoire : RequiemRelic
     {
         if (!StartupState.NeedsLegacyMigration(StartProtocol)) return;
         StartPhase = StartupState.LegacyPhase(OriginGranted);
+        if (!OriginGranted && Owner.Relics.Any(r => r is OriginRelic or BackgroundRelic))
+            InventoryGate.Block(Owner, "Legacy startup contains choice relics without its completed declaration. One-shot bonuses cannot be safely replayed; retain the migration backup and restore a known-safe checkpoint.");
         if (OriginGranted)
         {
             OriginChoiceId = Owner.Relics.OfType<OriginRelic>().FirstOrDefault()?.Id.Entry ?? "none";

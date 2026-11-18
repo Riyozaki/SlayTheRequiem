@@ -27,6 +27,9 @@ func _initialize() -> void:
                 elif kind == "audio":
                     if not ResourceLoader.load(path) is AudioStream:
                         failures.append("Audio did not load: " + path)
+                elif kind == "resource":
+                    if ResourceLoader.load(path) == null:
+                        failures.append("Resource did not load: " + path)
                 else:
                     if not FileAccess.file_exists(path):
                         failures.append("File missing: " + path)

@@ -56,17 +56,31 @@ public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
     protected virtual Task OnFormGained() => Task.CompletedTask;
 
     /// <summary>Снять форму: забрать особые карты и выданные ♥, убрать реликвию.</summary>
-    public async Task Shed()
+    public async Task Shed(OperationGate.Lease? held = null)
     {
-        var types = CardsToRemove.ToHashSet();
-        foreach (var card in Owner.Deck.Cards.Where(c => types.Contains(c.GetType())).ToList())
-            await CardPileCmd.RemoveFromDeck(card, showPreview: false);
-        Alchemy.TravelPack.Of(Owner)?.CancelMandatorySources(InventoryIdentity.RelicKey(this) + "/");
-        await OnFormLost();
         var owner = Owner;
-        await RemoveSelf();
-        Faith.RefreshAll(owner);
-        FormVisuals.Refresh(owner);
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null || !owner.Relics.Contains(this)) return;
+        using var mutation = InventoryGate.Track(owner, lease, "form:shed:" + Kind);
+        try
+        {
+            var types = CardsToRemove.ToHashSet();
+            foreach (var card in owner.Deck.Cards.Where(c => types.Contains(c.GetType())).ToList())
+                await CardPileCmd.RemoveFromDeck(card, showPreview: false);
+            Alchemy.TravelPack.Of(owner)?.CancelMandatorySources(InventoryIdentity.RelicKey(this) + "/");
+            await OnFormLost();
+            await RemoveSelf();
+            if (owner.Relics.Contains(this)) throw new InvalidOperationException("Form removal did not commit");
+            Faith.RefreshAll(owner);
+            FormVisuals.Refresh(owner);
+            mutation.Complete();
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(owner, $"Form removal interrupted; restore its pre-transition checkpoint: {e}");
+            mutation.Complete();
+            throw;
+        }
     }
 
     protected virtual Task OnFormLost() => Task.CompletedTask;
@@ -135,7 +149,7 @@ public static class Forms
         {
             if (kind is FormKind.Herald or FormKind.Lich)
                 foreach (var previous in All(player).Where(f => f.Kind is FormKind.DarkPact or FormKind.Herald).ToList())
-                    await previous.Shed();
+                    await previous.Shed(lease);
             var form = Create(TypeFor(kind));
             await RelicCmd.Obtain(form, player);
             if (!player.Relics.Contains(form)) throw new InvalidOperationException("Form grant did not commit");
