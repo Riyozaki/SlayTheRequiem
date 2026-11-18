@@ -128,13 +128,21 @@ public static class Paths
             return;
         }
         if (!TransformationRules.PathAllowed(path, Forms.Worldview(player), Apostate(player), Unarmed(player), Forms.IsOrdinator(player))) return;
-        // Every Reborn decision and final source preflight happens BEFORE obtaining/consuming a Path.
+        // Every Reborn/element decision happens BEFORE obtaining/consuming a Path. The modal can outlive
+        // a room; never apply a confirmed old choice to a different room/run after Continue or teardown.
+        var run = player.RunState;
+        var room = run.CurrentRoom;
         if (path == HeroPath.Reborn && !await HeroCreation.PrepareRebirth(player)) return;
+        var element = path == HeroPath.ElementLord ? await ElementLordEssence.PickElement(player) : null;
+        if (path == HeroPath.ElementLord && element == null) return;
+        if (!ReferenceEquals(run, player.RunState) || !ReferenceEquals(room, run.CurrentRoom) || player.Creature.IsDead
+            || Of(player) != null || !TransformationRules.PathAllowed(path, Forms.Worldview(player), Apostate(player), Unarmed(player), Forms.IsOrdinator(player))) return;
         {
             using var mutation = InventoryGate.Track(player, lease, "path:" + path);
             try
             {
                 var essence = (PathEssence)Forms.Create(EssenceType(path));
+                if (essence is ElementLordEssence elemental) elemental.ChosenElement = (int)element!.Value;
                 PathGrants.Prepare(essence, player);
                 await RelicCmd.Obtain(essence, player);
                 if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
@@ -402,8 +410,14 @@ public sealed class ElementLordEssence : PathEssence
     }
 
     public Element Element => (Element)_element;
+    public Type SignatureType => Element switch
+    {
+        Element.Fire => typeof(Meteor),
+        Element.Frost => typeof(IceTomb),
+        _ => typeof(ChainLightning),
+    };
 
-    protected override async Task OnObtained()
+    internal static async Task<Element?> PickElement(Player owner)
     {
         var choices = Enum.GetValues<Element>()
             .Select(e => new CampMenu.Choice(e switch
@@ -413,15 +427,12 @@ public sealed class ElementLordEssence : PathEssence
                 _ => typeof(ChainLightning),
             }, 0, 0, e))
             .ToList();
-        var picked = await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_ELEMENT_PROMPT") as Element? ?? Element.Fire;
-        ChosenElement = (int)picked;
-        var spell = picked switch
-        {
-            Element.Fire => typeof(Meteor),
-            Element.Frost => typeof(IceTomb),
-            _ => typeof(ChainLightning),
-        };
-        var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(spell));
+        return await CampMenu.Pick(owner, choices, "SLAYTHEREQUIEM_ELEMENT_PROMPT") as Element?;
+    }
+
+    protected override async Task OnObtained()
+    {
+        var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(SignatureType));
         await CardAcquisition.GrantOnceOrDefer(this, Owner.RunState.CreateCard(canonical, Owner), "element-signature");
     }
 

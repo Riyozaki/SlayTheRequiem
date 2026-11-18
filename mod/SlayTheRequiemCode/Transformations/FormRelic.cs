@@ -140,10 +140,10 @@ public static class Forms
     public static RelicModel Create(Type type) => ModelDb.GetById<RelicModel>(ModelDb.GetId(type)).ToMutable();
 
     /// <summary>Принять форму. Ступень Договора заменяет предыдущую. false — несовместимо.</summary>
-    public static async Task<bool> Grant(Player player, FormKind kind)
+    public static async Task<bool> Grant(Player player, FormKind kind, OperationGate.Lease? held = null)
     {
         if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
-        using var lease = await InventoryGate.For(player).Enter();
+        using var lease = await InventoryGate.For(player).Enter(held);
         if (lease == null || !CanTake(player, kind)) return false;
         using var mutation = InventoryGate.Track(player, lease, "form:" + kind);
         try

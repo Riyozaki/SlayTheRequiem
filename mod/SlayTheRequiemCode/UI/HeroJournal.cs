@@ -115,7 +115,7 @@ public static class HeroJournal
     }
     private static List<Entry> FaithAndForms(Player owner)
     {
-        var entries = new List<Entry> { new(T("faith"), T("pathTiming")) };
+        var entries = new List<Entry> { new(T("faith"), T("pathTiming") + "\n" + RequiemUi.TipText("UI.formRites.description")) };
         entries.AddRange(owner.Relics.Where(r => r is FaithSigil or CelestialBlessing or FormRelic or PathEssence).Select(Relic));
         return entries;
     }

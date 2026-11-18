@@ -46,14 +46,14 @@ fixtures вложенной отмены и authority/instance-equipment. Пре
 но общий CI `44243765460` был FAILURE из-за устаревшего Python-assertion `Dodge(Owner)`. Он заменён проверкой captured /
 deferred `Dodge(owner)`; локально **151/151** Python-тестов снова проходят. Это не ретест реального Уворота в игре.
 
-## Доступные проверки до нового CI
+## Доступные проверки checkpoint 04569f6
 
 - C# grammar: **296 файлов, 0 ошибок** (не semantic build).
 - Harmony: **132 цели, 0 ошибок** (не проверка установки/IL в игре).
 - Localization: **3904 ключа на язык**, checker **1389 проверок, 0 ошибок**, 8 checker-тестов PASS.
 - Python rules: **151 тест PASS**; build/export/install safety tooling: **35 тестов PASS**.
 - Combat source contracts: **53 typed moves / 199 role rows / 0 ошибок**, не battle trace.
-- Новые Core UI/slot/shelf tests написаны; их выполнение будет отмечено только после нового CI.
+- CI [44246021705](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44246021705) на `04569f6`: **четыре jobs PASS, 710/710 Core**. Число из TRX-derived check annotation; локального TRX нет. Это не полный мод и не проверка последующих изменений Б2.4.
 - Полный локальный пакет: **27/27** checks PASS, regeneration idempotent, **376** input hashes.
   [Логи/manifest](evidence/stage-two-ui-2026-11-18/README.md). Art/content/generator результаты не подменяют PCK-load.
 

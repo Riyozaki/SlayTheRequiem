@@ -193,6 +193,7 @@ public static class Camp
             options.Add(new TavernRestSiteOption(player));
             Acts.ActLedger.Of(player)?.RecordVisit(player.RunState, NodeSubtype.Tavern); // значок Таверны на карте (M6)
         }
+        if (Transformations.FormRites.HasOffer(player)) options.Add(new Transformations.FormRitesRestSiteOption(player));
         // Оборотень (этап 6): узлы веток за Обращения.
         if (Transformations.Forms.Of<Transformations.WerewolfForm>(player) is { PendingNodes: > 0 })
             options.Add(new Transformations.BeastRitesRestSiteOption(player));

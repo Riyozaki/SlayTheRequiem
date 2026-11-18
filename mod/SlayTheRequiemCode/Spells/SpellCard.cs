@@ -53,7 +53,7 @@ public abstract class SpellCard(int energyCost, int manaCost, SpellSchool school
     };
 
     public SpellAffinity.CastCost Affinity =>
-        SpellAffinity.Evaluate(manaCost, tier, Mastery.Of(Owner, school), FromScroll);
+        SpellAffinity.Evaluate(manaCost, tier, Mastery.ForSpell(Owner, this), FromScroll);
 
     /// <summary>Вне системы Реквиема (чужие моды/персонажи) владение не проверяется.</summary>
     protected override bool IsPlayable => Owner == null || !RequiemMode.IsInSystem(Owner) || Affinity.Castable;

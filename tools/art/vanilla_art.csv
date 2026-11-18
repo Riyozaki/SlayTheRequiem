@@ -512,3 +512,7 @@ power,PressurePower,SteamEruptionPower,M5 боссы: Давление Котл�
 power,SunStancePower,RadiancePower,M5 боссы: Солнечная стойка
 power,MoonStancePower,ShadowmeldPower,M5 боссы: Лунная стойка
 relic,Torch,Lantern,Факел — Ночное зрение (13 §3, M6)
+
+# Б2.4 — deliberate temporary attack portraits; own illustration acceptance belongs to block 3.
+card,HuntingShot,defect/Synthesis,Weapon hunter entry; temporary vanilla attack portrait
+card,CoveringShot,necrobinder/StrikeNecrobinder,Attack and Block; temporary vanilla attack portrait

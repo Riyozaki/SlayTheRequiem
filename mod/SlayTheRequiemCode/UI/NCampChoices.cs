@@ -29,7 +29,7 @@ public partial class NCampChoices : Container
     {
         "HEAL" or "SHORT_REST" or "MEDITATE" or "PRAY" or "WARM" => Category.Rest,
         "SMITH" or "FORGE" or "BREW" or "COOK" or "DIG" or "MEND" => Category.Craft,
-        "ENCHANT" or "CARD_ENCHANT" => Category.Magic,
+        "ENCHANT" or "CARD_ENCHANT" or "FORM_RITES" => Category.Magic,
         "CHEST" or "TRAIN" or "LIFT" => Category.Gear,
         _ => Category.Special,
     };

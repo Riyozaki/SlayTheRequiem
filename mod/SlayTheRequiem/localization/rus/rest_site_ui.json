@@ -52,5 +52,8 @@
   "OPTION_SLAYTHEREQUIEM_TAVERN.description": "Здесь пьёт Наставник. Узел навыка — [gold]{SkillPrice}[/gold] золотых (куплено {Bought}/3), урок владения оружием — [gold]{LessonPrice}[/gold]. Очков лагеря не тратит.",
   "OPTION_SLAYTHEREQUIEM_TAVERN.descriptionDisabled": "Наставнику нечего вам предложить по карману.",
   "SLAYTHEREQUIEM_TAVERN_PROMPT": "Чему научит Наставник? (закройте, чтобы уйти)",
-  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Выберите узел навыка"
+  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Выберите узел навыка",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.title": "Обряды формы",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.description": "Выбрать совместимую форму или заслуженную ступень. {Cost} очко лагеря за успех (осталось: {Points}). Не требуется случайное событие. Отмена бесплатна.",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.descriptionDisabled": "В этом акте нет доступной совместимой или заслуженной формы. {Cost} очко лагеря за успех (осталось: {Points})."
 }

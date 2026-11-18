@@ -1,7 +1,7 @@
 namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 
 /// <summary>Действия лагеря (docs/design/10 §1). Other — чужие действия (ванильные реликвии, другие моды).</summary>
-public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm, Tavern }
+public enum CampAction { Rest, ShortRest, Smith, Forge, Brew, Enchant, Cook, Pray, Chest, Meditate, Train, Other, Warm, Tavern, FormRite }
 
 /// <summary>
 /// Постройки лагеря (10 §5) в порядке открытия победами: Котёл — Готовка без «Походного котла»; Наковальня — Кузня за
@@ -38,6 +38,7 @@ public static class CampRules
         CampAction.Train => 0,
         CampAction.Warm => 0,
         CampAction.Tavern => 0,
+        CampAction.FormRite => 1,
         _ => 2,
     };
 

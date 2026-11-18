@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "scope": "Source-checked recipe candidates; not generated native rewards, proven wins or mandatory player decks. Optional rares are never required enablers.",
+  "directions": [
+    {
+      "id": "plate_weapon", "hero": "Ironclad", "title": "Оружие и ритм выносливости",
+      "origin": "ForgebloodOrigin", "background": "BerserkerBackground", "path": "Barbarian",
+      "enablers": ["mod:CatchBreath", "mod:ArmorSplitter", "mod:CrushingBlow"],
+      "payoffs": ["mod:OverheadSmash", "mod:AgainstAllOdds"],
+      "defense": ["mod:SteadyStance", "mod:RaiseShield"],
+      "draw": ["vanilla:Ironclad/BattleTrance"],
+      "resources": ["mod:CatchBreath", "mod:Tempering", "mod:ChangeGrip"],
+      "answers": ["mod:ArmorSplitter", "mod:SmotherFlames"],
+      "gear": ["IronBattleaxe"], "skills": ["Sweep", "HeavyHand", "Conditioning"],
+      "optional_rares": ["mod:MountainBreaker"],
+      "access": "Background guarantees the tier-I two-hander; common armor answer/breath, uncommon finishers. No rare is needed."
+    },
+    {
+      "id": "plate_shield", "hero": "Ironclad", "title": "Щит и защита",
+      "origin": "CitadelOrigin", "background": "LegionaryBackground", "path": "Champion",
+      "enablers": ["mod:ShieldBash", "mod:LockShields", "mod:RaiseShield"],
+      "payoffs": ["mod:ShieldCharge", "mod:SwordAndBoard"],
+      "defense": ["mod:RaiseShield", "mod:LegionDrill", "mod:CloseRanks"],
+      "draw": ["mod:MeasuredStrike", "vanilla:Ironclad/BattleTrance"],
+      "resources": ["mod:CatchBreath", "mod:SteadyStance"],
+      "answers": ["mod:ArmorSplitter", "mod:SmotherFlames"],
+      "gear": ["OakShield", "RustyCleaver"], "skills": ["ShieldBearer", "ShieldWall", "Fighter"],
+      "optional_rares": ["mod:Unbreakable"],
+      "access": "Legionary guarantees shield and Shield Bash. A tier-I one-hander costs 45 before discounts; 1H is an optional draw/attack improvement, not required for Shield Charge."
+    },
+    {
+      "id": "plate_voice", "hero": "Ironclad", "title": "Кличи и холод",
+      "origin": "FrostbornOrigin", "background": "SkaldBackground", "path": "Battlemage",
+      "enablers": ["mod:BattleCry", "mod:IceWind", "mod:SteadyStance"],
+      "payoffs": ["mod:UnrelentingForce", "mod:FrostBreath", "mod:FrostStrike"],
+      "defense": ["mod:RaiseShield", "mod:DesertPatience"],
+      "draw": ["vanilla:Ironclad/BattleTrance"],
+      "resources": ["mod:CatchBreath", "mod:ChangeGrip"],
+      "answers": ["mod:ArmorSplitter", "mod:FireBreath"],
+      "gear": [], "skills": ["Conditioning", "SecondBreath"],
+      "optional_rares": ["mod:Frostblood", "mod:StormCall"],
+      "access": "Skald guarantees Battle Cry and two physical shelf slots. Other shouts are uncommon; the build still uses ordinary attacks between cooldowns and against cold resistance."
+    },
+    {
+      "id": "silent_stealth", "hero": "Silent", "title": "Скрытность и подлый удар",
+      "origin": "MoonbornOrigin", "background": "DuskSingerBackground", "path": "Assassin",
+      "enablers": ["mod:Backstab", "mod:Garrote", "mod:ShadowStep"],
+      "payoffs": ["mod:Backstab", "mod:Garrote", "mod:Riposte"],
+      "defense": ["mod:Sidestep", "mod:SlipAway"],
+      "draw": ["mod:SlipAway", "vanilla:Silent/Backflip"],
+      "resources": ["mod:SlipAway", "mod:FlaskToFace"],
+      "answers": ["mod:Garrote", "mod:HuntingShot"],
+      "gear": ["SmugglerDagger"], "skills": ["Nimble", "Counterstrike", "Bloodletter"],
+      "optional_rares": ["mod:ShadowStrike", "mod:Evasion"],
+      "access": "Dusk Singer supplies Muffled Steps. Common Backstab/Garrote work against non-attacking intent even before Shadow Step; dagger is an improvement, not a condition for Sneak."
+    },
+    {
+      "id": "silent_poison", "hero": "Silent", "title": "Яд, Хворь и алхимия",
+      "origin": "MarshbornOrigin", "background": "VenomweaverBackground", "path": "Blightbringer",
+      "enablers": ["mod:ToxicCoating", "mod:PoisonedBlade", "mod:RottingCut"],
+      "payoffs": ["mod:PoisonedBlade", "mod:FlaskToFace"],
+      "defense": ["mod:Sidestep", "vanilla:Silent/Backflip"],
+      "draw": ["mod:SlipAway", "vanilla:Silent/Backflip"],
+      "resources": ["mod:ToxicCoating", "mod:Distillation"],
+      "answers": ["mod:HuntingShot", "mod:Backstab", "mod:Garrote"],
+      "gear": [], "skills": ["Poisoner", "Toxicologist", "Nimble"],
+      "optional_rares": ["mod:VenomMastery", "mod:VolatileMixture"],
+      "access": "Background guarantees Poison Spray; Toxic Coating and Flask to Face supply Toxin without a potion roll. Keep physical/Sunder/Sneak answers to undead and constructs."
+    },
+    {
+      "id": "silent_hunt", "hero": "Silent", "title": "Охота и стрелковый темп",
+      "origin": "ThicketbornOrigin", "background": "HunterBackground", "path": "MysticArcher",
+      "enablers": ["mod:HuntingShot", "mod:ThirdStep", "vanilla:Silent/BladeDance"],
+      "payoffs": ["mod:CoveringShot", "mod:FleetingStrike"],
+      "defense": ["mod:CoveringShot", "mod:Sidestep", "mod:SlipAway"],
+      "draw": ["mod:CoveringShot", "mod:SlipAway", "vanilla:Silent/Backflip"],
+      "resources": ["mod:SlipAway", "mod:WindRhythm"],
+      "answers": ["mod:HuntingShot", "mod:Garrote"],
+      "gear": ["HeavyBow"], "skills": ["Marksman", "QuickDraw", "AimedShot"],
+      "optional_rares": ["mod:Evasion"],
+      "access": "Hunter guarantees bow and Hunting Shot, retains Shiv +2. Covering Shot is uncommon; both new attacks remain playable without a ranged weapon. Mystic Archer additionally requires acquiring an elemental spell."
+    },
+    {
+      "id": "regent_elements", "hero": "Regent", "title": "Школа Разрушения и стихии",
+      "origin": "HighbornOrigin", "background": "WizardBackground", "path": "ElementLord",
+      "enablers": ["mod:Firebolt", "mod:Sparks", "mod:GrimoireStudy"],
+      "payoffs": ["mod:Fireball", "mod:IceSpike", "mod:BallLightning"],
+      "defense": ["mod:RuneOfWarding", "mod:LesserWard"],
+      "draw": ["mod:GrimoireStudy"],
+      "resources": ["mod:ArcaneFocus", "mod:MagickaWell", "mod:StaffStrike"],
+      "answers": ["mod:Sparks", "mod:IceSpike", "mod:Fireball"],
+      "gear": [], "skills": ["Destruction1", "Destruction2", "Destruction3"],
+      "optional_rares": ["mod:DualCasting"],
+      "access": "Firebolt/Wolf/Arcane Focus are in every NEW Regent baseline. Adept spells are clumsy at mastery 2, free at 3. Element Lord teaches its selected Master signature, not all school spells."
+    },
+    {
+      "id": "regent_mana", "hero": "Regent", "title": "Мана и боевой маг",
+      "origin": "MistbornOrigin", "background": "EnchanterBackground", "path": "Battlemage",
+      "enablers": ["mod:StaffStrike", "mod:ArcaneFocus", "mod:ManaBurn"],
+      "payoffs": ["mod:Concentration", "vanilla:Regent/FallingStar", "mod:SoulRend"],
+      "defense": ["mod:RuneOfWarding", "mod:Concentration", "mod:Oakflesh"],
+      "draw": ["mod:GrimoireStudy"],
+      "resources": ["mod:MagickaWell", "mod:ArcaneFocus", "mod:ManaSurge"],
+      "answers": ["mod:ManaBurn", "mod:Firebolt", "mod:Telekinesis"],
+      "gear": ["OakStaff"], "skills": ["Alteration1", "Restoration1"],
+      "optional_rares": ["mod:ManaStorm", "mod:ArcaneMastery"],
+      "access": "Enchanter recovers mana on non-spell attacks. Common links + uncommon Concentration/Well sustain the plan; rare X-mana finisher is optional and never the only damage source."
+    },
+    {
+      "id": "regent_summons", "hero": "Regent", "title": "Колдовство и призывы",
+      "origin": "MistbornOrigin", "background": "SummonerBackground", "path": "Medium",
+      "enablers": ["mod:ConjureSpiritWolf", "mod:BoundBlade", "mod:GrimoireStudy"],
+      "payoffs": ["mod:ConjureFlameAtronach", "mod:ConjureFrostAtronach"],
+      "defense": ["mod:RuneOfWarding", "mod:LesserWard", "mod:Oakflesh"],
+      "draw": ["mod:GrimoireStudy"],
+      "resources": ["mod:ArcaneFocus", "mod:MagickaWell", "mod:ManaSurge"],
+      "answers": ["mod:BoundBlade", "mod:Firebolt", "mod:Telekinesis"],
+      "gear": [], "skills": ["Conjuration1", "Conjuration2", "Conjuration3"],
+      "optional_rares": ["mod:DualCasting"],
+      "access": "Baseline guarantees Spirit Wolf; Summoner adds Bound Blade instead of a redundant second wolf, plus mastery/HP/damage. Medium increases slots later; early summons replace, not stack indefinitely."
+    }
+  ]
+}

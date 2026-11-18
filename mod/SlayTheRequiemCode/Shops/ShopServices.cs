@@ -561,13 +561,13 @@ public static class ShopServices
     /// <summary>Разрыв ступени и владения у заклинания с витрины (0 — колдуется свободно).</summary>
     public static int MasteryGap(Player player, MerchantEntry entry) =>
         entry is MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell } && RequiemMode.IsInSystem(player)
-            ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.Of(player, spell.School)))
+            ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.ForSpell(player, spell)))
             : 0;
 
     public static async Task<bool> ConfirmMasteryAndBuy(MerchantEntry entry, MerchantInventory? inventory, Player player)
     {
         if (entry is not MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell }) return false;
-        var mastery = Spells.Mastery.Of(player, spell.School);
+        var mastery = Spells.Mastery.ForSpell(player, spell);
         var gap = MasteryGap(player, entry);
         if (!await RequiemNet.Confirm("SLAYTHEREQUIEM-MERCHANT_LEDGER", "mastery", body =>
             {

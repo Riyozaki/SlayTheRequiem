@@ -20,6 +20,11 @@ public static class Mastery
         return Math.Clamp(level + bonus, 0, SpellAffinity.MaxMastery);
     }
 
+    /// <summary>A Path teaches its one chosen signature, not every spell in its school. The source is retained
+    /// by Reborn and disappears with the essence; no opaque/refundable mastery counter is manufactured.</summary>
+    public static int ForSpell(Player? player, SpellCard spell) => BuildAccessRules.SpellMastery(Of(player, spell.School),
+        Transformations.Paths.Of(player) is Transformations.ElementLordEssence essence && essence.SignatureType == spell.GetType(), spell.Tier);
+
     public static int Total(Player? player) => Schools.Sum(s => Of(player, s));
 }
 

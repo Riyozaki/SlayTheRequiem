@@ -109,8 +109,8 @@ public partial class NHeroCreationScreen : Control, IScreenContext
                 content.AddChild(MakeText(group, 26));
             }
             // Description belongs to the same row as its button; disabled offers remain keyboard-readable.
-            var panel = RequiemKit.Panel(12); panel.FocusMode = FocusModeEnum.All; content.AddChild(panel);
-            var row = new VBoxContainer(); row.AddThemeConstantOverride("separation", 8); panel.AddChild(row);
+            var choicePanel = RequiemKit.Panel(12); choicePanel.FocusMode = FocusModeEnum.All; content.AddChild(choicePanel);
+            var row = new VBoxContainer(); row.AddThemeConstantOverride("separation", 8); choicePanel.AddChild(row);
             row.AddChild(MakeText(choice.Title, 23));
             if (choice.Description.Length > 0) row.AddChild(MakeText(RequiemText.Plain(choice.Description), 20));
             var button = RequiemKit.MakeButton(RequiemUi.TipText("UI.select.title"), 22, new Vector2(0, 50));
@@ -118,8 +118,8 @@ public partial class NHeroCreationScreen : Control, IScreenContext
             button.TooltipText = choice.Title + (choice.Description.Length > 0 ? "\n" + choice.Description : "");
             button.Disabled = !choice.Enabled;
             button.Pressed += () => Finish(index);
-            button.FocusEntered += () => _scroll.EnsureControlVisible(panel);
-            _buttons.Add(button); _focus.Add(choice.Enabled ? button : panel);
+            button.FocusEntered += () => _scroll.EnsureControlVisible(choicePanel);
+            _buttons.Add(button); _focus.Add(choice.Enabled ? button : choicePanel);
             row.AddChild(button);
         }
         if (_cancelable)

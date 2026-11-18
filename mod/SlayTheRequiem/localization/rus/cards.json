@@ -512,7 +512,7 @@
   "SLAYTHEREQUIEM-PICK_PATH_MYSTIC_ARCHER.title": "Мистический лучник",
   "SLAYTHEREQUIEM-PICK_PATH_MYSTIC_ARCHER.description": "Путь: Мистический лучник. Выстрелы из лука и арбалета накладывают стихию последнего заклинания (2 стака).",
   "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.title": "Повелитель стихии",
-  "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.description": "Путь: Повелитель стихии. Выбор стихии: её подписное заклинание — в колоду; ваши статусы этой стихии +1 стак.",
+  "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.description": "Путь: Повелитель стихии. Выбор стихии: её подписное заклинание — в колоду и освоено этой Сущностью полностью (без прибавки другим заклинаниям школы); ваши статусы этой стихии +1 стак.",
   "SLAYTHEREQUIEM-PICK_PATH_BATTLEMAGE.title": "Боевой маг",
   "SLAYTHEREQUIEM-PICK_PATH_BATTLEMAGE.description": "Путь: Боевой маг. Любой Плащ стихии накидывает и два других; ваши атаки добавляют 2 урона стихией (огонь → холод → разряд).",
   "SLAYTHEREQUIEM-PICK_PATH_REFLECTOR.title": "Отражатель",
@@ -698,5 +698,9 @@
   "SLAYTHEREQUIEM-NODE_ILLUSION_I_I.title": "Иллюзия II",
   "SLAYTHEREQUIEM-NODE_ILLUSION_I_I.description": "Ярус {Value}. Очков навыка: {Cost}.\nИзучение школы Иллюзии.\n+1 владение школой Иллюзии.",
   "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.title": "Иллюзия III",
-  "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.description": "Ярус {Value}. Очков навыка: {Cost}.\nИзучение школы Иллюзии.\n+1 владение школой Иллюзии."
+  "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.description": "Ярус {Value}. Очков навыка: {Cost}.\nИзучение школы Иллюзии.\n+1 владение школой Иллюзии.",
+  "SLAYTHEREQUIEM-HUNTING_SHOT.title": "Охотничий выстрел",
+  "SLAYTHEREQUIEM-HUNTING_SHOT.description": "[gold]Оружейная[/gold]. Нанести {Damage:diff()} урона.\nС луком или арбалетом — наложить {SunderPower:diff()} [gold]Раскола[/gold].",
+  "SLAYTHEREQUIEM-COVERING_SHOT.title": "Прикрывающий выстрел",
+  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Оружейная[/gold]. Нанести {Damage:diff()} урона. Получить {Block:diff()} [gold]Блока[/gold].\nС луком или арбалетом — взять 1 карту."
 }

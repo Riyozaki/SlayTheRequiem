@@ -52,5 +52,8 @@
   "OPTION_SLAYTHEREQUIEM_TAVERN.description": "A mentor drinks here. Skill node for [gold]{SkillPrice}[/gold] gold (bought {Bought}/3), weapon lesson for [gold]{LessonPrice}[/gold]. Costs no camp points.",
   "OPTION_SLAYTHEREQUIEM_TAVERN.descriptionDisabled": "The mentor has nothing you can afford.",
   "SLAYTHEREQUIEM_TAVERN_PROMPT": "What will the mentor teach? (close to leave)",
-  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Choose the skill node"
+  "SLAYTHEREQUIEM_MENTOR_PROMPT": "Choose the skill node",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.title": "Form rites",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.description": "Choose a compatible form or earned chain step. {Cost} camp point on success (left: {Points}). No random event required. Cancellation is free.",
+  "OPTION_SLAYTHEREQUIEM_FORM_RITES.descriptionDisabled": "No compatible or earned form is available in this act. {Cost} camp point on success (left: {Points})."
 }

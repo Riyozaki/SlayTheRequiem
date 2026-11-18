@@ -24,6 +24,7 @@ from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
 from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
 from loc_creation import CREATION_SETTINGS, CREATION_TIPS  # noqa: E402
+from loc_builds import BUILD_CARDS, BUILD_REST_SITE, BUILD_TIPS  # noqa: E402
 from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
 from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
@@ -216,7 +217,7 @@ def check_unique() -> None:
     """Один класс — один текст. Повтор с другим текстом молча перетирал первый
     (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
     tables = {
-        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS,
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS,
         "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS,
         "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
                   + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS,
@@ -236,7 +237,7 @@ def main() -> None:
     check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
@@ -278,13 +279,13 @@ def main() -> None:
             potions[f"{k}.description"] = (ed, rd)[li]
         n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
         n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
-        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang], **M5_SHOP_REST_SITE[lang]})
+        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang], **M5_SHOP_REST_SITE[lang], **BUILD_REST_SITE[lang]})
         n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang], **M5_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
         n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
         n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
-        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang], **CREATION_TIPS[lang]}.items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang], **CREATION_TIPS[lang], **BUILD_TIPS[lang]}.items()})
         n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 

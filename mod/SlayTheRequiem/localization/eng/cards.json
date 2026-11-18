@@ -512,7 +512,7 @@
   "SLAYTHEREQUIEM-PICK_PATH_MYSTIC_ARCHER.title": "Mystic Archer",
   "SLAYTHEREQUIEM-PICK_PATH_MYSTIC_ARCHER.description": "Path of the Mystic Archer. Bow and crossbow shots apply the element of your last spell (2 stacks).",
   "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.title": "Element Lord",
-  "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.description": "Path of the Element Lord. Choose an element: its signature spell joins your deck; your statuses of that element +1 stack.",
+  "SLAYTHEREQUIEM-PICK_PATH_ELEMENT_LORD.description": "Path of the Element Lord. Choose an element: its signature spell joins your deck and this essence teaches that spell at full mastery (no other school grants); your statuses of that element +1 stack.",
   "SLAYTHEREQUIEM-PICK_PATH_BATTLEMAGE.title": "Battlemage",
   "SLAYTHEREQUIEM-PICK_PATH_BATTLEMAGE.description": "Path of the Battlemage. Any elemental Cloak puts on the other two as well; your attacks add 2 elemental damage (fire → frost → shock).",
   "SLAYTHEREQUIEM-PICK_PATH_REFLECTOR.title": "Reflector",
@@ -698,5 +698,9 @@
   "SLAYTHEREQUIEM-NODE_ILLUSION_I_I.title": "Illusion II",
   "SLAYTHEREQUIEM-NODE_ILLUSION_I_I.description": "Rank {Value}. Costs {Cost} skill point(s).\nStudy of Illusion.\n+1 Illusion mastery.",
   "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.title": "Illusion III",
-  "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.description": "Rank {Value}. Costs {Cost} skill point(s).\nStudy of Illusion.\n+1 Illusion mastery."
+  "SLAYTHEREQUIEM-NODE_ILLUSION_II_I.description": "Rank {Value}. Costs {Cost} skill point(s).\nStudy of Illusion.\n+1 Illusion mastery.",
+  "SLAYTHEREQUIEM-HUNTING_SHOT.title": "Hunting Shot",
+  "SLAYTHEREQUIEM-HUNTING_SHOT.description": "[gold]Weapon[/gold]. Deal {Damage:diff()} damage.\nWith a bow or crossbow, apply {SunderPower:diff()} [gold]Sunder[/gold].",
+  "SLAYTHEREQUIEM-COVERING_SHOT.title": "Covering Shot",
+  "SLAYTHEREQUIEM-COVERING_SHOT.description": "[gold]Weapon[/gold]. Deal {Damage:diff()} damage. Gain {Block:diff()} [gold]Block[/gold].\nWith a bow or crossbow, draw 1 card."
 }

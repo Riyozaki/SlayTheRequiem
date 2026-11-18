@@ -61,8 +61,8 @@ public static class PathRewardRules
         var eligible = ModelDb.AllCardPools.OfType<PathCardPool>().SelectMany(p => p.AllCards)
             .Where(c => c is IPathCard pc && pc.Path == path)
             .ToList();
-        if (path == HeroPath.ElementLord)
-            eligible.AddRange(ElementLordSpells.Select(t => ModelDb.GetById<CardModel>(ModelDb.GetId(t))));
+        if (Paths.Of(player) is ElementLordEssence element)
+            eligible.Add(ModelDb.GetById<CardModel>(ModelDb.GetId(element.SignatureType)));
         if (eligible.Count == 0) return false;
         var rng = player.PlayerRng.Rewards;
         var changed = false;
@@ -70,8 +70,9 @@ public static class PathRewardRules
         {
             if (rng.NextInt(100) >= TransformationRules.PathCardRewardPercent) continue;
             var taken = cardRewardOptions.Select(o => o.Card.CanonicalInstance).ToHashSet();
-            var pick = rng.NextItem(eligible.Where(e => !taken.Contains(e)).OrderBy(c => c.Id.Entry, StringComparer.Ordinal));
-            if (pick == null) break;
+            var pick = rng.NextItem(eligible.Where(e => e.Rarity == option.Card.Rarity && !taken.Contains(e))
+                .OrderBy(c => c.Id.Entry, StringComparer.Ordinal));
+            if (pick == null) continue;
             RewardSwap.Replace(option, pick, player);
             changed = true;
         }

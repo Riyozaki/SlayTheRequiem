@@ -390,14 +390,22 @@ public sealed class WinddancerBackground : BackgroundRelic
         IsOwnAttack(dealer, props, cardSource) ? OriginRules.WinddancerBonus(_cardsThisTurn) : 0m;
 }
 
-/// <summary>Охотник: «выстрелы» Безмолвной — Ножи (тег Shiv) — наносят +2 урона.</summary>
+/// <summary>Охотник: лук и Охотничий выстрел на старте; +2 к Ножам и оружейным атакам луком/арбалетом.</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class HunterBackground : BackgroundRelic
 {
     public const int ShotBonus = 2;
 
+    protected override async Task SetUpStart()
+    {
+        await GiveRelic<Equipment.HeavyBow>();
+        await ReplaceStarter<HuntingShot>(CardTag.Strike);
+    }
+
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
-        IsOwnAttack(dealer, props, cardSource) && cardSource!.Tags.Contains(CardTag.Shiv) ? ShotBonus : 0m;
+        IsOwnAttack(dealer, props, cardSource)
+        && BuildAccessRules.HunterBonus(cardSource!.Tags.Contains(CardTag.Shiv), Equipment.EquipmentCombatRules.IsWeaponAttack(cardSource),
+            Progression.HeroRecord.Of(Owner)?.MainHand ?? WeaponKind.None) ? ShotBonus : 0m;
 }
 
 /// <summary>
@@ -545,14 +553,14 @@ public sealed class EnchanterBackground : BackgroundRelic
     }
 }
 
-/// <summary>Призыватель: призывы +5 ♥ и +1 урона; «Призвать волка-духа» вместо Удара.</summary>
+/// <summary>Призыватель: призывы +5 ♥ и +1 урона; «Призванный клинок» вместо Удара (волк уже в основе Регента).</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class SummonerBackground : BackgroundRelic
 {
     public const int BonusHp = 5;
     public const int BonusDamage = 1;
 
-    protected override Task SetUpStart() => ReplaceStarter<ConjureSpiritWolf>(CardTag.Strike);
+    protected override Task SetUpStart() => ReplaceStarter<BoundBlade>(CardTag.Strike);
 
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)
     {
