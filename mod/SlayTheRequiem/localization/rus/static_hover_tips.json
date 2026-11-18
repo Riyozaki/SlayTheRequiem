@@ -545,5 +545,7 @@
   "SLAYTHEREQUIEM-UI.shelf.pending.title": "{Name}: перезарядка закончилась, возврат ещё не подтверждён. Эта же карта ожидает следующего хода владельца.",
   "SLAYTHEREQUIEM-UI.shelf.departed.title": "Перезарядка: {Name}",
   "SLAYTHEREQUIEM-UI.shelf.returnedHand.title": "Вернулся в руку: {Name}",
-  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Вернулся в сброс: {Name}"
+  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Вернулся в сброс: {Name}",
+  "SLAYTHEREQUIEM-RUN_PASSPORT_SHORTCUT.title": "F8 / нажатие правого стика: паспорт забега (если ввод не занят другим окном или действием)",
+  "SLAYTHEREQUIEM-RUN_PASSPORT_SHORTCUT.description": "F8 / нажатие правого стика: паспорт забега (если ввод не занят другим окном или действием)"
 }

@@ -61,7 +61,12 @@ internal class RequiemConfig : SimpleModConfig
     public static bool ColorElementalTitles { get; set; } = true;
 
     /// <summary>Кукла героя (docs/design/07 §8): в бою оружие и щит в руках цвета материала, аура брони. Только оформление.</summary>
-    public static bool ShowPaperDoll { get; set; } = true;
+    private static bool _showPaperDoll = true;
+    public static bool ShowPaperDoll
+    {
+        get => _showPaperDoll;
+        set { if (_showPaperDoll == value) return; _showPaperDoll = value; UI.RequiemMotion.SettingsChanged(); }
+    }
 
     /// <summary>
     /// Боевые эффекты Реквиема (M7 п. 4, art spec §5): вспышки стихий при ударах, надрыв, Слом, Уворот, Кличи, призыв, откат

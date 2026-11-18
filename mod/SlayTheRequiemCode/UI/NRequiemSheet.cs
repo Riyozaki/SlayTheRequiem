@@ -65,7 +65,7 @@ public partial class NRequiemSheet : Control, IScreenContext
     }
     public override void _Ready()
     {
-        Refresh(true, resetScroll: true); DefaultFocusedControl?.CallDeferred(Control.MethodName.GrabFocus);
+        Refresh(true, resetScroll: true); RequiemFocus.RestoreLater(FocusControls(), stillActive: OwnsModal);
     }
     public override void _Process(double delta)
     {
@@ -112,7 +112,7 @@ public partial class NRequiemSheet : Control, IScreenContext
         { _tabs[i].Modulate = i == _page ? RequiemKit.Gold : Colors.White; _tabs[i].Disabled = false; }
         _close.Disabled = false;
         var focus = FocusControls(); RequiemFocus.Wire(focus);
-        if (oldFocus >= 0 && IsInsideTree()) focus[Math.Min(oldFocus, focus.Count - 1)].CallDeferred(Control.MethodName.GrabFocus);
+        if (oldFocus >= 0 && IsInsideTree()) RequiemFocus.RestoreLater(focus, oldFocus, OwnsModal);
         _scroll.SetDeferred(ScrollContainer.PropertyName.ScrollVertical, oldOffset);
     }
     private async Task Execute(Func<Task> action)
@@ -138,6 +138,7 @@ public partial class NRequiemSheet : Control, IScreenContext
         if (RequiemFocus.Scroll(this, input, _scroll)) return;
         RequiemFocus.Handle(this, input, _busy ? [] : FocusControls(), _busy ? null : Close);
     }
+    private bool OwnsModal() => IsInstanceValid(this) && !_closing && ReferenceEquals(NModalContainer.Instance?.OpenModal, this);
     private void Close() { if (!_busy) Dismiss(); }
     private void Dismiss()
     {

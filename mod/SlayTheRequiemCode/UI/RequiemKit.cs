@@ -85,12 +85,16 @@ public static class RequiemKit
     private static MotionState Motion(Control control) => Motions.GetValue(control, owner =>
     {
         var state = new MotionState();
-        RequiemMotion.Watch(owner, () =>
+        void Finish()
         {
-            if (RequiemMotion.Enabled || !GodotObject.IsInstanceValid(owner)) return;
-            RequiemMotion.Kill(state.Hover); state.Hover = null; owner.Scale = Vector2.One;
+            RequiemMotion.Kill(state.Hover); state.Hover = null;
+            if (!GodotObject.IsInstanceValid(owner)) return;
+            owner.Scale = Vector2.One;
             state.FinishEntry(owner); state.FinishDenied(owner);
-        });
+        }
+        RequiemMotion.Watch(owner, () => { if (!RequiemMotion.Enabled) Finish(); });
+        // A detached/re-entered control must not resume a half-hidden entry or a displaced denial pose.
+        owner.TreeExiting += Finish;
         return state;
     });
 

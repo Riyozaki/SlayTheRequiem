@@ -148,7 +148,8 @@ public partial class NHeroCreationScreen : Control, IScreenContext
     public override void _Ready()
     {
         RequiemFocus.Wire(_focus);
-        DefaultFocusedControl?.CallDeferred(Control.MethodName.GrabFocus);
+        RequiemFocus.RestoreLater(_focus, _focus.FindIndex(c => ReferenceEquals(c, DefaultFocusedControl)),
+            () => IsInstanceValid(this) && !_closing && ReferenceEquals(NModalContainer.Instance?.OpenModal, this));
     }
 
     public override void _Process(double delta)

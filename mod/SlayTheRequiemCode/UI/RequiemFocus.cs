@@ -9,8 +9,16 @@ public static class RequiemFocus
 {
     private sealed class Stick { internal ulong Last; }
     private static readonly ConditionalWeakTable<Control, Stick> Sticks = new();
-    private static bool Eligible(Control control) => GodotObject.IsInstanceValid(control) && !control.IsQueuedForDeletion()
-        && control.IsVisibleInTree() && control.FocusMode != Control.FocusModeEnum.None && control is not Button { Disabled: true };
+    private static bool Eligible(Control control)
+    {
+        if (!GodotObject.IsInstanceValid(control) || !control.IsInsideTree() || !control.IsVisibleInTree()
+            || control.FocusMode == Control.FocusModeEnum.None || control is Button { Disabled: true }) return false;
+        // QueueFree on a modal does not mark each descendant queued. A deferred restore must not focus
+        // a still-visible child of yesterday's modal after native OpenModal has already changed.
+        for (Node? node = control; node != null; node = node.GetParent())
+            if (node.IsQueuedForDeletion()) return false;
+        return true;
+    }
 
     public static void Wire(IReadOnlyList<Control> controls)
     {
@@ -23,6 +31,25 @@ public static class RequiemFocus
             enabled[i].FocusNeighborBottom = next; enabled[i].FocusNext = next;
             enabled[i].FocusNeighborLeft = previous; enabled[i].FocusNeighborRight = next;
         }
+    }
+
+    /// <summary>Refresh may remove the focused row or disable its offer. Restore only to a currently live,
+    /// visible, enabled target after layout; a queued/freed row from another refresh must never receive focus.</summary>
+    public static void RestoreLater(IReadOnlyList<Control> controls, int previousIndex = 0, Func<bool>? stillActive = null)
+    {
+        if (controls.Count == 0) return;
+        var start = Math.Clamp(previousIndex, 0, controls.Count - 1);
+        Callable.From(() =>
+        {
+            if (stillActive != null && !stillActive()) return;
+            for (var offset = 0; offset < controls.Count; offset++)
+            {
+                var target = controls[(start + offset) % controls.Count];
+                if (!Eligible(target)) continue;
+                target.GrabFocus();
+                return;
+            }
+        }).CallDeferred();
     }
 
     /// <summary>Long descriptions can exceed one viewport. Page keys/right stick scroll without moving focus.</summary>

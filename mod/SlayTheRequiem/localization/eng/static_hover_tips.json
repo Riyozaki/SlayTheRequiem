@@ -545,5 +545,7 @@
   "SLAYTHEREQUIEM-UI.shelf.pending.title": "{Name}: cooldown is over; return has not committed. The exact card remains due for the next owner turn.",
   "SLAYTHEREQUIEM-UI.shelf.departed.title": "On cooldown: {Name}",
   "SLAYTHEREQUIEM-UI.shelf.returnedHand.title": "Returned to hand: {Name}",
-  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Returned to discard: {Name}"
+  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Returned to discard: {Name}",
+  "SLAYTHEREQUIEM-RUN_PASSPORT_SHORTCUT.title": "F8 / right-stick click: run passport (when no other modal/action owns the input)",
+  "SLAYTHEREQUIEM-RUN_PASSPORT_SHORTCUT.description": "F8 / right-stick click: run passport (when no other modal/action owns the input)"
 }

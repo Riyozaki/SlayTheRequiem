@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using SlayTheRequiem.SlayTheRequiemCode.Cards;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
@@ -57,7 +58,7 @@ public partial class NShoutShelfBar : VBoxContainer
         if (_noticeLeft > 0)
         {
             _noticeLeft = Math.Max(0, _noticeLeft - delta);
-            if (_noticeLeft == 0) { _notice.Visible = false; Visible = _slots.Count > 0; }
+            if (_noticeLeft == 0) _notice.Visible = false;
         }
         _elapsed += delta;
         if (_elapsed < .2) return;
@@ -94,6 +95,7 @@ public partial class NShoutShelfBar : VBoxContainer
         }
         _removed.Clear();
         foreach (var card in _slots.Keys) if (!_present.Contains(card)) _removed.Add(card);
+        var restoreFocus = _removed.Any(card => _slots[card].Button.HasFocus());
         foreach (var card in _removed)
         {
             var slot = _slots[card]; _slots.Remove(card);
@@ -105,9 +107,19 @@ public partial class NShoutShelfBar : VBoxContainer
             else if (card.Pile?.Type == PileType.Discard) Notice("UI.shelf.returnedDiscard.title", card);
         }
         _details.Text = RequiemUi.TipText("UI.shelf.capacity.title", ("Used", entries.Count), ("Capacity", Shouts.Capacity(owner)));
-        _row.Visible = entries.Count > 0;
+        // Keep 0/capacity and the journal target available during combat, including after the last return.
+        // A focused card disappearing must not strand keyboard/gamepad focus on a queued-for-deletion button.
+        _row.Visible = true;
         _notice.Visible = _noticeLeft > 0;
-        Visible = entries.Count > 0 || _noticeLeft > 0;
+        Visible = true;
+        if (restoreFocus)
+        {
+            var combat = _combat;
+            RequiemFocus.RestoreLater(_slots.Values.Select(slot => (Control)slot.Button).Prepend(_details).ToArray(),
+                stillActive: () => IsInstanceValid(this) && IsInsideTree() && IsVisibleInTree()
+                    && ReferenceEquals(_owner, owner) && ReferenceEquals(_combat, combat)
+                    && NModalContainer.Instance?.OpenModal == null);
+        }
         _hadSnapshot = true;
     }
 

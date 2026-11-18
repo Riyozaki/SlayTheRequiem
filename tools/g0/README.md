@@ -105,7 +105,9 @@ Factory не проверяет число видимых holders и draw/shout 
 Для интерактивного воспроизведения: `str_trace on`, после — `str_trace off`. Приложить `[RunPassport]`:
 SHA/dirty, hashes DLL/PCK и dependencies/прочие моды, seed/location, героя, уровни сложности/Летописи,
 origin/background, requested/effective settings и источник snapshot, язык, разрешение/UI scale, new/continue/rollback.
-Плашка `Реквием: ВКЛ/ВЫКЛ/СБОЙ ПАТЧЕЙ` открывает эти сведения, не означает «сборка принята».
+Плашка `Реквием: ВКЛ/ВЫКЛ/СБОЙ ПАТЧЕЙ` открывает эти сведения в прокручиваемом native modal;
+`F8` / нажатие правого стика — тот же паспорт, если ввод не занят другим окном/действием.
+PageUp/PageDown / правый стик прокручивают содержимое; Esc/B закрывают окно. Это не означает «сборка принята».
 
 Обязательно отдельно: реальные награды/разгрузка/retry/skip; ложный Add/позднее исключение/оплата; legacy chest,
 вещи с charges/enchants/дублями; disk save/quit/Continue; **два клиента**, повтор/stale/double input и missing receipt;
@@ -119,9 +121,13 @@ Continue не ремонтирует partial commit. Сохранить логи
 
 ## 4. CI и публикация
 
-[Публичный CI](../../.github/workflows/ci.yml) проверяет Core/данные/syntax/Harmony declarations и synthetic installer contracts.
-Он **не** собирает мод с игрой и **не** экспортирует PCK. Core/TRX сохраняется как отдельный artifact; реальные
-counters проверяются и публикуются Core job. Пустой/пропущенный прогон не считается PASS.
+[Публичный CI](../../.github/workflows/ci.yml) проверяет Core/данные, grammar/дубли C# types по каждому `.csproj`,
+Harmony targets и synthetic installer/release contracts. Отдельный job компилирует и исполняет реальные production
+node/focus helpers в checksum-pinned **официальном Godot 4.5.1 mono**, без игровых DLL; описание и границы —
+[`tools/ci/Presentation/README.md`](../ci/Presentation/README.md). Его 100 helper cycles — не 100 открытий окон игры.
+Он **не** собирает мод с игрой и **не** экспортирует PCK; официальный Godot не подменяет MegaDot в G0.
+Core/TRX сохраняется как отдельный artifact; реальные counters проверяются и публикуются Core job.
+Пустой/пропущенный прогон не считается PASS; grammar/type gate не проверяет game API/member resolution.
 
 ### Ручной full-build workflow с легальной игрой
 

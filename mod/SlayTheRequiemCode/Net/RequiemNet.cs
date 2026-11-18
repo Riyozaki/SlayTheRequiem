@@ -1,4 +1,5 @@
 using BaseLib.Abstracts;
+using Godot;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
@@ -7,6 +8,7 @@ using MegaCrit.Sts2.Core.Nodes.Multiplayer;
 using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Runs;
+using SlayTheRequiem.SlayTheRequiemCode.UI;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Net;
 
@@ -74,9 +76,21 @@ public static class RequiemNet
     /// <summary>Окно «да/нет» с текстами из таблицы <c>relics</c>: ключи <c>{key}.{prefix}Body/Header/No/Yes</c>.</summary>
     public static async Task<bool> Confirm(string key, string prefix, Action<LocString>? fill = null)
     {
+        var run = State;
+        var container = NModalContainer.Instance;
+        if (run == null || container == null) return false;
+        bool Current() => GodotObject.IsInstanceValid(container) && container.IsInsideTree() && !container.IsQueuedForDeletion()
+            && ReferenceEquals(run, State);
+        // A journal/passport must not make a portal/Memory Stone offer disappear or leave an unattached
+        // popup waiting forever: native Add drops a second modal. Wait for the owning view, with no timeout
+        // or implicit player choice, and abandon only when its run/tree has actually gone away.
+        while (Current() && container.OpenModal != null)
+            await container.ToSignal(container.GetTree().CreateTimer(.1), SceneTreeTimer.SignalName.Timeout);
+        if (!Current()) return false;
         var popup = NGenericPopup.Create();
-        if (popup == null || NModalContainer.Instance == null) return false;
-        NModalContainer.Instance.Add(popup);
+        if (popup == null) return false;
+        container.Add(popup);
+        if (!ReferenceEquals(container.OpenModal, popup)) { RequiemNodes.Retire(popup); return false; }
         var body = new LocString("relics", $"{key}.{prefix}Body");
         fill?.Invoke(body);
         return await popup.WaitForConfirmation(body, new LocString("relics", $"{key}.{prefix}Header"),

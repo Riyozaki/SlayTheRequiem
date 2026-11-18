@@ -254,14 +254,14 @@ public static class HeroOverlays
         var sign = RequiemMode.IsInSystem(player) ? player.Relics.OfType<PathSign>().FirstOrDefault(s => s.IsEquipped) : null;
         var key = sign == null ? null : HeroLookRules.PathSignKey(sign.Path);
         var path = key == null ? null : $"ui/path_signs/{key}.png".ImagePath();
-        var existing = visuals.GetNodeOrNull<Sprite2D>(SignNode);
+        var existing = RequiemNodes.Find<Sprite2D>(visuals, SignNode);
         if (path == null || !VanillaArt.Exists(path))
         {
-            existing?.QueueFree();
+            RequiemNodes.Retire(existing);
             return;
         }
         if (existing != null && existing.GetMeta(KeyMeta, "").AsString() == key) return;
-        existing?.QueueFree();
+        RequiemNodes.Retire(existing);
         var texture = ResourceLoader.Load<Texture2D>(path, null, ResourceLoader.CacheMode.Reuse);
         if (texture == null) return;
         var banner = new Sprite2D
@@ -297,10 +297,10 @@ public static class HeroOverlays
         var rime = hero.GetPower<RimeOrbPower>()?.Amount ?? 0;
         var orbs = HeroLookRules.OrbSequence(steam, spark, rime);
         var key = string.Join(",", orbs);
-        var container = node.GetNodeOrNull<Node2D>(OrbsNode);
+        var container = RequiemNodes.Find<Node2D>(node, OrbsNode);
         if (orbs.Count == 0)
         {
-            container?.QueueFree();
+            RequiemNodes.Retire(container);
             return;
         }
         if (container != null && container.GetMeta(KeyMeta, "").AsString() == key) return;
@@ -317,7 +317,7 @@ public static class HeroOverlays
             container.Position = visuals.OrbPosition.Position * Mathf.Min(visuals.Scale.X, 1.25f);
             if (!isLocal) container.Position += Vector2.Up * 50f;
         }
-        foreach (var child in container.GetChildren()) child.QueueFree();
+        RequiemNodes.Clear(container);
         for (var i = 0; i < orbs.Count; i++)
         {
             var (x, y) = HeroLookRules.OrbSlot(i, TransformationRules.MaxOrbs, isLocal);

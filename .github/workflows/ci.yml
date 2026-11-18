@@ -77,6 +77,43 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  presentation-helpers:
+    name: Godot node/focus helpers · not game or full mod build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - name: Pinned public Godot mono (NOT the game's MegaDot)
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/str-godot-4.5.1-mono.zip"
+          curl --fail --location --retry 3 --output "$archive" https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip
+          echo "b61697dd6921da76e3d2358ab592263dfaae398d0ac1229e82eab7e4a7c36cbf  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/str-godot"
+          unzip -q "$archive" -d "$RUNNER_TEMP/str-godot"
+      - name: Actual headless production helper smoke (no game DLLs/assets, no gameplay/FPS claim)
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine=$(find "$RUNNER_TEMP/str-godot" -type f -name 'Godot*_mono_linux.x86_64' -print -quit)
+          test -n "$engine"
+          chmod +x "$engine"
+          python3 tools/ci/presentation_smoke.py --godot "$engine" --out .arena-ci/presentation
+      - name: Preserve bounded helper result only (not the engine or mod binaries)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-helpers-${{ github.sha }}
+          path: .arena-ci/presentation/summary.json
+          if-no-files-found: warn
+          retention-days: 30
+
   sim:
     name: Rules sim · Python
     runs-on: ubuntu-latest
@@ -114,8 +151,10 @@ jobs:
         run: python tools/ci/check_combat.py
       - name: Saved economy policy and opt-in observation wiring (source contracts, not native acceptance)
         run: python tools/ci/check_economy.py
-      - name: C# syntax (all mod files)
+      - name: C# syntax (all mod and tool files)
         run: python tools/ci/check_csharp_syntax.py
+      - name: C# type declarations across actual projects (not semantic game compilation)
+        run: python tools/ci/check_csharp_declarations.py
       - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)
         run: |
           python tools/art/build_vanilla_art.py --check

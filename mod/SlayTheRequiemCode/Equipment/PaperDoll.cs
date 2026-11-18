@@ -32,13 +32,13 @@ public static class PaperDoll
     private static readonly StringName KeyMeta = "requiem_doll";
     private const string ActionPose = "ActionPose";
     private static readonly ConditionalWeakTable<Node2D, Tween> Actions = new();
-    private sealed class LifeState { internal bool Dead; }
+    private sealed class LifeState { internal bool Dead, Watching; internal bool? Show; }
     private sealed class DeathFade { internal bool Dead; internal Tween? Tween; }
     private static readonly ConditionalWeakTable<NCreatureVisuals, LifeState> Life = new();
     private static readonly ConditionalWeakTable<Node2D, DeathFade> DeathFades = new();
     private static GradientTexture2D? _glow;
 
-    private static void SetDead(Node2D part, bool dead)
+    private static void SetDead(Node2D part, bool dead, bool animate = true)
     {
         var state = DeathFades.GetValue(part, owner =>
         {
@@ -46,22 +46,23 @@ public static class PaperDoll
             void Finish()
             {
                 RequiemMotion.Kill(next.Tween); next.Tween = null;
-                if (next.Dead) owner.SelfModulate = new Color(1, 1, 1, 0);
+                if (next.Dead) owner.Modulate = new Color(1, 1, 1, 0);
             }
             RequiemMotion.Watch(owner, () => { if (!RequiemMotion.Enabled) Finish(); });
             owner.TreeExiting += Finish;
             return next;
         });
         state.Dead = dead; RequiemMotion.Kill(state.Tween); state.Tween = null;
-        if (!dead) { part.SelfModulate = Colors.White; return; }
+        if (!dead) { part.Modulate = Colors.White; return; }
         if (part.GetNodeOrNull<Node2D>(ActionPose) is { } pose) ResetAction(pose);
-        // self_modulate is independent of aura pulses/material tint. The previous Modulate fade raced them.
-        if (RequiemMotion.Enabled && part.IsInsideTree())
+        // Fade the parent layer: SelfModulate on an empty Node2D does NOT affect its weapon/aura children.
+        // Child glow/metal tints stay independent and are multiplied by this parent alpha.
+        if (animate && RequiemMotion.Enabled && part.IsInsideTree())
         {
             state.Tween = part.CreateTween();
-            state.Tween.TweenProperty(part, "self_modulate:a", 0f, 0.6);
+            state.Tween.TweenProperty(part, "modulate:a", 0f, 0.6);
         }
-        else part.SelfModulate = new Color(1, 1, 1, 0);
+        else part.Modulate = new Color(1, 1, 1, 0);
     }
 
     private static void ResetAction(Node2D pose)
@@ -95,6 +96,19 @@ public static class PaperDoll
         {
             var visuals = node.Visuals;
             if (visuals == null || !GodotObject.IsInstanceValid(visuals)) return;
+            var life = Life.GetValue(visuals, _ => new LifeState());
+            if (!life.Watching)
+            {
+                life.Watching = true; // Watch can invoke immediately: commit the guard BEFORE subscribing
+                life.Show = RequiemConfig.ShowPaperDoll;
+                RequiemMotion.Watch(visuals, () =>
+                {
+                    var show = RequiemConfig.ShowPaperDoll;
+                    if (life.Show == show) return;
+                    life.Show = show;
+                    Refresh(player, node);
+                });
+            }
             var on = RequiemConfig.ShowPaperDoll && RequiemMode.IsInSystem(player);
             var beast = player.Creature.GetPower<BeastFormPower>() != null;
             var weapons = on && PaperDollRules.ShowsWeapons(OwnArtAnimator.IsOwnArt(visuals), beast);
@@ -145,9 +159,9 @@ public static class PaperDoll
         var art = PaperDollRules.WeaponArt(kind);
         var material = item?.EffectiveMaterial ?? ItemMaterial.None;
         var key = art == null ? null : $"{art}:{material}";
-        var existing = visuals.GetNodeOrNull<Node2D>(name);
+        var existing = RequiemNodes.Find<Node2D>(visuals, name);
         if (existing != null && key != null && existing.GetMeta(KeyMeta, "").AsString() == key) return;
-        existing?.QueueFree();
+        RequiemNodes.Retire(existing);
         if (art == null) return;
         var baseTexture = Load(DollPath(art));
         var metalTexture = Load(DollPath(art + "_metal"));
@@ -197,6 +211,7 @@ public static class PaperDoll
             glint.TweenProperty(metal, "self_modulate", Colors.White, 0.35);
             return [sway, glint];
         });
+        if (Life.GetValue(visuals, _ => new LifeState()).Dead) SetDead(holder, true, animate: false);
     }
 
     // ───── аура брони ─────
@@ -223,9 +238,9 @@ public static class PaperDoll
     private static void SetAura(NCreatureVisuals visuals, ArmorAura aura)
     {
         var key = aura.IsVisible ? $"{aura.Class}:{aura.Material}:{aura.Strength:0.00}" : null;
-        var existing = visuals.GetNodeOrNull<Node2D>(AuraNode);
+        var existing = RequiemNodes.Find<Node2D>(visuals, AuraNode);
         if (existing != null && key != null && existing.GetMeta(KeyMeta, "").AsString() == key) return;
-        existing?.QueueFree();
+        RequiemNodes.Retire(existing);
         if (key == null) return;
 
         var style = PaperDollRules.StyleFor(aura.Class);
@@ -264,6 +279,7 @@ public static class PaperDoll
             return [pulse, breathe];
         }, effectsOnly: true);
         if (PaperDollRules.HasSmoke(aura.Material)) AddSmoke(root, texture, bounds.Size);
+        if (Life.GetValue(visuals, _ => new LifeState()).Dead) SetDead(root, true, animate: false);
     }
 
     /// <summary>Бездонное: три тёмных клуба дыма поднимаются и тают.</summary>
@@ -361,17 +377,6 @@ public static class PaperDollTriggerPatch
     public static void Postfix(NCreature __instance, string trigger)
     {
         if (__instance.Entity?.Player != null) PaperDoll.OnTrigger(__instance, trigger);
-    }
-}
-
-/// <summary>У спрайтовых обликов смерть идёт без триггера «Dead» — гасим куклу и здесь.</summary>
-[HarmonyPatch(typeof(NCreature), nameof(NCreature.StartDeathAnim))]
-public static class PaperDollDeathPatch
-{
-    [HarmonyPrefix]
-    public static void Prefix(NCreature __instance)
-    {
-        if (__instance.Entity?.Player != null) PaperDoll.OnTrigger(__instance, "Dead");
     }
 }
 

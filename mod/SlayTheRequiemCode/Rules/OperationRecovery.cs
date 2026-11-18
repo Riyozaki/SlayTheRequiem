@@ -131,9 +131,13 @@ public static class OperationRecovery
             if (cp == null) { NRequiemToast.Show(RequiemUi.TipText("RECOVERY_UNAVAILABLE.title")); return; }
             if (state.Players.Select(TravelPack.Of).OfType<TravelPack>().Any(p => InventoryGate.IsMutating(p.Owner)))
             { NRequiemToast.Show(RequiemUi.TipText("RECOVERY_BUSY.title")); return; }
+            // Native Add silently drops a second modal. Never wait on an unattached confirmation forever.
+            if (NModalContainer.Instance is not { OpenModal: null } container)
+            { NRequiemToast.Show(RequiemUi.TipText("RECOVERY_BUSY.title")); return; }
             var popup = NGenericPopup.Create();
-            if (popup == null || NModalContainer.Instance == null) return;
-            NModalContainer.Instance.Add(popup);
+            if (popup == null) return;
+            container.Add(popup);
+            if (!ReferenceEquals(container.OpenModal, popup)) { RequiemNodes.Retire(popup); return; }
             var body = RequiemUi.Tip("RECOVERY_BODY.title"); body.Add("Floor", cp.Floor);
             if (!await popup.WaitForConfirmation(body, RequiemUi.Tip("RECOVERY_HEADER.title"),
                 RequiemUi.Tip("RUN_PASSPORT_CLOSE.title"), RequiemUi.Tip("RECOVERY_RESTORE.title"))) return;

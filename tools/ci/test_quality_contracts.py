@@ -173,6 +173,76 @@ class QualitySourceContracts(unittest.TestCase):
         self.assertNotRegex(code, r"(?:RequiemVfx|RequiemSounds)\.Enabled")
         self.assertNotIn("GetChildren()", code)
 
+    def test_named_overlays_detach_before_deferred_free_and_never_reuse_queued_nodes(self):
+        helper = source("UI/RequiemNodes.cs")
+        self.assertLess(helper.index("RemoveChild(child)"), helper.index("child.QueueFree()"))
+        self.assertIn("!GodotObject.IsInstanceValid(child)", helper)
+        self.assertIn("child.IsQueuedForDeletion()", helper)
+        for path in ("Equipment/PaperDoll.cs", "Transformations/HeroLooks.cs"):
+            code = source(path)
+            self.assertIn("RequiemNodes.Find<", code)
+            self.assertIn("RequiemNodes.Retire(existing)", code)
+            self.assertNotIn("existing?.QueueFree()", code)
+        self.assertIn("RequiemNodes.Clear(container)", source("Transformations/HeroLooks.cs"))
+
+    def test_equipment_death_fades_descendants_and_refresh_keeps_dead_state(self):
+        code = source("Equipment/PaperDoll.cs")
+        self.assertEqual(1, code.count("public static class PaperDollDeathPatch"))
+        self.assertIn('TweenProperty(part, "modulate:a"', code)
+        self.assertNotIn('TweenProperty(part, "self_modulate:a"', code)
+        self.assertIn("SetDead(holder, true, animate: false)", code)
+        self.assertIn("SetDead(root, true, animate: false)", code)
+        self.assertLess(code.index("life.Watching = true"), code.index("RequiemMotion.Watch(visuals"))
+        config = source("Config/RequiemConfig.cs")
+        setting = config.split("public static bool ShowPaperDoll", 1)[1].split("[ConfigEntry", 1)[0]
+        self.assertIn("SettingsChanged()", setting)
+        self.assertNotIn("ShowPaperDoll", source("Config/RunSettings.cs"))
+
+    def test_control_exit_cleans_motion_pose_not_just_setting_toggles(self):
+        code = source("UI/RequiemKit.cs")
+        self.assertIn("owner.TreeExiting += Finish", code)
+        self.assertIn("state.FinishEntry(owner); state.FinishDenied(owner)", code)
+        self.assertIn("owner.Scale = Vector2.One", code)
+
+    def test_focus_restore_is_eligible_deferred_and_owned_by_the_current_modal(self):
+        focus = source("UI/RequiemFocus.cs")
+        self.assertIn("node = node.GetParent()", focus)
+        self.assertIn("if (node.IsQueuedForDeletion()) return false", focus)
+        self.assertIn("if (stillActive != null && !stillActive()) return", focus)
+        self.assertLess(focus.index("if (!Eligible(target)) continue"), focus.index("target.GrabFocus()"))
+        for path in ("UI/NRequiemSheet.cs", "UI/NRunPassportScreen.cs", "UI/NHeroCreationScreen.cs"):
+            code = source(path)
+            self.assertIn("RequiemFocus.RestoreLater", code)
+            self.assertIn("NModalContainer.Instance?.OpenModal, this", code)
+            self.assertNotIn("CallDeferred(Control.MethodName.GrabFocus)", code)
+
+    def test_shelf_keeps_zero_capacity_label_and_restores_focus_after_return(self):
+        code = source("UI/NShoutShelfBar.cs")
+        self.assertIn("restoreFocus", code)
+        self.assertIn("RequiemFocus.RestoreLater", code)
+        self.assertIn(".Prepend(_details)", code)
+        self.assertIn("NModalContainer.Instance?.OpenModal == null", code)
+        self.assertNotIn("Visible = _slots.Count > 0", code)
+        self.assertNotIn("Visible = entries.Count > 0", code)
+
+    def test_passport_is_responsive_native_modal_and_recovery_never_waits_on_dropped_popup(self):
+        code = source("UI/NRunPassportScreen.cs")
+        badge = source("UI/NRunStatusBadge.cs")
+        self.assertIn("NRunPassportScreen.Show", badge)
+        self.assertNotIn("OffsetLeft = -520", badge)
+        self.assertNotIn("CustomMinimumSize = new Vector2(960", code)
+        for token in ("OpenModal: null", "IScreenContext", "RequiemFocus.Scroll", "RequiemFocus.Handle",
+                      "AnchorLeft = .05f", "_busy", "ReferenceEquals(_run, RequiemNet.State)"):
+            self.assertIn(token, code)
+        self.assertLess(code.index("Dismiss(); // release native OpenModal"), code.index("OperationRecovery.OfferRestore()"))
+        recovery = source("Rules/OperationRecovery.cs")
+        self.assertLess(recovery.index("OpenModal: null"), recovery.index("container.Add(popup)"))
+        self.assertLess(recovery.index("ReferenceEquals(container.OpenModal, popup)"), recovery.index("popup.WaitForConfirmation"))
+        confirm = source("Net/RequiemNet.cs").split("public static async Task<bool> Confirm", 1)[1]
+        self.assertIn("while (Current() && container.OpenModal != null)", confirm)
+        self.assertIn("ReferenceEquals(run, State)", confirm)
+        self.assertLess(confirm.index("ReferenceEquals(container.OpenModal, popup)"), confirm.index("popup.WaitForConfirmation"))
+
     def test_runtime_metrics_are_opt_in_and_bounded_not_a_synthetic_native_result(self):
         code = source("Debugging/TechnicalMetrics.cs")
         for token in ("Capacity = 1024", "native-game-opt-in", "GetTotalAllocatedBytes", "ObjectNodeCount",
