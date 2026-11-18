@@ -117,7 +117,9 @@ if (annotate)
     using (var gzip = new GZipStream(compressed, CompressionLevel.SmallestSize, leaveOpen: true)) gzip.Write(bundle);
     // Workflow-command annotations may be truncated near 4 KB and render escaped '+' differently.
     // Small URL-safe ASCII parts survive that path; reassembly must verify every part and the bundle hash.
-    const int chunkChars = 1800, maxParts = 40;
+    // A step retains at most ten notice annotations: one summary + at most nine parts.
+    // Keep each part well below the observed ~3.8 KB transport truncation as well.
+    const int chunkChars = 2800, maxParts = 9;
     var encoded = Convert.ToBase64String(compressed.ToArray()).Replace('+', '-').Replace('/', '_');
     var parts = (encoded.Length + chunkChars - 1) / chunkChars;
     var bundleHash = Convert.ToHexString(SHA256.HashData(bundle)).ToLowerInvariant();
