@@ -1,0 +1,130 @@
+HEAD: 8000886e9c52db78227972bdd4740ee71f7eca03
+Date: 2026-11-17 UTC
+Scope: source/static tests only; no full-mod build, game runtime, export, or co-op run.
+
+## sim
+$ python -m unittest discover -s tools/sim -v
+exit_code=0; seconds=0.91
+  row = next(self.reader)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 150 tests in 0.781s
+
+OK
+
+## loc
+$ python tools/ci/check_loc.py
+exit_code=0; seconds=0.11
+Моделей проверено: 1196; ошибок: 0
+
+## syntax
+$ python tools/ci/check_csharp_syntax.py
+exit_code=0; seconds=0.48
+230 files 0 errors
+
+## vanilla_art
+$ python tools/art/build_vanilla_art.py --check
+exit_code=0; seconds=0.1
+card          340/340  с ванильным артом
+power         118/118  с ванильным артом
+relic         203/203  с ванильным артом
+event           9/9    с ванильным артом
+enchantment     6/6    с ванильным артом
+
+## art_fit
+$ python tools/art/art_fit.py --check
+exit_code=0; seconds=0.2
+Арт карт: нарушений 0, повторов внутри мода 0, исключений с причиной 0
+Значки реликвий: нарушений 0, исключений с причиной 0, своих значков 197
+
+## events
+$ python tools/ci/check_events.py
+exit_code=0; seconds=0.03
+событий актов: 33 (FrozenBarrows 9, ClockworkDepths 6, BloodCourt 6, StarTower 6, Hive 3, Glory 3); событий узлов: 1; ошибок: 0
+
+## asset_manifest
+$ python tools/assets/asset_manifest.py --check
+exit_code=0; seconds=0.12
+вид           моделей   файлов   свои  ваниль    нет
+card              340      680     40     640      0
+power             118      236      0     236      0
+relic             203      609    591      18      0
+potion             74      148      0     148      0
+event               9        9      0       9      0
+act_event          34       34     34       0      0
+enchantment         6        6      0       6      0
+monster            86       86     38      48      0
+rest_option        13       13      0      13      0
+ui                  0      106    106       0      0
+итого             895     1951    833    1118      0
+
+## card_audit
+$ python tools/cards/audit_cards.py --check --out docs/plan/card-audit.md
+exit_code=0; seconds=0.25
+Карт: 340; ошибок: 0; предупреждений: 1
+
+## design_tables
+$ python tools/cards/design_tables.py --check
+exit_code=0; seconds=0.1
+Таблицы карт: актуальны
+
+## card_catalog
+$ python tools/cards/card_catalog.py --check
+exit_code=0; seconds=0.11
+docs/plan/card-catalog.md: актуален
+
+## pools
+$ python tools/pools/build_pools.py --check
+exit_code=0; seconds=0.12
+Пулы: изъято 22, открывается трансформациями 12
+
+## relics
+$ python tools/relics/build_relics.py --check
+exit_code=0; seconds=0.06
+Реликвий: 295 (остаются 277, в бижутерию 6, перерабатываются 12); ошибок: 0
+
+## boss_icons
+$ python tools/art/monsters/build_boss_icons.py --check
+exit_code=0; seconds=3.48
+значки боссов: 12 × 2 OK
+
+## scenes
+$ python tools/art/scenes/build_scenes.py --check
+exit_code=0; seconds=0.04
+сцены: 4, ошибок: 0
+
+## event_art
+$ python tools/art/events/build_events.py --check
+exit_code=0; seconds=0.09
+события: 34, ошибок: 0
+
+## act_art
+$ python tools/art/acts/build_acts.py --check
+exit_code=0; seconds=0.05
+фоны актов: 5 × 6, ошибок: 0
+
+## origins_art
+$ python tools/art/relics/draw_origins.py --check
+exit_code=0; seconds=0.04
+значки происхождений и предысторий: 10 + 31, ошибок: 0
+
+## relic_art
+$ python tools/art/relics/draw_relics.py --check
+exit_code=0; seconds=0.08
+свои значки реликвий (M7 п. 6): 156, ошибок: 0
+
+## card_art
+$ python tools/art/cards/draw_portraits.py --check
+exit_code=0; seconds=0.05
+свои портреты карт (M7 п. 6): 20, ошибок: 0
+
+## audio
+$ python tools/audio/build_sfx.py --check
+exit_code=0; seconds=0.24
+звуки: событий 19, строк таблицы 23 (fmod 15, game 1, own 7); своих звуков 7, 6.6 с; ошибок: 0
+
+## harmony
+$ python tools/ci/check_harmony_targets.py .arena/sts2-ref/decompiled
+Патчей проверено: 98; ошибок: 0

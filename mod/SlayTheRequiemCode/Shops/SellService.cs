@@ -1,6 +1,7 @@
 using MegaCrit.Sts2.Core.Entities.Players;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 
@@ -24,8 +25,9 @@ public static class SellService
         // Состав рюкзака мог измениться, пока экран был открыт.
         var still = Sellable(player).Where(i => items.Contains(i)).ToList();
         if (still.Count == 0) return Task.CompletedTask;
-        var gold = still.Sum(i => Value(i, trust, fence));
-        var ids = string.Join(",", still.Select(i => i.Id.Entry));
+        if (MerchantLedger.Of(player) is not { } ledger) return Task.CompletedTask;
+        var gold = still.Sum(i => Value(i, ledger.CurrentTrust, ledger.CurrentShop == ShopType.Fence));
+        var ids = string.Join(",", still.Select(InventoryIdentity.RelicKey));
         return ShopActions.Perform(player, ShopAction.Sell, gold, 0, ids);
     }
 }

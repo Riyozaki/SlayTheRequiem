@@ -1,0 +1,169 @@
+{
+  "recorded_at_utc": "2026-11-17T19:55:14.141118+00:00",
+  "kind": "targeted-source-follow-up-not-full-batch-or-game-build",
+  "git_sha": "ec598de3375af1dd61e3c6c0a7b524018187f7e6",
+  "dirty": true,
+  "source_tree_sha256": "1603a80599449af4ab07ad63e951abe98110501c928bf14fcd60767ee9fc6466",
+  "branch": "arena/1d7c3746-slaytherequiem",
+  "baseline_batch_snapshot": "source-snapshot.json",
+  "baseline_source_tree_sha256": "d6e4d2568e089b861c2ad58aa4bda46a7e8e87bc3809b04a72ec0583e7f0ec50",
+  "same_input_set": true,
+  "source_delta": [
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/TravelPack.cs",
+      "before_sha256": "4d3c79b1ac9a0089e39a85747e8bfbc52234b63f4d4064f17c657dd9ae02a2fb",
+      "after_sha256": "34cc87aeea15c0a47369ba9c7a5c3fb5a602bf2fcc671673e2d855aa5010ee0f"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs",
+      "before_sha256": "5b856e9357a2080eeb993280ef2aba2b9725b71cce2925ab95fb0b8a2841e573",
+      "after_sha256": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/CardAcquisition.cs",
+      "before_sha256": "d9da8ab2aff8c2a9ac3864b11248eb2e1d027d2d28884e10aad0037ce17ab9ca",
+      "after_sha256": "64f78e32be48bf1e1615f1d17dc5a6677669a72e00adabc65fa0c205b2969020"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/DeferredRewardScope.cs",
+      "before_sha256": "e1406fdae5ea752dcbb8bb248f0a47f390672bdb827d5b91e1c2310bec103a09",
+      "after_sha256": "d19ae94769e53625634c4c7e4bb3d99afe9d858f6099daf36022104833f30bbf"
+    }
+  ],
+  "check_dependencies": {
+    "tree-sitter": "0.26.1",
+    "tree-sitter-c-sharp": "0.23.5",
+    "Pillow": "13.0.0",
+    "numpy": "2.4.6"
+  },
+  "reference_decompilation": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+  "checks": [
+    {
+      "name": "csharp_syntax",
+      "command": [
+        "/usr/bin/python3",
+        "tools/ci/check_csharp_syntax.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.562,
+      "output_tail": [
+        "250 files 0 errors"
+      ]
+    },
+    {
+      "name": "harmony_targets",
+      "command": [
+        "/usr/bin/python3",
+        "tools/ci/check_harmony_targets.py",
+        ".arena/sts2-ref/decompiled"
+      ],
+      "exit_code": 0,
+      "seconds": 0.08,
+      "output_tail": [
+        "Патчей проверено: 112; ошибок: 0"
+      ]
+    },
+    {
+      "name": "g0_synthetic_contracts",
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/g0",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 0.128,
+      "output_tail": [
+        "test_non_object_installed_manifests_are_explicit_failures (test_mod_build.PreflightTests.test_non_object_installed_manifests_are_explicit_failures) ... ok",
+        "test_sdk_cannot_be_replaced_with_a_runtime_or_next_major (test_mod_build.PreflightTests.test_sdk_cannot_be_replaced_with_a_runtime_or_next_major) ... ok",
+        "test_pinned_dependencies_agree_with_preflight_and_manifest (test_mod_build.SourceContractTests.test_pinned_dependencies_agree_with_preflight_and_manifest) ... ok",
+        "test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source (test_mod_build.SourceContractTests.test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source) ... ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 29 tests in 0.041s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "rules_sim",
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/sim",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 0.954,
+      "output_tail": [
+        "test_shipped_table (test_requiem_rules.VanillaRelics.test_shipped_table) ... /usr/lib/python3.11/csv.py:111: ResourceWarning: unclosed file <_io.TextIOWrapper name='<workspace>/tools/sim/../../mod/SlayTheRequiem/data/vanilla_relics.csv' mode='r' encoding='utf-8'>",
+        "  row = next(self.reader)",
+        "ResourceWarning: Enable tracemalloc to get the object allocation traceback",
+        "ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 150 tests in 0.894s",
+        "",
+        "OK"
+      ],
+      "resource_warning_occurrences": 1742,
+      "skipped": 0
+    },
+    {
+      "name": "localization_coverage",
+      "command": [
+        "/usr/bin/python3",
+        "tools/ci/check_loc.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.151,
+      "output_tail": [
+        "Моделей проверено: 1204; ошибок: 0"
+      ]
+    },
+    {
+      "name": "tracked_diff_whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.028,
+      "output_tail": []
+    },
+    {
+      "name": "integrity_source_manifest",
+      "exit_code": 0,
+      "summary": "55 unique source cases with definitions; manifest hash matches; compiled=false executed=false"
+    }
+  ],
+  "failed": 0,
+  "source_case_count": 55,
+  "source_cases_compiled": false,
+  "source_cases_executed": false,
+  "environment_tools": {
+    "dotnet": false,
+    "godot": false,
+    "megadot": false
+  },
+  "not_executed": [
+    "full semantic mod build",
+    "dotnet test",
+    "Godot import",
+    "PCK export and isolated loader",
+    "str_integrity",
+    "str_factory",
+    "game and visual acceptance",
+    "disk Continue/rollback",
+    "two clients"
+  ],
+  "artifact_hashes": null,
+  "build_export_passport": false
+}

@@ -1,0 +1,172 @@
+{
+  "count": 896,
+  "decode_errors": [],
+  "dimensions": {
+    "acts (2036, 1440)": 15,
+    "acts (2048, 960)": 10,
+    "acts (3072, 1440)": 5,
+    "card_portraits (1000, 760)": 21,
+    "card_portraits (250, 190)": 21,
+    "events (1720, 807)": 34,
+    "map (256, 256)": 24,
+    "map (64, 64)": 40,
+    "monsters (220, 280)": 1,
+    "monsters (240, 300)": 2,
+    "monsters (240, 330)": 2,
+    "monsters (260, 320)": 1,
+    "monsters (270, 360)": 1,
+    "monsters (270, 380)": 1,
+    "monsters (280, 340)": 1,
+    "monsters (280, 360)": 1,
+    "monsters (280, 380)": 1,
+    "monsters (300, 220)": 2,
+    "monsters (300, 360)": 1,
+    "monsters (300, 400)": 5,
+    "monsters (340, 240)": 1,
+    "monsters (360, 280)": 1,
+    "monsters (400, 520)": 2,
+    "monsters (420, 540)": 2,
+    "monsters (440, 520)": 4,
+    "monsters (440, 540)": 9,
+    "monsters (460, 520)": 2,
+    "monsters (480, 560)": 4,
+    "monsters (480, 580)": 2,
+    "monsters (500, 520)": 2,
+    "monsters (500, 540)": 1,
+    "monsters (510, 560)": 1,
+    "monsters (520, 480)": 2,
+    "monsters (520, 500)": 4,
+    "monsters (640, 560)": 2,
+    "powers (256, 256)": 1,
+    "powers (64, 64)": 1,
+    "relics (256, 256)": 198,
+    "relics (85, 85)": 394,
+    "relics (94, 94)": 2,
+    "ui (128, 128)": 1,
+    "ui (140, 260)": 40,
+    "ui (600, 860)": 4,
+    "ui (64, 64)": 15,
+    "ui (96, 150)": 12
+  },
+  "duplicates": [
+    [
+      "relics/act_ledger_outline.png",
+      "relics/barrow_map_outline.png"
+    ],
+    [
+      "relics/amulet_of_anvil_father_outline.png",
+      "relics/amulet_of_hearth_mother_outline.png",
+      "relics/amulet_of_mercy_shield_outline.png",
+      "relics/amulet_of_mirror_maiden_outline.png",
+      "relics/amulet_of_scroll_keeper_outline.png",
+      "relics/amulet_of_sun_archer_outline.png",
+      "relics/amulet_of_threshold_warden_outline.png",
+      "relics/amulet_of_thunder_crowned_outline.png",
+      "relics/amulet_of_wind_mistress_outline.png",
+      "relics/amulet_of_winged_hour_outline.png"
+    ],
+    [
+      "relics/ashborn_origin_outline.png",
+      "relics/highborn_origin_outline.png",
+      "relics/mistborn_origin_outline.png"
+    ],
+    [
+      "relics/assassin_essence_outline.png",
+      "relics/barbarian_essence_outline.png",
+      "relics/blightbringer_essence_outline.png",
+      "relics/mystic_archer_essence_outline.png",
+      "relics/paladin_essence_outline.png",
+      "relics/reborn_essence_outline.png"
+    ],
+    [
+      "relics/battlemage_essence_outline.png",
+      "relics/black_knight_essence_outline.png",
+      "relics/champion_essence_outline.png",
+      "relics/element_lord_essence_outline.png",
+      "relics/medium_essence_outline.png",
+      "relics/monk_essence_outline.png",
+      "relics/reflector_essence_outline.png"
+    ],
+    [
+      "relics/blessing_of_anvil_father_outline.png",
+      "relics/blessing_of_hearth_mother_outline.png",
+      "relics/blessing_of_mercy_shield_outline.png",
+      "relics/blessing_of_mirror_maiden_outline.png",
+      "relics/blessing_of_scroll_keeper_outline.png",
+      "relics/blessing_of_sun_archer_outline.png",
+      "relics/blessing_of_threshold_warden_outline.png",
+      "relics/blessing_of_thunder_crowned_outline.png",
+      "relics/blessing_of_wind_mistress_outline.png",
+      "relics/blessing_of_winged_hour_outline.png"
+    ],
+    [
+      "relics/citadel_origin_outline.png",
+      "relics/forgeblood_origin_outline.png",
+      "relics/frostborn_origin_outline.png"
+    ],
+    [
+      "relics/marshborn_origin_outline.png",
+      "relics/moonborn_origin_outline.png",
+      "relics/thicketborn_origin_outline.png"
+    ],
+    [
+      "relics/merchant_ledger_outline.png",
+      "relics/treatise_of_alteration_outline.png",
+      "relics/treatise_of_conjuration_outline.png",
+      "relics/treatise_of_destruction_outline.png",
+      "relics/treatise_of_illusion_outline.png",
+      "relics/treatise_of_restoration_outline.png"
+    ],
+    [
+      "relics/militia_cuirass_outline.png",
+      "relics/smuggler_hauberk_outline.png"
+    ],
+    [
+      "relics/omen_of_the_bastion_outline.png",
+      "relics/omen_of_the_blade_outline.png",
+      "relics/omen_of_the_burden_outline.png",
+      "relics/omen_of_the_eye_outline.png",
+      "relics/omen_of_the_rite_outline.png",
+      "relics/omen_of_the_serpent_outline.png",
+      "relics/omen_of_the_shade_outline.png",
+      "relics/omen_of_the_sponge_outline.png",
+      "relics/omen_of_the_trickster_outline.png",
+      "relics/omen_of_the_voice_outline.png"
+    ],
+    [
+      "relics/ring_of_clear_mind_outline.png",
+      "relics/ring_of_hoarfrost_outline.png",
+      "relics/ring_of_iron_skin_outline.png",
+      "relics/ring_of_magicka_outline.png",
+      "relics/ring_of_quick_breath_outline.png",
+      "relics/ring_of_stamina_outline.png",
+      "relics/ring_of_the_drunkard_outline.png",
+      "relics/ring_of_the_pyromancer_outline.png",
+      "relics/ring_of_the_serpent_smile_outline.png",
+      "relics/ring_of_the_summoner_outline.png",
+      "relics/ring_of_the_witch_hunter_outline.png"
+    ],
+    [
+      "relics/ring_of_the_faceless_thief_outline.png",
+      "relics/ring_of_the_viceroy_outline.png"
+    ],
+    [
+      "relics/robe_of_anvil_father_outline.png",
+      "relics/robe_of_hearth_mother_outline.png",
+      "relics/robe_of_scroll_keeper_outline.png",
+      "relics/robe_of_threshold_warden_outline.png",
+      "relics/robe_of_thunder_crowned_outline.png",
+      "relics/robe_of_wind_mistress_outline.png"
+    ],
+    [
+      "relics/robe_of_mercy_shield_outline.png",
+      "relics/robe_of_mirror_maiden_outline.png",
+      "relics/robe_of_sun_archer_outline.png",
+      "relics/robe_of_winged_hour_outline.png"
+    ],
+    [
+      "relics/smuggler_coif_outline.png",
+      "relics/stalker_hood_outline.png"
+    ]
+  ]
+}

@@ -138,7 +138,8 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
         foreach (var card in cards.ToList()) await CardCmd.TransformToRandom(card, Rng, CardPreviewStyle.EventLayout);
     }
 
-    protected Task Curse<T>() where T : CardModel => CardPileCmd.AddCurseToDeck<T>(Owner!);
+    // Forced curse/status policy: exempt only from OUR burden rule; respect every other veto and retain a saved claim.
+    protected Task Curse<T>() where T : CardModel => Rules.CardAcquisition.AddOrDefer(Owner!.RunState.CreateCard<T>(Owner!));
 
     /// <summary>Чары мода на выбранную карту (Пламенная, Морозная…), как у Зачарования в лагере.</summary>
     protected async Task Enchant<T>(bool attacksOnly) where T : RequiemCardEnchantment
@@ -153,30 +154,55 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
     protected bool HasEnchantable(bool attacksOnly) =>
         Owner != null && Owner.Deck.Cards.Any(c => c.Enchantment == null && (!attacksOnly || c.Type == CardType.Attack));
 
-    protected Task CardReward() => RewardsCmd.OfferCustom(Owner!, [
-        new CardReward(CardCreationOptions.ForNonCombatWithDefaultOdds([Owner!.Character.CardPool]), 3, Owner!),
-    ]);
-
-    /// <summary>Выбор одного из <paramref name="count"/> заклинаний, доступных герою по владению (как в Чародейской лавке).</summary>
-    protected async Task OfferSpells(int count)
+    protected async Task<bool> CardReward()
     {
-        var owner = Owner!;
-        var pool = ShopStock.SpellCandidates(owner);
-        var cards = new List<CardModel>();
-        for (var i = 0; i < count && pool.Count > 0; i++)
+        var reward = new CardReward(CardCreationOptions.ForNonCombatWithDefaultOdds([Owner!.Character.CardPool]), 3, Owner!);
+        await RewardsCmd.OfferCustom(Owner!, [reward]);
+        return reward.SuccessfullySelected;
+    }
+
+    private bool _spellOfferInFlight;
+
+    /// <summary>Native synchronized offer; an optional event price is checked after selection and paid on actual Add.</summary>
+    protected async Task<bool> OfferSpells(int count, int price = 0)
+    {
+        if (_spellOfferInFlight) return false;
+        _spellOfferInFlight = true;
+        try
         {
-            var canonical = pool[Roll(pool.Count)];
-            pool.Remove(canonical);
-            cards.Add(owner.RunState.CreateCard(canonical, owner));
+            var owner = Owner!;
+            var room = owner.RunState.CurrentRoom;
+            var pool = ShopStock.SpellCandidates(owner);
+            var cards = new List<CardModel>();
+            for (var i = 0; i < count && pool.Count > 0; i++)
+            {
+                var canonical = pool[Roll(pool.Count)];
+                pool.Remove(canonical);
+                cards.Add(owner.RunState.CreateCard(canonical, owner));
+            }
+            var reward = cards.Count == 0
+                ? new CardReward(CardCreationOptions.ForNonCombatWithDefaultOdds([owner.Character.CardPool]), 3, owner)
+                : new CardReward(cards, CardCreationSource.Other, owner,
+                    CardCreationOptions.ForNonCombatWithDefaultOdds([owner.Character.CardPool]));
+            using var purchase = price > 0 ? new Rules.RewardPurchase(reward, price, Id.Entry,
+                () => Owner == owner && ReferenceEquals(room, owner.RunState.CurrentRoom)) : null;
+            try
+            {
+                await RewardsCmd.OfferCustom(owner, [reward]);
+                return purchase?.HasCommitted == true || reward.SuccessfullySelected;
+            }
+            catch (Exception e) when (purchase?.HasCommitted == true)
+            {
+                // Card/payment already happened. Finish the event once; do not sell another copy on retry.
+                Rules.InventoryGate.Block(owner, $"Paid event reward {Id}: {e}");
+                return true;
+            }
+            finally
+            {
+                foreach (var card in cards.Concat(reward.Cards).Distinct()) Rules.CardAcquisition.CleanUncommitted(card, owner);
+            }
         }
-        if (cards.Count == 0)
-        {
-            await CardReward();
-            return;
-        }
-        var chosen = await CardSelectCmd.FromChooseACardScreen(new BlockingPlayerChoiceContext(), cards, owner, canSkip: true);
-        foreach (var card in cards.Where(c => c != chosen)) owner.RunState.RemoveCard(card);
-        if (chosen != null) CardCmd.PreviewCardPileAdd(await CardPileCmd.Add(chosen, PileType.Deck));
+        finally { _spellOfferInFlight = false; }
     }
 
     // ───── реликвии, зелья, снаряжение ─────

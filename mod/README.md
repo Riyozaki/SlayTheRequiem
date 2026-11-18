@@ -1,17 +1,37 @@
 # mod/ — код и ресурсы Slay the Requiem
 
-> ⚠️ **Pre-alpha (этапы 0–7 написаны).** Код написан по исходникам BaseLib и декомпилированной игре, но **ещё ни разу не компилировался и не
-> запускался в игре** (кроме `Core/` — он собирается и тестируется в CI): в среде, где он писался, нет .NET SDK и Slay the Spire 2. Ждите ошибок компиляции при первой сборке.
-> Чистая логика (`SlayTheRequiemCode/Core`) проверена Python-зеркалом (`tools/sim`) и покрыта xUnit-тестами.
+> ⚠️ **Pre-alpha · G0/G1 в работе, не приняты.** Историческая сборка `ec598de` и плейтест не проверяют новые изменения.
+> В этой среде full mod build, новый xUnit, настоящий PCK export и игра/кооп не запускались. Синтаксис/Harmony declarations,
+> Python и Core CI — отдельные слои. Текущий статус каждой системы — [единый реестр](../docs/plan/implementation-registry.md).
 
-## Сборка (по шаблону Alchyr/ModTemplate-StS2)
+## Сборка и чистая установка
 
-Нужно: Slay the Spire 2 (≥ 0.107), .NET 9 SDK, [MegaDot](https://megadot.megacrit.com/) (Godot 4.5.1 mono) для `.pck`, мод BaseLib ≥ 3.3.0.
+Цель: **игра 0.107.1**, .NET SDK **9.0.x**, [MegaDot](https://megadot.megacrit.com/) **4.5.1 mono**, BaseLib **3.4.8**,
+ModAnalyzers **0.2.1**. Версии NuGet закреплены в csproj; игра/Harmony предоставляются вашей легальной установкой,
+а не репозиторием. Полная инструкция с командами, зависимостями и паспортом — **[tools/g0/README.md](../tools/g0/README.md)**.
 
-1. Путь к игре находится автоматически (`Sts2PathDiscovery.props`). Если нет — скопируйте `Directory.Build.props.example`
-   в `Directory.Build.props` и пропишите `Sts2Path` / `GodotPath`.
-2. `dotnet build mod/SlayTheRequiem.csproj` — DLL и (если задан GodotPath) `.pck` копируются в `<игра>/mods/SlayTheRequiem/`.
-3. Тесты логики без игры: `dotnet test mod/SlayTheRequiem.Tests` и `python3 -m unittest discover -s tools/sim`.
+Из корня репозитория: `mod_build.py probe` → `build` в свежий игнорируемый `.arena/builds/...` → `verify` → `install --game-closed`.
+Pipeline собирает весь csproj, пишет warnings/binlog, выполняет Core tests, **отдельно** импортирует/экспортирует PCK,
+проверяет resources из пустого проекта и только потом устанавливает согласованную пару с backup вне `mods`.
+Ни Python fixtures инструмента, ни один успешный `dotnet build` не являются игровым PASS.
+
+Для итеративной разработки (команды тоже из корня):
+
+```bash
+dotnet build mod/SlayTheRequiem.csproj -c Release       # DLL; БЕЗ auto-install и БЕЗ auto-export
+dotnet test mod/SlayTheRequiem.Tests -c Release          # только Core, без references игры
+python -m unittest discover -s tools/sim -v
+python -m unittest discover -s tools/g0 -v           # synthetic pipeline contracts
+```
+
+Путь к игре для обычного MSBuild определяется `Sts2PathDiscovery.props`. Override — `mod/Directory.Build.props` из `.example`
+или `-p:Sts2DataDir=...`; `Sts2Path`/`ModsPath`/`GodotPath` не перезаписываются defaults. Локальные props игнорируются Git.
+`CopyModOnBuild=false` по умолчанию: прежний opt-in копирует только DLL/manifest с warning, не верифицированный bundle.
+Для приёмки использовать CLI pipeline, не смешивать новую DLL со старым PCK.
+
+После установки: `str_passport` и плашка фактических правил; на disposable solo run вне боя — `str_integrity`,
+`str_factory smoke 2`, затем full. Они ещё не прогонялись и не заменяют disk Continue, реальные экраны и два клиента.
+Saved Pending/Block при неопределённом результате не снимается простым Continue; не повторять оплату и не очищать marker вручную.
 
 ## Что где лежит
 
@@ -42,5 +62,6 @@
 скриптом `tools/art/render_ui_icons.mjs`). Остальной арт — ванильный, по таблице `tools/art/vanilla_art.csv`
 ([art spec §0](../docs/plan/art-ui-animation-spec.md)).
 
-Рискованные места первой сборки (предполагаемые имена API игры) перечислены в комментариях в начале файлов
-`Acts/ActFlowPatches.cs` и `Acts/ActRuntime.cs`. Дальше — [ROADMAP](../docs/ROADMAP.md), Этап 8.
+Комментарии в `Acts/ActFlowPatches.cs`/`Acts/ActRuntime.cs` описывают исторические риски API; это не список всех
+возможных compiler/runtime ошибок текущего кода. Ближайшая обязательная приёмка — [G0/G1](../docs/plan/stabilization-roadmap-2026-11-17.md),
+статусы и решения — [реестр](../docs/plan/implementation-registry.md).

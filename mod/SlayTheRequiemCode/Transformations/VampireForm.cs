@@ -132,7 +132,7 @@ public sealed class VampireForm : FormRelic, ITransformationForm
         {
             BloodLord = true;
             var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(typeof(BloodLordStance)));
-            await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+            await CardAcquisition.AddOrDefer(Owner.RunState.CreateCard(canonical, Owner));
         }
     }
 

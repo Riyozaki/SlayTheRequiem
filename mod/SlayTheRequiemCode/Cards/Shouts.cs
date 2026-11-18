@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using SlayTheRequiem.SlayTheRequiemCode.Debugging;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -32,32 +33,62 @@ public sealed class ShoutShelfPower : RequiemPower
         public int Turns { get; set; } = turns;
     }
 
-    private readonly List<Entry> _shelf = [];
+    private List<Entry> _shelf = [];
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _shelf = _shelf.Select(e => new Entry(e.Card, e.Turns)).ToList();
+    }
 
     public int Count => _shelf.Count;
 
     /// <summary>Ходов до возвращения ближайшего Клича (для описания).</summary>
     public int NextTurns => _shelf.Count == 0 ? 0 : _shelf.Min(e => e.Turns);
 
-    public void Put(CardModel card, int turns) => _shelf.Add(new Entry(card, turns));
+    public void Put(CardModel card, int turns)
+    {
+        if (_shelf.Any(e => ReferenceEquals(e.Card, card))) return;
+        _shelf.Add(new Entry(card, turns));
+        CardRewardTrace.Card("shout:shelved", card, $"turns={turns} shelf={Count}");
+    }
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
         if (!participants.Contains(Owner) || Owner.Player == null || _shelf.Count == 0) return;
-        var ready = new List<CardModel>();
+        var returned = 0;
         foreach (var entry in _shelf.ToList())
         {
-            entry.Turns--;
+            entry.Turns = Math.Max(0, entry.Turns - 1);
+            var card = entry.Card;
+            CardRewardTrace.Card("shout:tick", card, $"turns={entry.Turns} shelf={Count}");
             if (entry.Turns > 0) continue;
+            // Keep the existing removed-flag repair. RemoveFromState does NOT by itself prove that the
+            // CombatState registration was lost. Trace both facts, and retain a failed return for retry.
+            if (card.Owner == null || card.CombatState == null)
+            {
+                CardRewardTrace.Card("shout:return-unavailable", card, "claim retained until combat cleanup", force: true);
+                continue;
+            }
+            card.HasBeenRemovedFromState = false;
+            CardRewardTrace.Card("shout:return-before", card, $"registered={card.CombatState.ContainsCard(card)}");
+            var committed = false;
+            try { committed = (await CardPileCmd.Add(card, PileType.Hand)).success; }
+            catch (Exception e)
+            {
+                MainFile.Logger.Error($"[CardReward] phase=shout:return-exception card={card.Id}: {e}");
+            }
+            // Full hands normally redirect Add to Discard. An animation can throw AFTER moving the card.
+            committed |= card.Pile?.Type is PileType.Hand or PileType.Discard;
+            CardRewardTrace.Card("shout:return-result", card, $"committed={committed}", force: !committed);
+            if (!committed) continue;
             _shelf.Remove(entry);
-            ready.Add(entry.Card);
+            returned++;
         }
-        foreach (var card in ready)
-            await CardPileCmd.Add(card, PileType.Hand);
-        if (ready.Count == 0) return;
+        if (returned == 0) return;
         Flash();
         if (_shelf.Count == 0) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -ready.Count, null, null, silent: true);
+        else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -returned, null, null, silent: true);
     }
 }
 

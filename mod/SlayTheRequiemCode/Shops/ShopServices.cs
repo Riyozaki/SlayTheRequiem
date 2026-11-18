@@ -259,19 +259,19 @@ public static class ShopServices
                 {
                     var price = Price(ShopRules.SharpenPrice(weapon.Tier));
                     Paid<CounterSharpenWeapon>(price, weapon.Upgrades + 1,
-                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, weapon.Id.Entry));
+                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, InventoryIdentity.RelicKey(weapon)));
                 }
                 if (ArmorToSharpen(player) is { } armor)
                 {
                     var price = Price(ShopRules.SharpenPrice(armor.Tier));
                     Paid<CounterSharpenArmor>(price, armor.Upgrades + 1,
-                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, armor.Id.Entry));
+                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, InventoryIdentity.RelicKey(armor)));
                 }
                 if (weapon != null && ReforgeResult(player, weapon) is { } next)
                 {
                     var price = Price(ShopRules.ReforgePrice);
                     Paid<CounterReforge>(price, weapon.Tier,
-                        () => ShopActions.Perform(player, ShopAction.Reforge, price, 0, $"{weapon.Id.Entry}|{next.Id.Entry}"));
+                        () => ShopActions.Perform(player, ShopAction.Reforge, price, 0, $"{InventoryIdentity.RelicKey(weapon)}|{next.Id.Entry}"));
                 }
                 break;
             }
@@ -317,7 +317,7 @@ public static class ShopServices
                 if (player.PotionSlots.OfType<RequiemScroll>().FirstOrDefault() is { } scroll)
                 {
                     var price = Price(ShopRules.RewriteScrollPrice);
-                    Paid<CounterRewriteScroll>(price, scroll.Tier, () => ShopActions.Perform(player, ShopAction.RewriteScroll, price, 0, scroll.Id.Entry));
+                    Paid<CounterRewriteScroll>(price, scroll.Tier, () => ShopActions.Perform(player, ShopAction.RewriteScroll, price, 0, InventoryIdentity.PotionKey(scroll)));
                 }
                 {
                     var price = Price(ShopRules.CardEnchantPrice);
@@ -542,7 +542,9 @@ public static class ShopServices
             }))
             return false;
 
-        await ShopActions.Perform(player, ShopAction.TheftAttempt);
+        if (!CanSteal(player, entry)) return false;
+        var attempt = await ShopActions.Perform(player, ShopAction.TheftAttempt);
+        if (!attempt.Succeeded) return false;
         var hash = ShopRules.Fnv1a($"{player.RunState.Rng.StringSeed}|theft|{player.NetId}|{price}", player.RunState.TotalFloor);
         if (ShopRules.TheftSucceeds(hash, price))
         {
@@ -554,9 +556,9 @@ public static class ShopServices
         // Пойманного вора выставляет Стража: в одиночной игре — бой с облегчённой элитой (лавка закрывается),
         // в коопе (бой общий, а лавка у каждого своя) — по-прежнему потеря 20 % макс. ♥.
         var fight = !RequiemNet.IsMultiplayer;
-        await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop,
+        var failure = await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop,
             fight ? 0 : ShopRules.TheftFailDamage(player.Creature.MaxHp));
-        if (fight) StartGuardFight(player);
+        if (fight && failure.Succeeded) StartGuardFight(player);
         return false;
     }
 

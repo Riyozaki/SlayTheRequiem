@@ -1,0 +1,286 @@
+[
+  {
+    "name": "build_contracts",
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/g0",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.124
+  },
+  {
+    "name": "rules_sim",
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/sim",
+      "-v"
+    ],
+    "exit_code": 0,
+    "seconds": 0.9
+  },
+  {
+    "name": "loc_generate",
+    "command": [
+      "python",
+      "tools/loc/build_loc.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.05
+  },
+  {
+    "name": "loc_coverage",
+    "command": [
+      "python",
+      "tools/ci/check_loc.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.164
+  },
+  {
+    "name": "csharp_syntax",
+    "command": [
+      "python",
+      "tools/ci/check_csharp_syntax.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.48
+  },
+  {
+    "name": "harmony_targets",
+    "command": [
+      "python",
+      "tools/ci/check_harmony_targets.py",
+      ".arena/sts2-ref/decompiled"
+    ],
+    "exit_code": 0,
+    "seconds": 0.104
+  },
+  {
+    "name": "vanilla_art",
+    "command": [
+      "python",
+      "tools/art/build_vanilla_art.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.124
+  },
+  {
+    "name": "art_fit",
+    "command": [
+      "python",
+      "tools/art/art_fit.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.236
+  },
+  {
+    "name": "events",
+    "command": [
+      "python",
+      "tools/ci/check_events.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.029
+  },
+  {
+    "name": "asset_manifest",
+    "command": [
+      "python",
+      "tools/assets/asset_manifest.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.131
+  },
+  {
+    "name": "card_audit",
+    "command": [
+      "python",
+      "tools/cards/audit_cards.py",
+      "--check",
+      "--out",
+      "docs/plan/card-audit.md"
+    ],
+    "exit_code": 0,
+    "seconds": 0.285
+  },
+  {
+    "name": "design_tables",
+    "command": [
+      "python",
+      "tools/cards/design_tables.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.126
+  },
+  {
+    "name": "card_catalog",
+    "command": [
+      "python",
+      "tools/cards/card_catalog.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.126
+  },
+  {
+    "name": "pools",
+    "command": [
+      "python",
+      "tools/pools/build_pools.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.115
+  },
+  {
+    "name": "relics",
+    "command": [
+      "python",
+      "tools/relics/build_relics.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.071
+  },
+  {
+    "name": "boss_icons",
+    "command": [
+      "python",
+      "tools/art/monsters/build_boss_icons.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 4.457
+  },
+  {
+    "name": "scenes",
+    "command": [
+      "python",
+      "tools/art/scenes/build_scenes.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.037
+  },
+  {
+    "name": "event_art",
+    "command": [
+      "python",
+      "tools/art/events/build_events.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.093
+  },
+  {
+    "name": "act_art",
+    "command": [
+      "python",
+      "tools/art/acts/build_acts.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.065
+  },
+  {
+    "name": "origins_art",
+    "command": [
+      "python",
+      "tools/art/relics/draw_origins.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.037
+  },
+  {
+    "name": "relic_art",
+    "command": [
+      "python",
+      "tools/art/relics/draw_relics.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.063
+  },
+  {
+    "name": "card_art",
+    "command": [
+      "python",
+      "tools/art/cards/draw_portraits.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.048
+  },
+  {
+    "name": "audio",
+    "command": [
+      "python",
+      "tools/audio/build_sfx.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.213
+  },
+  {
+    "name": "python_compile",
+    "command": [
+      "python",
+      "-m",
+      "py_compile",
+      "tools/g0/mod_build.py",
+      "tools/g0/test_mod_build.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.033
+  },
+  {
+    "name": "g0_cli_help",
+    "command": [
+      "python",
+      "tools/g0/mod_build.py",
+      "--help"
+    ],
+    "exit_code": 0,
+    "seconds": 0.04
+  },
+  {
+    "name": "git_diff_check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.037
+  },
+  {
+    "name": "loc_second_generation_idempotent",
+    "command": [
+      "python",
+      "tools/loc/build_loc.py"
+    ],
+    "exit_code": 0,
+    "compare": "SHA256 localization files after first and second generation"
+  },
+  {
+    "name": "markdown_local_targets",
+    "exit_code": 0,
+    "files": 45,
+    "links": 169,
+    "scope": "local path existence, not anchors/external URLs"
+  }
+]

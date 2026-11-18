@@ -50,6 +50,14 @@ public static class CreatureResourceUiPatch
                 pips.Bind(creature, anchor);
                 anchor.AddChild(pips);
                 shift = NEnemyResourcePips.RowHeight * 2 + 3;
+                // Компактные черты врага (Латы, Устойчивость, сопротивления, аффиксы) — строкой под точками ◆/✦.
+                if (RequiemConfig.CompactEnemyStatuses)
+                {
+                    var traits = new NEnemyTraitChips();
+                    traits.Bind(creature, anchor, shift + 1);
+                    anchor.AddChild(traits);
+                    shift += NEnemyTraitChips.RowHeight + 2;
+                }
             }
             else return;
 

@@ -117,5 +117,8 @@
   "SLAYTHEREQUIEM-COMBAT_VFX.hover.desc": "Recoloured vanilla effects: an elemental burst on hits by damage type (frost, fire, shock, poison, blight, light, magic, true), Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind and the Crimson portal. Off — only the vanilla attack effects. Cosmetic only.",
   "SLAYTHEREQUIEM-REQUIEM_SOUNDS.title": "Requiem sounds",
   "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.title": "Requiem sounds",
-  "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.desc": "Sounds for hits by damage type, Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind, the Crimson portal and Caches — vanilla sounds plus a few of our own. Volume follows the game's Sound slider. Independent of combat effects."
+  "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.desc": "Sounds for hits by damage type, Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind, the Crimson portal and Caches — vanilla sounds plus a few of our own. Volume follows the game's Sound slider. Independent of combat effects.",
+  "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.title": "Compact enemy statuses",
+  "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.hover.title": "Compact enemy statuses",
+  "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.hover.desc": "Permanent enemy traits (Plating, Poise, resistances, affixes) are shown as a row of small icons under the HP bar instead of the status row. Hover for details."
 }

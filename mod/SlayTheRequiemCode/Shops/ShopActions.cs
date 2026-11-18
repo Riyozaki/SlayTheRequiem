@@ -12,6 +12,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
 using SlayTheRequiem.SlayTheRequiemCode.Potions;
 using SlayTheRequiem.SlayTheRequiemCode.Progression;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Shops;
 
@@ -80,291 +81,391 @@ public enum ShopAction
     ShoeMule = 26,
     /// <summary>Сундук у прилавка (со зверем): выбор карт и вещей — синхронные экраны у всех.</summary>
     MuleChest = 27,
+
+    // ───── плейтест 2026-11: Груз (02 §3 «выбрасывать можно в любой момент вне боя») ─────
+
+    /// <summary>a = индекс карты в колоде, s = id карты (сверка). Не только в лавке: любое место вне боя.</summary>
+    DiscardCard = 28,
 }
 
-/// <summary>
-/// Выполнение действий лавки: <see cref="Perform"/> — у инициатора (выполнить и разослать),
-/// <see cref="Apply"/> — у всех (сам эффект; детерминирован и не спрашивает игрока).
-/// </summary>
+/// <summary>All entry points go through the revisioned executor. Execute is deliberately not a public bypass.</summary>
 public static class ShopActions
 {
-    public static async Task Perform(Player player, ShopAction kind, int a = 0, int b = 0, string s = "")
-    {
-        if (!LocalContext.IsMe(player)) return;
-        RequiemNet.SendTargeted(new ShopActionMessage
-        {
-            location = RequiemNet.CurrentLocation,
-            kind = (int)kind,
-            a = a,
-            b = b,
-            s = s ?? string.Empty,
-        });
-        await Apply(player, kind, a, b, s ?? string.Empty);
-    }
+    public static Task<OperationResult> Perform(Player player, ShopAction kind, int a = 0, int b = 0, string s = "") =>
+        ShopOperations.Perform(player, kind, a, b, s ?? "");
 
-    public static async Task Apply(Player player, ShopAction kind, int a, int b, string s)
+    internal static async Task<OperationResult> Execute(Player player, ShopRequest request, ShopQuote quote, OperationGate.Lease lease)
     {
+        var (kind, a, b, s) = (request.Kind, request.A, request.B, request.S);
         var ledger = MerchantLedger.Of(player);
+        var paid = 0;
+        var paymentShop = ledger?.CurrentShop ?? ShopType.Wanderer;
+        void Check()
+        {
+            if (InventoryGate.For(player).Blocked) throw new InvalidOperationException("Inventory was blocked while selecting the operation");
+            if (!ShopActionPolicy.TryQuote(player, kind, a, b, s, out var current, out var error) || current != quote)
+                throw new InvalidOperationException($"Stale operation after selection: {error}");
+        }
+        async Task Charge()
+        {
+            if (!ShopActionPolicy.Environment(player, kind) || player.Gold < quote.Price)
+                throw new InvalidOperationException("Payment precondition changed");
+            if (quote.Price == 0) return;
+            var before = player.Gold;
+            try { await PlayerCmd.LoseGold(quote.Price, player, GoldLossType.Spent); }
+            finally { paid += OperationAccounting.Paid(before, player.Gold); }
+            if (before - player.Gold != quote.Price) throw new InvalidOperationException("Payment amount did not match the quote");
+        }
+        OperationResult Done(OperationStatus status = OperationStatus.Committed, string detail = "")
+        {
+            return new(status, request.Id, detail, paid);
+        }
+        OperationResult Cancel() => new(OperationStatus.Cancelled, request.Id);
+        EquipmentRelic? Item(string key) => InventoryIdentity.FindRelic(player, key) as EquipmentRelic;
+        bool Selected(CardModel? card) => card != null && ShopActionPolicy.OwnsCard(player, card) && card.IsRemovable;
+        Task CleanRemoved(IEnumerable<CardModel> cards)
+        {
+            // Match the native RemoveFromState contract, including a late CardRemoved exception. Keep Owner
+            // available to NCard previews/tweens that outlive the command; detaching RunState here breaks them.
+            foreach (var card in cards.Where(c => !player.Deck.Cards.Contains(c) && c.Pile == null))
+                card.HasBeenRemovedFromState = true;
+            return Task.CompletedTask;
+        }
+        async Task<OperationResult> PaidEffect(Func<Task<bool>> command, Func<bool> committed, Func<Task>? after = null)
+        {
+            Check(); // repeat price, owner, environment and availability AFTER every native selector
+            var result = await TransferProtocol.MoveAsync(request.Id, command, committed,
+                after == null ? Charge : () => TransferProtocol.Finish(Charge, after));
+            return result with { Gold = paid };
+        }
+
         try
         {
             switch (kind)
             {
                 case ShopAction.Sell:
                 {
-                    foreach (var id in Split(s))
+                    // Validate the WHOLE request before removing anything. Pay only for observed removals, including
+                    // a removal whose later hook threw. Never use the client-supplied payout.
+                    var items = ShopActionPolicy.Split(s).Select(key => Item(key)!).ToList();
+                    var values = items.Select(i => SellService.Value(i, ledger!.CurrentTrust, ledger.CurrentShop == ShopType.Fence)).ToList();
+                    var earned = 0;
+                    Exception? error = null;
+                    for (var i = 0; i < items.Count; i++)
                     {
-                        var item = Loadout.All(player).FirstOrDefault(r => r.IsStowed && r.Id.Entry == id);
-                        if (item != null) await RelicCmd.Remove(item);
+                        if (items[i].Owner != player || !items[i].IsStowed || !player.Relics.Contains(items[i]))
+                        { error = new InvalidOperationException("Sale target changed during removal hooks"); break; }
+                        try { await RelicCmd.Remove(items[i]); }
+                        catch (Exception e) { error = e; }
+                        if (!player.Relics.Contains(items[i])) earned += values[i];
+                        if (error != null) break;
                     }
-                    if (a > 0) await PlayerCmd.GainGold(a, player);
-                    break;
+                    var before = player.Gold;
+                    if (earned > 0) await PlayerCmd.GainGold(earned, player);
+                    var actual = player.Gold - before;
+                    if (earned == 0) return error == null ? OperationResult.Reject(request.Id, "No items removed")
+                        : new(OperationStatus.Error, request.Id, error.ToString());
+                    return new(OperationAccounting.SaleStatus(earned, actual, error != null),
+                        request.Id, error?.ToString() ?? (actual == earned ? "" : $"Sale removed items for {earned}, observed payout={actual}"), -actual);
                 }
                 case ShopAction.TrustSpent:
-                    ledger?.AddSpent((ShopType)a, b);
-                    break;
+                    if (!PurchaseReceipts.Consume(player, s, quote.Amount)) return OperationResult.Reject(request.Id, "Purchase receipt already claimed");
+                    ledger!.AddSpent(ledger.CurrentShop, quote.Amount);
+                    return Done();
 
                 case ShopAction.Sharpen:
                 {
-                    var item = Loadout.All(player).FirstOrDefault(r => r.Id.Entry == s && r.CanUpgrade);
-                    if (item == null) break;
-                    await Pay(player, ledger, a);
-                    item.Upgrades += 1;
-                    item.Flash();
-                    break;
+                    var item = Item(s)!;
+                    var before = item.Upgrades;
+                    return await PaidEffect(
+                        () => { item.Upgrades = checked(before + 1); item.Flash(); return Task.FromResult(true); },
+                        () => item.Upgrades != before);
                 }
                 case ShopAction.Reforge:
                 {
                     var parts = s.Split('|');
-                    if (parts.Length != 2) break;
-                    var old = Loadout.All(player).FirstOrDefault(r => r.Id.Entry == parts[0]);
-                    var canonical = ModelDb.AllRelics.OfType<EquipmentRelic>().FirstOrDefault(r => r.Id.Entry == parts[1]);
-                    if (old == null || canonical == null) break;
-                    await Pay(player, ledger, a);
-                    var wasStowed = old.IsStowed;
-                    var upgrades = old.Upgrades;
+                    var old = Item(parts[0])!;
+                    var canonical = ShopServices.ReforgeResult(player, old)!;
                     var fresh = (EquipmentRelic)canonical.ToMutable();
-                    await RelicCmd.Replace(old, fresh);
-                    fresh.Upgrades = upgrades;
-                    if (wasStowed) Loadout.Stow(fresh);
-                    break;
+                    fresh.Upgrades = old.Upgrades;
+                    fresh.Enchants = old.Enchants;
+                    Check();
+                    var transfer = await TransferProtocol.MoveAsync(request.Id,
+                        async () => { await RelicCmd.Obtain(fresh, player); return true; },
+                        () => player.Relics.Contains(fresh),
+                        () => TransferProtocol.Finish(
+                            () =>
+                            {
+                                if (player.Relics.Contains(old)) player.RemoveRelicInternal(old);
+                                if (player.Relics.Contains(old)) throw new InvalidOperationException("Reforge committed but its source relic remains");
+                                return Task.CompletedTask;
+                            }, Charge));
+                    return transfer with { Gold = paid };
                 }
                 case ShopAction.Brew:
                 {
-                    var pouch = HerbalistPouch.Of(player);
-                    var option = ShopServices.BestBrew(player, poison: b == 1);
-                    if (pouch == null || option == null) break;
-                    var potion = RequiemPotion.Create(option.Value.Recipe.Brew, option.Value.Tier);
-                    if (potion == null) break;
-                    var result = await PotionCmd.TryToProcure(potion, player);
-                    if (!result.success) break;
-                    pouch.TrySpend(option.Value.Ingredients);
-                    await Pay(player, ledger, a);
-                    break;
+                    var pouch = HerbalistPouch.Of(player)!;
+                    var brew = ShopServices.BestBrew(player, b == 1)!.Value;
+                    var potion = RequiemPotion.Create(brew.Recipe.Brew, brew.Tier);
+                    if (potion == null) return OperationResult.Reject(request.Id, "Brew model unavailable");
+                    Check();
+                    HerbalistPouch.MarkBrewCost(potion, brew.Ingredients);
+                    // No snapshot overwrite/refund: that could erase materials granted by an intervening hook.
+                    // The original ingredients and payment are consumed only after an observed potion commit, even
+                    // if a later procure hook threw. Veto/full slots never cost either resource.
+                    var brewed = await TransferProtocol.MoveAsync(request.Id,
+                        async () => (await PotionCmd.TryToProcure(potion, player)).success,
+                        () => player.PotionSlots.Contains(potion),
+                        () => TransferProtocol.Finish(
+                            () =>
+                            {
+                                pouch.CompleteBrew(potion); // same durable, exactly-once cost as the actual procure hook
+                                return Task.CompletedTask;
+                            }, Charge),
+                        () => { HerbalistPouch.CancelBrewCost(potion); return Task.CompletedTask; });
+                    return brewed with { Gold = paid };
                 }
                 case ShopAction.BuyReagents:
                 {
-                    var pouch = HerbalistPouch.Of(player);
-                    if (pouch == null) break;
-                    await Pay(player, ledger, a);
-                    foreach (var id in Split(s))
-                        if (int.TryParse(id, out var r) && Enum.IsDefined(typeof(Reagent), r)) pouch.Add((Reagent)r, 1);
-                    break;
+                    var pouch = HerbalistPouch.Of(player)!;
+                    var kit = ShopServices.ReagentKit(player);
+                    var expected = (int[])pouch.Reagents.Clone();
+                    foreach (var reagent in kit) expected[(int)reagent]++;
+                    return await PaidEffect(() => Task.FromResult(pouch.TryAddKit(kit)),
+                        () => expected.SequenceEqual(pouch.Reagents));
                 }
                 case ShopAction.SellReagents:
                 {
-                    var pouch = HerbalistPouch.Of(player);
-                    if (pouch == null) break;
-                    pouch.Reagents = new int[pouch.Reagents.Length];
-                    if (a > 0) await PlayerCmd.GainGold(a, player);
-                    break;
+                    var pouch = HerbalistPouch.Of(player)!;
+                    var sold = Enumerable.Range(0, pouch.Reagents.Length)
+                        .SelectMany(i => Enumerable.Repeat((Reagent)i, pouch.Reagents[i])).ToArray();
+                    var before = player.Gold;
+                    var moved = await TransferProtocol.Move(request.Id,
+                        async () => { await PlayerCmd.GainGold(quote.Value, player); return true; },
+                        () => player.Gold > before,
+                        () =>
+                        {
+                            if (!pouch.TrySpend(sold)) throw new InvalidOperationException("Reagent payout committed but the sold quantities changed");
+                        });
+                    var actual = player.Gold - before;
+                    if (moved.Changed && actual != quote.Value)
+                        moved = moved with { Status = OperationStatus.PartialCommit, Detail = moved.Detail + $" Expected payout={quote.Value}, actual={actual}" };
+                    return moved with { Gold = -actual };
                 }
                 case ShopAction.Panacea:
                 {
-                    var ailments = ShopServices.Ailments(player).ToList();
-                    if (ailments.Count == 0) break;
-                    await Pay(player, ledger, a);
-                    foreach (var card in ailments) await CardPileCmd.RemoveFromDeck(card);
-                    break;
+                    var ailments = ShopServices.Ailments(player).Where(c => c.IsRemovable).ToList();
+                    return await PaidEffect(async () =>
+                    {
+                        foreach (var card in ailments)
+                        {
+                            if (!Selected(card)) return false;
+                            await CardPileCmd.RemoveFromDeck(card);
+                            if (player.Deck.Cards.Contains(card)) return false;
+                        }
+                        return true;
+                    }, () => ailments.Any(c => !player.Deck.Cards.Contains(c)), () => CleanRemoved(ailments));
                 }
                 case ShopAction.PlaceOrder:
-                {
-                    if (ledger == null || !int.TryParse(s, out var price)) break;
-                    await Pay(player, ledger, price);
-                    ledger.PlaceOrder((ShopType)a, (OrderCategory)b);
-                    break;
-                }
+                    return await PaidEffect(
+                        () => { ledger!.PlaceOrder(ledger.CurrentShop, (OrderCategory)b); return Task.FromResult(true); },
+                        () => ledger!.OrderShop == (int)ledger.CurrentShop + 1 && ledger.OrderCategoryIndex == b);
                 case ShopAction.TheftAttempt:
-                    ledger?.MarkTheftAttempt(player.RunState);
-                    // Кража — грех, удачная или нет: −1 ступень праведности (docs/design/05 §2).
-                    Pantheon.Faith.Sin(player);
-                    break;
+                    Check(); ledger!.MarkTheftAttempt(player.RunState); Pantheon.Faith.Sin(player);
+                    return Done();
+                case ShopAction.TheftFailed:
+                    Check(); ledger!.ResetTrust(ledger.CurrentShop);
+                    await CreatureCmd.SetCurrentHp(player.Creature, Math.Max(1, player.Creature.CurrentHp - quote.Amount));
+                    return Done();
 
                 case ShopAction.EnchantItem:
                 {
-                    var hero = Progression.HeroRecord.Of(player);
-                    if (hero == null) break;
-                    var own = s == "own";
-                    if (own && hero.Stones(b) <= 0) break;
-                    await Alchemy.EnchantRestSiteOption.EnchantFlow(player, b, null, async () =>
+                    var hero = HeroRecord.Of(player)!;
+                    var enchanted = await EnchantRestSiteOption.EnchantFlow(player, b, null, () => { Check(); return true; }, async () =>
                     {
-                        if (own && !hero.SpendStone(b)) return false;
-                        await Pay(player, ledger, a);
+                        await TransferProtocol.Finish(Charge, () =>
+                        {
+                            if (s == "own" && !hero.SpendStone(b)) throw new InvalidOperationException("Enchantment committed but its soul stone could not be consumed");
+                            return Task.CompletedTask;
+                        });
                         return true;
-                    });
-                    break;
+                    }, lease);
+                    return enchanted with { Target = request.Id, Gold = paid };
                 }
                 case ShopAction.RewriteScroll:
                 {
-                    var scroll = player.PotionSlots.OfType<RequiemScroll>().FirstOrDefault(p => p.Id.Entry == s);
-                    if (scroll == null) break;
-                    await Pay(player, ledger, a);
-                    await RequiemScroll.Rewrite(player, scroll);
-                    break;
+                    var scroll = (RequiemScroll)InventoryIdentity.FindPotion(player, s)!;
+                    Check();
+                    var rewrite = await RequiemScroll.Rewrite(player, scroll, Charge, lease);
+                    return rewrite with { Target = request.Id, Gold = paid };
                 }
                 case ShopAction.EnchantCard:
-                    await Progression.CardEnchantRestSiteOption.EnchantFlow(player, async () =>
-                    {
-                        await Pay(player, ledger, a);
-                        return true;
-                    });
-                    break;
-
+                {
+                    var enchanted = await CardEnchantRestSiteOption.EnchantFlow(player, () => { Check(); return true; },
+                        async () => { await Charge(); return true; }, lease);
+                    return enchanted with { Target = request.Id, Gold = paid };
+                }
                 case ShopAction.BuyStone:
                 {
-                    var hero = Progression.HeroRecord.Of(player);
-                    if (hero == null) break;
-                    await Pay(player, ledger, a);
-                    hero.AddStone(Math.Clamp(b, 1, 3));
-                    hero.Flash();
-                    break;
+                    var hero = HeroRecord.Of(player)!;
+                    var before = hero.Stones(quote.Amount);
+                    return await PaidEffect(
+                        () => { hero.AddStone(quote.Amount); hero.Flash(); return Task.FromResult(true); },
+                        () => hero.Stones(quote.Amount) > before);
                 }
                 case ShopAction.Engrave:
-                    await Alchemy.EnchantRestSiteOption.EnchantFlow(player, 1, i => i.Slot is EquipSlot.Ring or EquipSlot.Amulet, async () =>
-                    {
-                        await Pay(player, ledger, a);
-                        return true;
-                    });
-                    break;
-
+                {
+                    var engraved = await EnchantRestSiteOption.EnchantFlow(player, 1, i => i.Slot is EquipSlot.Ring or EquipSlot.Amulet,
+                        () => { Check(); return true; }, async () => { await Charge(); return true; }, lease);
+                    return engraved with { Target = request.Id, Gold = paid };
+                }
                 case ShopAction.Facet:
                 {
                     var sources = Loadout.Equipped(player).Where(i => i.EnchantSlots.Count > 0).ToList();
-                    if (await PickItem(player, sources) is not { } from) break;
+                    if (await PickItem(player, sources) is not { } from) return Cancel();
                     var targets = Enchanting.Enchantable(player).Where(t => t != from && ShopServices.FacetResult(player, from, t) != null).ToList();
-                    if (await PickItem(player, targets) is not { } to || ShopServices.FacetResult(player, from, to) is not { } moved) break;
-                    await Pay(player, ledger, a);
-                    to.SetEnchants(moved);
-                    from.SetEnchants([]);
-                    to.Flash();
-                    if (Progression.HeroRecord.Of(player) is { } h)
+                    if (await PickItem(player, targets) is not { } to) return Cancel();
+                    Check();
+                    if (!Loadout.Equipped(player).Contains(from) || !Enchanting.Enchantable(player).Contains(to)
+                        || ShopServices.FacetResult(player, from, to) is not { } moved) return OperationResult.Reject(request.Id, "Stale enchant targets");
+                    var encoded = EnchantRules.Serialize(moved);
+                    return await PaidEffect(() =>
                     {
-                        await h.SyncMaxHp();
-                        h.Refresh();
-                    }
-                    break;
+                        // Both saved fields change before ANY display callback. A late target notification must
+                        // not leave the source with a second copy of the transferred enchantment.
+                        to.Enchants = encoded; from.Enchants = "";
+                        return Task.FromResult(true);
+                    }, () => to.Enchants == encoded && from.Enchants.Length == 0,
+                    () => TransferProtocol.Finish(
+                        () => { to.SetEnchants(moved); to.Flash(); return Task.CompletedTask; },
+                        () => { from.SetEnchants([]); return Task.CompletedTask; },
+                        async () => { if (HeroRecord.Of(player) is { } hero) { await hero.SyncMaxHp(); hero.Refresh(); } }));
                 }
                 case ShopAction.Cleanse:
                 {
                     var prefs = new CardSelectorPrefs(CardSelectorPrefs.RemoveSelectionPrompt, 1) { Cancelable = true, RequireManualConfirmation = true };
                     var card = (await CardSelectCmd.FromDeckForRemoval(player, prefs)).FirstOrDefault();
-                    if (card == null) break;
-                    await Pay(player, ledger, a);
-                    await CardPileCmd.RemoveFromDeck(card);
-                    break;
+                    if (card == null) return Cancel();
+                    Check();
+                    if (!Selected(card)) return OperationResult.Reject(request.Id, "Stale removal target");
+                    return await PaidEffect(
+                        async () => { await CardPileCmd.RemoveFromDeck(card); return true; },
+                        () => !player.Deck.Cards.Contains(card), () => CleanRemoved([card]));
                 }
                 case ShopAction.TempleHeal:
-                    await Pay(player, ledger, a);
-                    await CreatureCmd.Heal(player.Creature, Math.Max(0, b));
-                    break;
-
+                {
+                    var before = player.Creature.CurrentHp;
+                    return await PaidEffect(
+                        async () => { await CreatureCmd.Heal(player.Creature, quote.Amount); return player.Creature.CurrentHp > before; },
+                        () => player.Creature.CurrentHp > before);
+                }
                 case ShopAction.Atonement:
-                    if (!Pantheon.Faith.CanRedeem(player)) break;
-                    await Pay(player, ledger, a);
-                    Pantheon.Faith.Redeem(player);
-                    Pantheon.Faith.RefreshAll(player);
-                    break;
-
+                {
+                    var sigil = Pantheon.Faith.SigilOf(player)!;
+                    var before = sigil.Recorded;
+                    var act = sigil.RedeemedAct;
+                    return await PaidEffect(() => Task.FromResult(Pantheon.Faith.Redeem(player)),
+                        () => sigil.Recorded != before || sigil.RedeemedAct != act,
+                        () => { Pantheon.Faith.RefreshAll(player); return Task.CompletedTask; });
+                }
                 case ShopAction.ChangeBlessing:
-                    await Pay(player, ledger, a);
-                    await Pantheon.CelestialBlessing.Grant(player, (Celestial)b);
-                    Pantheon.Faith.RefreshAll(player);
-                    break;
-
+                {
+                    var old = Pantheon.CelestialBlessing.Of(player);
+                    var fresh = Pantheon.CelestialBlessing.Create(Pantheon.CelestialBlessing.Blessings[quote.Amount]);
+                    return await PaidEffect(
+                        async () => { await RelicCmd.Obtain(fresh, player); return true; },
+                        () => player.Relics.Contains(fresh),
+                        () => TransferProtocol.Finish(
+                            async () =>
+                            {
+                                if (old != null && player.Relics.Contains(old)) await old.RemoveSelf();
+                                if (old != null && player.Relics.Contains(old)) throw new InvalidOperationException("New blessing committed but the old blessing remains");
+                            },
+                            () => { Pantheon.Faith.RefreshAll(player); return Task.CompletedTask; }));
+                }
                 case ShopAction.RemoveCurse:
                 {
-                    if (!ShopRules.CanPayCurseRemoval(player.Creature.MaxHp)) break;
                     var prefs = new CardSelectorPrefs(CardSelectorPrefs.RemoveSelectionPrompt, 1) { Cancelable = true, RequireManualConfirmation = true };
-                    var card = (await CardSelectCmd.FromDeckGeneric(player, prefs, c => c.Type == CardType.Curse)).FirstOrDefault();
-                    if (card == null) break;
-                    await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), player.Creature, Math.Max(0, b), false);
-                    await CardPileCmd.RemoveFromDeck(card);
-                    break;
+                    var card = (await CardSelectCmd.FromDeckGeneric(player, prefs, c => c.Type == CardType.Curse && c.IsRemovable)).FirstOrDefault();
+                    if (card == null) return Cancel();
+                    Check();
+                    if (!Selected(card) || card.Type != CardType.Curse) return OperationResult.Reject(request.Id, "Stale curse target");
+                    var before = player.Creature.MaxHp;
+                    return await TransferProtocol.MoveAsync(request.Id,
+                        async () => { await CardPileCmd.RemoveFromDeck(card); return true; },
+                        () => !player.Deck.Cards.Contains(card),
+                        () => TransferProtocol.Finish(() => CleanRemoved([card]), async () =>
+                        {
+                            await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), player.Creature, quote.Amount, false);
+                            if (before - player.Creature.MaxHp != quote.Amount) throw new InvalidOperationException("Curse removed but actual max-HP price differed");
+                        }));
                 }
                 case ShopAction.ClearName:
-                    if (ledger == null) break;
-                    await Pay(player, ledger, a);
-                    ledger.ClearName((ShopType)b);
-                    break;
-
+                {
+                    var before = ledger!.Spent[quote.Amount];
+                    return await PaidEffect(
+                        () => { ledger.ClearName((ShopType)quote.Amount); return Task.FromResult(true); },
+                        () => ledger.Spent[quote.Amount] > before);
+                }
                 case ShopAction.Trade:
                 {
-                    if (ledger == null || ledger.TradedHere(player.RunState)) break;
-                    if (await PickItem(player, ShopServices.Tradeable(player)) is not { } given) break;
-                    if (ShopServices.TradeResult(player, given) is not { } canonical) break;
-                    ledger.MarkTrade(player.RunState);
-                    await RelicCmd.Remove(given);
-                    await RelicCmd.Obtain(canonical.ToMutable(), player);
-                    break;
+                    if (await PickItem(player, ShopServices.Tradeable(player)) is not { } given) return Cancel();
+                    Check();
+                    if (!given.IsStowed || !player.Relics.Contains(given) || ShopServices.TradeResult(player, given) is not { } canonical)
+                        return OperationResult.Reject(request.Id, "Stale trade target");
+                    var fresh = canonical.ToMutable();
+                    return await TransferProtocol.MoveAsync(request.Id,
+                        async () => { await RelicCmd.Obtain(fresh, player); return true; },
+                        () => player.Relics.Contains(fresh),
+                        () => TransferProtocol.Finish(
+                            () =>
+                            {
+                                if (player.Relics.Contains(given)) player.RemoveRelicInternal(given);
+                                if (player.Relics.Contains(given)) throw new InvalidOperationException("Trade committed but its source relic was not removed");
+                                return Task.CompletedTask;
+                            },
+                            // A RelicRemoved notification can throw AFTER detach. Consume the once-per-visit
+                            // entitlement even then; the new item exists and must not authorize another trade.
+                            () => { ledger!.MarkTrade(player.RunState); return Task.CompletedTask; }));
                 }
-
                 case ShopAction.BuyMule:
                 {
-                    if (!Alchemy.PackMule.CanAdopt(player)) break;
-                    await Pay(player, ledger, a);
-                    await Alchemy.PackMule.Adopt(player);
-                    break;
+                    Check();
+                    var adopted = await TransferProtocol.MoveAsync(request.Id,
+                        async () => { await PackMule.Adopt(player); return true; },
+                        () => PackMule.Of(player) != null, Charge);
+                    return adopted with { Gold = paid };
                 }
                 case ShopAction.ShoeMule:
                 {
-                    if (Alchemy.PackMule.Of(player) is not { Shod: false } mule) break;
-                    await Pay(player, ledger, a);
-                    mule.Shoe();
-                    break;
+                    var mule = PackMule.Of(player)!;
+                    return await PaidEffect(() => Task.FromResult(mule.Shoe()), () => mule.Shod);
                 }
                 case ShopAction.MuleChest:
-                    if (Alchemy.PackMule.Of(player) != null) await ChestRestSiteOption.ChestFlow(player);
-                    break;
-
-                case ShopAction.TheftFailed:
+                    return await ChestRestSiteOption.ChestFlow(player, lease) ? Done() : Cancel();
+                case ShopAction.DiscardCard:
                 {
-                    ledger?.ResetTrust((ShopType)a);
-                    var creature = player.Creature;
-                    await CreatureCmd.SetCurrentHp(creature, Math.Max(1, creature.CurrentHp - Math.Max(0, b)));
-                    break;
+                    var card = InventoryIdentity.FindCard(player, s);
+                    Check();
+                    if (card == null || !UI.DeckDiscard.CanExecute(player, card)) return OperationResult.Reject(request.Id, "Cannot discard this instance");
+                    return await TransferProtocol.MoveAsync(request.Id,
+                        async () => { await CardPileCmd.RemoveFromDeck(card, showPreview: LocalContext.IsMe(player)); return true; },
+                        () => !player.Deck.Cards.Contains(card), () => CleanRemoved([card]));
                 }
+                default: return OperationResult.Reject(request.Id, "Unknown operation");
             }
         }
-        catch (Exception e)
+        finally
         {
-            MainFile.Logger.Warn($"[SlayTheRequiem] Лавка: действие {kind} не выполнено ({e.Message}).");
+            // Trust follows the observed payment even if an effect/animation later throws. Never credit a UI quote.
+            if (paid > 0) ledger?.AddSpent(paymentShop, paid);
         }
     }
 
-    /// <summary>Оплата услуги: золото «потрачено» (для истории забега) и засчитывается в доверие текущей лавки.</summary>
-    private static async Task Pay(Player player, MerchantLedger? ledger, int price)
-    {
-        if (price <= 0) return;
-        await PlayerCmd.LoseGold(price, player, GoldLossType.Spent);
-        ledger?.AddSpent(ledger.CurrentShop, price);
-    }
-
-    /// <summary>Выбор предмета синхронным экраном игры (один вариант — без экрана).</summary>
     private static async Task<EquipmentRelic?> PickItem(Player player, IReadOnlyList<EquipmentRelic> items)
     {
         if (items.Count == 0) return null;
         if (items.Count == 1) return items[0];
         return await RelicSelectCmd.FromChooseARelicScreen(player, items.Cast<RelicModel>().ToList()) as EquipmentRelic;
     }
-
-    private static IEnumerable<string> Split(string s) => s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }

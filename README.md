@@ -9,12 +9,12 @@
 жечь ману и тащить на себе всё, что они решились нести.*
 
 [![CI](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml/badge.svg)](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml)
-![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-%E2%89%A5%200.107-8b0000?style=flat)
+![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1-8b0000?style=flat)
 ![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)
-![BaseLib](https://img.shields.io/badge/BaseLib-%E2%89%A5%203.3-2f4f4f)
-![Godot](https://img.shields.io/badge/Godot-4.5%20mono-478CBF?logo=godotengine&logoColor=white)
+![BaseLib](https://img.shields.io/badge/BaseLib-3.4.8-2f4f4f)
+![Godot](https://img.shields.io/badge/MegaDot-4.5.1%20mono-478CBF?logo=godotengine&logoColor=white)
 ![Языки](https://img.shields.io/badge/loc-RU%20%7C%20EN-c9a227)
-![Статус](https://img.shields.io/badge/статус-pre--alpha%2C%20не%20собран%20в%20игре-orange)
+![Статус](https://img.shields.io/badge/статус-pre--alpha%2C%20стабилизация%20G0%2FG1-orange)
 
 [**О моде**](#-о-моде) ·
 [**Путь через Шпиль**](#-пять-актов) ·
@@ -29,9 +29,12 @@
 ---
 
 > [!WARNING]
-> **Pre-alpha.** Весь код мода (≈ 41 тыс. строк C#) написан по исходникам BaseLib и декомпилированной игре,
-> но **ещё ни разу не запускался в Slay the Spire 2**. Чистая логика (`Core/`) компилируется и проходит тесты в CI,
-> остальное ждёт первой сборки с игрой — ошибки компиляции и баланса неизбежны. Помощь с первой сборкой очень приветствуется!
+> **Pre-alpha · стабилизация G0/G1.** В CHANGELOG есть историческая сборка `ec598de` под 0.107.1 и последующий плейтест,
+> но это **не проверка новых исправлений**. Текущие изменения сохранности сундука/наград/оплаты ещё не прошли полную
+> компиляцию с игрой, PCK export и двухклиентскую приёмку. Публичный CI не собирает весь игровой мод.
+> Актуальные статусы **«спроектировано / код / автоматизация / игра / визуально»** — в
+> [едином реестре](docs/plan/implementation-registry.md); порядок работы — [G0–G6](docs/plan/stabilization-roadmap-2026-11-17.md).
+> Новые большие механики и массовый арт до стабилизации не добавляются.
 
 ## ✦ О моде
 
@@ -156,24 +159,29 @@ flowchart LR
 | Реликвии и снаряжение (+ переработка ванильных) | **203** | Зелья и яды | **84** |
 | Новые враги | **86** | Встречи (бои, элиты, супербоссы) | **49** |
 | События | **43** | Чары карт | **6** |
-| Ключей локализации (RU + EN) | **2 × 3484** | Настроек мода | **25** |
+| Ключей локализации (RU + EN) | **2 × 3579** | Настроек мода | **25** |
 
 Герои системы — **Латоносец** (Ironclad), **Безмолвная** и **Регент**, каждый с происхождениями и предысториями.
 Некробиндер и Дефект появляются как облики трансформаций.
 
 ## 🛠 Сборка и установка
 
-Нужно: Slay the Spire 2 (≥ 0.107), [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
-мод [BaseLib](https://github.com/Alchyr/BaseLib-StS2) 3.4.8 и, для `.pck`, [MegaDot](https://megadot.megacrit.com/) (Godot 4.5.1 mono).
+Целевое окружение: легальная **Slay the Spire 2 0.107.1**, [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
+[BaseLib 3.4.8](https://github.com/Alchyr/BaseLib-StS2), [MegaDot 4.5.1 mono](https://megadot.megacrit.com/).
+Из корня checkout (переменные — пути вашей машины):
 
 ```bash
-git clone https://github.com/Riyozaki/SlayTheRequiem.git
-cd SlayTheRequiem
-dotnet build mod/SlayTheRequiem.csproj     # DLL (+ .pck) копируются в <игра>/mods/SlayTheRequiem/
+python tools/g0/mod_build.py probe --game-dir "$STS2_GAME_DIR" --godot "$MEGADOT"
+python tools/g0/mod_build.py build --game-dir "$STS2_GAME_DIR" --godot "$MEGADOT" --output .arena/builds/g1-001
+python tools/g0/mod_build.py verify --bundle .arena/builds/g1-001
+python tools/g0/mod_build.py install --bundle .arena/builds/g1-001 --mods-dir "$STS2_MODS_DIR" --game-closed
 ```
 
-Путь к игре определяется автоматически; если нет — скопируйте `mod/Directory.Build.props.example`
-в `mod/Directory.Build.props` и пропишите `Sts2Path` / `GodotPath`. Подробности — в [mod/README.md](mod/README.md).
+Каждый build использует новый output, сохраняет warnings/binlog, запускает Core tests, **отдельно** экспортирует
+PCK и проверяет его из пустого проекта. Устанавливается чистая согласованная DLL/PCK/manifest с hashes и паспортом.
+**Обычный `dotnet build` больше не устанавливает мод и не создаёт PCK автоматически.** Подробные требования,
+нестандартные пути, backup и игровая проверка — [G0 build guide](tools/g0/README.md) и [mod/README.md](mod/README.md).
+Игровые references, saves, локальные props и приватные build logs в Git не добавляются.
 
 Все системы мода включаются и выключаются в настройках (BaseLib → Slay the Requiem): пять актов, супербоссы,
 уровень «Реквием», Камень Памяти, Пантеон, лавки и другое.
@@ -183,6 +191,7 @@ dotnet build mod/SlayTheRequiem.csproj     # DLL (+ .pck) копируются �
 ```bash
 dotnet test mod/SlayTheRequiem.Tests                  # xUnit: правила Core/
 python3 -m unittest discover -s tools/sim             # Python-зеркало правил
+python3 -m unittest discover -s tools/g0           # synthetic installer contracts, НЕ build/export
 python3 tools/ci/check_loc.py                         # локализация: RU = EN, у каждой модели есть название
 ```
 

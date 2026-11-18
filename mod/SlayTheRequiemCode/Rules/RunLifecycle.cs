@@ -21,6 +21,7 @@ public static class RunLifecycle
         if (_hooked) return;
         _hooked = true;
         RunManager.Instance.RunStarted += OnRunStarted;
+        RunManager.Instance.RoomEntered += () => Debugging.RunDiagnostics.Log(RunManager.Instance.DebugOnlyGetState(), "room");
     }
 
     private static void OnRunStarted(RunState state)
@@ -41,5 +42,6 @@ public static class RunLifecycle
         {
             MainFile.Logger.Error($"RunLifecycle: сброс состояния не удался: {e}");
         }
+        Debugging.RunDiagnostics.OnLaunch(state);
     }
 }

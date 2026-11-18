@@ -42,7 +42,24 @@ DECL = re.compile(r"\b(?P<mods>(?:(?:public|internal|sealed|abstract|static|part
 
 
 def snake(name: str) -> str:
-    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).upper()
+    """Как StringHelper.Slugify игры (и tools/loc/build_loc.py): "([A-Za-z0-9]|\\G(?!^))([A-Z])" → "$1_$2".
+    Серия заглавных продолжается через \\G: NodeDestructionII → NODE_DESTRUCTION_I_I (старый вариант давал
+    NODE_DESTRUCTION_II, и проверка не видела, что игра ищет другой ключ)."""
+    out: list[str] = []
+    i, last_end = 0, -1
+    while i < len(name):
+        if i + 1 < len(name) and name[i].isalnum() and name[i + 1].isupper():
+            out.append(name[i] + "_" + name[i + 1])
+            i += 2
+            last_end = i
+        elif i == last_end and name[i].isupper():
+            out.append("_" + name[i])
+            i += 1
+            last_end = i
+        else:
+            out.append(name[i])
+            i += 1
+    return "".join(out).upper()
 
 
 def check_parity(errors: list) -> None:

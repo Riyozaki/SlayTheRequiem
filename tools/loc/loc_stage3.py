@@ -264,6 +264,8 @@ STAGE3_SETTINGS = {
     "eng": {
         "AUTO_DODGE.title": "Auto-dodge", "AUTO_DODGE.hover.title": "Auto-dodge",
         "AUTO_DODGE.hover.desc": "Spend a Dodge charge and 2 ◆ automatically when an attack would hit your HP. Off — Dodge never triggers.",
+        "COMPACT_ENEMY_STATUSES.title": "Compact enemy statuses", "COMPACT_ENEMY_STATUSES.hover.title": "Compact enemy statuses",
+        "COMPACT_ENEMY_STATUSES.hover.desc": "Permanent enemy traits (Plating, Poise, resistances, affixes) are shown as a row of small icons under the HP bar instead of the status row. Hover for details.",
         "PLATEBEARER_ORIGIN.title": "Platebearer clan", "PLATEBEARER_ORIGIN.hover.title": "Platebearer clan",
         "PLATEBEARER_ORIGIN.hover.desc": "Until the origin select screen exists, the origin is taken from here.",
         "PLATEBEARER_ORIGIN.Frostborn": "Frostborn", "PLATEBEARER_ORIGIN.None": "None",
@@ -279,6 +281,8 @@ STAGE3_SETTINGS = {
     "rus": {
         "AUTO_DODGE.title": "Автоуворот", "AUTO_DODGE.hover.title": "Автоуворот",
         "AUTO_DODGE.hover.desc": "Тратить заряд Уворота и 2 ◆ автоматически, когда атака должна снять ♥. Выкл — Уворот не срабатывает.",
+        "COMPACT_ENEMY_STATUSES.title": "Компактные статусы врагов", "COMPACT_ENEMY_STATUSES.hover.title": "Компактные статусы врагов",
+        "COMPACT_ENEMY_STATUSES.hover.desc": "Постоянные черты врага (Латы, Устойчивость, сопротивления, аффиксы) — строкой мелких значков под полоской ♥, а не в ряду статусов. Подробности при наведении.",
         "PLATEBEARER_ORIGIN.title": "Клан Латоносца", "PLATEBEARER_ORIGIN.hover.title": "Клан Латоносца",
         "PLATEBEARER_ORIGIN.hover.desc": "Пока нет экрана выбора происхождения, оно берётся отсюда.",
         "PLATEBEARER_ORIGIN.Frostborn": "Инеерождённые", "PLATEBEARER_ORIGIN.None": "Без происхождения",

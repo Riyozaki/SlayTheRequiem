@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
@@ -263,6 +264,21 @@ public static class MemoryStone
                 recordSave.Props = SavedProperties.From(record);
             }
 
+            // A rollback is a NEW operation timeline. Reusing the imprint's nonce/revision would let an old message
+            // from the abandoned attempt become valid again. Generated ONCE by the host/save builder and persisted
+            // for all peers; an ordinary Continue keeps its existing nonce and high-water revision unchanged.
+            var timeline = Guid.NewGuid().ToString("N");
+            var packId = ModelDb.Relic<TravelPack>().Id;
+            foreach (var sp in save.Players)
+            {
+                var packSave = sp.Relics.FirstOrDefault(r => r.Id == packId);
+                if (packSave == null) continue;
+                var pack = (TravelPack)RelicModel.FromSerializable(packSave);
+                pack.OperationRunId = timeline;
+                pack.OperationRevision = 0;
+                packSave.Props = SavedProperties.From(pack);
+            }
+
             // Новая карта (15 §1.3): без сохранённой карты акт строит её заново, а Камень подменяет зерно.
             if (imprint.ActIndex >= 0 && imprint.ActIndex < save.Acts.Count) save.Acts[imprint.ActIndex].SavedMap = null;
             return save;
@@ -318,7 +334,7 @@ public static class MemoryStone
         if (creature.CurrentHp > creature.MaxHp) await CreatureCmd.SetCurrentHp(creature, creature.MaxHp);
 
         for (var i = 0; i < soul; i++)
-            await CardPileCmd.Add(player.RunState.CreateCard<DeathEcho>(player), PileType.Deck);
+            await CardAcquisition.AddOrDefer(player.RunState.CreateCard<DeathEcho>(player));
 
         for (var i = 0; i < purse; i++)
             await PlayerCmd.SetGold(MemoryStoneRules.PurseScarGold(player.Gold), player);

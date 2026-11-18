@@ -32,4 +32,26 @@ public abstract class RequiemPower : CustomPowerModel
     /// Single, but you're suggested to use Single as it is more explicit about how it will work.
     /// </summary>
     public abstract override PowerStackType StackType { get; }
+
+    /// <summary>
+    /// Постоянные черты врага (Латы, Устойчивость, сопротивления, аффиксы) при «компактных статусах» уходят из ряда
+    /// статусов в строку значков под полоской ♥ (<see cref="UI.NEnemyTraitChips"/>). Наследники, которым нужно своё
+    /// правило видимости, переопределяют это свойство дальше.
+    /// </summary>
+    protected override bool IsVisibleInternal => !EnemyTraits.HideInRow(this);
+}
+
+/// <summary>Какие силы считаются постоянными чертами врага и прячутся из ряда статусов (плейтест 2026-11).</summary>
+public static class EnemyTraits
+{
+    /// <summary>Пока true, черты «видимы» — чтобы собрать их подсказки (PowerModel.HoverTips пуст у невидимых сил).</summary>
+    public static bool Reveal { get; set; }
+
+    public static bool IsTrait(MegaCrit.Sts2.Core.Models.PowerModel power) =>
+        power is PoisePower or UnshakeablePower or PlatingPower or ResistancePower or CloakPower or SpellAbsorptionPower
+            or AffixPower;
+
+    public static bool HideInRow(MegaCrit.Sts2.Core.Models.PowerModel power) =>
+        !Reveal && Config.RequiemConfig.CompactEnemyStatuses && IsTrait(power) && power.IsMutable
+        && power.Owner is { IsEnemy: true };
 }

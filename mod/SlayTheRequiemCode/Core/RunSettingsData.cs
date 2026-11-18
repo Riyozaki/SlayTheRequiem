@@ -26,6 +26,9 @@ public sealed class RunSettingsData
 {
     public const int Version = 1;
 
+    /// <summary>Host-created nonce shared before a NEW run, persisted with its settings. Empty in legacy saves.</summary>
+    public string RunId { get; set; } = "";
+
     public bool EnableRequiemSystems { get; set; } = true;
     public bool EnableOverstrain { get; set; } = true;
     public int EnemyHpPercent { get; set; } = 110;
@@ -86,6 +89,7 @@ public sealed class RunSettingsData
         Add("campn", CampBuildingsUnlocked);
         Add("stone", B(EnableMemoryStone));
         Add("candles", MemoryStoneCandles);
+        if (Guid.TryParseExact(RunId, "N", out var runId)) sb.Append(";run=").Append(runId.ToString("N"));
         if (Personal.Count > 0)
         {
             // Порядок по id — одинаковая строка на всех машинах.
@@ -109,6 +113,11 @@ public sealed class RunSettingsData
             if (eq <= 0) continue;
             var key = part[..eq];
             var value = part[(eq + 1)..];
+            if (key == "run")
+            {
+                if (Guid.TryParseExact(value, "N", out var id)) data.RunId = id.ToString("N");
+                continue;
+            }
             if (key == "p")
             {
                 ParsePersonal(value, data.Personal);

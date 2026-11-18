@@ -49,6 +49,12 @@ public sealed class MerchantLedger : RequiemRelic
     // ───── сохраняемое состояние ─────
 
     private int[] _spent = new int[ShopRules.ShopTypeCount];
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _spent = (int[])_spent.Clone(); // MemberwiseClone must not couple two players' trust/payment ledgers.
+    }
     private int _currentShop;
     private int _currentFloor = -1;
     private int _shopAct = -1;
@@ -196,13 +202,17 @@ public sealed class MerchantLedger : RequiemRelic
 
     // ───── доверие, Заказ, кража ─────
 
+    private int _purchaseReceiptSequence;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int PurchaseReceiptSequence { get => _purchaseReceiptSequence; set { AssertMutable(); _purchaseReceiptSequence = Math.Max(0, value); } }
+
     public int CurrentTrust => TrustOf(CurrentShop);
 
     public void AddSpent(ShopType shop, int gold)
     {
         if (gold <= 0) return;
         AssertMutable();
-        _spent[(int)shop] += gold;
+        _spent[(int)shop] = (int)Math.Min(int.MaxValue, (long)_spent[(int)shop] + gold);
         SyncVars();
     }
 
@@ -278,7 +288,9 @@ public sealed class MerchantLedger : RequiemRelic
     public override async Task AfterItemPurchased(Player player, MerchantEntry itemPurchased, int goldSpent)
     {
         if (player != Owner || !Active(Owner) || goldSpent <= 0 || !LocalContext.IsMe(Owner)) return;
-        await ShopActions.Perform(Owner, ShopAction.TrustSpent, (int)CurrentShop, goldSpent);
+        var receipt = PurchaseReceipts.Find(Owner, goldSpent);
+        if (receipt == null) { MainFile.Logger.Warn("[ShopOperation] Purchase trust not credited: no observed payment receipt"); return; }
+        await ShopActions.Perform(Owner, ShopAction.TrustSpent, (int)CurrentShop, goldSpent, receipt);
     }
 
     /// <summary>
@@ -306,7 +318,16 @@ public sealed class MerchantLedger : RequiemRelic
             ? ShopRules.ApplyTrust(ShopRules.RemovalPrice(Owner.ExtraFields.CardShopRemovalsUsed), CurrentTrust)
             : ShopRules.RemovalPrice(Owner.ExtraFields.CardShopRemovalsUsed);
         var surcharge = ShopRules.DeathEchoSurcharge(price, Owner.Gold);
-        if (surcharge > 0) await PlayerCmd.LoseGold(surcharge, Owner, GoldLossType.Spent);
+        if (surcharge <= 0) return;
+        var before = Owner.Gold;
+        using var receiptScope = PurchaseReceipts.Suppress(Owner);
+        try { await PlayerCmd.LoseGold(surcharge, Owner, GoldLossType.Spent); }
+        finally
+        {
+            // This hook is already executed on EVERY peer, including for native removal. Credit its actual
+            // surcharge here exactly once, rather than creating an unclaimed second TrustSpent receipt.
+            if (Active(Owner)) AddSpent(CurrentShop, OperationAccounting.Paid(before, Owner.Gold));
+        }
     }
 
     /// <summary>

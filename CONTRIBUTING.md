@@ -1,10 +1,12 @@
 # Как помочь Slay the Requiem
 
-Спасибо за интерес! Мод в стадии **pre-alpha**: код написан, но ещё не собирался с игрой.
+Спасибо за интерес! Мод в стадии **pre-alpha**. Идёт стабилизация G0/G1: исторический build и плейтест
+не проверяют новые изменения. Текущие статусы — [реестр](docs/plan/implementation-registry.md).
 
 ## Самое полезное сейчас
-1. **Первая сборка.** Соберите `mod/SlayTheRequiem.csproj` с игрой и BaseLib и пришлите ошибки компиляции
-   (issue «Баг» → «Сборка»). Даже список из сотни ошибок — огромная помощь.
+1. **Воспроизводимая сборка текущего кода.** Выполните [G0 pipeline](tools/g0/README.md) с легальной игрой 0.107.1,
+   BaseLib 3.4.8, SDK 9 и MegaDot 4.5.1 mono: full build с warnings → отдельный PCK → чистая установка.
+   Пришлите обезличенные ошибки/паспорт (issue «Баг» → «Сборка»); игровые DLL, saves и локальные пути в Git не добавлять.
 2. **Плейтест.** Какие системы ломаются, где баланс улетает.
 3. **Тексты.** Правки русской и английской локализации.
 
@@ -12,6 +14,7 @@
 ```bash
 dotnet test mod/SlayTheRequiem.Tests                 # если трогали Core/
 python3 -m unittest discover -s tools/sim            # правила и их Python-зеркало
+python3 -m unittest discover -s tools/g0             # synthetic build/install contracts, НЕ экспорт
 python3 tools/loc/build_loc.py                       # тексты генерируются — не правьте JSON руками
 python3 tools/ci/check_loc.py
 ```

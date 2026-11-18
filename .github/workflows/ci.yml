@@ -32,6 +32,8 @@ jobs:
           python-version: "3.12"
       - name: unittest
         run: python -m unittest discover -s tools/sim -v
+      - name: Build/install pipeline contracts (synthetic fixtures, no game or PCK export)
+        run: python -m unittest discover -s tools/g0 -v
 
   content:
     name: Localization, art, Harmony targets & C# syntax

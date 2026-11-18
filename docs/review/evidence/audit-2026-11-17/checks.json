@@ -1,0 +1,122 @@
+[
+  {
+    "name": "sim",
+    "command": "python -m unittest discover -s tools/sim -v",
+    "exit_code": 0,
+    "seconds": 0.91
+  },
+  {
+    "name": "loc",
+    "command": "python tools/ci/check_loc.py",
+    "exit_code": 0,
+    "seconds": 0.11
+  },
+  {
+    "name": "syntax",
+    "command": "python tools/ci/check_csharp_syntax.py",
+    "exit_code": 0,
+    "seconds": 0.48
+  },
+  {
+    "name": "vanilla_art",
+    "command": "python tools/art/build_vanilla_art.py --check",
+    "exit_code": 0,
+    "seconds": 0.1
+  },
+  {
+    "name": "art_fit",
+    "command": "python tools/art/art_fit.py --check",
+    "exit_code": 0,
+    "seconds": 0.2
+  },
+  {
+    "name": "events",
+    "command": "python tools/ci/check_events.py",
+    "exit_code": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "asset_manifest",
+    "command": "python tools/assets/asset_manifest.py --check",
+    "exit_code": 0,
+    "seconds": 0.12
+  },
+  {
+    "name": "card_audit",
+    "command": "python tools/cards/audit_cards.py --check --out docs/plan/card-audit.md",
+    "exit_code": 0,
+    "seconds": 0.25
+  },
+  {
+    "name": "design_tables",
+    "command": "python tools/cards/design_tables.py --check",
+    "exit_code": 0,
+    "seconds": 0.1
+  },
+  {
+    "name": "card_catalog",
+    "command": "python tools/cards/card_catalog.py --check",
+    "exit_code": 0,
+    "seconds": 0.11
+  },
+  {
+    "name": "pools",
+    "command": "python tools/pools/build_pools.py --check",
+    "exit_code": 0,
+    "seconds": 0.12
+  },
+  {
+    "name": "relics",
+    "command": "python tools/relics/build_relics.py --check",
+    "exit_code": 0,
+    "seconds": 0.06
+  },
+  {
+    "name": "boss_icons",
+    "command": "python tools/art/monsters/build_boss_icons.py --check",
+    "exit_code": 0,
+    "seconds": 3.48
+  },
+  {
+    "name": "scenes",
+    "command": "python tools/art/scenes/build_scenes.py --check",
+    "exit_code": 0,
+    "seconds": 0.04
+  },
+  {
+    "name": "event_art",
+    "command": "python tools/art/events/build_events.py --check",
+    "exit_code": 0,
+    "seconds": 0.09
+  },
+  {
+    "name": "act_art",
+    "command": "python tools/art/acts/build_acts.py --check",
+    "exit_code": 0,
+    "seconds": 0.05
+  },
+  {
+    "name": "origins_art",
+    "command": "python tools/art/relics/draw_origins.py --check",
+    "exit_code": 0,
+    "seconds": 0.04
+  },
+  {
+    "name": "relic_art",
+    "command": "python tools/art/relics/draw_relics.py --check",
+    "exit_code": 0,
+    "seconds": 0.08
+  },
+  {
+    "name": "card_art",
+    "command": "python tools/art/cards/draw_portraits.py --check",
+    "exit_code": 0,
+    "seconds": 0.05
+  },
+  {
+    "name": "audio",
+    "command": "python tools/audio/build_sfx.py --check",
+    "exit_code": 0,
+    "seconds": 0.24
+  }
+]

@@ -393,3 +393,71 @@ public sealed class StrPatchesCmd : RequiemConsoleCmd
         return Ok(string.Join("\n", lines));
     }
 }
+
+/// <summary>Event-based diagnostic trace, without changing RNG or gameplay rules.</summary>
+public sealed class StrTraceCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_trace";
+    public override string Args => "[on|off|status]";
+    public override string Description => "Slay the Requiem: trace reward models, holders, Add, combat copy, draw and shouts.";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var option = args.FirstOrDefault()?.ToLowerInvariant() ?? "status";
+        if (option is not ("on" or "off" or "status") || args.Length > 1) return Fail("str_trace [on|off|status]");
+        if (option != "status") CardRewardTrace.Enabled = option == "on";
+        if (CardRewardTrace.Enabled) RunDiagnostics.Log(RunManager.Instance.DebugOnlyGetState(), "trace-enabled");
+        return Ok($"[CardReward] trace={(CardRewardTrace.Enabled ? "ON" : "OFF")}; [ShopOperation] and forced failure diagnostics remain in the log.");
+    }
+}
+
+public sealed class StrPassportCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_passport";
+    public override string Args => "";
+    public override string Description => "Slay the Requiem: actual artifacts, rules, mods, seed and display context (not acceptance proof).";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var state = RunManager.Instance.DebugOnlyGetState();
+        RunDiagnostics.Log(state, "console");
+        return Ok(RunDiagnostics.Describe(state));
+    }
+}
+
+public sealed class StrFactoryCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_factory";
+    public override string Args => "[smoke|full] [seeds:1..8]";
+    public override string Description => "Slay the Requiem: REAL CardFactory isolated seed suite; disposable run, BaseLib + mod only. Not a UI/co-op test.";
+    public override bool IsNetworked => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        if (NeedRun(issuingPlayer) is { } fail) return fail;
+        if (MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress) return Fail("Run the factory suite outside combat.");
+        var mode = args.FirstOrDefault()?.ToLowerInvariant() ?? "smoke";
+        var seeds = 1;
+        if (args.Length > 2 || mode is not ("smoke" or "full")
+            || args.Length > 1 && (!int.TryParse(args[1], out seeds) || seeds is < 1 or > 8))
+            return Fail("str_factory [smoke|full] [1..8]");
+        return Ok(CardFactoryRegression.Run(mode == "full", seeds), "Factory suite started; summary/failures: [CardFactorySuite] in the log. No gameplay acceptance implied.");
+    }
+}
+
+
+/// <summary>Production game-adapter checks on isolated non-local players; never a substitute for UI/co-op acceptance.</summary>
+public sealed class StrIntegrityCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_integrity";
+    public override string Args => "";
+    public override string Description => "Slay the Requiem: isolated game-adapter integrity suite. Disposable singleplayer run, out of combat, BaseLib + mod only.";
+    public override bool IsNetworked => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        if (NeedRun(issuingPlayer) is { } fail) return fail;
+        if (args.Length != 0) return Fail("str_integrity (no arguments)");
+        return Ok(IntegrityRegression.Run(), "Integrity suite started; per-case results: [IntegritySuite]. NOT UI, disk Continue/rollback or two-client acceptance.");
+    }
+}

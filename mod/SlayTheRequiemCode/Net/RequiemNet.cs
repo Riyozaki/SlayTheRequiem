@@ -53,6 +53,12 @@ public static class RequiemNet
         catch (Exception e) { MainFile.Logger.Warn($"[SlayTheRequiem] Сеть: {message.GetType().Name} не отправлено ({e.Message})."); }
     }
 
+    /// <summary>Transactional transport: a send failure must not be converted into a local-only commit.</summary>
+    public static void SendTargetedOrThrow(ICustomTargetedMessage message)
+    {
+        if (IsMultiplayer) CustomTargetedMessageWrapper.Send(message);
+    }
+
     /// <summary>
     /// Чисто локальный выбор карты (экран «выбери карту» без PlayerChoiceSynchronizer): для прилавка и экрана поражения,
     /// где результат рассылается своим сообщением. null — пропуск.
