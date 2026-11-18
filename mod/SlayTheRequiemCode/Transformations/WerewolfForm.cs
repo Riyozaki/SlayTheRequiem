@@ -205,7 +205,7 @@ public sealed class BeastFormPower : RequiemPower
     public override bool ShouldPlay(CardModel card, AutoPlayType autoPlayType) =>
         card.Owner?.Creature != Owner || card is IBeastCard or Cards.EncounterCounterCard;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (dealer != Owner || target == Owner || !props.IsPoweredAttack() || cardSource is not IBeastCard) return 0m;
         return TransformationRules.BeastAttackBonusFor(Form?.Hunter ?? 0);

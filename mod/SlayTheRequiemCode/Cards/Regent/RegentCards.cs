@@ -226,7 +226,7 @@ public sealed class ManaStorm : RegentCard
     {
         var hits = ResolveStarXValue();
         if (hits <= 0) return;
-        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this).TargetingAllOpponents(CombatState)
+        await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, null).TargetingAllOpponents(CombatState)
             .WithHitCount(hits).WithHitFx("vfx/vfx_attack_lightning").Execute(ctx);
     }
 }

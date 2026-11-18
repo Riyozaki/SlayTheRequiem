@@ -103,7 +103,7 @@ public sealed class VampireForm : FormRelic, ITransformationForm
     public override bool BlocksHealing(HealSource source) => Row.HealingOnlyByFeeding && source != HealSource.Feeding;
 
     /// <summary>Огонь и свет по вампиру ×1.5 / ×2 (уязвимость к огню при сытости — через сопротивление −1).</summary>
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (!Owned || target != Owner.Creature || amount <= 0) return 1m;
         var type = DamageTyping.Resolve(props, dealer, cardSource);

@@ -29,7 +29,7 @@ public static class CardRewardTrace
         try
         {
             var list = cards.ToList();
-            MainFile.Logger.Info($"[CardReward] phase={phase} {Context(player)} count={list.Count} rng={player.PlayerRng.Rewards.Counter} settings={RunSettings.Active?.Encode() ?? "legacy/config"} cards=" +
+            MainFile.Logger.Info($"[CardReward] phase={phase} {Context(player)} count={list.Count} rng={player.PlayerRng.Rewards.ToSerializable().counter} settings={RunSettings.Active?.Encode() ?? "legacy/config"} cards=" +
                 string.Join(", ", list.Select(c => Describe(c.Card))));
         }
         catch (Exception e) { MainFile.Logger.Warn($"[CardReward] trace failed: {e.Message}"); }
@@ -71,7 +71,7 @@ public static class CardFactoryTracePatch
     public static void Prefix(Player player, int cardCount, CardCreationOptions options)
     {
         if (CardRewardTrace.Enabled)
-            MainFile.Logger.Info($"[CardReward] phase=pool-roll {CardRewardTrace.Context(player)} requested={cardCount} source={options.Source} flags={options.Flags} rng={player.PlayerRng.Rewards.Counter}");
+            MainFile.Logger.Info($"[CardReward] phase=pool-roll {CardRewardTrace.Context(player)} requested={cardCount} source={options.Source} flags={options.Flags} rng={player.PlayerRng.Rewards.ToSerializable().counter}");
     }
     [HarmonyPostfix]
     public static void Postfix(Player player, IEnumerable<CardCreationResult> __result) => CardRewardTrace.Options("factory:result", player, __result);
@@ -93,7 +93,7 @@ public static class CardNodeTracePatch
     }
 }
 
-[HarmonyPatch(typeof(CardPileCmd), nameof(CardPileCmd.Add), typeof(IEnumerable<CardModel>), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool))]
+[HarmonyPatch(typeof(CardPileCmd), nameof(CardPileCmd.Add), typeof(IEnumerable<CardModel>), typeof(CardPile), typeof(CardPilePosition), typeof(AbstractModel), typeof(bool), typeof(bool))]
 public static class CardPileTracePatch
 {
     [HarmonyPrefix]

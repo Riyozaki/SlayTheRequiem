@@ -72,10 +72,19 @@ public static class RequiemUi
     {
         get
         {
-            if (_font != null) return _font;
-            try { _font = PreloadManager.Cache.GetAsset<Font>(FontPath); }
+            // Держим собственную копию: общий кэш ассетов игры освобождает ресурс между сценами, а
+            // статическая ссылка на освобождённый FontVariation роняет DrawString в
+            // ObjectDisposedException каждый кадр (лог-рекурсия Godot -> переполнение стека).
+            if (_font != null && GodotObject.IsInstanceValid(_font)) return _font;
+            _font = null;
+            try
+            {
+                var cached = PreloadManager.Cache.GetAsset<Font>(FontPath);
+                if (cached != null && GodotObject.IsInstanceValid(cached))
+                    _font = cached.Duplicate() as Font ?? cached;
+            }
             catch { _font = null; }
-            return _font ??= ThemeDB.FallbackFont;
+            return _font ?? ThemeDB.FallbackFont;
         }
     }
 

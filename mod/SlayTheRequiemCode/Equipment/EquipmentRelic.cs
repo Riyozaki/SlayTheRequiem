@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -163,7 +164,7 @@ public abstract class WeaponRelic : EquipmentRelic
         IsEquipped && cardSource != null && dealer == Owner.Creature && props.IsPoweredAttack()
         && EquipmentCombatRules.IsWeaponAttack(cardSource);
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target == null || !IsMyWeaponAttack(dealer, props, cardSource)) return 0m;
         // Рубящий: +2 (+4 на IV+) по цели с ♥ < 50 %.
@@ -172,7 +173,7 @@ public abstract class WeaponRelic : EquipmentRelic
         return 0m;
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target == null || !IsMyWeaponAttack(dealer, props, cardSource)) return 1m;
         switch (PropertyKind)

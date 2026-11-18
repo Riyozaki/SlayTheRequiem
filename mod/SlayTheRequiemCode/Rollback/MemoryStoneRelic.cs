@@ -222,7 +222,7 @@ public sealed class MemoryStoneRelic : RequiemRelic
         return false;
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (dealer == null || dealer != Owner.Creature || !IsRevengeTarget(target)) return 1m;
         return MemoryStoneRules.RevengeMultiplier;

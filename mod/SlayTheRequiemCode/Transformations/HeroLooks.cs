@@ -143,7 +143,8 @@ public static class HeroLookAnimatorPatches
 {
     [ThreadStatic] private static bool _redirecting;
 
-    public static bool Redirect(CharacterModel instance, MegaSprite controller, ref CreatureAnimator result)
+    public static bool Redirect(CharacterModel instance, MegaSprite controller, Creature creature,
+        ref CreatureAnimator result)
     {
         if (_redirecting) return true;
         try
@@ -151,7 +152,7 @@ public static class HeroLookAnimatorPatches
             var owner = HeroLooks.BorrowedFor(controller);
             if (owner == null || owner.GetType() == instance.GetType()) return true;
             _redirecting = true;
-            result = owner.GenerateAnimator(controller);
+            result = owner.GenerateAnimator(controller, creature);
             HeroLooks.AddFallbackTriggers(result);
             return false;
         }
@@ -171,33 +172,12 @@ public static class HeroLookAnimatorPatches
 public static class HeroLookAnimatorBasePatch
 {
     [HarmonyPrefix]
-    public static bool Prefix(CharacterModel __instance, MegaSprite controller, ref CreatureAnimator __result) =>
-        HeroLookAnimatorPatches.Redirect(__instance, controller, ref __result);
+    public static bool Prefix(CharacterModel __instance, MegaSprite controller, Creature creature, ref CreatureAnimator __result) =>
+        HeroLookAnimatorPatches.Redirect(__instance, controller, creature, ref __result);
 }
 
-[HarmonyPatch(typeof(Ironclad), nameof(Ironclad.GenerateAnimator))]
-public static class HeroLookAnimatorIroncladPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix(CharacterModel __instance, MegaSprite controller, ref CreatureAnimator __result) =>
-        HeroLookAnimatorPatches.Redirect(__instance, controller, ref __result);
-}
-
-[HarmonyPatch(typeof(Silent), nameof(Silent.GenerateAnimator))]
-public static class HeroLookAnimatorSilentPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix(CharacterModel __instance, MegaSprite controller, ref CreatureAnimator __result) =>
-        HeroLookAnimatorPatches.Redirect(__instance, controller, ref __result);
-}
-
-[HarmonyPatch(typeof(Regent), nameof(Regent.GenerateAnimator))]
-public static class HeroLookAnimatorRegentPatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix(CharacterModel __instance, MegaSprite controller, ref CreatureAnimator __result) =>
-        HeroLookAnimatorPatches.Redirect(__instance, controller, ref __result);
-}
+// v0.111.1: Ironclad/Silent/Regent no longer declare their own GenerateAnimator overrides, so the base
+// patch above is the single interception point (patching each subclass now resolves to no method).
 
 /// <summary>
 /// Накладки на модель героя в бою: знамя Знака Пути за спиной (06 §5 «Знак Пути — видимая часть экипировки») и

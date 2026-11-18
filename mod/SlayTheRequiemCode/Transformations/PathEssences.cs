@@ -238,7 +238,7 @@ public sealed class BarbarianEssence : PathEssence, IAttackStaminaModifier
 
     public bool Raging => Owned && Hero.CombatState != null && TransformationRules.BarbarianRage(Hero.CurrentHp, Hero.MaxHp);
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         Raging && IsOwnAttack(dealer, props, cardSource) ? TransformationRules.BarbarianRageMultiplier : 1m;
 
     public int ModifyAttackStamina(CardModel card, int cost) => Raging && card.Owner == Owner ? 0 : cost;
@@ -293,7 +293,7 @@ public sealed class AssassinEssence : PathEssence
         return Task.CompletedTask;
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         Owned && !_stepUsed && IsOwnAttack(dealer, props, cardSource) && IsEnemy(target)
             ? TransformationRules.AssassinShadowStepMultiplier
             : 1m;
@@ -491,7 +491,7 @@ public sealed class BattlemageEssence : PathEssence
         {
             if (target is not { IsAlive: true } || !IsEnemy(target)) continue;
             using (DamageTyping.As(element))
-                await CreatureCmd.Damage(ctx, target, TransformationRules.BattlemageElementalDamage, ValueProp.Unpowered, Hero, null);
+                await CreatureCmd.Damage(ctx, target, TransformationRules.BattlemageElementalDamage, ValueProp.Unpowered, Hero, null, null);
         }
     }
 }
@@ -511,7 +511,7 @@ public sealed class ReflectorEssence : PathEssence
         if (reflected <= 0) return;
         essence.Flash();
         using (DamageTyping.As(DamageType.Magic))
-            await CreatureCmd.Damage(ctx, dealer, reflected, ValueProp.Unpowered, owner, null);
+            await CreatureCmd.Damage(ctx, dealer, reflected, ValueProp.Unpowered, owner, null, null);
     }
 }
 

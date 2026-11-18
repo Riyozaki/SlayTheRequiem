@@ -250,7 +250,7 @@ public sealed class LichForm : PactStage, ISummonListener
     public override bool ImmuneTo(PowerModel canonicalPower) =>
         canonicalPower is VanillaPoison or WeaponPoisonPower or BlightPower or BleedPower;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (!Owned || target != Owner.Creature || amount <= 0) return 1m;
         return DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Physical
@@ -272,7 +272,7 @@ public sealed class LichForm : PactStage, ISummonListener
         Flash();
         foreach (var enemy in combat.HittableEnemies.Where(e => e.IsAlive).ToList())
             using (DamageTyping.As(DamageType.Magic))
-                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), enemy, TransformationRules.LichDeathBlast, ValueProp.Unpowered, Owner.Creature, null);
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), enemy, TransformationRules.LichDeathBlast, ValueProp.Unpowered, Owner.Creature, null, null);
     }
 }
 

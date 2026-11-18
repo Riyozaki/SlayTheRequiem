@@ -255,7 +255,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         Owner != null && dealer == Owner.Creature && card != null && card.Owner == Owner
         && card.Type == CardType.Attack && card is not SpellCard && props.IsPoweredAttack();
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (Owner?.Creature == null) return 0m;
         var boon = ActiveBoon;
@@ -295,7 +295,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
             {
                 if (target == null || !target.IsAlive || !EnemySetup.IsUndeadOrAbyss(target)) continue;
                 using (DamageTyping.As(DamageType.Light))
-                    await CreatureCmd.Damage(choiceContext, target, light, ValueProp.Unpowered, Owner.Creature, null);
+                    await CreatureCmd.Damage(choiceContext, target, light, ValueProp.Unpowered, Owner.Creature, null, null);
             }
         }
         await OnOwnAttack(choiceContext, command, card);

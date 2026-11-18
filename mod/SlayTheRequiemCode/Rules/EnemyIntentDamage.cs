@@ -24,7 +24,7 @@ public static class EnemyIntentDamage
         var amount = __instance.DamageCalc?.Invoke() ?? 0m;
         if (LocalContext.GetMe(owner.CombatState) is { } me)
             amount = Hook.ModifyDamage(me.RunState, owner.CombatState, me.Creature, owner, amount,
-                ValueProp.Move | ValueProp.Unpowered, null, ModifyDamageHookType.All, CardPreviewMode.None, out _);
+                ValueProp.Move | ValueProp.Unpowered, null, null, ModifyDamageHookType.All, CardPreviewMode.None, out _);
         __result = (int)Math.Clamp(amount, 0m, int.MaxValue);
         return false;
     }

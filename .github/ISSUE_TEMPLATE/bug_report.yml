@@ -53,7 +53,7 @@ body:
     attributes:
       label: Точная идентичность сборки
       description: Игра, BaseLib, ОС, другие моды. Source SHA и input/DLL/PCK/manifest hashes из паспорта; для кандидата также archive SHA. Одного v0.0.1 недостаточно.
-      placeholder: "StS2 0.107.1; BaseLib 3.4.8; source SHA …; DLL/PCK …; only BaseLib+mod / other mods …"
+      placeholder: "StS2 0.111.1; BaseLib 3.4.8; source SHA …; DLL/PCK …; only BaseLib+mod / other mods …"
       render: text
     validations:
       required: true

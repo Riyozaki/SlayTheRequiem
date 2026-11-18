@@ -84,7 +84,7 @@ public sealed class EnemyStaminaPower : EnemyResourcePower
 
     private bool OwnerIsCaster => Owner.HasPower<EnemyManaPower>();
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (dealer != Owner || !props.IsPoweredAttack() || OwnerIsCaster) return 1m;
         return StaminaRules.DamageMultiplier(Rules.EnemyActionBudget.StaminaBeforePayment(Owner, DisplayAmount, Pool));
@@ -101,7 +101,7 @@ public sealed class EnemyManaPower : EnemyResourcePower
 
     protected override Task OnDepleted() => EnemyResponses.TryFocus(Owner);
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         dealer == Owner && props.IsCardOrMonsterMove() ? Rules.EnemyActionBudget.ManaDamageMultiplier(Owner, DisplayAmount) : 1m;
 
 }
@@ -142,7 +142,7 @@ public sealed class BrokenPower : RequiemPower
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner ? EnemyRules.BrokenDamageTakenMultiplier : 1m;
 
     public override Task AfterApplied(Creature? applier, CardModel? cardSource)

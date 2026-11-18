@@ -96,10 +96,12 @@ public sealed class BattleCry : RequiemCard, IShoutCard
         WithPower<StaggerPower>(3);
     }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
-        var pile = base.GetResultPileTypeForCardPlay();
-        return pile == PileType.Discard && !Shouts.Active(Owner) ? PileType.Exhaust : pile;
+        var location = base.GetResultLocationForCardPlay();
+        return location.pileType == PileType.Discard && !Shouts.Active(Owner)
+            ? new CardLocation(location.player, PileType.Exhaust, location.position)
+            : location;
     }
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)

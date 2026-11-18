@@ -42,7 +42,7 @@ public static class RewardSwap
             return copy;
         }).ToList();
         var originals = options.Select(o => o.Card).ToHashSet();
-        var counter = player.PlayerRng.Rewards.Counter;
+        var counter = player.PlayerRng.Rewards.ToSerializable().counter;
         CardRewardTrace.Options($"replace:{rule}:before", player, options);
         try
         {
@@ -57,7 +57,7 @@ public static class RewardSwap
         {
             foreach (var card in staged.Select(s => s.Card).Where(c => !originals.Contains(c)).Distinct())
                 if (!player.Deck.Cards.Contains(card) && player.RunState.ContainsCard(card)) player.RunState.RemoveCard(card);
-            MainFile.Logger.Error($"[CardReward] rule={rule} fallback=entire-rule-input rng={counter}->{player.PlayerRng.Rewards.Counter}: {e}");
+            MainFile.Logger.Error($"[CardReward] rule={rule} fallback=entire-rule-input rng={counter}->{player.PlayerRng.Rewards.ToSerializable().counter}: {e}");
             CardRewardTrace.Options($"replace:{rule}:fallback", player, options, force: true);
             return false;
         }

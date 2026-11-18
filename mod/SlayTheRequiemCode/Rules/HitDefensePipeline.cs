@@ -1,5 +1,6 @@
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
@@ -77,7 +78,8 @@ public static class HitDefensePipeline
 
 [CriticalPatch]
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage),
-    typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal), typeof(ValueProp), typeof(Creature), typeof(CardModel))]
+    typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal), typeof(ValueProp), typeof(Creature), typeof(CardModel),
+    typeof(CardPlay))]
 public static class DamageDefenseScopePatch
 {
     [HarmonyPrefix]

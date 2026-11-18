@@ -81,7 +81,7 @@ public static class CardFactoryRegression
                 throw new InvalidOperationException($"Portrait cannot be loaded: {card.Id} {card.PortraitPath}");
         }
         upgraded = cards.Count(c => c.IsUpgraded);
-        return string.Join("|", cards.Select(c => $"{c.Id}:{c.CurrentUpgradeLevel}")) + $"|rng={player.PlayerRng.Rewards.Counter}";
+        return string.Join("|", cards.Select(c => $"{c.Id}:{c.CurrentUpgradeLevel}")) + $"|rng={player.PlayerRng.Rewards.ToSerializable().counter}";
     }
 
     public static async Task Run(bool full, int seeds)

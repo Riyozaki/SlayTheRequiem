@@ -102,7 +102,7 @@ public sealed class VampireHunter : RequiemMonster
     {
         if (target != Creature || !_trapSet || dealer is not { IsPlayer: true } || !props.IsPoweredAttack()) return;
         _trapSet = false;
-        await CreatureCmd.Damage(choiceContext, dealer, TrapDamage, ValueProp.Unpowered, Creature, null);
+        await CreatureCmd.Damage(choiceContext, dealer, TrapDamage, ValueProp.Unpowered, Creature, null, null);
         await PowerCmd.Apply<ConcussedPower>(choiceContext, dealer, 1, Creature, null);
     }
 }

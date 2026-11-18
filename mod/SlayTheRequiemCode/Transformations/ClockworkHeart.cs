@@ -149,7 +149,7 @@ public sealed class SparkOrbPower : ElementOrbPower
         await PowerCmd.Apply<StaticPower>(ctx, enemy, TransformationRules.SparkStatic, Owner, null);
         if (!enemy.IsAlive) return;
         using (DamageTyping.As(DamageType.Shock))
-            await CreatureCmd.Damage(ctx, enemy, TransformationRules.SparkDamage, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(ctx, enemy, TransformationRules.SparkDamage, ValueProp.Unpowered, Owner, null, null);
     }
 }
 

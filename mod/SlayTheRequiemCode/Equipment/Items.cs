@@ -1,4 +1,5 @@
 using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -82,8 +83,8 @@ public sealed class HeavyBow : WeaponRelic
     public override WeaponKind Weapon => WeaponKind.Bow;
     public override int Weight => 3;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
-        base.ModifyDamageAdditive(target, amount, props, dealer, cardSource) + (target != null && IsMyWeaponAttack(dealer, props, cardSource) ? 1m : 0m);
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
+        base.ModifyDamageAdditive(target, amount, props, dealer, cardSource, cardPlay) + (target != null && IsMyWeaponAttack(dealer, props, cardSource) ? 1m : 0m);
 }
 
 [Pool(typeof(SharedRelicPool))]
@@ -94,9 +95,9 @@ public sealed class SilverSaber : WeaponRelic
     public override WeaponKind Weapon => WeaponKind.Sword;
 
     /// <summary>По нежити и Призрачным: +2.</summary>
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
-        var bonus = base.ModifyDamageAdditive(target, amount, props, dealer, cardSource);
+        var bonus = base.ModifyDamageAdditive(target, amount, props, dealer, cardSource, cardPlay);
         if (target?.Monster != null && IsMyWeaponAttack(dealer, props, cardSource)
             && Rules.RequiemData.MonsterEntry(target.Monster.GetType().Name).Faction is "undead" or "spirit")
             bonus += 2;
@@ -177,7 +178,7 @@ public abstract class StalkerHidePiece : ArmorRelic
     private bool IsSetLeader => Loadout.Equipped(Owner).OfType<StalkerHidePiece>().FirstOrDefault() == this;
 
     /// <summary>4 части: первая атака боя +3.</summary>
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsEquipped && IsSetLeader && !_firstAttackDone && dealer == Owner.Creature && props.IsPoweredAttack()
         && Loadout.SetPieces(Owner, SetName) >= 4 ? 3m : 0m;
 
@@ -262,7 +263,7 @@ public sealed class RingOfFuryStrike : ComboRing
     public override int Weight => 0;
 
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props,
-        Creature? dealer, CardModel? cardSource) =>
+        Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsEquipped && target != null && cardSource != null && dealer == Owner.Creature && props.IsPoweredAttack()
         && EquipmentCombatRules.IsWeaponAttack(cardSource)
             ? JewelryRules.FuryStrikeDamage

@@ -215,7 +215,7 @@ public abstract class SummonPower : RequiemPower
                 // native pet-owner Block, reapply elemental modifiers, or drop the packet if its dealer died.
                 using var transfer = DamageTyping.As(DamageType.True);
                 await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), pet, loss,
-                    ValueProp.Unpowered | ValueProp.Unblockable, null, null);
+                    ValueProp.Unpowered | ValueProp.Unblockable, null, null, null);
             }
             else if (loss >= Amount) await Destroyed();
             else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -loss, null, null, silent: true);
@@ -249,7 +249,7 @@ public abstract class SummonPower : RequiemPower
         foreach (var enemy in targets)
         {
             using (DamageTyping.As(AttackType))
-                await CreatureCmd.Damage(choiceContext, enemy, StrikeDamage, ValueProp.Unpowered, Owner, null);
+                await CreatureCmd.Damage(choiceContext, enemy, StrikeDamage, ValueProp.Unpowered, Owner, null, null);
             if (enemy.IsAlive) await OnHit(choiceContext, enemy);
         }
     }
@@ -360,7 +360,7 @@ public sealed class SpectralKnightPower : SummonPower
     public override int AttackDamage => SummonRules.SpectralKnightDamage;
     protected override MonsterModel CreatureModel => ModelDb.Monster<SpectralKnightSummon>();
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         dealer == Owner && cardSource != null && props.IsPoweredAttack() && Amount > 0 ? SummonRules.SpectralKnightAttackBonus : 0m;
 }
 

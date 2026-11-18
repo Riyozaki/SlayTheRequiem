@@ -69,20 +69,20 @@ public abstract class RequiemCard(int cost, CardType type, CardRarity rarity, Ta
     /// <summary>Клич, отправленный на полку текущим розыгрышем (см. <see cref="Shouts"/>).</summary>
     public bool ShelvedByThisPlay { get; set; }
 
-    protected override PileType GetResultPileTypeForCardPlay()
+    protected override CardLocation GetResultLocationForCardPlay()
     {
-        var pile = base.GetResultPileTypeForCardPlay();
+        var location = base.GetResultLocationForCardPlay();
         ShelvedByThisPlay = false;
-        if (this is not IShoutCard || pile == PileType.None || !Shouts.Active(Owner) || !Shouts.HasRoom(Owner)) return pile;
+        if (this is not IShoutCard || location.pileType == PileType.None || !Shouts.Active(Owner) || !Shouts.HasRoom(Owner)) return location;
         ShelvedByThisPlay = true;
-        return PileType.None;
+        return new CardLocation(location.player, PileType.None, CardPilePosition.None);
     }
 
     protected Task Hit(PlayerChoiceContext ctx, Creature target, string vfx = "vfx/vfx_attack_slash", decimal? damage = null) =>
-        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this).Targeting(target).WithHitFx(vfx).Execute(ctx);
+        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this, null).Targeting(target).WithHitFx(vfx).Execute(ctx);
 
     protected Task HitAll(PlayerChoiceContext ctx, string vfx = "vfx/vfx_attack_slash") =>
-        DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this).TargetingAllOpponents(CombatState).WithHitFx(vfx).Execute(ctx);
+        DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this, null).TargetingAllOpponents(CombatState).WithHitFx(vfx).Execute(ctx);
 
     protected Task Apply<T>(PlayerChoiceContext ctx, Creature target, decimal amount) where T : PowerModel =>
         PowerCmd.Apply<T>(ctx, target, amount, Owner.Creature, this);

@@ -72,8 +72,8 @@ public abstract class SpellCard(int energyCost, int manaCost, SpellSchool school
     }
 
     protected Task Bolt(PlayerChoiceContext ctx, Creature target, string vfx = "vfx/vfx_attack_slash", decimal? damage = null) =>
-        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this).Targeting(target).Unpowered().WithHitFx(vfx).Execute(ctx);
+        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this, null).Targeting(target).Unpowered().WithHitFx(vfx).Execute(ctx);
 
     protected Task Nova(PlayerChoiceContext ctx, string vfx = "vfx/vfx_attack_slash", decimal? damage = null) =>
-        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this).TargetingAllOpponents(CombatState).Unpowered().WithHitFx(vfx).Execute(ctx);
+        DamageCmd.Attack(damage ?? DynamicVars.Damage.BaseValue).FromCard(this, null).TargetingAllOpponents(CombatState).Unpowered().WithHitFx(vfx).Execute(ctx);
 }

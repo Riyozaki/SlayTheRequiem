@@ -98,7 +98,7 @@ public abstract class RequiemMonster : CustomMonsterModel, IEnemyRoleSource, IEn
         var isMove = IsPerformingMove;
         if (isMove) EnemyActionBudget.Pay(Creature);
         foreach (var hero in Heroes.ToList())
-            await CreatureCmd.Damage(Ctx, hero, damage, isMove ? ValueProp.Move | ValueProp.Unpowered : ValueProp.Unpowered, Creature, null);
+            await CreatureCmd.Damage(Ctx, hero, damage, isMove ? ValueProp.Move | ValueProp.Unpowered : ValueProp.Unpowered, Creature, null, null);
     }
 
     protected Task Cast() => CastAnim == null ? Task.CompletedTask : CreatureCmd.TriggerAnim(Creature, CastAnim, 0.3f);

@@ -65,7 +65,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
             using var _ = DamageTyping.As(DamageType.True);
             using var quiet = UI.RequiemVfx.Quiet();
             await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), player.Creature, payment.HpLoss,
-                ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+                ValueProp.Unblockable | ValueProp.Unpowered, null, null, null);
         }
     }
 
@@ -95,7 +95,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     // ───────────── урон ─────────────
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (!RunSettings.EnableRequiemSystems) return 1m;
         if (target != null && SpellInterception.Predict(target, props, dealer, cardSource)) return 0m;

@@ -385,7 +385,7 @@ public static partial class IntegrityRegression
     {
         var owner = Fixture(); FillToExcess(owner, 11);
         var card = owner.RunState.CreateCard<Bash>(owner); CardCmd.Upgrade(card, CardPreviewStyle.None);
-        var upgrade = card.CurrentUpgradeLevel; var rng = owner.PlayerRng.Rewards.Counter;
+        var upgrade = card.CurrentUpgradeLevel; var rng = owner.PlayerRng.Rewards.ToSerializable().counter;
         using var sync = new PlayerChoiceSynchronizer(new NetReplayGameService(0), owner.RunState);
         var reward = new CardReward([card], CardCreationSource.Other, owner,
             CardCreationOptions.ForNonCombatWithDefaultOdds([owner.Character.CardPool]), sync);
@@ -403,7 +403,7 @@ public static partial class IntegrityRegression
         sync.ReceiveReplayChoice(owner, 2, PlayerChoiceResult.FromIndex(null).ToNetData()); // finite escape if a broken loop asks again
         Require(await selection.WaitAsync(TimeSpan.FromSeconds(3)) && reward.SuccessfullySelected
             && owner.Deck.Cards.Contains(card) && card.CurrentUpgradeLevel == upgrade && !reward.Cards.Any()
-            && owner.PlayerRng.Rewards.Counter == rng, "Native retry changed the upgrade roll/choice or failed to acquire once");
+            && owner.PlayerRng.Rewards.ToSerializable().counter == rng, "Native retry changed the upgrade roll/choice or failed to acquire once");
     }
 
     private static async Task NativeRewardClone()

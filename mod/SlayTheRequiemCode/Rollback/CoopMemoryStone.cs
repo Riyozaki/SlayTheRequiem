@@ -138,7 +138,7 @@ public static class CoopMemoryStone
         {
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
             OperationRecovery.CapturePreparedRun(save, "memory-stone-return", coop: true);
-            await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
+            await SaveManager.Instance.IncrementNumReloads(save, NetGameType.Host, false);
             if (!Current(state, generation)) return;
             Send(StonePhase.Go, round, 0, 0, state);
             // дать сообщению уйти до разрыва соединения; тем временем — трещины отката

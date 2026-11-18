@@ -242,7 +242,7 @@ public sealed class FlaskToFace : SilentCard
     {
         switch (kind)
         {
-            case Brew.SnakeBite: await CreatureCmd.Damage(ctx, target, potency, ValueProp.Unpowered, Owner.Creature, this); break;
+            case Brew.SnakeBite: await CreatureCmd.Damage(ctx, target, potency, ValueProp.Unpowered, Owner.Creature, this, null); break;
             case Brew.Toxin: await Apply<VanillaPoison>(ctx, target, potency); break;
             case Brew.Rot: await Apply<BlightPower>(ctx, target, potency); break;
             case Brew.Exhaustion: if (target.GetPower<EnemyStaminaPower>() is { } st) await st.Drain(potency); break;
@@ -309,7 +309,7 @@ public sealed class VolatileMixture : SilentCard
             if (poison != null) await PowerCmd.Remove(poison);
             if (blight != null) await PowerCmd.Remove(blight);
             using (DamageTyping.As(DamageType.Poison))
-                await CreatureCmd.Damage(ctx, enemy, total, ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature, this);
+                await CreatureCmd.Damage(ctx, enemy, total, ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature, this, null);
         }
     }
 }

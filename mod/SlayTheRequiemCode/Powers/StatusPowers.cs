@@ -28,11 +28,11 @@ public sealed class BurningPower : RequiemPower
 
         var (damage, next) = StatusMath.BurningTick(Amount);
         var (blockLost, hpDamage) = StatusMath.BurningVsBlock(damage, Owner.Block);
-        if (blockLost > 0) await CreatureCmd.LoseBlock(Owner, blockLost);
+        if (blockLost > 0) await CreatureCmd.LoseBlock(new ThrowingPlayerChoiceContext(), Owner, blockLost, null);
         if (hpDamage > 0)
         {
             using (DamageTyping.As(DamageType.Fire))
-                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, hpDamage, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, hpDamage, ValueProp.Unblockable | ValueProp.Unpowered, null, null, null);
         }
 
         if (!Owner.IsAlive) return;
@@ -90,7 +90,7 @@ public sealed class StaticPower : RequiemPower
         if (shock > 0)
         {
             using (DamageTyping.As(DamageType.Shock))
-                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, shock, ValueProp.Unpowered, null, null);
+                await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, shock, ValueProp.Unpowered, null, null, null);
         }
 
         if (!Owner.IsAlive) return;
@@ -123,7 +123,7 @@ public sealed class BleedPower : RequiemPower
         var (loss, next) = StatusMath.BleedOnAttack(Amount);
         if (loss <= 0) return;
         using var _ = DamageTyping.As(DamageType.True);
-        await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, loss, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+        await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, loss, ValueProp.Unblockable | ValueProp.Unpowered, null, null, null);
         if (!Owner.IsAlive) return;
         if (next <= 0) await PowerCmd.Remove(this);
         else await PowerCmd.Decrement(this);

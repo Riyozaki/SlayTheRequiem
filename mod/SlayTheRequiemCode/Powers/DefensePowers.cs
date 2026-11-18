@@ -3,6 +3,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Hooks;
@@ -70,14 +71,14 @@ public static class PlatingFinalStep
         var code = instructions.ToList();
         var flag = AccessTools.Method(typeof(Enum), nameof(Enum.HasFlag), [typeof(Enum)]);
         var cap = (int)ModifyDamageHookType.Cap;
-        // v0.107.1: ldarg 7 / box flags / ldc.i4.8 / box flags / call Enum.HasFlag.
+        // v0.111.1: CardPlay вставлен перед hookType, поэтому флаг cap лежит в аргументе 8.
         // Requiring this exact semantic anchor is intentional: IL drift is a critical startup failure, NOT
         // an excuse to quietly fall back to order-dependent armor or to patch a different decimal local.
         var anchors = Enumerable.Range(4, Math.Max(0, code.Count - 4)).Where(i => code[i].Calls(flag)
             && code[i - 1].opcode == OpCodes.Box && Equals(code[i - 1].operand, typeof(ModifyDamageHookType))
             && code[i - 2].LoadsConstant(cap)
             && code[i - 3].opcode == OpCodes.Box && Equals(code[i - 3].operand, typeof(ModifyDamageHookType))
-            && ArgumentIndex(code[i - 4]) == 7).Select(i => i - 4).ToList();
+            && ArgumentIndex(code[i - 4]) == 8).Select(i => i - 4).ToList();
         var locals = __originalMethod.GetMethodBody()?.LocalVariables;
         if (anchors.Count != 1 || locals == null || locals.Count < 2 || locals[0].LocalType != typeof(decimal)
             || locals[1].LocalType != typeof(List<AbstractModel>))
@@ -89,7 +90,7 @@ public static class PlatingFinalStep
         code.InsertRange(index, new CodeInstruction[]
         {
             first, new(OpCodes.Ldarg_2), new(OpCodes.Ldarg_3), new(OpCodes.Ldarg_S, (byte)5),
-            new(OpCodes.Ldarg_S, (byte)6), new(OpCodes.Ldarg_S, (byte)7), new(OpCodes.Ldloc_1),
+            new(OpCodes.Ldarg_S, (byte)6), new(OpCodes.Ldarg_S, (byte)7), new(OpCodes.Ldarg_S, (byte)8), new(OpCodes.Ldloc_1),
             new(OpCodes.Call, AccessTools.Method(typeof(PlatingFinalStep), nameof(BeforeCap))), new(OpCodes.Stloc_0),
         });
         return code;
@@ -102,7 +103,7 @@ public static class PlatingFinalStep
     }
 
     internal static decimal BeforeCap(decimal damage, Creature? target, Creature? dealer, ValueProp props,
-        CardModel? cardSource, ModifyDamageHookType hookType, List<AbstractModel> modifiers)
+        CardModel? cardSource, CardPlay? cardPlay, ModifyDamageHookType hookType, List<AbstractModel> modifiers)
     {
         if (!Config.RunSettings.EnableRequiemSystems || !hookType.HasFlag(ModifyDamageHookType.Multiplicative)
             || target == null || damage <= 0m || !props.IsPoweredAttack()) return damage;

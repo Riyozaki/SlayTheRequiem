@@ -152,7 +152,7 @@ public abstract class CloakPower : RequiemPower
         if (target != Owner || dealer == null || dealer == Owner || !dealer.IsAlive || !props.IsPoweredAttack()) return;
         Flash();
         using (DamageTyping.As(Element))
-            await CreatureCmd.Damage(choiceContext, dealer, Amount, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(choiceContext, dealer, Amount, ValueProp.Unpowered, Owner, null, null);
         if (dealer.IsAlive) await ApplyStatus(choiceContext, dealer, Math.Max(1, Amount / 2));
     }
 
@@ -197,7 +197,7 @@ public sealed class BlightPower : RequiemPower
     {
         if (!participants.Contains(Owner) || Amount <= 0 || !Owner.HasPower<PoisonPower>()) return;
         using (DamageTyping.As(DamageType.Blight))
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, Amount, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner, Amount, ValueProp.Unblockable | ValueProp.Unpowered, null, null, null);
     }
 }
 
@@ -242,7 +242,7 @@ public sealed class FireRunePower : RequiemPower
         Flash();
         await PowerCmd.Remove(this);
         using (DamageTyping.As(DamageType.Fire))
-            await CreatureCmd.Damage(choiceContext, dealer, amount, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(choiceContext, dealer, amount, ValueProp.Unpowered, Owner, null, null);
         if (dealer.IsAlive) await PowerCmd.Apply<BurningPower>(choiceContext, dealer, Math.Max(1, amount / 2), Owner, null);
     }
 }
@@ -269,7 +269,7 @@ public sealed class FearPower : RequiemPower
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         dealer == Owner && props.IsCardOrMonsterMove() ? 0.5m : 1m;
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)

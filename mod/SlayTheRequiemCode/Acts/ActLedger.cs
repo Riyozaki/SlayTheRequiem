@@ -324,7 +324,7 @@ public sealed class ActLedger : RequiemRelic
             if (LocalContext.IsMe(Owner)) RequiemSfx.Play(SfxEvents.CacheTrap);
             await CreatureCmd.Damage(new MegaCrit.Sts2.Core.GameActions.Multiplayer.ThrowingPlayerChoiceContext(), Owner.Creature,
                 NodeRules.CacheTrap(slot), MegaCrit.Sts2.Core.ValueProps.ValueProp.Unblockable | MegaCrit.Sts2.Core.ValueProps.ValueProp.Unpowered,
-                null, null);
+                null, null, null);
             await PlayerCmd.GainGold(NodeRules.CacheGold(slot), Owner);
             return;
         }

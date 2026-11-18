@@ -613,7 +613,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         return bonus;
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (!Owned || dealer != Owner.Creature || !props.IsPoweredAttack() || !IsMyWeaponAttack(cardSource)) return 1m;
         var mult = 1m;

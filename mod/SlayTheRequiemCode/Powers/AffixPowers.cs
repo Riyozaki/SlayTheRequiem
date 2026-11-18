@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -86,7 +87,7 @@ public sealed class PoisonedBladeAffixPower : AffixPower
 /// <summary>Знаменосец: остальные враги наносят атаками +2 урона, пока носитель жив.</summary>
 public sealed class BannermanAffixPower : AffixPower
 {
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         Owner.IsAlive && dealer != null && dealer != Owner && dealer.Monster != null && dealer.PetOwner == null && props.IsPoweredAttack() ? EnemyRules.BannerDamage : 0m;
 }
 
@@ -115,7 +116,7 @@ public sealed class FrenziedAffixPower : AffixPower
 /// </summary>
 public sealed class GhostlyAffixPower : AffixPower
 {
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner || dealer == null || dealer == Owner) return 1m;
         if (MagicDamage.IsSpell(props, dealer, cardSource)) return 1m;
@@ -138,7 +139,7 @@ public sealed class AvengerAffixPower : AffixPower
         if (heroes.Count == 0) return;
         Flash();
         foreach (var hero in heroes)
-            await CreatureCmd.Damage(choiceContext, hero, EnemyRules.AvengerDamage, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(choiceContext, hero, EnemyRules.AvengerDamage, ValueProp.Unpowered, Owner, null, null);
     }
 
     public override bool ShouldPowerBeRemovedOnDeath(PowerModel power) => power != this && base.ShouldPowerBeRemovedOnDeath(power);
@@ -174,7 +175,7 @@ public sealed class PanicPower : RequiemPower
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         dealer == Owner && props.IsPoweredAttack() ? 0m : 1m;
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
@@ -189,7 +190,7 @@ public sealed class AdrenalinePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Physical ? 0.5m : 1m;
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)

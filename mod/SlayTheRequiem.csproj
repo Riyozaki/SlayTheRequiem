@@ -41,7 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Версии закреплены (ревью R-02): API мода сверено с BaseLib 3.4.8 и игрой 0.107.1. Обновлять осознанно,
+        <!-- Версии закреплены (ревью R-02): API мода сверено с BaseLib 3.4.8 и игрой 0.111.1. Обновлять осознанно,
              вместе с min_version в SlayTheRequiem.json и прогоном smoke-чек-листа (docs/plan/completion-plan.md §3). -->
         <PackageReference Include="Alchyr.Sts2.BaseLib" Version="[3.4.8]" PrivateAssets="All"/>
         <PackageReference Include="Alchyr.Sts2.ModAnalyzers" Version="[0.2.1]" PrivateAssets="All"/>

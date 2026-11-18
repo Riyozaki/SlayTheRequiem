@@ -172,7 +172,7 @@ public sealed class InvisibilityPower : RequiemPower
     /// <summary>Сапоги Безмолвия: атаки (а из Невидимости все атаки Подлые) её не снимают.</summary>
     private bool KeptByGear => Owner.Player?.Relics.OfType<IInvisibilityKeeper>().Any(k => k.KeepsInvisibility) == true;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && dealer != null && dealer != Owner && props.IsPoweredAttack() ? 0.5m : 1m;
 
     public override async Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
@@ -249,7 +249,7 @@ public sealed class ConfusionPower : RequiemPower
             if (victim is not { IsAlive: true }) return;
             Flash();
             using var element = DamageTyping.As(type);
-            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), victim, decimal.Floor(amount), ValueProp.Unpowered, null, null);
+            await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), victim, decimal.Floor(amount), ValueProp.Unpowered, null, null, null);
         }, () => { });
         return 0m;
     }
@@ -326,7 +326,7 @@ public sealed class SnakeBitePoisonPower : WeaponPoisonPower
     public override Brew Kind => Brew.SnakeBite;
     protected override bool BypassesImmunity => true;
     protected override Task ApplyEffect(PlayerChoiceContext ctx, Creature target, int potency) =>
-        CreatureCmd.Damage(ctx, target, potency, ValueProp.Unpowered, Owner, null);
+        CreatureCmd.Damage(ctx, target, potency, ValueProp.Unpowered, Owner, null, null);
 }
 
 /// <summary>Токсин: ванильный Яд N.</summary>
@@ -447,7 +447,7 @@ public sealed class RipostePower : RequiemPower, IDodgeListener
         if (attacker is { IsAlive: true })
         {
             Flash();
-            await CreatureCmd.Damage(ctx, attacker, Amount, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(ctx, attacker, Amount, ValueProp.Unpowered, Owner, null, null);
         }
         await PowerCmd.Apply<SneakNextPower>(ctx, Owner, 1, Owner, null);
     }

@@ -1,3 +1,4 @@
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Models;
@@ -35,7 +36,7 @@ public sealed class OathGuardPower : RequiemPower
 
     private bool GuardAlive => Owner.CombatState?.Enemies.Any(e => e.IsAlive && e != Owner) == true;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && dealer != Owner ? BossPowerRules.OathMultiplier(Amount, GuardAlive) : 1m;
 }
 
@@ -52,7 +53,7 @@ public sealed class SunStancePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && dealer != null && dealer != Owner
             ? BossPowerRules.StanceMultiplier(false, DamageTyping.Resolve(props, dealer, cardSource))
             : 1m;
@@ -64,7 +65,7 @@ public sealed class MoonStancePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && dealer != null && dealer != Owner
             ? BossPowerRules.StanceMultiplier(true, DamageTyping.Resolve(props, dealer, cardSource))
             : 1m;

@@ -44,7 +44,7 @@ public static class RunDiagnostics
         var directory = System.IO.Path.GetDirectoryName(assembly.Location) ?? "";
         var dllHash = FileHash(assembly.Location);
         var pckHash = FileHash(System.IO.Path.Combine(directory, MainFile.ModId + ".pck"));
-        var passportPath = System.IO.Path.Combine(directory, MainFile.ModId + ".build.json");
+        var passportPath = System.IO.Path.Combine(directory, MainFile.ModId + ".build.passport");
         object build = new { state = "no verified build passport" };
         try
         {
@@ -86,7 +86,7 @@ public static class RunDiagnostics
             dirty = Meta("GitDirty") ?? "unrecorded", dll_sha256 = dllHash, pck_sha256 = pckHash,
             build_passport_sha256 = FileHash(passportPath), build,
             loaded_mods = ModManager.GetLoadedMods().Select(m => new { id = m.manifest?.id, version = m.manifest?.version,
-                dll_sha256 = m.assembly == null ? "none" : FileHash(m.assembly.Location) }).ToArray(),
+                dll_sha256 = m.assemblies.FirstOrDefault() == null ? "none" : FileHash(m.assemblies.FirstOrDefault().Location) }).ToArray(),
             save_schema = SaveSchema, shop_protocol = Shops.ShopOperations.Protocol,
             session_protocol = Core.StartupState.SessionProtocol, economy_policy_current = Core.EconomyRules.CurrentRevision,
         };

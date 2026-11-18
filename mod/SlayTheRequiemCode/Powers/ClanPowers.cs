@@ -31,7 +31,7 @@ public sealed class LightSpiritPower : RequiemPower
         var target = enemies[combat.RunState.Rng.CombatTargets.NextInt(enemies.Count)];
         Flash();
         using (DamageTyping.As(DamageType.Light))
-            await CreatureCmd.Damage(choiceContext, target, Amount, ValueProp.Unpowered, Owner, null);
+            await CreatureCmd.Damage(choiceContext, target, Amount, ValueProp.Unpowered, Owner, null, null);
     }
 }
 
@@ -59,7 +59,7 @@ public sealed class BladeSpiritPower : RequiemPower
         {
             if (target == null || !target.IsAlive) continue;
             using (DamageTyping.As(DamageType.Magic))
-                await CreatureCmd.Damage(choiceContext, target, bonus, ValueProp.Unpowered, Owner, null);
+                await CreatureCmd.Damage(choiceContext, target, bonus, ValueProp.Unpowered, Owner, null, null);
         }
     }
 }

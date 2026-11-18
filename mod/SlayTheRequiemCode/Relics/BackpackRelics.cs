@@ -1,5 +1,6 @@
 using BaseLib.Utils;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -84,7 +85,7 @@ public sealed class SharpeningStone : RequiemRelic
 {
     public override RelicRarity Rarity => RelicRarity.Common;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target != null && cardSource != null && dealer == Owner.Creature && props.IsPoweredAttack()
         && Owner.PlayerCombatState?.TurnNumber == 1 && EquipmentCombatRules.IsWeaponAttack(cardSource)
             ? BackpackRules.SharpeningDamage

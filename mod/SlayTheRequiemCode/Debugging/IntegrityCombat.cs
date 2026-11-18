@@ -44,7 +44,7 @@ public static partial class IntegrityRegression
         decimal Query(DamageType type, decimal amount = 10m)
         {
             using var element = DamageTyping.As(type);
-            return Hook.ModifyDamage(owner.RunState, combat, enemy, owner.Creature, amount, ValueProp.Move, card,
+            return Hook.ModifyDamage(owner.RunState, combat, enemy, owner.Creature, amount, ValueProp.Move, card, null,
                 ModifyDamageHookType.All, CardPreviewMode.None, out _);
         }
         Require(Query(DamageType.Physical) == 7m, "Shared native armor stage not installed");

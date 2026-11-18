@@ -342,7 +342,7 @@ public sealed class FugitiveBackground : BackgroundRelic
         return Task.CompletedTask;
     }
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsOwnAttack(dealer, props, cardSource) ? OriginRules.FugitiveBonus(_zeroCostThisTurn) : 0m;
 }
 
@@ -386,7 +386,7 @@ public sealed class WinddancerBackground : BackgroundRelic
         return Task.CompletedTask;
     }
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsOwnAttack(dealer, props, cardSource) ? OriginRules.WinddancerBonus(_cardsThisTurn) : 0m;
 }
 
@@ -402,7 +402,7 @@ public sealed class HunterBackground : BackgroundRelic
         await ReplaceStarter<HuntingShot>(CardTag.Strike);
     }
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsOwnAttack(dealer, props, cardSource)
         && BuildAccessRules.HunterBonus(cardSource!.Tags.Contains(CardTag.Shiv), Equipment.EquipmentCombatRules.IsWeaponAttack(cardSource),
             Progression.HeroRecord.Of(Owner)?.MainHand ?? WeaponKind.None) ? ShotBonus : 0m;
@@ -454,7 +454,7 @@ public sealed class ShadowscaleBackground : BackgroundRelic, IAttackStaminaModif
 
     public int ModifyAttackStamina(CardModel card, int cost) => _attackedThisCombat || card.Owner != Owner ? cost : 0;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         !_attackedThisCombat && IsOwnAttack(dealer, props, cardSource) ? 2m : 1m;
 
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
@@ -505,7 +505,7 @@ public sealed class ShadowSorcererBackground : BackgroundRelic
 [Pool(typeof(SharedRelicPool))]
 public sealed class WizardBackground : BackgroundRelic
 {
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         dealer == Owner.Creature && cardSource is SpellCard && cardSource.Owner == Owner
             ? OriginRules.WizardSpellBonus(Mana.Amount(Owner), Mana.Pool(Owner)) : 0m;
 }

@@ -74,10 +74,10 @@ public static partial class IntegrityRegression
     {
         var (owner, _, enemy) = CombatFixture<GatebreakerEnvoy>();
         var guard = FixturePower<SolarStandardGuardPower>(owner.Creature, 1); guard.Applier = enemy;
-        Require(guard.ModifyDamageMultiplicative(owner.Creature, 20, ValueProp.Move, enemy, null) == 0.5m,
+        Require(guard.ModifyDamageMultiplicative(owner.Creature, 20, ValueProp.Move, enemy, null, null) == 0.5m,
             "Standard did not protect its recipient against the source Envoy");
-        Require(guard.ModifyDamageMultiplicative(owner.Creature, 20, ValueProp.Unpowered, enemy, null) == 1m
-            && guard.ModifyDamageMultiplicative(enemy, 20, ValueProp.Move, enemy, null) == 1m,
+        Require(guard.ModifyDamageMultiplicative(owner.Creature, 20, ValueProp.Unpowered, enemy, null, null) == 1m
+            && guard.ModifyDamageMultiplicative(enemy, 20, ValueProp.Move, enemy, null, null) == 1m,
             "Standard reduced status ticks or a different target");
         FixturePower<ArmorPiercingPower>(enemy, GatebreakerEnvoy.HammerPierce);
         Require(PlatingPower.PierceOf(enemy) == 4, "Enemy Pierce was omitted from the shared armor query");
@@ -97,7 +97,7 @@ public static partial class IntegrityRegression
             "Removing the sources failed to restore the read-only resistance view");
         var (caster, spells, blood) = CombatFixture<BloodCourtLord>();
         var mist = FixturePower<MistFormPower>(blood, 1);
-        decimal InMist(CardModel card) => mist.ModifyDamageMultiplicative(blood, 10, ValueProp.Move | ValueProp.Unpowered, caster.Creature, card);
+        decimal InMist(CardModel card) => mist.ModifyDamageMultiplicative(blood, 10, ValueProp.Move | ValueProp.Unpowered, caster.Creature, card, null);
         Require(InMist(spells.CreateCard<Spells.Firebolt>(caster)) == 0m
             && InMist(spells.CreateCard<Spells.Fireball>(caster)) == 1m
             && InMist(spells.CreateCard<Spells.Sunbeam>(caster)) == 1m,

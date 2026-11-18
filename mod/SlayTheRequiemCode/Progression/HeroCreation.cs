@@ -418,7 +418,7 @@ internal static class HeroCreation
     private static bool BackgroundAllowed(Player player, BackgroundRelic background) => background is not OrdinatorBackground
         || !TransformationRules.OrdinatorForbids(Forms.Worldview(player));
     private static bool Basic(CardModel card) => card.Rarity == CardRarity.Basic && card.IsRemovable;
-    private static List<PotionModel> CommonPotions(Player player) => PotionFactory.GetPotionOptions(player, Array.Empty<PotionModel>())
+    private static List<PotionModel> CommonPotions(Player player) => PotionFactory.GetPotionOptions(player)
         .Where(p => p.Rarity == PotionRarity.Common).OrderBy(p => p.Id.Entry, StringComparer.Ordinal).ToList();
     internal static SerializablePotion ReadPotion(string payload) => RawRunDocument.DeserializeStrict<SerializablePotion>(Encoding.UTF8.GetBytes(payload), JsonSerializationUtility.Options);
     internal static SerializableCard ReadCard(string payload) => RawRunDocument.DeserializeStrict<SerializableCard>(Encoding.UTF8.GetBytes(payload), JsonSerializationUtility.Options);

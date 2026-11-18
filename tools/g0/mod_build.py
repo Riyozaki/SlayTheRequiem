@@ -26,7 +26,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 MOD_ID = "SlayTheRequiem"
-GAME_VERSION = "0.107.1"
+GAME_VERSION = "0.111.1"
 BASELIB_VERSION = "3.4.8"
 GODOT_VERSION = "4.5.1"
 SAVE_SCHEMA = 4
@@ -38,7 +38,7 @@ ECONOMY_REVISION = 1
 TEST_SUPPORT = ("tools/balance/Trace/Scenario.cs",)
 SOURCE_ROOTS = ("mod", "tools", "art", ".github", "global.json")
 ARTIFACTS = (f"{MOD_ID}.dll", f"{MOD_ID}.pck", f"{MOD_ID}.json")
-PASSPORT = f"{MOD_ID}.build.json"
+PASSPORT = f"{MOD_ID}.build.passport"  # not .json: the game parses every mods/*/*.json as a manifest
 
 
 class BuildError(RuntimeError):

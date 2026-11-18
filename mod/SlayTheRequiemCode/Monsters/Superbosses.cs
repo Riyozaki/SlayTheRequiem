@@ -869,7 +869,7 @@ public sealed class NamelessShadow : SuperbossMonster
                 if (!await SpellInterception.InterceptEffect(Ctx, hero, Creature, null))
                 {
                     using var drain = DamageTyping.As(DamageType.True);
-                    await CreatureCmd.Damage(Ctx, hero, ScaleDrain, ValueProp.Unblockable | ValueProp.Unpowered, Creature, null);
+                    await CreatureCmd.Damage(Ctx, hero, ScaleDrain, ValueProp.Unblockable | ValueProp.Unpowered, Creature, null, null);
                 }
         }
     }

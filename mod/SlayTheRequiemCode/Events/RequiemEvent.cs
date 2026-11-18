@@ -96,7 +96,7 @@ public abstract class RequiemEvent() : CustomEventModel(autoAdd: false)
     protected Task Pay(int amount) => PlayerCmd.LoseGold(amount, Owner!);
 
     protected async Task Hurt(int amount) =>
-        await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner!.Creature, amount, ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+        await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), Owner!.Creature, amount, ValueProp.Unblockable | ValueProp.Unpowered, null, null, null);
 
     protected Task Heal(int amount) => CreatureCmd.Heal(Owner!.Creature, amount);
 

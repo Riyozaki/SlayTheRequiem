@@ -245,7 +245,7 @@ public sealed class BlessingOfMercyShield : CelestialBlessing
         Flash();
         foreach (var target in targets)
             using (DamageTyping.As(DamageType.Light))
-                await CreatureCmd.Damage(ctx, target!, SpiritRadiance, ValueProp.Unpowered, Owner.Creature, null);
+                await CreatureCmd.Damage(ctx, target!, SpiritRadiance, ValueProp.Unpowered, Owner.Creature, null, null);
     }
 }
 

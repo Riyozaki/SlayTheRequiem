@@ -124,7 +124,7 @@ public sealed class WideActMap : ActMap
             if (!HasInvalidCrossover(current, target))
                 return new MapCoord { col = target, row = current.coord.row + 1 };
         }
-        throw new InvalidOperationException($"Cannot find next node: seed={_rng.Seed}");
+        throw new InvalidOperationException($"Cannot find next node: seed={_rng.ToSerializable().state0}");
     }
 
     private bool HasInvalidCrossover(MapPoint current, int targetX)

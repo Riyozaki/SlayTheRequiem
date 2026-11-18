@@ -157,7 +157,7 @@ public static class OperationRecovery
                 using var transition = MemoryStone.TryBeginRestore(); // preserve the prepared checkpoint across all callbacks
                 if (transition == null) return;
                 CapturePreparedRun(save, "inventory-recovery", coop: true);
-                await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
+                await SaveManager.Instance.IncrementNumReloads(save, NetGameType.Host, false);
                 if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsHost) return;
                 CustomMessageWrapper.Send(new InventoryRecoveryMessage { timeline = Timeline(state), seed = state.Rng.StringSeed });
                 await Task.Delay(500);

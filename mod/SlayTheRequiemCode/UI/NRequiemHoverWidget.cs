@@ -48,6 +48,7 @@ public abstract partial class NRequiemHoverWidget : Control
         HorizontalAlignment align = HorizontalAlignment.Center)
     {
         var font = RequiemUi.Font;
+        if (!GodotObject.IsInstanceValid(font)) font = ThemeDB.FallbackFont;
         DrawStringOutline(font, baseline, text, align, width, size, 4, new Color(0, 0, 0, 0.9f));
         DrawString(font, baseline, text, align, width, size, color);
     }

@@ -7,7 +7,7 @@
 
 ## Что требуется игроку
 
-- Легальная **Slay the Spire 2 0.107.1**, отдельно установленный **BaseLib 3.4.8**.
+- Легальная **Slay the Spire 2 0.111.1**, отдельно установленный **BaseLib 3.4.8**.
 - Для первого приёмочного запуска — **только BaseLib и SlayTheRequiem**, отдельный тестовый профиль/копия сейвов.
 - .NET SDK и MegaDot нужны **сборщику**, не являются частью архива и не скачиваются установщиком.
 - В коопе на обоих клиентах должна быть **одна и та же пара DLL/PCK/manifest**, а не просто одинаковая надпись `v0.0.1`.
@@ -23,7 +23,7 @@ mods/SlayTheRequiem/
     SlayTheRequiem.dll
     SlayTheRequiem.pck
     SlayTheRequiem.json
-    SlayTheRequiem.build.json   публичная, совместимая с installer/runtime часть паспорта
+    SlayTheRequiem.build.passport  публичная, совместимая с installer/runtime часть паспорта
 INSTALL.md / COMPATIBILITY.md / RELEASE_NOTES.md / ART_PROVENANCE.md
 FINAL_ACCEPTANCE.md / DIAGNOSTICS.md / final-matrix.plan.json / asset-coverage.csv
 source/                        исходное состояние mod/tools/art и документация; без .git, игры и private logs

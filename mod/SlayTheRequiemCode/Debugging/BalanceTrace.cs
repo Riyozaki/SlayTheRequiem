@@ -81,7 +81,7 @@ public static class BalanceTrace
                 operation_blocked = InventoryGate.ObserveBlocked(player),
                 operation_pending = pack?.OperationPending ?? "", operation_mutating = InventoryGate.IsMutating(player),
                 shop = ledger?.CurrentShop.ToString(), trust = ledger?.CurrentTrust ?? 0,
-                reward_rng = player.PlayerRng.Rewards.Counter, shop_rng = player.PlayerRng.Shops.Counter,
+                reward_rng = player.PlayerRng.Rewards.ToSerializable().counter, shop_rng = player.PlayerRng.Shops.ToSerializable().counter,
                 deck = player.Deck.Cards.Select(c => new { model = c.GetType().Name, rarity = c.Rarity.ToString(), weight = Loadout.CardWeight(c) }).ToArray(),
                 hand = player.PlayerCombatState?.Hand.Cards.Select(c => new { model = c.GetType().Name, rarity = c.Rarity.ToString() }).ToArray(),
                 equipment = Loadout.All(player).Select(e => new { model = e.GetType().Name, tier = e.Tier, upgrades = e.Upgrades, weight = e.Weight, equipped = e.IsEquipped }).ToArray(),

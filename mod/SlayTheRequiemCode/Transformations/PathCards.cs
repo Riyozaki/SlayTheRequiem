@@ -301,7 +301,7 @@ public sealed class BloodFury : PathCard
 
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
     {
-        await CreatureCmd.Damage(ctx, Owner.Creature, Var("HpLoss"), ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature, null);
+        await CreatureCmd.Damage(ctx, Owner.Creature, Var("HpLoss"), ValueProp.Unblockable | ValueProp.Unpowered, Owner.Creature, null, null);
         await Apply<VanillaStrength>(ctx, Owner.Creature, Var("StrengthPower"));
     }
 }
@@ -588,7 +588,7 @@ public sealed class SpellBlade : PathCard
         await Hit(ctx, play.Target);
         if (!play.Target.IsAlive) return;
         using (DamageTyping.As(DamageType.Fire))
-            await CreatureCmd.Damage(ctx, play.Target, Var("Fire"), ValueProp.Unpowered, Owner.Creature, this);
+            await CreatureCmd.Damage(ctx, play.Target, Var("Fire"), ValueProp.Unpowered, Owner.Creature, this, null);
     }
 }
 

@@ -102,7 +102,7 @@ public static partial class IntegrityRegression
     private static async Task CreationFullBelt()
     {
         var owner = Fixture();
-        var potion = PotionFactory.GetPotionOptions(owner, Array.Empty<PotionModel>()).First(p => p.Rarity == PotionRarity.Common);
+        var potion = PotionFactory.GetPotionOptions(owner).First(p => p.Rarity == PotionRarity.Common);
         for (var i = 0; owner.HasOpenPotionSlots && i < 64; i++) Require(owner.AddPotionInternal(potion.ToMutable()).success, "Could not fill potion fixture");
         Require(!owner.HasOpenPotionSlots, "Potion belt fixture did not fill");
         var hp = owner.Creature.MaxHp;

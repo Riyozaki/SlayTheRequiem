@@ -266,7 +266,7 @@ public sealed class ForgebloodOrigin : OriginRelic
         return Task.CompletedTask;
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, MegaCrit.Sts2.Core.ValueProps.ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner.Creature && dealer is { IsEnemy: true } && OriginRules.ForgeFuryActive(_attacksThisTurn)
             ? OriginRules.ForgeFuryMultiplier : 1m;
 }

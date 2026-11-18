@@ -37,7 +37,7 @@ public sealed class GhostlyPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner || dealer == null || dealer == Owner) return 1m;
         var silver = dealer.Player?.Relics.OfType<SilverSaber>().Any() == true;
@@ -53,7 +53,7 @@ public sealed class InvulnerablePower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         target == Owner && dealer != Owner ? 0m : 1m;
 }
 
@@ -63,7 +63,7 @@ public sealed class SpellMirrorPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner || dealer == null || dealer == Owner) return 1m;
         if (MagicDamage.IsSpell(props, dealer, cardSource)) return (100 - ActPowerRules.MirrorReflectPercent) / 100m;
@@ -78,7 +78,7 @@ public sealed class SpellMirrorPower : RequiemPower
         if (reflected <= 0) return;
         Flash();
         using var _ = DamageTyping.As(DamageType.Magic);
-        await CreatureCmd.Damage(choiceContext, dealer, reflected, ValueProp.Unpowered, Owner, null);
+        await CreatureCmd.Damage(choiceContext, dealer, reflected, ValueProp.Unpowered, Owner, null, null);
     }
 }
 
@@ -100,7 +100,7 @@ public sealed class FlightPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Single;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner || dealer is not { IsPlayer: true }) return 1m;
         var ranged = cardSource != null && EquipmentCombatRules.IsWeaponAttack(cardSource)
@@ -116,7 +116,7 @@ public sealed class MistFormPower : RequiemPower
     public override PowerType Type => PowerType.Buff;
     public override PowerStackType StackType => PowerStackType.Counter;
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (target != Owner || dealer is not { IsPlayer: true }) return 1m;
         return BossCounterplayRules.MistMultiplier(props.IsCardOrMonsterMove(), MagicDamage.IsSpell(props, dealer, cardSource),

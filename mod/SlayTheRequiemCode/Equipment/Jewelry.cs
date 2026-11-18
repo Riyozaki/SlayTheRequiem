@@ -116,7 +116,7 @@ public sealed class RingOfQuickBreath : ComboRing, IResourceSource
     public override int Weight => 0;
     public int StaminaRegenBonus => IsEquipped ? JewelryRules.QuickBreathRegen : 0;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsEquipped && target != null && cardSource is { Type: CardType.Attack } && dealer == Owner.Creature && props.IsPoweredAttack()
         && StaminaCosts.CostFor(cardSource) == 0 && Active(Owner, RingCombo.QuickFury)
             ? JewelryRules.QuickFuryDamage
@@ -171,7 +171,7 @@ public sealed class RingOfThePyromancer : ComboRing
         if (target.GetPower<BurningPower>() is { } burning) await PowerCmd.Remove(burning);
         if (target.GetPower<ChillPower>() is { } chill) await PowerCmd.Remove(chill);
         using (DamageTyping.As(DamageType.True))
-            await CreatureCmd.Damage(choiceContext, target, damage, ValueProp.Unpowered, Owner.Creature, null);
+            await CreatureCmd.Damage(choiceContext, target, damage, ValueProp.Unpowered, Owner.Creature, null, null);
     }
 }
 
@@ -227,7 +227,7 @@ public sealed class RingOfTheWitchHunter : EquipmentRelic
     public override int Weight => 0;
     public override int Tier => 2;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsEquipped && dealer == Owner.Creature && cardSource != null && props.IsPoweredAttack() && JewelryCombat.IsCasting(target)
             ? JewelryRules.WitchHunterDamage
             : 0m;
@@ -357,7 +357,7 @@ public sealed class AmuletOfTheHunter : EquipmentRelic
     public override int Weight => 0;
     public override int Tier => 2;
 
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay) =>
         IsEquipped && target != null && dealer == Owner.Creature && cardSource != null && props.IsPoweredAttack() && EnemySetup.IsBeast(target)
             ? JewelryRules.HunterBeastDamage
             : 0m;

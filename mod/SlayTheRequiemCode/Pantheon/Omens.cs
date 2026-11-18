@@ -151,7 +151,7 @@ public sealed class OmenOfTheShade : OmenRelic
         await PowerCmd.Apply<InvisibilityPower>(new ThrowingPlayerChoiceContext(), Owner.Creature, 2, Owner.Creature, null, silent: true);
     }
 
-    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
     {
         if (!props.IsPoweredAttack() || Owner?.Creature == null || !Owner.Creature.HasPower<InvisibilityPower>()) return 1m;
         if (dealer == Owner.Creature && cardSource?.Owner == Owner) return 2m;
