@@ -7,26 +7,27 @@
 
 ## Идентифицированные автоматические результаты
 
-- **[`49288c96ed171c01b7197777ace9c2892392261c`, CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452)**:
-  **877/877 Core**, все **5 jobs success**, включая новые release contracts. Actual Core output strict-collected:
-  8 частей / 611069 decoded bytes, 60 synthetic scenarios / 300 act rows / 30 pairs, **native 0**.
-- На 492 реально исполнены и strict-verified **28 C# trials** double-buffer helper (4 workloads × 7).
-  Также сохранён предыдущий [`6c1234d`, CI 44268028884](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884)
-  с **869/869** и его собственной allocation-регрессией. Raw trials/annotations/receipts обоих checkpoints — в новом
-  [evidence Б3](evidence/stage-three-quality-2026-11-18/README.md), не поверх Б2. Baseline — collection reimplementation,
-  не старый игровой binary; ни Core, ни microbenchmark не являются semantic mod build или балансной приёмкой.
-- Совпадающий с 492 input hash **`d64e0c5f3f311dcd744a407146d7a7d2e7d07e15298a51c93f377e3ddb480716`**:
-  **33/33** local checks; **151 sim + 38 G0 + 24 release + 87 checker = 300 PASS**, без skipped suites;
+- **[`dc66b0c8398512ec608d7f6e4579af3d72ad984f`, CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604)**:
+  **879/879 Core**, все **5 jobs success**, включая release contracts. В Core реально прошли **10 cases** production
+  double-buffer helper: в том числе два новых exception/Reset cleanup cases и усиленная проверка non-throwing rejection.
+  Это не проверка native-подписок или утечек Godot.
+- На том же dc66 strict-collected actual Core output: **8 частей / 611069 decoded bytes**, 60 synthetic scenarios /
+  300 act rows / 30 pairs, **native 0**. Также реально исполнены и strict-verified **28 C# cache trials** (4 workloads × 7).
+- Совпадающий input hash **`d7085986046213e2d690f981a78dcb642cb5949d0f358e51a149549b75640a3e`**:
+  **33/33** local checks; **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**, без skipped suites;
   **319 C# grammar files / 0 errors**, **137 Harmony declarations / 0 missing**; генераторы не изменили build inputs.
   Package/native-metrics unit fixtures — временная синтетика, не реальные DLL/PCK/passports/runs.
-- Source snapshot на 492 успешно собран/связан с тем же input hash: **1947 files / 80430384 bytes**, docs links/plan согласованы.
-  Это только чтение Git source, **не** реальный ZIP/DLL/PCK. Core/xUnit не запускает Godot hooks. CI содержит служебные
-  предупреждения Actions v4/Node 20→24 и смены runner image; это не compiler/analyzer warnings полного мода.
-- После 492 дополнительно закрыта привязка **bytes**, а не имени документов требований: `source_sha256` для plan/checklist/
-  combat-passport сверяется с archive source и requirements digest. Локально на input
-  **`30fd08a901ccb755f6274c68c1a283a829e12d390fa05705936b89e23391ba27`** прошли снова **33/33**, теперь
-  **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**. C#-код не менялся; отдельный CI этой финальной защиты запускается.
-  Числа CI 492 не приписываются автоматически новому package-коду.
+- Frozen Git source на dc66 согласован с этим input hash: **1947 files / 80463223 bytes**, docs links/archived plan и
+  `source_sha256` referenced documents проверены. Это чтение source snapshot, **не** реальный ZIP/DLL/PCK.
+- Сохранены также [`49288c9`, 877/877](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452) и
+  [`6c1234d`, 869/869](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884) с собственными raw trials;
+  allocation-регрессия 6c не скрыта. [Evidence Б3](evidence/stage-three-quality-2026-11-18/README.md) отделено от Б2.
+  Промежуточный [CI byte-binding `6eecb8c`](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277344159) тоже success;
+  dc66 уже включает эту защиту. Непроверенных package/helper изменений после dc66 нет.
+
+Baseline microbenchmark — collection reimplementation, не старый игровой binary. Ни Core, ни microbenchmark не являются
+semantic mod build/балансной приёмкой и не запускают Godot hooks. Служебные CI warnings Actions v4/Node 20→24 и runner image
+не являются разбором compiler/analyzer warnings полного мода. Последующий documentary/evidence commit не меняет build inputs.
 
 ## Б3.1. Собственные материалы, исходники и осмысленный fallback
 
@@ -88,14 +89,16 @@ Compact-toggle переукладывает UI без удаления/прим�
 
 **Реальный 6c benchmark выявил allocation-регрессию**: List+ToArray на rebuild, до **3 073 792 B** при change-every-frame
 против 1480 B у старого списка. Результат сохранён, не скрыт за быстрым idle. Поэтому следующий код вводит
-`InvalidatedListView<T>`: два переиспользуемых списка, rebuild только inactive buffer, очистка старых references после swap/exit,
-исключение не публикует partial, Reset не принимает продолжение старого владельца. Borrowed view действителен до следующего
-refresh/reset, не хранится как immutable snapshot. **8 новых xUnit cases прошли** в составе 877/877.
-Benchmark линкует **тот же production helper**, pin проверяет оба cache sources. На 492 stress baseline → candidate:
-**5.975 → 1.384 ms**, **1480 → 2960 B**, 60000 → 12004 builds; idle **11.281 → .199 ms**, 1480 → 1480 B.
+`InvalidatedListView<T>`: два переиспользуемых списка, rebuild только inactive buffer, очистка старых references после swap/exit.
+Финальный cleanup в `finally` также очищает rejected/throwing scratch, даже если старый builder продолжил добавление после
+Reset. Вложенный Refresh не очищает активный buffer внешней сборки. Исключение не публикует partial; Reset не принимает
+продолжение старого владельца. Borrowed view действителен до следующего refresh/reset, не immutable snapshot.
+**10 helper cases прошли** в составе 879/879; тесты смотрят и на rejected storage до следующего refresh, не только public Value.
+Benchmark линкует **тот же production helper**, pin проверяет оба cache sources. На dc66 stress baseline → candidate:
+**6.759 → 1.661 ms**, **1480 → 2960 B**, 60000 → 12004 builds; idle **12.991 → .292 ms**, 1480 → 1480 B.
 2960 B включают первоначальное заполнение обоих буферов (у baseline один); они одинаковы при 204/500/12004 rebuilds.
 GC counts 0 и exact synthetic view equality true во всех workloads. Это не нулевые allocations native UI и не FPS.
-Времена сравниваются только попарно внутри одного CI runner, не между 6c/492 jobs.
+Времена сравниваются только попарно внутри одного CI runner, не между 6c/492/dc66 jobs.
 
 `str_metrics` schema 2: до 1024 последних frame/reward/trait samples, allocation/GC/node/memory deltas, CPU/GPU/runtime
 и паспорт. OFF замораживает sample. Passport дополнен реальным run nonce, role/local Net ID, vsync/refresh Hz/frame cap.
@@ -117,6 +120,8 @@ Polling шкал/pips/части UI сохранён; «весь UI event-driven
 `acceptance.py init/record/check/seal` связывает observations с source/input/DLL/PCK/manifest/public-passport/archive/requirements.
 Проверяются private evidence hashes, case setup, native seed/run nonce, game/реально загруженный BaseLib, distinct Host/Client
 и одинаковая партия; полные solo runs нельзя заменить коопом. Документарный plan сверяется также **в самом архиве**.
+`source_sha256` связывает реальные bytes plan/checklist/combat-passport, не только путь: document-only phase/threshold fix
+тоже меняет requirements digest и делает старую матрицу stale. Архив проверяет исходные документы повторно.
 Сохраняется история попыток, нет WAIVED/skip. Late fix требует нового NOT_RUN matrix, старый PASS не переносится автоматически.
 Это validator записей, не доказательство правды утверждения оператора, не бот-плейтестер и не winrate certification.
 

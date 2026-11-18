@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "producer": "actual-csharp-cache-microbenchmark",
+  "source_commit": "dc66b0c8398512ec608d7f6e4579af3d72ad984f",
+  "scope": "not-engine-not-FPS-not-native-event-validation",
+  "baseline_source_commit": "65af8b30bb19ed86fd7e3a1ae45d319df45958d6",
+  "baseline_is_collection_reimplementation": true,
+  "tiered_compilation_config": false,
+  "tiered_env_override": null,
+  "cache_sha256": "cfc479fbc7982fb48835f1562d7cd610660e01975721a475a2f5cb3d7cd63b00",
+  "list_cache_sha256": "fbb77956e867fd945220c12b65c19ecce3d3a82e55585b550c40002619177e97",
+  "benchmark_sha256": "3dfd8180e28b76b1ed4f7c3ea1754199478cc600c47dcb355f2fd89e8c7dd877",
+  "trials_sha256": "c31324a40823253c38d9476550248029f61df6aca91fea4711ceae7ffe921f85",
+  "runtime": ".NET 9.0.23",
+  "os": "Ubuntu 26.04.1 LTS",
+  "architecture": "X64",
+  "logical_processors": 4,
+  "enemies": 5,
+  "powers_per_enemy": 24,
+  "frames_per_trial": 12000,
+  "trials": 7,
+  "unit": "whole-workload milliseconds; current-thread allocated bytes; actual GC counts",
+  "cases": [
+    {
+      "workload": "idle",
+      "baseline": {
+        "median_ms": 12.991,
+        "allocated_bytes": 1480,
+        "builds": 60000,
+        "gc_collections": 0
+      },
+      "candidate": {
+        "median_ms": 0.292,
+        "allocated_bytes": 1480,
+        "builds": 5,
+        "gc_collections": 0
+      },
+      "frame_count_checksums_equal": true,
+      "synthetic_views_equal_each_frame": true
+    },
+    {
+      "workload": "one-change-per-60-frames",
+      "baseline": {
+        "median_ms": 5.991,
+        "allocated_bytes": 1480,
+        "builds": 60000,
+        "gc_collections": 0
+      },
+      "candidate": {
+        "median_ms": 0.303,
+        "allocated_bytes": 2960,
+        "builds": 204,
+        "gc_collections": 0
+      },
+      "frame_count_checksums_equal": true,
+      "synthetic_views_equal_each_frame": true
+    },
+    {
+      "workload": "rebind-every-120-frames",
+      "baseline": {
+        "median_ms": 12.888,
+        "allocated_bytes": 1480,
+        "builds": 60000,
+        "gc_collections": 0
+      },
+      "candidate": {
+        "median_ms": 0.385,
+        "allocated_bytes": 2960,
+        "builds": 500,
+        "gc_collections": 0
+      },
+      "frame_count_checksums_equal": true,
+      "synthetic_views_equal_each_frame": true
+    },
+    {
+      "workload": "change-every-frame",
+      "baseline": {
+        "median_ms": 6.759,
+        "allocated_bytes": 1480,
+        "builds": 60000,
+        "gc_collections": 0
+      },
+      "candidate": {
+        "median_ms": 1.661,
+        "allocated_bytes": 2960,
+        "builds": 12004,
+        "gc_collections": 0
+      },
+      "frame_count_checksums_equal": true,
+      "synthetic_views_equal_each_frame": true
+    }
+  ]
+}

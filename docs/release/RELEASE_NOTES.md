@@ -20,27 +20,31 @@
   Не трактует любое удаление записи как успешный возврат; не меняет боевые стопки.
 - Чипы постоянных черт врага: event-invalidated collect/sort и redraw только по изменению/появлению/layout.
   Double-buffer builder переиспользует два списка вместо List/ToArray на каждую мутацию; исключение не публикует
-  частичный список, rebind сбрасывает поколение. Повторное bind и абсолютное положение powers не должны накапливать
+  частичный список, rebind сбрасывает поколение. Отклонённый/бросивший builder сразу очищает scratch, включая добавления
+  после Reset; вложенный Refresh не очищает живую внешнюю сборку. Повторное bind и абсолютное положение powers не должны накапливать
   узлы/сдвиг. Core/микрозамер этого helper не заменяют проверку реальных подписок в клиенте.
 - Собственные звуковые players завершаются при звуке OFF; deferred player также теряет Autoplay до Ready.
   Одинаковые короткие AoE-hit bursts объединяются. Не обещается отмена уже играющего native/FMOD one-shot. Настоящий микс/multihit ещё не принят.
 - G0 staging сохраняет внешний Compile-link Core-тестов; публичный кандидат содержит согласованные source/DLL/PCK,
-  не private build directory. Финальная матрица/hash gate и `seal` не создают GitHub release автоматически.
+  не private build directory. `source_sha256` case связывает содержимое plan/checklist/combat-passport, не только имя:
+  изменение документарной фазы/порога тоже делает прежнюю матрицу stale. Архив повторно сверяет эти bytes.
+  Финальная матрица/hash gate и `seal` не создают GitHub release автоматически.
 
 ## Что реально проверено, а что нет
 
-На **`49288c96ed171c01b7197777ace9c2892392261c`** [CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452):
-**877/877 Core** и пять успешных jobs, включая 24 release contracts. Локально — 33 проверки / 300 Python unit PASS;
-C# grammar 319/0, Harmony declarations 137/0. Это не semantic mod build.
+На **`dc66b0c8398512ec608d7f6e4579af3d72ad984f`** [CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604):
+**879/879 Core** и пять успешных jobs, включая новые cleanup cases и release contracts. Локально — 33 проверки /
+**301 Python unit PASS** (151 sim + 38 G0 + 25 release + 87 checker); C# grammar 319/0, Harmony declarations 137/0.
+Это не semantic mod build.
 
-На том же 492 реально исполнены и strict-verified **28 C# cache trials** (5×24 powers, 12000 условных кадров,
-7 повторений/workload). Внутри этого runner stress baseline → candidate: **5.975 → 1.384 ms**, **1480 → 2960 B**,
-60000 → 12004 builds; idle **11.281 → .199 ms**, **1480 → 1480 B**. Дополнительные 1480 B — начальная ёмкость
+На том же dc66 реально исполнены и strict-verified **28 C# cache trials** (5×24 powers, 12000 условных кадров,
+7 повторений/workload). Внутри этого runner stress baseline → candidate: **6.759 → 1.661 ms**, **1480 → 2960 B**,
+60000 → 12004 builds; idle **12.991 → .292 ms**, **1480 → 1480 B**. Дополнительные 1480 B — начальная ёмкость
 второго буфера в измеренном workload, не новые List/ToArray на каждый rebuild и не нулевые allocations всей игры.
 
 Предыдущий `6c1234d` (869/869) сохранён отдельно: старый List+ToArray builder выделял до **3 073 792 B** в stress.
-Его regression стала основанием для исправления. Тайминги разных CI jobs не сравниваются как одна hardware session;
-в обоих запусках baseline/candidate измерялись попарно. Это **не** Godot/FPS/доказательство улучшения native GC.
+Его regression стала основанием для исправления. Checkpoint `49288c9` (877/877) и его raw trials тоже сохранены.
+Тайминги разных CI jobs не сравниваются как одна hardware session; в каждом baseline/candidate измерялись попарно. Это **не** Godot/FPS/доказательство улучшения native GC.
 Точные SHA, raw trials, hashes/границы и source-only snapshot receipt — в [отчёте Б3](../review/stage-three-quality-implementation-2026-11-18.md).
 Последующие source/pair changes требуют отдельного подтверждения, не наследуют эти PASS автоматически.
 
