@@ -1,6 +1,6 @@
 {
   "scope": "B2.2 boss counterplay source/content/pure-Python automation; actual Core runner/xUnit execution recorded separately by CI; not full-mod compilation/PCK/native/UI/co-op acceptance",
-  "base_commit": "20ddd2f8eb27851c85870809f8205dbd5d160329",
+  "base_commit": "7e83e62ea9ddf4a0a4a818a841ac89c7ecd02d18",
   "checks": [
     {
       "name": "localization-build",
@@ -9,7 +9,7 @@
         "tools/loc/build_loc.py"
       ],
       "exit_code": 0,
-      "seconds": 0.072,
+      "seconds": 0.083,
       "log": "logs/localization-build.log",
       "sha256": "e7d37b14bcdbdb57246e974b4b03e67a757164e162bcff844059af2b55a4de07"
     },
@@ -20,7 +20,7 @@
         "tools/ci/check_loc.py"
       ],
       "exit_code": 0,
-      "seconds": 0.209,
+      "seconds": 0.252,
       "log": "logs/localization.log",
       "sha256": "b9f3fc1b654d6bfde578f21925921442f7c935ede47687070968e0bbceb2880f"
     },
@@ -36,9 +36,9 @@
         "-v"
       ],
       "exit_code": 0,
-      "seconds": 0.948,
+      "seconds": 1.03,
       "log": "logs/checker-tests.log",
-      "sha256": "01d73f02b94cab9b7ca5d48b8d8966828eaf70f05e6ed63b275f961976191238"
+      "sha256": "73bb324f858458bc307a5235034855a930ca34661a47ff53128b73f0fbacdfb1"
     },
     {
       "name": "build-contracts",
@@ -52,9 +52,9 @@
         "-v"
       ],
       "exit_code": 0,
-      "seconds": 0.208,
+      "seconds": 0.178,
       "log": "logs/build-contracts.log",
-      "sha256": "c7f70d7ea311e6b75098d45075a577dbace22f8da020b794873de9eeee023a6f"
+      "sha256": "7df93ed246a379e2f060623840c745d70b1cc65ad96d965d1f3384c2471acc59"
     },
     {
       "name": "sim",
@@ -68,9 +68,9 @@
         "-v"
       ],
       "exit_code": 0,
-      "seconds": 0.982,
+      "seconds": 0.926,
       "log": "logs/sim.log",
-      "sha256": "9891008ad8b75dade7b79e5ddbc9fa995cd6d8864a551255ce8e38adab3dcbac"
+      "sha256": "a9be6639edfffb0e25d53bb1df8b3544d0d8b97997d5d3b9307b7a1a5d58e9dc"
     },
     {
       "name": "build-directions",
@@ -80,7 +80,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.28,
+      "seconds": 0.278,
       "log": "logs/build-directions.log",
       "sha256": "6cebac4b808ea839f3ba1fcea1067a97c639307b56679ef7ffe0b6206e89679a"
     },
@@ -91,7 +91,7 @@
         "tools/ci/check_economy.py"
       ],
       "exit_code": 0,
-      "seconds": 0.025,
+      "seconds": 0.024,
       "log": "logs/economy-source.log",
       "sha256": "f215c75ac8a8f8ad1e65946fd46fd53ca4193396a1aa249aa3f656bc39b1bd43"
     },
@@ -102,7 +102,7 @@
         "tools/ci/check_combat.py"
       ],
       "exit_code": 0,
-      "seconds": 0.183,
+      "seconds": 0.222,
       "log": "logs/combat-source.log",
       "sha256": "1b4e52965f5065306b075828b34ba186f8dd5f25fd0c2d2fabd1fb7fd3937a20"
     },
@@ -113,7 +113,7 @@
         "tools/ci/check_csharp_syntax.py"
       ],
       "exit_code": 0,
-      "seconds": 0.733,
+      "seconds": 0.746,
       "log": "logs/csharp-syntax.log",
       "sha256": "05b416eeb580cd933e2ef61bab803c2b6b611600511599677c7d80f73925ed22"
     },
@@ -125,7 +125,7 @@
         ".arena/stage2/game/decompiled"
       ],
       "exit_code": 0,
-      "seconds": 0.096,
+      "seconds": 0.106,
       "log": "logs/harmony-targets.log",
       "sha256": "e72c9fb287d7eca5d11f1e74090e1b2a40e334333501a1b72631c6f80d537af4"
     },
@@ -137,7 +137,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.16,
+      "seconds": 0.153,
       "log": "logs/art-table.log",
       "sha256": "a60ecf0216b53ba8e94a5cce6915ac118557bdd52d39f0ea99d6a4e2eeb48eea"
     },
@@ -149,7 +149,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.298,
+      "seconds": 0.285,
       "log": "logs/art-fit.log",
       "sha256": "39de9bdbc6f257b29a7ae75cf22815c2f4f48f8470c512bd442316a670737cf9"
     },
@@ -161,7 +161,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 5.066,
+      "seconds": 5.015,
       "log": "logs/boss-icons.log",
       "sha256": "d6f3aa395c3b4bd026d177415ecbd709f240a7161d6655af79af5ae4da5f4570"
     },
@@ -173,7 +173,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.04,
+      "seconds": 0.044,
       "log": "logs/scenes-art.log",
       "sha256": "3a108c2f543adfabca63afc2973eecd660db33c9511c4a638c8b19b6de5a676d"
     },
@@ -185,7 +185,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.105,
+      "seconds": 0.133,
       "log": "logs/events-art.log",
       "sha256": "9797611d896cb07dc33c60ca6a19b86b3fa76f30ac8dbd7a184a63d285ca0b0a"
     },
@@ -197,7 +197,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.068,
+      "seconds": 0.072,
       "log": "logs/acts-art.log",
       "sha256": "5ff133065849d7a41700ff310a693ab6414f165846e93d8d7c4efd6a489baa30"
     },
@@ -209,7 +209,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.044,
+      "seconds": 0.046,
       "log": "logs/origins-art.log",
       "sha256": "f1ef2be45be76b16b58df8ea40748132b29937432e4d37eefd6011253d1c9074"
     },
@@ -221,7 +221,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.073,
+      "seconds": 0.076,
       "log": "logs/relics-art.log",
       "sha256": "9234e0b124128adda5ef97d9e11c7455ed205ade691e73242ca34aa3f725c1f8"
     },
@@ -233,7 +233,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.051,
+      "seconds": 0.057,
       "log": "logs/cards-art.log",
       "sha256": "f4424764679bde4ca3f99075bbc42c06aa6aab205b37ab5df18beab772292056"
     },
@@ -245,7 +245,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.282,
+      "seconds": 0.286,
       "log": "logs/sounds.log",
       "sha256": "b993dca03a3c3429880a81e55c65d9c2eaf2df4ac53b3bf7187a0a193ca4525e"
     },
@@ -256,7 +256,7 @@
         "tools/ci/check_events.py"
       ],
       "exit_code": 0,
-      "seconds": 0.03,
+      "seconds": 0.032,
       "log": "logs/events.log",
       "sha256": "09607d72ea3e2b164dedf3575915419f07204f8aaf4be26968c83d5a2e47531b"
     },
@@ -268,7 +268,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.154,
+      "seconds": 0.169,
       "log": "logs/assets.log",
       "sha256": "1f03fbf9ac2f15aec6ca307a5c56a7e8ade68e358e6456ac6a845011cc8034cc"
     },
@@ -282,7 +282,7 @@
         "docs/plan/card-audit.md"
       ],
       "exit_code": 0,
-      "seconds": 0.365,
+      "seconds": 0.364,
       "log": "logs/card-audit.log",
       "sha256": "345b5399b70e6e6d097e6502dcb603de4d3e9f5d41825bef9a2d54512ce6ac1f"
     },
@@ -294,7 +294,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.153,
+      "seconds": 0.166,
       "log": "logs/design-tables.log",
       "sha256": "1317e5e0af1d86f0b35faa0461dce41d0826582f2fee9b3628bb2a380ed2a985"
     },
@@ -306,7 +306,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.15,
+      "seconds": 0.158,
       "log": "logs/card-catalog.log",
       "sha256": "9bcb85f416a16f29793e38ce48304fc49358beeb55dd2d05f1a9292efd06ae60"
     },
@@ -318,7 +318,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.176,
+      "seconds": 0.169,
       "log": "logs/pools.log",
       "sha256": "fa0c4890efa140bf09b10693188857020e8bb2bad0ad8a9ed97ba49010fa35a1"
     },
@@ -330,7 +330,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.103,
+      "seconds": 0.083,
       "log": "logs/relics.log",
       "sha256": "3cfc3e518e9e0bc51b3d411478db4085b2da0b033995ea40925a1d39e2d61f01"
     },
@@ -342,7 +342,7 @@
         "--check"
       ],
       "exit_code": 0,
-      "seconds": 0.044,
+      "seconds": 0.029,
       "log": "logs/diff-whitespace.log",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
@@ -797,7 +797,7 @@
     "mod/README.md": "c01f3182ad242b754a9cdc8f94e56604766625c4e8d3f67fa590e51e9f30cb3d",
     "mod/SlayTheRequiem.Tests/BossCounterplayTests.cs": "982f39d9fe9627df2e05a53508dff3b38fba8b729229196919832f5d47caf283",
     "mod/SlayTheRequiem.Tests/BuildAccessTests.cs": "b9ed86dba9c0b4aa2ca7116023df64d878acc9fb5b1fbb74dcb5e895aa3f4597",
-    "mod/SlayTheRequiem.Tests/CombatContractTests.cs": "f840fc95e35a26d91a756ec6dcdcecc0f81c9afcdde3ada754d9a6a74fad758b",
+    "mod/SlayTheRequiem.Tests/CombatContractTests.cs": "a93a7bfafb5bc49bf546ff7387656a0c3afd3306d97fafbe3de17eedfc5e2424",
     "mod/SlayTheRequiem.Tests/CoreTests.cs": "c1b4ef319eb0eb5767f7f0919f5d548947ac304c91f573739c290ef4f9c30a40",
     "mod/SlayTheRequiem.Tests/EconomyCalibrationTests.cs": "c8ed0783c907ce82ada8fa8d7c0c4cb691189f3d13b99d30bdc026de4e6b6b80",
     "mod/SlayTheRequiem.Tests/IntegrityTests.cs": "6e458e6276fa09a9ea5b374f4c8be7988fd4a4d4f74ede20b5fd7facd269dbe2",

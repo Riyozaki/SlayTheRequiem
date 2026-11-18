@@ -97,10 +97,10 @@ public class CombatContractTests
     public void Shipped_roles_cover_both_primary_crab_bodies_and_standalone_rift()
     {
         var table = MonsterTable.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "monsters_requiem.csv")));
-        Assert.Equal(199, table.Count);
+        Assert.Equal(201, table.Count); // 113 native + 88 authored, including the two counterplay bodies
         foreach (var name in new[] { "Crusher", "Rocket", "WorldEater", "KingUnderBarrow" }) Assert.Equal(EnemyRole.Boss, table.Get(name).Role);
-        foreach (var name in new[] { "TorchHeadAmalgam", "Wriggler", "KinFollower", "CrimsonBandit" }) Assert.Equal(EnemyRole.Minion, table.Get(name).Role);
-        foreach (var name in new[] { "SteamValve", "DragonEgg", "ShadowSoul", "AbyssGateObject" }) Assert.Equal(EnemyRole.Prop, table.Get(name).Role);
+        foreach (var name in new[] { "TorchHeadAmalgam", "Wriggler", "KinFollower", "CrimsonBandit", "DevouredSoulGhost" }) Assert.Equal(EnemyRole.Minion, table.Get(name).Role);
+        foreach (var name in new[] { "SteamValve", "DragonEgg", "ShadowSoul", "AbyssGateObject", "SolarStandard" }) Assert.Equal(EnemyRole.Prop, table.Get(name).Role);
         Assert.Equal(EnemyRole.Normal, table.Get("Dremora").Role);
         Assert.Equal(EnemyRole.Normal, table.Get("AbyssScamp").Role);
         Assert.Equal(EnemyRole.Elite, table.Get("ShopGuard").Role);
@@ -131,6 +131,7 @@ public class CombatContractTests
     [InlineData("LEY_SURGE", DamageType.Shock)]
     [InlineData("PRESSURE_RELEASE", DamageType.Fire)]
     [InlineData("DAWN_RAY", DamageType.Light)]
+    [InlineData("DEVOUR_GHOST_TOUCH", DamageType.Magic)]
     [InlineData("UNKNOWN_MOD_MOVE", DamageType.Physical)]
     public void Static_move_types_match_actual_commands(string move, DamageType expected) => Assert.Equal(expected, MonsterMoveRules.TypeOf(move));
 

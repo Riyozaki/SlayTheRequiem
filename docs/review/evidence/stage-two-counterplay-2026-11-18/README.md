@@ -7,8 +7,8 @@
 ## Локально выполнено
 
 [`checks.json`](checks.json) хранит команды/exit codes/SHA256 stdout+stderr и **1802 SHA256 входных файлов**.
-Snapshot сделан на рабочем дереве поверх `20ddd2f8eb27851c85870809f8205dbd5d160329`; parent SHA не выдаётся за
-commit поздних изменений. Входы включают код/данные/localization/ресурсы мода, tools, art, дизайн и generated card documents.
+Snapshot обновлён на рабочем дереве поверх `7e83e62ea9ddf4a0a4a818a841ac89c7ecd02d18` после исправления
+устаревшего Core assertion 199→201; parent SHA не выдаётся за commit позднего исправления. Входы включают код/данные/localization/ресурсы мода, tools, art, дизайн и generated card documents.
 Документы самого evidence не хешируются внутрь себя. Все входные и логовые хеши сверены после копирования: **0 несовпадений**.
 
 **29/29 команд PASS:**
