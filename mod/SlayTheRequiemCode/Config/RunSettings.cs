@@ -371,7 +371,8 @@ public static class RunSettings
     // ───── патчи лобби и забега ─────
 
     [CriticalPatch]
-    [HarmonyPatch(typeof(StartRunLobby), MethodType.Constructor, typeof(GameMode), typeof(INetGameService), typeof(IStartRunLobbyListener), typeof(int))]
+    // Игра 0.113: второй параметр — bool isCustom (настраиваемый забег). Конструктор с TimeServerResult зовёт этот через this(...).
+    [HarmonyPatch(typeof(StartRunLobby), MethodType.Constructor, typeof(GameMode), typeof(bool), typeof(INetGameService), typeof(IStartRunLobbyListener), typeof(int))]
     public static class TrackStartLobby
     {
         [HarmonyPostfix]

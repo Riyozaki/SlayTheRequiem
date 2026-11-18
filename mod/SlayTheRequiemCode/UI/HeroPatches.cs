@@ -51,13 +51,30 @@ public static class HiddenHeroes
         }
     }
 
+    /// <summary>
+    /// Игра 0.113: случайный герой разрешается в StartRunLobby.BeginRunLocally вызовом ChangeCharacter(id, герой,
+    /// isRotatingDread: false) — флага isRandomCharacterResolution (0.111) больше нет. Поэтому помечаем окно
+    /// BeginRunLocally и подменяем скрытого героя только внутри него.
+    /// </summary>
+    [ThreadStatic] private static int _resolvingRandom;
+
+    [HarmonyPatch(typeof(StartRunLobby), "BeginRunLocally")]
+    public static class RandomResolutionScope
+    {
+        [HarmonyPrefix]
+        public static void Prefix() => _resolvingRandom++;
+
+        [HarmonyFinalizer]
+        public static void Finalizer() => _resolvingRandom = Math.Max(0, _resolvingRandom - 1);
+    }
+
     [HarmonyPatch(typeof(StartRunLobby), "ChangeCharacter")]
     public static class NoRandomHidden
     {
         [HarmonyPrefix]
-        public static void Prefix(ref CharacterModel character, bool isRandomCharacterResolution)
+        public static void Prefix(ref CharacterModel character)
         {
-            if (isRandomCharacterResolution && IsHidden(character)) character = Replacement(character);
+            if (_resolvingRandom > 0 && IsHidden(character)) character = Replacement(character);
         }
     }
 

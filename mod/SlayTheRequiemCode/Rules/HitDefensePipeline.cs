@@ -77,9 +77,11 @@ public static class HitDefensePipeline
 }
 
 [CriticalPatch]
+// Игра 0.113: все перегрузки Damage сходятся в перегрузку с IEnumerable<DamageTargetData> и ModifyDamageHookType
+// (в 0.111 ядром была перегрузка с IEnumerable<Creature> без ModifyDamageHookType — её больше нет).
 [HarmonyPatch(typeof(CreatureCmd), nameof(CreatureCmd.Damage),
-    typeof(PlayerChoiceContext), typeof(IEnumerable<Creature>), typeof(decimal), typeof(ValueProp), typeof(Creature), typeof(CardModel),
-    typeof(CardPlay))]
+    typeof(PlayerChoiceContext), typeof(IEnumerable<MegaCrit.Sts2.Core.Entities.Creatures.DamageTargetData>), typeof(decimal), typeof(ValueProp),
+    typeof(Creature), typeof(CardModel), typeof(CardPlay), typeof(MegaCrit.Sts2.Core.Hooks.ModifyDamageHookType))]
 public static class DamageDefenseScopePatch
 {
     [HarmonyPrefix]

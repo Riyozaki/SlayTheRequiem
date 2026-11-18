@@ -4,7 +4,7 @@
   "author": "Riyozaki",
   "description": "Stamina, mana and burden, elemental statuses, equipment slots, alchemy, pantheon, transformations, five acts and merciless enemies. Inspired by Requiem/RFAB.",
   "version": "v0.0.1",
-  "min_game_version": "0.111.1",
+  "min_game_version": "0.113.0",
   "has_pck": true,
   "has_dll": true,
   "dependencies": [

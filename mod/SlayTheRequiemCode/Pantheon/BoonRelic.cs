@@ -34,7 +34,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool IsAllowedInShops => false;
-    public override bool IsAllowed(IRunState runState) => false;
+    protected override bool IsAllowedInternal(IRunState runState) => false;
 
     /// <summary>Текущий набор (может зависеть от праведности, Обета, надетых вещей).</summary>
     protected abstract Boon ComputeBoon();
@@ -115,7 +115,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         try
         {
             if (delta > 0) await CreatureCmd.GainMaxHp(owner.Creature, delta);
-            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), owner.Creature, -delta, false);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), owner.Creature, -delta, cardSource: null);
             if (changes.Any(c => !owner.Relics.Contains(c.relic) || c.target != c.relic.ActiveBoon.MaxHp))
                 throw new InvalidOperationException("Identity HP sources changed during a native callback");
             foreach (var (relic, target) in changes) relic.GrantedMaxHp = target;
@@ -144,7 +144,7 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         {
             var delta = HeroIdentityRules.ReconciledHpDelta(Owner.Creature.MaxHp, _grantedMaxHp, target);
             if (delta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, delta);
-            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -delta, false);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -delta, cardSource: null);
             GrantedMaxHp = target;
             mutation?.Complete();
             return true;

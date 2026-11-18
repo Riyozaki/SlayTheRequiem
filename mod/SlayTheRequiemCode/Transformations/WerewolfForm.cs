@@ -226,7 +226,7 @@ public sealed class BeastFormPower : RequiemPower
         }
     }
 
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (!wasRemovalPrevented && creature.Monster != null && creature != Owner) _corpses++;
         return Task.CompletedTask;

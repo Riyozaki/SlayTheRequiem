@@ -99,7 +99,7 @@ public sealed class SpiderMatriarch : RequiemMonster
         await Summon<RepairSpider>();
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature == Creature && !wasRemovalPrevented) await KillMinions<RepairSpider>();
     }
@@ -150,7 +150,7 @@ public sealed class RenegadeMechanic : RequiemMonster
         else await Block(12);
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature == Creature && !wasRemovalPrevented) await KillMinions<MechanicTurret>();
     }

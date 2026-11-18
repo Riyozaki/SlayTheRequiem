@@ -221,7 +221,7 @@ public sealed class GiftOfPlagueLord : AbyssGift
         var bonebreak = PantheonRules.Count(Diseases, Disease.Bonebreak);
         if (bonebreak > 0 && Owner.Creature.MaxHp > 1)
             await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature,
-                Math.Min(PantheonRules.BonebreakHpPerAct * bonebreak, Owner.Creature.MaxHp - 1), false);
+                Math.Min(PantheonRules.BonebreakHpPerAct * bonebreak, Owner.Creature.MaxHp - 1), cardSource: null);
     }
 
     public override async Task AfterDamageGiven(PlayerChoiceContext choiceContext, Creature? dealer, DamageResult result, ValueProp props, Creature target, CardModel? cardSource)
@@ -613,7 +613,7 @@ public sealed class GiftOfDuskStar : AbyssGift, ISummonListener
         return Task.CompletedTask;
     }
 
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         // Смерть спутника в коопе или союзного существа на стороне игроков.
         // Гибель призывов считает AfterSummonDestroyed: развеянный (вытесненный из слота) призыв — не смерть союзника.

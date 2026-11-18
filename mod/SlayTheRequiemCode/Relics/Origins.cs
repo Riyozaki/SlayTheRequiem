@@ -26,7 +26,7 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 {
     public override RelicRarity Rarity => RelicRarity.Starter;
     public override bool IsAllowedInShops => false;
-    public override bool IsAllowed(IRunState runState) => false;
+    protected override bool IsAllowedInternal(IRunState runState) => false;
 
     protected virtual int MaxHpDelta => 0;
     internal int IdentityMaxHp => MaxHpDelta;
@@ -49,7 +49,7 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
         if (IdentityReplacement) return; // the confirmed Reborn adapter reconciles the net passive delta once
         Mastery.GrimoireOf(Owner)?.RefreshIdentitySources();
         if (MaxHpDelta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, MaxHpDelta);
-        else if (MaxHpDelta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -MaxHpDelta, false);
+        else if (MaxHpDelta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -MaxHpDelta, cardSource: null);
     }
 
     public override async Task BeforeCombatStart()

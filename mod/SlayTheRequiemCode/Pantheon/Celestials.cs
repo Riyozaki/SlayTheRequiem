@@ -292,7 +292,7 @@ public abstract class CelestialAmulet : EquipmentRelic, ICelestialGarment
     public abstract Celestial God { get; }
     public override RelicRarity Rarity => RelicRarity.Event;
     public override bool IsAllowedInShops => false;
-    public override bool IsAllowed(IRunState runState) => false;
+    protected override bool IsAllowedInternal(IRunState runState) => false;
     public override EquipSlot Slot => EquipSlot.Amulet;
     public override int Weight => 0;
     public override int Tier => 2;
@@ -306,7 +306,7 @@ public abstract class CelestialRobe : ArmorRelic, ICelestialGarment
     public abstract Celestial God { get; }
     public override RelicRarity Rarity => RelicRarity.Event;
     public override bool IsAllowedInShops => false;
-    public override bool IsAllowed(IRunState runState) => false;
+    protected override bool IsAllowedInternal(IRunState runState) => false;
     public override EquipSlot Slot => EquipSlot.Body;
     public override ArmorClass Armor => ArmorClass.Robe;
     public override int Tier => 2;
