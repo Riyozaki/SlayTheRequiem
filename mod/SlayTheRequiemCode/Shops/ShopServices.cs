@@ -481,7 +481,7 @@ public static class ShopServices
                 var description = UI.RequiemText.Plain(card.GetDescriptionForPile(PileType.None)) + "\n"
                     + UI.RequiemUi.TipText("UI.servicePrice.title", ("Gold", option.Price))
                     + (option.Enabled ? "" : "\n" + UI.RequiemUi.TipText("UI.noGold.title"));
-                choices.Add(new(i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title.GetFormattedText(), description, option.Enabled));
+                choices.Add(new(i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title, description, option.Enabled));
             }
             var index = await UI.NHeroCreationScreen.ChooseLocal(player, UI.RequiemUi.TipText("SHOP_TAB_SERVICES.title"),
                 UI.RequiemUi.TipText("UI.serviceHint.title"), choices);

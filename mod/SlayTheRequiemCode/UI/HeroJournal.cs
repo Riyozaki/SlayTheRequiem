@@ -70,7 +70,7 @@ public static class HeroJournal
                 var state = hero.Has(node.Skill) ? T("learned")
                     : !SkillTree.CanLearn(node, hero.Learned.ToArray(), branches) ? T("prerequisite")
                     : hero.CostOf(node) > hero.UnspentSkillPoints ? T("noPoints") : T("learnable");
-                entries.Add(new(RequiemText.Branch(branch) + " · " + token.Title.GetFormattedText(),
+                entries.Add(new(RequiemText.Branch(branch) + " · " + token.Title,
                     RequiemText.Plain(token.GetDescriptionForPile(PileType.None)) + "\n" + T("skillCost", ("Cost", hero.CostOf(node)), ("State", state))));
             }
         return entries;
@@ -100,7 +100,7 @@ public static class HeroJournal
             entries.Add(new(RequiemUi.TipText($"CREATION.school.{school}.title"), T("schoolValues", ("Level", Mastery.Of(owner, school)),
                 ("Cost", hero.MasteryCost(school)), ("Native", T(hero.IsNative(school) ? "native" : "foreign")))));
         foreach (var spell in owner.Deck.Cards.OfType<SpellCard>())
-            entries.Add(new(spell.Title.GetFormattedText(), T("castValues", ("Cost", spell.Affinity.ManaCost), ("Factor", spell.EffectMultiplier),
+            entries.Add(new(spell.Title, T("castValues", ("Cost", spell.Affinity.ManaCost), ("Factor", spell.EffectMultiplier),
                 ("State", RequiemUi.TipText($"UI.cast.{spell.Affinity.State}.title"))) + "\n" + spell.GetDescriptionForPile(PileType.Deck)));
         return entries;
     }
@@ -110,7 +110,7 @@ public static class HeroJournal
         var entries = new List<Entry> { new(T("burden"), T("burdenValues", ("Weight", Loadout.TotalWeight(owner)), ("Capacity", Loadout.Capacity(owner)),
             ("Excess", overload.Excess), ("Regen", overload.StaminaRegenPenalty), ("Hand", overload.OpeningHandPenalty),
             ("Stored", TravelPack.Of(owner)?.StoredCount ?? 0)) + "\n" + T("unloadHint")) };
-        entries.AddRange(owner.Deck.Cards.Select(card => new Entry(card.Title.GetFormattedText(), T("weight", ("Weight", Loadout.CardWeight(card))))));
+        entries.AddRange(owner.Deck.Cards.Select(card => new Entry(card.Title, T("weight", ("Weight", Loadout.CardWeight(card))))));
         return entries;
     }
     private static List<Entry> FaithAndForms(Player owner)
@@ -143,7 +143,7 @@ public static class HeroJournal
     {
         var entries = new List<Entry> { new(T("shouts"), T("shelfHint", ("Capacity", Shouts.Capacity(owner)))) };
         if (owner.Creature.GetPower<ShoutShelfPower>() is { } shelf)
-            entries.AddRange(shelf.Entries.Select(e => new Entry(e.Card.Title.GetFormattedText(),
+            entries.AddRange(shelf.Entries.Select(e => new Entry(e.Card.Title,
                 T(e.Turns == 0 ? "returnPending" : "cooldown", ("Turns", e.Turns)), RequiemUi.Texture(e.Card.PortraitPath))));
         return entries;
     }

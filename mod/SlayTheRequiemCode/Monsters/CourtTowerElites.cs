@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using SlayTheRequiem.SlayTheRequiemCode.Acts;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using V = MegaCrit.Sts2.Core.Models.Powers;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;

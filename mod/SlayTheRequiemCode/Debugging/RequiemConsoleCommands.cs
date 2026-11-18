@@ -332,7 +332,7 @@ public sealed class StrMemoryStoneCmd : RequiemConsoleCmd
     {
         if (NeedRun(issuingPlayer) is { } fail) return fail;
         if (!MemoryStone.Enabled) return Fail("Камень Памяти выключен в настройках мода.");
-        MemoryStone.TakeImprint();
+        MemoryStone.RequestImprint();
         var state = RunManager.Instance.DebugOnlyGetState();
         var candles = state == null ? 0 : MemoryStone.CandlesLeft(state);
         return Ok($"Отпечаток снят (подробности — в логе). Свечей: {(candles == MemoryStoneRules.Infinite ? "∞" : candles)}.");

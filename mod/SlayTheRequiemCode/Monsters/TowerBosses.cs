@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using V = MegaCrit.Sts2.Core.Models.Powers;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;

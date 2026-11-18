@@ -63,7 +63,7 @@ public static class CampMenu
                 cards.Add(card);
             }
             var options = cards.Select((card, i) => new UI.NHeroCreationScreen.Choice(
-                i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title.GetFormattedText(),
+                i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title,
                 UI.RequiemText.Plain(card.GetDescriptionForPile(PileType.None)),
                 Group: choices[i].Tag is Skill skill ? UI.RequiemText.Branch(SkillTree.Node(skill).Branch) : "")).ToList();
             var picked = await UI.NHeroCreationScreen.Pick(owner, new LocString("rest_site_ui", promptKey).GetFormattedText(),

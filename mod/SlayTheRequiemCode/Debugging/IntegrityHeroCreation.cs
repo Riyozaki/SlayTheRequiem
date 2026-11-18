@@ -241,7 +241,7 @@ public static partial class IntegrityRegression
     {
         var owner = Fixture(); var grimoire = ConfirmStart(owner, StartingBonus.Gold); await ApplyConfirmed(grimoire);
         var save = RoundTrip(owner.ToSerializable()); var props = save.Relics.Single(r => r.Id == grimoire.Id).Props!;
-        SavedPropertyWrite.String(props, nameof(Grimoire.MasterySourceData), MasterySources.PreserveLegacy([0, 0, 0, 0, 0]).Encode());
+        SavedPropertyWrite.Text(props, nameof(Grimoire.MasterySourceData), MasterySources.PreserveLegacy([0, 0, 0, 0, 0]).Encode());
         SavedPropertyWrite.Int(props, nameof(Grimoire.Destruction), 5);
         var before = Json(save);
         try { HeroProgressionSave.Validate(save); throw new InvalidOperationException("Mismatched mastery source/counters accepted"); }

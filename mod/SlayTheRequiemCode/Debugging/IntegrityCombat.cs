@@ -39,7 +39,7 @@ public static partial class IntegrityRegression
     private static Task CombatNativeArmor()
     {
         var (owner, combat, enemy) = CombatFixture<BarrowDead>();
-        var plating = FixturePower<PlatingPower>(enemy, 3);
+        var plating = FixturePower<SlayTheRequiem.SlayTheRequiemCode.Powers.PlatingPower>(enemy, 3);
         var card = combat.CreateCard<MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad>(owner);
         decimal Query(DamageType type, decimal amount = 10m)
         {

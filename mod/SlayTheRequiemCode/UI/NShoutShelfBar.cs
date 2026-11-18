@@ -91,7 +91,7 @@ public partial class NShoutShelfBar : VBoxContainer
             slot.Timer.Text = entry.Turns == 0 ? RequiemUi.TipText("UI.shelf.readyLabel.title")
                 : RequiemUi.TipText("UI.shelf.waitLabel.title", ("Turns", entry.Turns));
             slot.Button.TooltipText = RequiemUi.TipText(entry.Turns == 0 ? "UI.shelf.pending.title" : "UI.shelf.waiting.title",
-                ("Name", RequiemText.Plain(entry.Card.Title.GetFormattedText())), ("Turns", entry.Turns));
+                ("Name", RequiemText.Plain(entry.Card.Title)), ("Turns", entry.Turns));
         }
         _removed.Clear();
         foreach (var card in _slots.Keys) if (!_present.Contains(card)) _removed.Add(card);
@@ -144,7 +144,7 @@ public partial class NShoutShelfBar : VBoxContainer
 
     private void Notice(string key, CardModel card)
     {
-        _notice.Text = RequiemUi.TipText(key, ("Name", RequiemText.Plain(card.Title.GetFormattedText())));
+        _notice.Text = RequiemUi.TipText(key, ("Name", RequiemText.Plain(card.Title)));
         _notice.TooltipText = _notice.Text;
         _noticeLeft = 3;
     }

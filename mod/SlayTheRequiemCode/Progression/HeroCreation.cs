@@ -488,7 +488,7 @@ internal static class HeroCreation
         return rows.Count == 0 ? Text("unchanged") : string.Join("\n", rows);
     }
     private static string DeckList(string[] deck) => string.Join("\n", deck.GroupBy(id => id).Select(g => g.Count() + " × " + CardTitle(g.Key)));
-    private static string CardTitle(string id) => ModelDb.AllCards.FirstOrDefault(c => c.Id.Entry == id)?.Title.GetFormattedText() ?? id;
+    private static string CardTitle(string id) => ModelDb.AllCards.FirstOrDefault(c => c.Id.Entry == id)?.Title ?? id;
     private static string Title(RelicModel? relic) => relic?.Title.GetFormattedText() ?? Text("none");
     private static string BonusName(StartingBonus bonus) => Text(bonus switch
     {

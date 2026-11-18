@@ -57,7 +57,7 @@ public static class RewardAcquisitionPanel
                                     : preventer is TravelPack ? RequiemUi.TipText(InventoryGate.For(current).Blocked
                                         ? "REWARD_OPERATION_BLOCKED.title" : "REWARD_OVERLOAD.title")
                                     : RequiemUi.TipText("REWARD_VETO.title", ("Source", preventer?.Id.Entry ?? "?"));
-                                return new NRequiemSheet.Entry(card.Title.GetFormattedText(), RequiemUi.TipText("REWARD_CARD_STATE.title",
+                                return new NRequiemSheet.Entry(card.Title, RequiemUi.TipText("REWARD_CARD_STATE.title",
                                     ("Card", card.Title), ("Weight", Loadout.CardWeight(card)), ("Reason", reason)) + "\n"
                                     + card.GetDescriptionForPile(PileType.None), RequiemUi.Texture(card.PortraitPath));
                             }).ToList())]);
