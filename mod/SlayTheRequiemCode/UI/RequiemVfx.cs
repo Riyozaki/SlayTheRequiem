@@ -23,7 +23,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.UI;
 /// </summary>
 public static class RequiemVfx
 {
-    public static bool Enabled => RequiemConfig.CombatVfx && !TestMode.IsOn;
+    public static bool Enabled => RunSettings.EnableRequiemSystems && RequiemConfig.CombatVfx && RequiemMotion.Enabled && !TestMode.IsOn;
 
     private static readonly ConditionalWeakTable<Creature, Dictionary<HitFxKind, ulong>> LastHit = new();
     private static readonly ConditionalWeakTable<NCreatureVisuals, Pose> Poses = new();
@@ -55,7 +55,17 @@ public static class RequiemVfx
 
     private static (Pose Pose, Tween Tween) Animate(NCreatureVisuals visuals)
     {
-        var pose = Poses.GetValue(visuals, _ => new Pose());
+        var pose = Poses.GetValue(visuals, owner =>
+        {
+            var state = new Pose();
+            RequiemMotion.Watch(owner, () =>
+            {
+                if (Enabled || state.Active == null) return;
+                RequiemMotion.Kill(state.Active); state.Active = null;
+                owner.Position = state.Position; owner.Scale = state.Scale;
+            });
+            return state;
+        });
         if (pose.Active == null || !pose.Active.IsValid() || !pose.Active.IsRunning())
         {
             pose.Position = visuals.Position;
@@ -214,6 +224,7 @@ public static class RequiemVfx
             tween.TweenProperty(veil, "color:a", 0f, VfxRules.PortalEnterSeconds).SetTrans(Tween.TransitionType.Cubic)
                 .SetEase(Tween.EaseType.In);
             tween.TweenCallback(Callable.From(layer.QueueFree));
+            RequiemMotion.Watch(layer, () => { if (!Enabled) layer.QueueFree(); });
         });
     }
 
@@ -227,11 +238,19 @@ public static class RequiemVfx
         spriteContainer.AddChild(glow);
         spriteContainer.MoveChild(glow, 0);
         var half = VfxRules.PortalPulseSeconds * 0.5;
-        var pulse = glow.CreateTween().SetLoops();
-        pulse.TweenProperty(glow, "modulate:a", 0.85f, half).SetTrans(Tween.TransitionType.Sine);
-        pulse.Parallel().TweenProperty(glow, "scale", Vector2.One * 1.95f, half).SetTrans(Tween.TransitionType.Sine);
-        pulse.TweenProperty(glow, "modulate:a", 0.35f, half).SetTrans(Tween.TransitionType.Sine);
-        pulse.Parallel().TweenProperty(glow, "scale", Vector2.One * 1.7f, half).SetTrans(Tween.TransitionType.Sine);
+        RequiemMotion.Decorate(glow, () =>
+        {
+            glow.Visible = RequiemConfig.CombatVfx;
+            glow.Scale = Vector2.One * 1.7f; glow.Modulate = crimson with { A = 0.35f };
+        }, () =>
+        {
+            var pulse = glow.CreateTween().SetLoops();
+            pulse.TweenProperty(glow, "modulate:a", 0.85f, half).SetTrans(Tween.TransitionType.Sine);
+            pulse.Parallel().TweenProperty(glow, "scale", Vector2.One * 1.95f, half).SetTrans(Tween.TransitionType.Sine);
+            pulse.TweenProperty(glow, "modulate:a", 0.35f, half).SetTrans(Tween.TransitionType.Sine);
+            pulse.Parallel().TweenProperty(glow, "scale", Vector2.One * 1.7f, half).SetTrans(Tween.TransitionType.Sine);
+            return [pulse];
+        }, effectsOnly: true);
     });
 
     /// <summary>
@@ -289,6 +308,7 @@ public static class RequiemVfx
                 .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
             tween.TweenProperty(cracks, "modulate:a", 0f, total * 0.4).SetDelay(total * 0.6);
             tween.Chain().TweenCallback(Callable.From(layer.QueueFree));
+            RequiemMotion.Watch(layer, () => { if (!Enabled) layer.QueueFree(); });
             timer = NGame.Instance.GetTree().CreateTimer(total * 0.6);
         }
         catch (Exception e)

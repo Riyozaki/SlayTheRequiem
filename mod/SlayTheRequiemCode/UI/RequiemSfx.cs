@@ -23,6 +23,9 @@ public static class RequiemSfx
 {
     private static readonly StringName SfxBus = new("SFX");
     private static readonly ConditionalWeakTable<Creature, Dictionary<string, ulong>> LastHit = new();
+    // Eight fixed hit-event keys only. The per-creature gate alone still layered five identical samples on an
+    // AoE; coalesce that short same-element burst globally too. Never gates an actual hit, status or telegraph.
+    private static readonly Dictionary<string, ulong> LastGroupHit = [];
     private static readonly Dictionary<string, AudioStream?> Streams = [];
     private static readonly HashSet<string> Reported = [];
 
@@ -51,8 +54,9 @@ public static class RequiemSfx
         if (volume <= 0f) return;
         var last = LastHit.GetOrCreateValue(target);
         var now = Time.GetTicksMsec();
-        if (SfxRules.Throttled(last.GetValueOrDefault(sfxEvent), now)) return;
-        last[sfxEvent] = now;
+        if (SfxRules.Throttled(last.GetValueOrDefault(sfxEvent), now)
+            || SfxRules.Throttled(LastGroupHit.GetValueOrDefault(sfxEvent), now)) return;
+        last[sfxEvent] = LastGroupHit[sfxEvent] = now;
         Play(sfxEvent, volume);
     }
 
@@ -89,6 +93,7 @@ public static class RequiemSfx
             Autoplay = true, // AddChildSafely может отложить добавление — звук начнётся, когда узел войдёт в дерево
         };
         player.Finished += player.QueueFree;
+        RequiemMotion.Watch(player, () => { if (!Enabled) { player.Stop(); player.QueueFree(); } });
         game.AddChildSafely(player);
     }
 

@@ -16,6 +16,10 @@ const { Resvg } = require("@resvg/resvg-js");
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const groups = ["ui", "map", "monsters"];
+// B3 raster promotions have retained masters + an explicit matte/fit pipeline. Legacy SVGs remain editable
+// historical sources, not permission to silently replace the selected runtime sprites on a blanket render.
+const promoted = new Set(JSON.parse(readFileSync(join(root, "art/illustrations/sprite-manifest.json"), "utf8"))
+  .assets.map(asset => asset.runtime.replace(/^res:\/\//, "")));
 
 function* walk(dir) {
   for (const name of readdirSync(dir).sort()) {
@@ -31,6 +35,10 @@ for (const group of groups) {
   const out = join(root, "mod", "SlayTheRequiem", "images", group);
   for (const file of walk(src)) {
     const rel = relative(src, file).replace(/\.svg$/, ".png");
+    if (promoted.has(`SlayTheRequiem/images/${group}/${rel.replaceAll("\\", "/")}`)) {
+      console.log(`Retained raster promotion: images/${group}/${rel}`);
+      continue;
+    }
     const png = new Resvg(readFileSync(file), { fitTo: { mode: "original" } }).render().asPng();
     mkdirSync(dirname(join(out, rel)), { recursive: true });
     writeFileSync(join(out, rel), png);

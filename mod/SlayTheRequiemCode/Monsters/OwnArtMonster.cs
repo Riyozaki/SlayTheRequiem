@@ -9,7 +9,9 @@ using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using SlayTheRequiem.SlayTheRequiemCode.Art;
+using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
+using SlayTheRequiem.SlayTheRequiemCode.UI;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
@@ -88,6 +90,9 @@ public static class OwnArtAnimator
 
     private static readonly ConditionalWeakTable<Sprite2D, Tween> Idle = new();
     private static readonly ConditionalWeakTable<Sprite2D, Tween> Action = new();
+    private sealed class SpriteState { internal bool Dead; }
+    private static readonly ConditionalWeakTable<Sprite2D, SpriteState> States = new();
+    private static SpriteState State(Sprite2D body) => States.GetValue(body, _ => new SpriteState());
 
     private static readonly StringName OwnArtMeta = "requiem_own_art";
 
@@ -95,7 +100,20 @@ public static class OwnArtAnimator
     public static void Attach(NCreatureVisuals visuals)
     {
         visuals.SetMeta(OwnArtMeta, true);
-        visuals.TreeEntered += () => { if (Body(visuals) is { } body) StartIdle(body); };
+        (bool Motion, bool Effects)? previous = null;
+        void RefreshMotion()
+        {
+            if (!GodotObject.IsInstanceValid(visuals) || !visuals.IsInsideTree() || visuals.IsQueuedForDeletion()) return;
+            var current = (RequiemMotion.Enabled, RequiemConfig.CombatVfx);
+            if (current == previous || Body(visuals) is not { } body) return;
+            // Parent TreeEntered precedes child entry. Start a body tween only after its own tree entry.
+            if (!body.IsInsideTree()) { Callable.From(RefreshMotion).CallDeferred(); return; }
+            previous = current;
+            RestoreBody(body);
+            StartIdle(body);
+        }
+        RequiemMotion.Watch(visuals, RefreshMotion);
+        visuals.TreeExiting += () => previous = null;
     }
 
     /// <summary>Узел построен из PNG и анимируется твинами (у него нет Spine).</summary>
@@ -110,13 +128,23 @@ public static class OwnArtAnimator
 
     private static float HalfHeight(Sprite2D body) => body.Texture == null ? 0f : body.Texture.GetSize().Y * 0.5f;
 
+    private static void RestoreBody(Sprite2D body)
+    {
+        if (Idle.TryGetValue(body, out var idle)) RequiemMotion.Kill(idle);
+        if (Action.TryGetValue(body, out var action)) RequiemMotion.Kill(action);
+        body.Scale = Vector2.One; body.Position = new Vector2(0, -HalfHeight(body));
+        body.Offset = Vector2.Zero; body.Rotation = 0;
+        body.SelfModulate = State(body).Dead ? new Color(1, 1, 1, 0) : Colors.White;
+    }
+
     private static void StartIdle(Sprite2D body)
     {
         if (!body.IsInsideTree()) return;
-        if (Idle.TryGetValue(body, out var old) && old.IsValid()) old.Kill();
+        if (Idle.TryGetValue(body, out var old)) RequiemMotion.Kill(old);
         var h = HalfHeight(body);
         body.Scale = Vector2.One;
         body.Position = new Vector2(0, -h);
+        if (!RequiemMotion.Enabled || State(body).Dead) return;
         // Сдвиг фазы — чтобы несколько одинаковых спрайтов не дышали в унисон.
         var phase = (float)(body.GetInstanceId() % 7) * 0.11f;
         var tween = body.CreateTween().SetLoops();
@@ -152,6 +180,11 @@ public static class OwnArtAnimator
         if (body == null || !body.IsInsideTree()) return;
         try
         {
+            var state = State(body);
+            if (state.Dead && trigger != "Revive") return; // a late Hit must not resurrect/cancel a death pose
+            if (trigger == "Dead") state.Dead = true;
+            else if (trigger == "Revive") state.Dead = false;
+            if (!RequiemMotion.Enabled) { RestoreBody(body); return; }
             switch (trigger)
             {
                 case "Dead": Die(body); break;
@@ -184,7 +217,8 @@ public static class OwnArtAnimator
     private static void Cast(Sprite2D body)
     {
         var tween = NewAction(body);
-        tween.TweenProperty(body, "self_modulate", new Color(1.45f, 1.35f, 1.7f), 0.18).SetTrans(Tween.TransitionType.Sine);
+        tween.TweenProperty(body, "self_modulate", RequiemConfig.CombatVfx ? new Color(1.45f, 1.35f, 1.7f) : Colors.White, 0.18)
+            .SetTrans(Tween.TransitionType.Sine);
         tween.Parallel().TweenProperty(body, "offset", new Vector2(0f, -14f), 0.18).SetTrans(Tween.TransitionType.Sine);
         tween.TweenInterval(0.12);
         tween.TweenProperty(body, "self_modulate", Colors.White, 0.35);
@@ -195,7 +229,7 @@ public static class OwnArtAnimator
     private static void Hurt(Sprite2D body, float back = 1f)
     {
         var tween = NewAction(body);
-        body.SelfModulate = new Color(2.2f, 1.5f, 1.5f);
+        body.SelfModulate = RequiemConfig.CombatVfx ? new Color(2.2f, 1.5f, 1.5f) : Colors.White;
         tween.TweenProperty(body, "offset", new Vector2(16f * back, 0f), 0.05);
         tween.TweenProperty(body, "offset", new Vector2(-8f * back, 0f), 0.06);
         tween.TweenProperty(body, "offset", new Vector2(4f * back, 0f), 0.05);
@@ -209,7 +243,7 @@ public static class OwnArtAnimator
         if (Idle.TryGetValue(body, out var idle) && idle.IsValid()) idle.Kill();
         var tween = NewAction(body);
         var h = HalfHeight(body);
-        body.SelfModulate = new Color(2f, 2f, 2f);
+        body.SelfModulate = RequiemConfig.CombatVfx ? new Color(2f, 2f, 2f) : Colors.White;
         tween.TweenProperty(body, "self_modulate", new Color(0.55f, 0.5f, 0.6f, 0.85f), 0.25);
         tween.TweenProperty(body, "scale", new Vector2(1.06f, 0.82f), DeathSeconds - 0.25f).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
         tween.Parallel().TweenProperty(body, "position", new Vector2(0, -h * 0.82f), DeathSeconds - 0.25f).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
@@ -228,13 +262,13 @@ public static class OwnArtAnimator
     public static void Flash(NCreatureVisuals? visuals, Color color)
     {
         var body = Body(visuals);
-        if (body == null || !body.IsInsideTree()) return;
+        if (body == null || !body.IsInsideTree() || State(body).Dead || !RequiemMotion.Enabled || !RequiemConfig.CombatVfx) return;
         var tween = NewAction(body);
         body.SelfModulate = new Color(1f + color.R * 1.6f, 1f + color.G * 1.6f, 1f + color.B * 1.6f);
         tween.TweenProperty(body, "self_modulate", Colors.White, 0.6).SetTrans(Tween.TransitionType.Sine);
     }
 
-    /// <summary>Смена картинки: белая вспышка, на пике — новая текстура, затем «вдох».</summary>
+    /// <summary>Смена картинки немедленно; необязательная вспышка не владеет фиксацией состояния фазы.</summary>
     public static void Swap(Creature creature, string texturePath) =>
         Swap(NCombatRoom.Instance?.GetCreatureNode(creature)?.Visuals, texturePath);
 
@@ -247,12 +281,15 @@ public static class OwnArtAnimator
             if (body == null || !body.IsInsideTree()) return false;
             var texture = ResourceLoader.Load<Texture2D>(texturePath, null, ResourceLoader.CacheMode.Reuse);
             if (texture == null || texture == body.Texture) return false;
+            // State presentation is committed NOW, not in a cancellable tween callback. A following Hit/Swap used
+            // to kill that callback and leave the old phase sprite indefinitely. VFX off must still show the phase.
+            body.Texture = texture;
+            RestoreBody(body);
+            StartIdle(body);
+            if (State(body).Dead || !RequiemMotion.Enabled || !RequiemConfig.CombatVfx) return true;
             var tween = NewAction(body);
-            tween.TweenProperty(body, "self_modulate", new Color(3f, 3f, 3.2f), 0.16);
-            tween.TweenCallback(Callable.From(() => { body.Texture = texture; StartIdle(body); }));
-            tween.TweenProperty(body, "offset", new Vector2(0f, -10f), 0.12);
-            tween.TweenProperty(body, "self_modulate", Colors.White, 0.4);
-            tween.Parallel().TweenProperty(body, "offset", Vector2.Zero, 0.4).SetTrans(Tween.TransitionType.Bounce).SetEase(Tween.EaseType.Out);
+            body.SelfModulate = new Color(1.35f, 1.35f, 1.45f);
+            tween.TweenProperty(body, "self_modulate", Colors.White, 0.28).SetTrans(Tween.TransitionType.Sine);
             return true;
         }
         catch (Exception e)

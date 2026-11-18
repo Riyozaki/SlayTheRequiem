@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>short_rest</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M8 26 Q8 19 16 19 H49 Q58 19 58 27 V51 H7 Z" fill="#aea6ce" stroke="#302922" stroke-width="4"/><path d="M8 32 H57 M22 20 V50" fill="none" stroke="#302922" stroke-width="4"/><path d="M10 9 Q18 5 24 10 V20 H10 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

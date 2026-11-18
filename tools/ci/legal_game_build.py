@@ -27,7 +27,8 @@ _spec.loader.exec_module(build_tool)
 def public_passport(passport: dict) -> dict:
     """Allowlist, not path redaction: arbitrary/private installed-mod IDs and log text must never leak."""
     keys = ("schema", "git_sha", "dirty", "source_tree_sha256", "built_at_utc", "exported_at_utc", "game_version",
-            "baselib_version", "dotnet_sdk", "save_schema", "shop_protocol", "artifacts", "dependencies", "godot_executable_sha256")
+            "baselib_version", "dotnet_sdk", "save_schema", "shop_protocol", "session_protocol", "creation_schema", "economy_revision",
+            "artifacts", "dependencies", "godot_executable_sha256")
     public = {key: passport[key] for key in keys if key in passport}
     proof = passport["proof"]
     pack = proof["pack_resource_loader"]

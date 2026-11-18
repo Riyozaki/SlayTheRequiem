@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "producer": "tools/art/readable_icons.py",
+  "renderer": "@resvg/resvg-js 2.6.2",
+  "provenance": "Original project-specific SVG geometry authored in this change; no downloaded or game artwork.",
+  "rights": "Not copied from third-party assets. Repository artwork licensing must be settled before public release; this receipt is not a new license grant.",
+  "acceptance": "source-and-native-size-preview only; final in-game visual/input acceptance pending",
+  "assets": [
+    {
+      "source": "art/map/icons/abyss_gate.svg",
+      "source_sha256": "a70b8a06003d9395a39b033d26a1c2f7cbb9c0dc1f896f3b542088e96a3396a5",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/abyss_gate.png",
+      "runtime_sha256": "fb910af95826b0016a027d58bc1ff9807a7fe5de5df022cd47f96185ce50da5a",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/abyss_gate_outline.png",
+      "outline_sha256": "a8529728d6e6012bd6b8858f2f5ac2f3682739e725fa6da66ecb8b82d0b4b938"
+    },
+    {
+      "source": "art/map/icons/ambush.svg",
+      "source_sha256": "63bb3819549b9ec8dd887040a05606ba071069c7f54e5e7306104a54faa6b2d8",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/ambush.png",
+      "runtime_sha256": "3bcf13f5bcc7ef6ad9614b8712badfffee7a0febee6f38b077ba4eb4e794f8a0",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/ambush_outline.png",
+      "outline_sha256": "147519f94a57e6ecd3c5500040d1dfdf8eaf43b5f322074475823405a0fb2086"
+    },
+    {
+      "source": "art/map/icons/armorer.svg",
+      "source_sha256": "28105e71d92cebffc372b405c38eccb2cb4d3be67b2069d973c20cf75fac0432",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/armorer.png",
+      "runtime_sha256": "ceb493442f0855ff844bc26e1d3a18e9875285b9918794df3aece89dd4992aec",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/armorer_outline.png",
+      "outline_sha256": "df1e55251d7bf9c60c1f67bfe536f4c7515ad344951bdc7a9dbb6b9ea46ce77a"
+    },
+    {
+      "source": "art/map/icons/cache.svg",
+      "source_sha256": "0c4ac577af900f129e3990542c2545a7c84d2894d8d55794b69b599ffa8a6125",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/cache.png",
+      "runtime_sha256": "82d83a136265f52e96adab32b336823ec8aff3fb2fe2ac6a66d6cf00e049f6a6",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/cache_outline.png",
+      "outline_sha256": "79e8c0c74269091b6e3988d15d120a145f74a70b3e820b9ecbd109485a406d00"
+    },
+    {
+      "source": "art/map/icons/caravan.svg",
+      "source_sha256": "669dc53ac1c6e2d298a804d2c75417f13c9fc1465573f35520b8fd896810d03f",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/caravan.png",
+      "runtime_sha256": "9d4d350627b7f4f3885a155b7143dbc17f6d47aa8f66d8c86e8df235cb11eb0b",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/caravan_outline.png",
+      "outline_sha256": "20b3620719d11f26d2bbfd8c74a48df6930b8ef7a3be9e8b55f5b213c1ae6db3"
+    },
+    {
+      "source": "art/map/icons/crimson_portal.svg",
+      "source_sha256": "95c132c19c47d7de89440ed634acdd00c89e1db264bb6b62837545b965483fae",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/crimson_portal.png",
+      "runtime_sha256": "b5805f3083fed3add326352626eaf12040486c65c9a36e1123a71a64313047b6",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/crimson_portal_outline.png",
+      "outline_sha256": "f4474dc996dc0ff9d55d4e9f5b766783750ce00b38b5068a8f8c8078a98860a2"
+    },
+    {
+      "source": "art/map/icons/dark_altar.svg",
+      "source_sha256": "bea93800797c9baee790a970a6a594df4acda24cb6b1824262d4e13d46c6a4a5",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/dark_altar.png",
+      "runtime_sha256": "98f2da806117b18c83fe5699f2131e58493bc6e438804b1d614ffcde4ff06fc6",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/dark_altar_outline.png",
+      "outline_sha256": "b46850091b8732bcabaa66e9bebabad92006108ddb7d9144fa04b47d82ec3758"
+    },
+    {
+      "source": "art/map/icons/ebb_stones.svg",
+      "source_sha256": "d39d9d892963922f58c855650d10461a74f99c5eaf96373003c9b5e0e6420e90",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/ebb_stones.png",
+      "runtime_sha256": "4eba51764100c1224edf1bb894924acb6e9ebd7996d0db70a5424a6ee2176cea",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/ebb_stones_outline.png",
+      "outline_sha256": "5330ea128afc8e7162951adad6e960a40c6868b509392cfe099fd94d9514e717"
+    },
+    {
+      "source": "art/map/icons/enchanter.svg",
+      "source_sha256": "4f97aa1ec19a83e6d4510fcfa71889572eb43d6599787e07dabfba2f75bfda59",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/enchanter.png",
+      "runtime_sha256": "fea94b23da4fab0fb1ab4f0c9defba82217b0f63cadbf6e4b8d6a690b1eb78fe",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/enchanter_outline.png",
+      "outline_sha256": "7f4b6c987e8080bcc335f76f35341e457553a6ec65bfacc83dcdc29541c9210d"
+    },
+    {
+      "source": "art/map/icons/fence.svg",
+      "source_sha256": "2d6c579b28110ae3a4fb89031665b4aa2a95321bc9f4cdf380dca6db46d6ddbd",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/fence.png",
+      "runtime_sha256": "d6a2a5147dd6b1cdbfb91601e5fb4c4a3659375abb296a23abf79feb4b60cdbf",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/fence_outline.png",
+      "outline_sha256": "27f0c8f4febfc9f72bffcb0ea8c322930af40164e98a9ce93628de93e97fcb5c"
+    },
+    {
+      "source": "art/map/icons/herbalist.svg",
+      "source_sha256": "03583408fdeeeb02a6025ca75fae91b8e74dae9e566dc26a6fb069cf22966e6f",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/herbalist.png",
+      "runtime_sha256": "f3afcb234963583039650954e37d6a84946300eee8b1610948a0a883aa5a1d9a",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/herbalist_outline.png",
+      "outline_sha256": "8c18388c418e7ba6ec48964275eafd6daf3ecc6822a550bd2bc7981ed360a959"
+    },
+    {
+      "source": "art/map/icons/jeweler.svg",
+      "source_sha256": "aa048ab6bfd4ca3e44c6047951606faecf7ce20297788d2218821dc4661d760b",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/jeweler.png",
+      "runtime_sha256": "40a6ba19920b4b9489571fd4271ea128349d57a1c000495c62e23131bef608dd",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/jeweler_outline.png",
+      "outline_sha256": "ca414c9960f1daed4ba02159e9a10f9429b1ae3daa7f49e4f43603a5f1b4956a"
+    },
+    {
+      "source": "art/map/icons/lair.svg",
+      "source_sha256": "8e3c57e3fa21c4c7a89e97d96e6f2f631aa1e3f40c52ae55b93fa696baf0b564",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/lair.png",
+      "runtime_sha256": "03432d1c0a66a38a34df5b0e2ced6fa1879c39924747c4c04c56c6601c2878e3",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/lair_outline.png",
+      "outline_sha256": "b124b23fc629c83086a77cf0b9f5e7f61ff70b0219e60a4da22fc426fbe67710"
+    },
+    {
+      "source": "art/map/icons/library.svg",
+      "source_sha256": "4baa5df6949099d69bc09bf184cbce7a397b99767ac116d588c5b50e3c149a4e",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/library.png",
+      "runtime_sha256": "c265e13d404a1040e349b0deec451219a24691b39e59626774a565f242ebfda8",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/library_outline.png",
+      "outline_sha256": "6c6d371e1d95255a2749a25de5d9dc7fafe19fd30ee95fa94c8594acbd09d0bd"
+    },
+    {
+      "source": "art/map/icons/locked_gate.svg",
+      "source_sha256": "0837241f720701ddf4e14dc747796c86c39eec581c27d3510fecee5f35ef852d",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/locked_gate.png",
+      "runtime_sha256": "48e8b025a50f3a93b639547ff34e93ed2d376fc77b0adc15f6b3d7f20477c704",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/locked_gate_outline.png",
+      "outline_sha256": "b0b50587a176f6a44e2647e45c607f48e1d9f37b5adb508f5c23f2a5414a8dd2"
+    },
+    {
+      "source": "art/map/icons/memory_stone.svg",
+      "source_sha256": "e1442165ad5d25823da5192233c1f3b6f0f1078cfaa37f721d9c17c461c54ce9",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/memory_stone.png",
+      "runtime_sha256": "81790165bc61e299f4af0e28be812bcea9db8b3eab8cf26f61cab1bb61bc5743",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/memory_stone_outline.png",
+      "outline_sha256": "79982e3d14c674e04bdfe7a8b26534acf4732673889734051227731dea2aea5e"
+    },
+    {
+      "source": "art/map/icons/shrine.svg",
+      "source_sha256": "f776a5ea2d97c59c786927f3a70f17aedcb9787331cc25e6b902310c7bfd0821",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/shrine.png",
+      "runtime_sha256": "706783709950817240223181edc879528910984898efe6f8fc4fda0015f8ca5b",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/shrine_outline.png",
+      "outline_sha256": "882306a5fb7b20d09d9c5d88f4945e067f838944c32035b40c145c9cb94c3c9f"
+    },
+    {
+      "source": "art/map/icons/tavern.svg",
+      "source_sha256": "aa0cf2367c26a1be8eee5de21740d1a2a76493e2092ecf2bc5cafc4ebd869c8f",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/tavern.png",
+      "runtime_sha256": "04774b719e43cc6c620aa9df6b6fb93f3811e97fa00fd3356f2d39429552482b",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/tavern_outline.png",
+      "outline_sha256": "b93f58f752c01e503b35b671115909b3e35b7cd40882e62daae3ac634ab388b6"
+    },
+    {
+      "source": "art/map/icons/trial.svg",
+      "source_sha256": "bb6d4998a06697bee2d8445a537be6571d5b7080a875cb18bf0efae9b5e7f552",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/trial.png",
+      "runtime_sha256": "787ed07ec792f30969471d79e51717ac99396d8fb24b1add8bd34f6029544aac",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/trial_outline.png",
+      "outline_sha256": "809e4454ac2a99e5bbe12c2d7e1d2244fa8dcbbff3dcbe9a8b3ab1aed0f7b1e4"
+    },
+    {
+      "source": "art/map/icons/valve.svg",
+      "source_sha256": "7135491305762fd6204ba476e8c0eed35cb7e8807cfe1c4097d3cb8332cfe3f9",
+      "runtime": "mod/SlayTheRequiem/images/map/icons/valve.png",
+      "runtime_sha256": "65f34e324ededb008b412604a102104e974a533c9b9cd02c661cb167686934f8",
+      "size": 64,
+      "outline": "mod/SlayTheRequiem/images/map/icons/valve_outline.png",
+      "outline_sha256": "0fd3a0706ec3e25bdbd8db2ca306d5c0e6031e9adacb988649938c0357a5413d"
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_beast_rites.svg",
+      "source_sha256": "457c8fa8e90936313f635cc3f0d64ae3120c241e462e1fa04e5fb325971699ce",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_beast_rites.png",
+      "runtime_sha256": "f8c7842ac7ceea1f380c536a959c398403e3d3fa1c9c70ed6fefd08deaa19bdd",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_brew.svg",
+      "source_sha256": "dea08cd9ba36bfc9e883efdfb7f64951efd3dae7118adf2d5048fe390a034802",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_brew.png",
+      "runtime_sha256": "792be97cde829ec88846960a3496cc38bd5fa552fd6fc4c5bf2e94e48062f514",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_card_enchant.svg",
+      "source_sha256": "462c4aff784849a6d823d51dd3c888d6de995a8be3a34169acebaf3d5d08cfda",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_card_enchant.png",
+      "runtime_sha256": "e85754d94767971a6e123c16264c21859ca6c048998630321d887ebf053678a4",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_chest.svg",
+      "source_sha256": "6fdd38bcc8987abb57b8470a4fff60af747d4d99b71faef1166e82e5aaed778d",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_chest.png",
+      "runtime_sha256": "609e2e520459b5064cc9671092f421203dbdf6a6743f855c6a2e6ce007a194c5",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_cook.svg",
+      "source_sha256": "0eb10a11c54c1d8c16ec655bdb97299a1dea119347e0af5382d8a4eed518f8be",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_cook.png",
+      "runtime_sha256": "1b7cb0f0d7f740d5289dee61640884b4b11a1b2182370e1da554d5caf6b4717b",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_enchant.svg",
+      "source_sha256": "76c248343b08dad2d31bd4cc9585792fc3ba1648b01085d32b43221d58916cf0",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_enchant.png",
+      "runtime_sha256": "e0c9562732bf98ade17ca2ff7654676fd84f2941c983cf12e571ba47809bcf20",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_forge.svg",
+      "source_sha256": "ad171d138d131c7659fe47d1c4a0d91d17c96ae41dcac2b9e030bed0e41308c0",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_forge.png",
+      "runtime_sha256": "48b3b33f5cefb723da45cac095e8f9d417b937d56e761ff38e90706d51a07f59",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_form_rites.svg",
+      "source_sha256": "f42a84f9ec2957bc2e74ae03e9021205c5ffa937f8228acdd18921869d386866",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_form_rites.png",
+      "runtime_sha256": "82ef1cc764fe92c7a02ea3168a4e6d0f2e72b98b8f1231801b4dea17778d8bfe",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_meditate.svg",
+      "source_sha256": "601f5dc5041a89f7bdda288e4cebc3f9be39cc0ba150cb742bfb24cab486403c",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_meditate.png",
+      "runtime_sha256": "4d1faf3c56d5a710770eb0978515333a9670af98ad2fe9f2cac3fe6d403dc502",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_pray.svg",
+      "source_sha256": "4b8c6d3cc0beade1941adbc97f07813b159a6c87694f8f05368127c2c8a149ac",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_pray.png",
+      "runtime_sha256": "985d4cbf0130bd3d4aa3e0fe034849f14a8c228e69c9207ae1c7888437906132",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_short_rest.svg",
+      "source_sha256": "71931e57bff4c1f6780a1bc4fd7bec39be98e162b97883b42673b51cabba3016",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_short_rest.png",
+      "runtime_sha256": "2c74078d9b5b52bc6742b2cf229448bd5f9311c86f8aed2c3459acfd19db4237",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_tavern.svg",
+      "source_sha256": "5625aff2ebda67922ddfbee611975a0b9573b00b0e3a70e087561190a5d3c03b",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_tavern.png",
+      "runtime_sha256": "3aec9e5813f72276516cc2164ec9c91611cccbe09b9df7d2132af881b25acb63",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_train.svg",
+      "source_sha256": "b80d6e4c8bb9b4a49fa9312c122bc2a79379f503bf5d427e32cabbb143a139b0",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_train.png",
+      "runtime_sha256": "a3363194c2fe770a20841dcc38c0fb544b4d48717b822b99d1dacf748f6576ff",
+      "size": 192
+    },
+    {
+      "source": "art/ui/rest_site/option_slaytherequiem_warm.svg",
+      "source_sha256": "4007d50b6175d392a8d32e0a143c720ea176347d67f14fb900c9363d754091ab",
+      "runtime": "mod/SlayTheRequiem/images/ui/rest_site/option_slaytherequiem_warm.png",
+      "runtime_sha256": "a00593b90e6e632ce31846d06735863b731e3b7e97d0f4b9ac161d66b1cef76b",
+      "size": 192
+    }
+  ]
+}

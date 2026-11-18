@@ -1,4 +1,4 @@
-﻿<Project Sdk="Godot.NET.Sdk/4.5.1" InitialTargets="CheckDependencyPaths">
+<Project Sdk="Godot.NET.Sdk/4.5.1" InitialTargets="CheckDependencyPaths">
     <Import Project=".\Sts2PathDiscovery.props"/>
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
@@ -88,6 +88,9 @@
         <AssemblyMetadata Include="GitDirty" Value="$(GitDirty)" />
         <AssemblyMetadata Include="SaveSchema" Value="4" />
         <AssemblyMetadata Include="ShopProtocol" Value="2" />
+        <AssemblyMetadata Include="SessionProtocol" Value="5" />
+        <AssemblyMetadata Include="CreationSchema" Value="2" />
+        <AssemblyMetadata Include="EconomyRevision" Value="1" />
     </ItemGroup>
 
     <Target Name="CheckDependencyPaths">

@@ -31,6 +31,11 @@ BASELIB_VERSION = "3.4.8"
 GODOT_VERSION = "4.5.1"
 SAVE_SCHEMA = 4
 SHOP_PROTOCOL = 2
+SESSION_PROTOCOL = 5
+CREATION_SCHEMA = 2
+ECONOMY_REVISION = 1
+# Core tests link this production scenario outside mod/. It must exist at the same relative path in staging.
+TEST_SUPPORT = ("tools/balance/Trace/Scenario.cs",)
 ARTIFACTS = (f"{MOD_ID}.dll", f"{MOD_ID}.pck", f"{MOD_ID}.json")
 PASSPORT = f"{MOD_ID}.build.json"
 
@@ -200,6 +205,31 @@ def pack_resources(project: Path | None = None) -> list[dict]:
     return resources
 
 
+def stage_project(bundle: Path) -> Path:
+    """Copy only allowlisted source inputs, including actual external Compile links of the Core test project.
+    Never allow ignored local props/caches or a symlink to smuggle private machine files into a build.
+    """
+    project = bundle / "project"
+    project.mkdir()
+    inputs = set(source_inputs())
+    for required in TEST_SUPPORT:
+        if required.encode("utf-8") not in inputs or not (ROOT / required).is_file():
+            raise BuildError(f"Missing Core test support source: {required}")
+    for raw in sorted(inputs):
+        name = raw.decode("utf-8")
+        path = ROOT / name
+        if not name.startswith("mod/") and name not in TEST_SUPPORT:
+            continue
+        if not path.is_file():
+            continue
+        if path.is_symlink() or not path.resolve().is_relative_to(ROOT.resolve()):
+            raise BuildError(f"Source symlink/escape not supported: {name}")
+        dest = project / Path(name).relative_to("mod") if name.startswith("mod/") else bundle / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, dest)
+    return project
+
+
 def build(args: argparse.Namespace) -> Path:
     facts = preflight(args)
     if facts["errors"]:
@@ -216,18 +246,7 @@ def build(args: argparse.Namespace) -> Path:
     bundle.mkdir(parents=True)
     identity = source_identity()
     # Staged inputs only: never import into checkout or copy ignored local paths/old artifacts.
-    project = bundle / "project"
-    project.mkdir()
-    for raw in source_inputs():
-        name = raw.decode("utf-8")
-        path = ROOT / name
-        if not name.startswith("mod/") or not path.is_file():
-            continue
-        if path.is_symlink():
-            raise BuildError(f"Source symlink not supported: {name}")
-        dest = project / Path(name).relative_to("mod")
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, dest)
+    project = stage_project(bundle)
     if (ROOT / "global.json").is_file():
         shutil.copy2(ROOT / "global.json", bundle / "global.json")
     env = os.environ.copy()
@@ -295,7 +314,8 @@ def build(args: argparse.Namespace) -> Path:
     passport = {"schema": 1, **identity, "built_at_utc": utc(), "game_version": GAME_VERSION,
                 "baselib_version": BASELIB_VERSION, "dotnet_sdk": facts["dotnet"], "godot": facts["godot"],
                 "godot_executable_sha256": sha(args.godot.resolve()), "exported_at_utc": utc(),
-                "save_schema": SAVE_SCHEMA, "shop_protocol": SHOP_PROTOCOL, "installed_mods": mods,
+                "save_schema": SAVE_SCHEMA, "shop_protocol": SHOP_PROTOCOL, "session_protocol": SESSION_PROTOCOL,
+                "creation_schema": CREATION_SCHEMA, "economy_revision": ECONOMY_REVISION, "installed_mods": mods,
                 "dependencies": {**{name: sha(facts["data"] / name) for name in ("sts2.dll", "0Harmony.dll")},
                                  "installed_baselib_sha256": sha(facts["mods"] / "BaseLib/BaseLib.dll")},
                 "artifacts": {name: {"sha256": sha(bundle / name), "bytes": (bundle / name).stat().st_size} for name in ARTIFACTS},

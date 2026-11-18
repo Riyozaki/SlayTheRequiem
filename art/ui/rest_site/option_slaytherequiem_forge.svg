@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>forge</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M6 34 H43 L57 28 V39 L43 44 H35 V50 H45 V57 H12 V50 H23 V44 H14 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M21 28 L37 12" fill="none" stroke="#302922" stroke-width="7"/><path d="M29 9 L37 3 L53 18 L45 26 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

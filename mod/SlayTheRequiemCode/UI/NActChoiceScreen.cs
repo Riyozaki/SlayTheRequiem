@@ -123,8 +123,7 @@ public partial class NActChoiceScreen : Control, IScreenContext
     public override void _Ready()
     {
         ActDoors.Changed += OnChanged;
-        Modulate = new Color(1, 1, 1, 0);
-        CreateTween().TweenProperty(this, "modulate:a", 1f, 0.35);
+        RequiemKit.PopIn(this, dy: 0);
         _cards[0].Button.CallDeferred(Control.MethodName.GrabFocus);
     }
 
@@ -195,8 +194,8 @@ public partial class NActChoiceScreen : Control, IScreenContext
         _closing = true;
         if (highlight is int door && door >= 0) _cards[door].Pulse();
         var tween = CreateTween();
-        tween.TweenInterval(highlight != null ? 0.55 : 0.1);
-        tween.TweenProperty(this, "modulate:a", 0f, 0.3);
+        tween.TweenInterval(RequiemMotion.Enabled && highlight != null ? 0.55 : 0.1);
+        tween.TweenProperty(this, "modulate:a", 0f, RequiemMotion.Enabled ? 0.3 : 0);
         tween.TweenCallback(Callable.From(() =>
         {
             if (NModalContainer.Instance is { } container && ReferenceEquals(container.OpenModal, this)) container.Clear();
@@ -248,6 +247,7 @@ public partial class NActChoiceScreen : Control, IScreenContext
         public readonly Button Button;
         private readonly HBoxContainer _pips;
         private readonly Color _accent;
+        private Tween? _animation;
 
         public DoorCard(NActChoiceScreen screen, int door, ActKind kind, bool rolled)
         {
@@ -260,6 +260,11 @@ public partial class NActChoiceScreen : Control, IScreenContext
             Button.FocusEntered += () => Hover(true);
             Button.FocusExited += () => Hover(false);
             Button.Resized += () => Button.PivotOffset = Button.Size / 2;
+            RequiemMotion.Watch(Button, () =>
+            {
+                if (RequiemMotion.Enabled) return;
+                RequiemMotion.Kill(_animation); _animation = null; Button.Scale = Vector2.One;
+            });
 
             var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
             column.SetAnchorsPreset(LayoutPreset.FullRect);
@@ -324,16 +329,22 @@ public partial class NActChoiceScreen : Control, IScreenContext
 
         public void Pulse()
         {
-            var tween = Button.CreateTween();
+            // The choice/vote remains distinguishable with all optional motion disabled.
+            Button.AddThemeStyleboxOverride("disabled", Box(new Color(0.12f, 0.1f, 0.1f, 0.95f), Gold, 6));
+            RequiemMotion.Kill(_animation); _animation = null;
+            if (!RequiemMotion.Enabled) { Button.Scale = Vector2.One; return; }
+            var tween = _animation = Button.CreateTween();
             tween.TweenProperty(Button, "scale", new Vector2(1.06f, 1.06f), 0.12);
             tween.TweenProperty(Button, "scale", new Vector2(1.03f, 1.03f), 0.18);
-            Button.AddThemeStyleboxOverride("disabled", Box(new Color(0.12f, 0.1f, 0.1f, 0.95f), Gold, 6));
         }
 
         private void Hover(bool on)
         {
             if (Button.Disabled) return;
-            Button.CreateTween().TweenProperty(Button, "scale", on ? new Vector2(1.03f, 1.03f) : Vector2.One, 0.12);
+            RequiemMotion.Kill(_animation); _animation = null;
+            if (!RequiemMotion.Enabled) { Button.Scale = Vector2.One; return; }
+            _animation = Button.CreateTween();
+            _animation.TweenProperty(Button, "scale", on ? new Vector2(1.03f, 1.03f) : Vector2.One, 0.12);
         }
     }
 

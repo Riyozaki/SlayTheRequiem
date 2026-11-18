@@ -200,10 +200,7 @@ public static class SummonLayout
             {
                 var node = summons[i];
                 var target = new Vector2(hero.Position.X + SummonRules.LayoutX(half, i, player.IsOstyAlive), hero.Position.Y);
-                if (node.Position.DistanceTo(target) > 1f && node.IsInsideTree())
-                    node.CreateTween().TweenProperty(node, "position", target, 0.25)
-                        .SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-                else node.Position = target;
+                UI.RequiemMotion.MoveTo(node, target, 0.25);
                 node.Visuals.Modulate = hero.Visuals.Modulate;
                 room.SetCreatureIsInteractable(node.Entity, true);
             }

@@ -20,6 +20,7 @@ using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 using SlayTheRequiem.SlayTheRequiemCode.Monsters;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
+using SlayTheRequiem.SlayTheRequiemCode.UI;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Transformations;
 
@@ -276,13 +277,14 @@ public static class HeroOverlays
         banner.Position = bounds.Position + bounds.Size * new Vector2(HeroLookRules.SignAnchorX, HeroLookRules.SignAnchorY);
         visuals.AddChild(banner);
         visuals.MoveChild(banner, 0); // за телом героя
-        banner.Modulate = new Color(1f, 1f, 1f, 0f);
-        var appear = banner.CreateTween();
-        appear.TweenProperty(banner, "modulate", Colors.White, 0.5);
-        // лёгкое колыхание знамени
-        var sway = banner.CreateTween().SetLoops();
-        sway.TweenProperty(banner, "rotation", 0.05f, 1.8).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        sway.TweenProperty(banner, "rotation", -0.03f, 1.8).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        // The equipped Path sign is persistent information, not an effect. Only its sway is optional.
+        RequiemMotion.Decorate(banner, () => { banner.Rotation = 0; banner.Modulate = Colors.White; }, () =>
+        {
+            var sway = banner.CreateTween().SetLoops();
+            sway.TweenProperty(banner, "rotation", 0.05f, 1.8).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            sway.TweenProperty(banner, "rotation", -0.03f, 1.8).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            return [sway];
+        });
     }
 
     // ───── Сферы стихий ─────
@@ -327,9 +329,13 @@ public static class HeroOverlays
             if (orbs[i] == Element.Fire) holder.Modulate = new Color(1f, 0.78f, 0.55f); // пар: тёплая плазма
             if (sprite.GetNodeOrNull("SpineSkeleton") is { } skeleton)
                 holder.RunWhenSpineReady(new MegaSprite(skeleton), state => state.SetAnimation("idle_loop"));
-            sprite.Scale = Vector2.Zero;
-            var pop = sprite.CreateTween();
-            pop.TweenProperty(sprite, "scale", Vector2.One, 0.5).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            RequiemMotion.Decorate(sprite, () => sprite.Scale = Vector2.One, () =>
+            {
+                sprite.Scale = Vector2.Zero;
+                var pop = sprite.CreateTween();
+                pop.TweenProperty(sprite, "scale", Vector2.One, 0.5).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+                return [pop];
+            });
         }
     }
 

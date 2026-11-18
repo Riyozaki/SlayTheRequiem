@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44 H58 V58 H6 Z" fill="#6B4E33"/><path d="M4 40 H60 V46 H4 Z" fill="#8A6844"/><path d="M14 46 V58 M50 46 V58" /><path d="M26 8 H38 M28 8 V18 L18 36 H46 L36 18 V8" fill="#6FA34A"/><path d="M22 30 H42" stroke="#d8f0c0" stroke-width="2"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>herbalist</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M22 7 H41 V15 H37 V25 Q57 40 52 51 Q48 60 31 59 Q12 59 10 48 Q8 38 26 25 V15 H22 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M17 43 Q31 36 48 43 L48 50 Q31 58 17 50 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

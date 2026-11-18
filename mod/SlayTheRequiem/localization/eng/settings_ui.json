@@ -120,5 +120,8 @@
   "SLAYTHEREQUIEM-REQUIEM_SOUNDS.hover.desc": "Sounds for hits by damage type, Overstrain, Broken, Dodge, Shouts, summoning, the Memory Stone rewind, the Crimson portal and Caches — vanilla sounds plus a few of our own. Volume follows the game's Sound slider. Independent of combat effects.",
   "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.title": "Compact enemy statuses",
   "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.hover.title": "Compact enemy statuses",
-  "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.hover.desc": "Permanent enemy traits (Plating, Poise, resistances, affixes) are shown as a row of small icons under the HP bar instead of the status row. Hover for details."
+  "SLAYTHEREQUIEM-COMPACT_ENEMY_STATUSES.hover.desc": "Permanent enemy traits (Plating, Poise, resistances, affixes) are shown as a row of small icons under the HP bar instead of the status row. Hover for details.",
+  "SLAYTHEREQUIEM-REDUCED_MOTION.title": "Reduced Requiem motion",
+  "SLAYTHEREQUIEM-REDUCED_MOTION.hover.title": "Reduced motion (local)",
+  "SLAYTHEREQUIEM-REDUCED_MOTION.hover.desc": "Stops the mod's breathing/sway, lunges, shake, flashes and bouncing UI. Optional combat bursts are skipped; phase/form sprites, intents, resource numbers, Path signs and shout cooldown/return labels remain. Sounds have their own switch. Does not disable the base game's animations. Cosmetic only; not sent to other players."
 }

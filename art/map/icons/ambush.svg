@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M32 4 L60 56 H4 Z" fill="#B3261E" stroke="#140c0c"/><path d="M32 20 V38" stroke="#F4EEDC" stroke-width="6"/><circle cx="32" cy="47" r="3.5" fill="#F4EEDC" stroke="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>ambush</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 54 L14 37 L23 44 L25 26 L37 40 L48 30 L47 46 L59 44 L55 57 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/><path d="M25 35 L40 8 L55 4 L51 19 L33 41 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M19 32 L36 43 M26 40 L18 51" fill="none" stroke="#302922" stroke-width="5"/>
+  </g>
+</svg>

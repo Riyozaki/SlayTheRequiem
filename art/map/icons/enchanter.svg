@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44 H58 V58 H6 Z" fill="#6B4E33"/><path d="M4 40 H60 V46 H4 Z" fill="#8A6844"/><path d="M14 46 V58 M50 46 V58" /><path d="M32 4 C34 16 38 20 50 22 C38 24 34 28 32 40 C30 28 26 24 14 22 C26 20 30 16 32 4 Z" fill="#4F8FD6"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>enchanter</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M18 58 L23 27 M18 27 L14 15 L24 5 L34 15 L29 27 Z" fill="#b8a886" stroke="#302922" stroke-width="5"/><path d="M46 24 L50 34 L59 38 L50 42 L46 53 L42 42 L33 38 L42 34 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

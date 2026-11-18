@@ -209,7 +209,7 @@ public static class FormVisuals
                 var baseScale = BaseScale.GetValue(visuals, v => new StrongBox<float>(v.DefaultScale)).Value;
                 visuals.SetScaleAndHue(baseScale * scale, hue);
                 visuals.Modulate = tint;
-                if (flash is { } color) visuals.TryApplyLiquidOverlay(color);
+                if (UI.RequiemMotion.Enabled && Config.RequiemConfig.CombatVfx && flash is { } color) visuals.TryApplyLiquidOverlay(color);
             }
             HeroOverlays.Refresh(player, node);
         }

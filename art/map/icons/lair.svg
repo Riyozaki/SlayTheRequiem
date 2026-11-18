@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="32" cy="44" rx="14" ry="12" fill="#6FA34A"/><ellipse cx="14" cy="26" rx="6" ry="8" fill="#6FA34A"/><ellipse cx="26" cy="16" rx="6" ry="8" fill="#6FA34A"/><ellipse cx="38" cy="16" rx="6" ry="8" fill="#6FA34A"/><ellipse cx="50" cy="26" rx="6" ry="8" fill="#6FA34A"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>lair</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M13 51 Q9 44 17 37 L24 30 Q32 24 39 31 L48 38 Q57 48 49 54 Q43 59 33 54 Q21 61 13 51 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M8 16 Q13 6 19 15 Q24 29 16 30 Q7 30 8 16 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M27 9 Q33 1 38 11 Q43 25 34 26 Q26 25 27 9 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M47 18 Q56 8 58 20 Q60 33 51 33 Q43 30 47 18 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

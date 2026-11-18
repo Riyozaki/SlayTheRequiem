@@ -211,6 +211,36 @@ class SourceContractTests(unittest.TestCase):
         self.assertEqual(str(b.SAVE_SCHEMA), metadata["SaveSchema"])
         self.assertEqual(str(b.SHOP_PROTOCOL), metadata["ShopProtocol"])
 
+    def test_external_core_compile_links_are_present_in_the_isolated_build(self):
+        import xml.etree.ElementTree as ET
+        project = b.ROOT / "mod/SlayTheRequiem.Tests/SlayTheRequiem.Tests.csproj"
+        external = {(project.parent / node.attrib["Include"]).resolve().relative_to(b.ROOT).as_posix()
+                    for node in ET.parse(project).findall(".//Compile")
+                    if "**" not in node.attrib["Include"] and "%(" not in node.attrib["Include"]
+                    and not (project.parent / node.attrib["Include"]).resolve().is_relative_to(b.ROOT / "mod")}
+        self.assertEqual(set(b.TEST_SUPPORT), external)
+        with tempfile.TemporaryDirectory() as directory:
+            bundle = Path(directory)
+            staged = b.stage_project(bundle)
+            self.assertTrue((staged / "SlayTheRequiem.Tests/SlayTheRequiem.Tests.csproj").is_file())
+            for relative in b.TEST_SUPPORT:
+                self.assertEqual((b.ROOT / relative).read_bytes(), (bundle / relative).read_bytes())
+            self.assertFalse((bundle / "tools/ci").exists())
+            self.assertFalse((staged / "bin").exists())
+
+    def test_release_contract_metadata_agrees_without_a_protocol_bump(self):
+        import re
+        import xml.etree.ElementTree as ET
+        project = ET.parse(b.ROOT / "mod/SlayTheRequiem.csproj").getroot()
+        metadata = {node.attrib["Include"]: node.attrib["Value"] for node in project.findall(".//AssemblyMetadata")}
+        startup = (b.ROOT / "mod/SlayTheRequiemCode/Core/StartupState.cs").read_text()
+        economy = (b.ROOT / "mod/SlayTheRequiemCode/Core/EconomyRules.cs").read_text()
+        for name, value, text, declaration in (("SessionProtocol", b.SESSION_PROTOCOL, startup, "SessionProtocol"),
+                                             ("CreationSchema", b.CREATION_SCHEMA, startup, "Protocol"),
+                                             ("EconomyRevision", b.ECONOMY_REVISION, economy, "CurrentRevision")):
+            self.assertEqual(str(value), metadata[name])
+            self.assertEqual(str(value), re.search(rf"const int {declaration} = (\d+);", text).group(1))
+
     def test_pinned_dependencies_agree_with_preflight_and_manifest(self):
         import xml.etree.ElementTree as ET
         project = ET.parse(b.ROOT / "mod/SlayTheRequiem.csproj").getroot()

@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44 H58 V58 H6 Z" fill="#6B4E33"/><path d="M4 40 H60 V46 H4 Z" fill="#8A6844"/><path d="M14 46 V58 M50 46 V58" /><path d="M20 34 L38 16" stroke-width="6"/><path d="M20 34 L38 16" stroke="#9a7a55" stroke-width="2.5"/><path d="M32 8 L48 24 L54 18 L38 2 Z" fill="#E2B24A"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>armorer</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M6 34 H43 L57 28 V39 L43 44 H35 V50 H45 V57 H12 V50 H23 V44 H14 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M21 28 L37 12" fill="none" stroke="#302922" stroke-width="7"/><path d="M29 9 L37 3 L53 18 L45 26 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

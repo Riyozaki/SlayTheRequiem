@@ -7,7 +7,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Patches;
 
 /// <summary>
 /// Значок действий лагеря Реквиема: игра берёт его по OptionId из своих ресурсов
-/// (ui/rest_site/option_&lt;id&gt;.png), которых у мода нет. Подменяем на свой файл или ванильную заглушку.
+/// (ui/rest_site/option_&lt;id&gt;.png). Подключаем свой файл мода; при его отсутствии — тематический vanilla fallback.
 /// </summary>
 [HarmonyPatch(typeof(RestSiteOption), nameof(RestSiteOption.Icon), MethodType.Getter)]
 public static class RestSiteIconPatch

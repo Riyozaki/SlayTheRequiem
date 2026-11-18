@@ -63,6 +63,12 @@ public static class RunDiagnostics
                     dependency_versions = new { game = root.GetProperty("game_version").GetString(), baselib = root.GetProperty("baselib_version").GetString() },
                     contracts_match_dll = root.GetProperty("save_schema").GetInt32() == SaveSchema
                         && root.GetProperty("shop_protocol").GetInt32() == Shops.ShopOperations.Protocol
+                        && root.GetProperty("session_protocol").GetInt32() == Core.StartupState.SessionProtocol
+                        && root.GetProperty("creation_schema").GetInt32() == Core.StartupState.Protocol
+                        && root.GetProperty("economy_revision").GetInt32() == Core.EconomyRules.CurrentRevision
+                        && Meta("SessionProtocol") == Core.StartupState.SessionProtocol.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        && Meta("CreationSchema") == Core.StartupState.Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        && Meta("EconomyRevision") == Core.EconomyRules.CurrentRevision.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         && Meta("SaveSchema") == SaveSchema.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         && Meta("ShopProtocol") == Shops.ShopOperations.Protocol.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     source_matches_dll = root.GetProperty("git_sha").GetString() == Meta("GitCommit")
@@ -102,6 +108,9 @@ public static class RunDiagnostics
             settings_source = RunSettings.SourceName, requested_snapshot = RunSettings.Active?.Encode(),
             effective_settings = effective.Encode(), degraded = PatchReport.Degraded, failed_patches = PatchReport.Failed,
             language = LocManager.Instance.Language,
+            presentation = new { reduced_motion = RequiemConfig.ReducedMotion, combat_vfx = RequiemConfig.CombatVfx,
+                sounds = RequiemConfig.RequiemSounds, compact_enemy_statuses = RequiemConfig.CompactEnemyStatuses,
+                paper_doll = RequiemConfig.ShowPaperDoll, metrics = TechnicalMetrics.Enabled, balance_trace = CardRewardTrace.Enabled },
             display = new { window = DisplayServer.WindowGetSize().ToString(), viewport = viewport?.GetVisibleRect().Size.ToString(),
                 content_scale_factor = window?.ContentScaleFactor, canvas_scale = viewport?.GetCanvasTransform().Scale.ToString() },
             players = state?.Players.Select(p => new

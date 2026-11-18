@@ -537,5 +537,13 @@
   "SLAYTHEREQUIEM-UI.formLichLocked.title": "Requires {Count} victories as a Herald; the Phylactery rite opens in a late act.",
   "SLAYTHEREQUIEM-UI.formLater.title": "This rite opens in a later act; it does not expire if you postpone it.",
   "SLAYTHEREQUIEM-UI.formPietyLocked.title": "Requires Righteous piety. Restore piety before this rite.",
-  "SLAYTHEREQUIEM-UI.formIncompatible.title": "Incompatible with your present worldview, Clockwork Heart or Ordinator oath. An existing worldview cannot be replaced here."
+  "SLAYTHEREQUIEM-UI.formIncompatible.title": "Incompatible with your present worldview, Clockwork Heart or Ordinator oath. An existing worldview cannot be replaced here.",
+  "SLAYTHEREQUIEM-UI.shelf.capacity.title": "Shouts {Used}/{Capacity}",
+  "SLAYTHEREQUIEM-UI.shelf.waitLabel.title": "{Turns} turns",
+  "SLAYTHEREQUIEM-UI.shelf.readyLabel.title": "↩ Ready",
+  "SLAYTHEREQUIEM-UI.shelf.waiting.title": "{Name}: on the shelf for {Turns} more owner turns. Not Exhausted.",
+  "SLAYTHEREQUIEM-UI.shelf.pending.title": "{Name}: cooldown is over; return has not committed. The exact card remains due for the next owner turn.",
+  "SLAYTHEREQUIEM-UI.shelf.departed.title": "On cooldown: {Name}",
+  "SLAYTHEREQUIEM-UI.shelf.returnedHand.title": "Returned to hand: {Name}",
+  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Returned to discard: {Name}"
 }

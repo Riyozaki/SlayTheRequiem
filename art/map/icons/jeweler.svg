@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44 H58 V58 H6 Z" fill="#6B4E33"/><path d="M4 40 H60 V46 H4 Z" fill="#8A6844"/><path d="M14 46 V58 M50 46 V58" /><circle cx="32" cy="27" r="11" fill="none" stroke-width="5"/><circle cx="32" cy="27" r="11" fill="none" stroke="#E2B24A" stroke-width="2"/><path d="M26 12 L32 5 L38 12 L32 18 Z" fill="#7fd0e8"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>jeweler</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M17 10 H47 L59 28 L32 57 L5 28 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M5 28 H59 M17 10 L22 28 L32 57 L42 28 L47 10" fill="none" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

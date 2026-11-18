@@ -151,8 +151,8 @@ public partial class NShopTabs : Control
             if (open)
             {
                 Visible = true;
-                Modulate = new Color(1, 1, 1, 0);
-                CreateTween().TweenProperty(this, "modulate:a", 1f, 0.4);
+                Modulate = Colors.White;
+                RequiemKit.PopIn(this, dy: 0);
                 SetTab(ShopTab.Buy);
             }
             else

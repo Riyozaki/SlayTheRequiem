@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M32 2 L37 22 L56 12 L44 28 L62 34 L42 38 L50 58 L34 44 L28 62 L24 42 L6 50 L18 34 L2 26 L22 24 L14 6 Z" fill="#B3261E" stroke="#140c0c"/><circle cx="32" cy="32" r="9" fill="#ffb0a0" stroke="#140c0c"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>crimson_portal</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M22 7 L18 16 L9 18 L14 26 L6 33 L15 38 L12 49 L23 48 L28 59 L35 51 L46 56 L47 45 L58 39 L51 31 L57 20 L45 20 L42 8 L33 15 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/><path d="M32 21 Q47 31 32 45 Q18 31 32 21 Z" fill="#302922" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

@@ -537,5 +537,13 @@
   "SLAYTHEREQUIEM-UI.formLichLocked.title": "Нужны {Count} побед Вестником; обряд Филактерии доступен в позднем акте.",
   "SLAYTHEREQUIEM-UI.formLater.title": "Этот обряд откроется в следующем подходящем акте и не исчезнет от отсрочки.",
   "SLAYTHEREQUIEM-UI.formPietyLocked.title": "Нужна праведность «Праведник». Сначала восстановите праведность.",
-  "SLAYTHEREQUIEM-UI.formIncompatible.title": "Несовместимо с нынешним мировоззрением, Заводным сердцем или клятвой Ординатора. Сменить выбранное мировоззрение здесь нельзя."
+  "SLAYTHEREQUIEM-UI.formIncompatible.title": "Несовместимо с нынешним мировоззрением, Заводным сердцем или клятвой Ординатора. Сменить выбранное мировоззрение здесь нельзя.",
+  "SLAYTHEREQUIEM-UI.shelf.capacity.title": "Кличи {Used}/{Capacity}",
+  "SLAYTHEREQUIEM-UI.shelf.waitLabel.title": "{Turns} х.",
+  "SLAYTHEREQUIEM-UI.shelf.readyLabel.title": "↩ Готов",
+  "SLAYTHEREQUIEM-UI.shelf.waiting.title": "{Name}: ещё {Turns} ходов владельца на полке. Не изгнан.",
+  "SLAYTHEREQUIEM-UI.shelf.pending.title": "{Name}: перезарядка закончилась, возврат ещё не подтверждён. Эта же карта ожидает следующего хода владельца.",
+  "SLAYTHEREQUIEM-UI.shelf.departed.title": "Перезарядка: {Name}",
+  "SLAYTHEREQUIEM-UI.shelf.returnedHand.title": "Вернулся в руку: {Name}",
+  "SLAYTHEREQUIEM-UI.shelf.returnedDiscard.title": "Вернулся в сброс: {Name}"
 }

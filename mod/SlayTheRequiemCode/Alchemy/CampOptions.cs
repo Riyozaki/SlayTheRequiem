@@ -217,8 +217,9 @@ public static class RestSiteGeneratePatch
 }
 
 /// <summary>
-/// Действие лагеря Реквиема: цена в очках, доступность, описание с ценой. Значки — ванильные заглушки
-/// (своих картинок пока нет): подменяются патчем <see cref="Patches.RestSiteIconPatch"/>.
+/// Действие лагеря Реквиема: цена в очках, доступность, описание с ценой. Смысловые значки — свои
+/// images/ui/rest_site/option_&lt;полный OptionId в нижнем регистре&gt;.png; осознанный vanilla fallback при отсутствии файла.
+/// Подключение — <see cref="Patches.RestSiteIconPatch"/>.
 /// </summary>
 public abstract class RequiemRestSiteOption(Player owner) : RestSiteOption(owner)
 {
