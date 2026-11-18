@@ -5,7 +5,45 @@
 Нового полного mod build/PCK/native-исполнения в этой среде нет: легальные references, MegaDot и локальный SDK отсутствуют.
 Это **BLOCKED**, не stub/syntax PASS. Исторические успешные сборка/PCK и плейтест пользователя остаются реальными.
 
-## Идентифицированные автоматические результаты
+## Предсборочная доделка после передачи `98d671b`
+
+**Актуальный source checkpoint — [`3d9acfb7e4cca78831fad63837366b31edb05637`, CI 44282711349](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349): все 6 jobs success, 879/879 Core.**
+Input hash **`bb73a110b17a503d70890f8795a580c39286dedc3b9fd599a7e8df0acfa11952`**, 1889 build inputs.
+Старые dc66/98 evidence ниже сохранены как история и не выдаются за проверку новых game-side изменений.
+Короткая передача автору с PowerShell-командами — [BUILD_HANDOFF](../release/BUILD_HANDOFF.md).
+
+- Удалён **дублирующийся non-partial `PaperDollDeathPatch`**: новый declaration gate воспроизвёл исходный конфликт,
+  затем проверил все пять `.csproj` без ошибок. Старый grammar PASS допускал две одинаковые декларации, а Core
+  этот game-side файл не компилировал. Gate учитывает реальные Compile links, partial/nesting/generic arity/file-local;
+  это **не** evaluated MSBuild/conditional compilation, type/member resolution или полный mod build.
+- `RequiemNodes` отсоединяет именованный child до deferred free и не возвращает уже queued node. PaperDoll/Знаки/сферы
+  используют один lifecycle; fade пустого overlay-родителя исправлен с неэффективного SelfModulate на Modulate потомков.
+  Новые overlays мёртвого героя сразу скрыты. Local PaperDoll toggle обновляет текущие visuals.
+- Exit восстанавливает entry/denial/hover pose; deferred focus учитывает eligibility, queued ancestors и актуального
+  modal owner. Полка сохраняет `0/ёмкость`/journal target, после исчезновения сфокусированной карты выбирает живой элемент,
+  но не крадёт фокус у нового modal. Это по-прежнему read-only UI, без изменения piles/механики возврата.
+- Паспорт переделан из 1040px фиксированной панели в responsive native modal со scroll/focus/Esc/B.
+  F8/right-stick click — запасной вход, если ввод не занят. Restore закрывает паспорт до подтверждения;
+  `RequiemNet.Confirm` ждёт свободный modal без таймаута/автовыбора, привязан к текущему run и не ждёт dropped popup.
+- **34/34** safe local checks, **322 Python tests PASS** = 151 sim + 38 G0 + 25 release + 108 checker.
+  **323 grammar files / 0**, **136 Harmony targets / 0 missing** (137→136 — удаление дублирующегося патча, не исключение
+  механики). Source generators idempotent. Local .NET/full mod/MegaDot/game по-прежнему не исполнялись.
+- Новый independent CI project **компилирует и исполняет именно production `RequiemNodes`/`RequiemFocus`** в public
+  official Godot **4.5.1 mono**. Реально прошли **12 групп**: 100 same-frame named replacements, 100 clear cycles,
+  TreeExiting/free/idempotence и keyboard/gamepad/focus в queued/hidden/disabled/сменивших owner случаях.
+  SHA256 official mono ZIP закреплён; helper/harness/scene/workflow hashes проверены по Git objects.
+  Это **не** MegaDot, полный game-side compile, рендер/layout/art/audio, 100 открытий игровых окон или FPS/native-game run.
+- На том же 3d9 заново strict-collected **8 частей / 611069 B** Core scenarios и **28 actual C# cache trials**, native 0.
+  Свой CI runner: stress baseline→candidate **6.658→1.708 ms / 1480→2960 B**; idle **17.449→.370 ms / 1480→1480 B**.
+  Сравнение только внутри этого runner; это не скорость игры и не сравнение с wall time прежних dc66/492 jobs.
+
+При заведении isolated harness были два честных failed CI: `f2eb029` — неоднозначный `Environment` (Godot/System)
+в самом test script; `166564f` — validator ожидал CLI-формат версии вместо `Engine.GetVersionInfo()["string"]`.
+Оба исправлены; новый полный CI 3d9 исполнил все jobs заново. Только финальный зелёный run считается текущим PASS.
+В этих CI игра не запускалась. [Новое evidence](evidence/stage-three-quality-2026-11-18/README.md)
+сохраняется отдельно: теперь 189 hash-bound evidence files, прежние 136 сохранены без изменения bytes.
+
+## Идентифицированные предыдущие автоматические результаты
 
 - **[`dc66b0c8398512ec608d7f6e4579af3d72ad984f`, CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604)**:
   **879/879 Core**, все **5 jobs success**, включая release contracts. В Core реально прошли **10 cases** production
@@ -23,11 +61,12 @@
   [`6c1234d`, 869/869](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884) с собственными raw trials;
   allocation-регрессия 6c не скрыта. [Evidence Б3](evidence/stage-three-quality-2026-11-18/README.md) отделено от Б2.
   Промежуточный [CI byte-binding `6eecb8c`](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277344159) тоже success;
-  dc66 уже включает эту защиту. Непроверенных package/helper изменений после dc66 нет.
+  dc66 уже включает эту защиту. Этот исторический checkpoint не покрывает последующую предсборочную доделку выше.
 
 Baseline microbenchmark — collection reimplementation, не старый игровой binary. Ни Core, ни microbenchmark не являются
 semantic mod build/балансной приёмкой и не запускают Godot hooks. Служебные CI warnings Actions v4/Node 20→24 и runner image
-не являются разбором compiler/analyzer warnings полного мода. Последующий documentary/evidence commit не меняет build inputs.
+не являются разбором compiler/analyzer warnings полного мода. Прежний documentary/evidence commit `98d671b` не менял
+build inputs dc66; новая предсборочная доделка меняет их и имеет собственный CI/input hash выше.
 
 ## Б3.1. Собственные материалы, исходники и осмысленный fallback
 

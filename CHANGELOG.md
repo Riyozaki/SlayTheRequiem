@@ -19,6 +19,11 @@
   и осмотр в игре не заменены таблицей наличия ресурсов.
 - Local reduced motion, lifecycle/cancellation для decorations, phase/death/Revive poses, persistent read-only полка;
   SFX off останавливает свои players, включая deferred Autoplay, и не меняет механику. Actual mix ещё не принят.
+- Предсборочная доделка: удалён повторный `PaperDollDeathPatch`; gate проверяет типы всех C# projects.
+  Именованные overlays сразу отсоединяются до QueueFree, death fade действует на потомков; focus учитывает
+  закрываемый modal и смену owner. Полка сохраняет `0/ёмкость`; паспорт — responsive native modal с контроллером.
+  Confirm/recovery не ждут отброшенный popup. Actual public-Godot smoke исполняет production node/focus helpers;
+  это не game build, MegaDot, rendered UI/арт/звук/FPS или native-приёмка. [Команды сборки](docs/release/BUILD_HANDOFF.md).
 - Enemy chips: invalidation вместо collect/sort/hash каждого кадра; double-buffer builder убирает List/ToArray на
   каждом изменении. Реальный C# microbenchmark отделён от Godot; schema-2 `str_metrics` и validator требуют frozen
   native baseline/result на одинаковом hardware/settings. Никаких обещаний FPS без клиента.

@@ -41,6 +41,7 @@
 | Документ | Содержание |
 |---|---|
 | [Б3: качество и выпуск, исходники/измерения](review/stage-three-quality-implementation-2026-11-18.md) | Арт-мастера, движение/звук, production-кэш, реальные C# microbenchmarks и границы native-приёмки |
+| [Передача на сборку](release/BUILD_HANDOFF.md) | Последние исправления, текущий CI и PowerShell probe → build/export → verify → install |
 | [Установка](release/INSTALL.md) · [совместимость](release/COMPATIBILITY.md) | Состав matched кандидата, game/BaseLib, старые saves/config и recovery |
 | [Финальная приёмка](release/FINAL_ACCEPTANCE.md) · [план 257 требований](release/final-matrix.plan.json) | Все пока NOT_RUN: 12 full routes, short отдельно, 21 бой, формы/Пути, кооп, UI/performance и права |
 | [Release notes](release/RELEASE_NOTES.md) · [диагностика](release/DIAGNOSTICS.md) | Что изменено и что не принято; воспроизведение и privacy публичного отчёта |
@@ -76,10 +77,12 @@
 сборки, потери карт и состояния вещей; наличие кода ещё не означает готовность функции.
 
 После этого внесены исправления Б1, игровые пакеты Б2 и исходники Б3. Исторические **560/560 Core** относятся к
-`b82c909` ([evidence Б1](review/evidence/stage-one-2026-11-18/README.md)). На **`dc66b0c`** публичный
-[CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604) подтвердил **879/879 Core**, пять jobs PASS,
-включая release contracts, и 28 реальных C# trials production double-buffer helper. Последние исправления очищают
-отклонённый scratch сразу после Reset/exception и связывают bytes паспортов фаз/требований с архивом.
+`b82c909` ([evidence Б1](review/evidence/stage-one-2026-11-18/README.md)). Текущий **`3d9acfb`**, публичный
+[CI 44282711349](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349): **879/879 Core**, шесть jobs PASS,
+28 реальных C# cache trials и 12 групп production node/focus helpers в official public Godot 4.5.1 mono.
+Предсборочная доделка убрала дублирующийся C# патч, исправила overlay/death/focus lifecycle и responsive passport/recovery.
+Локально 34 проверки / 322 Python PASS. Предыдущий dc66 отдельно подтверждает double-buffer cleanup и byte binding;
+ни Core, ни isolated helper smoke не являются full game-side build/MegaDot/layout/native game acceptance.
 [Evidence Б3](review/evidence/stage-three-quality-2026-11-18/README.md) сохраняет также `49288c9` (877/877) и `6c1234d` (869/869),
 не скрывая прежнюю allocation-регрессию. Microbenchmark не является engine/FPS-приёмкой.
 Full-build workflow с легальной игрой подготовлен, но не исполнен здесь; новый PCK/игра/кооп и measured **native** baseline

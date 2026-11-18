@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "Expected source-only duplicate reproduction on the original production file; NOT full mod compilation",
+  "original_commit": "98d671bb4c1705d26088c263374d1e82b7dd71ee",
+  "original_file": "mod/SlayTheRequiemCode/Equipment/PaperDoll.cs",
+  "original_sha256": "39c20f9a9035ed9bb75fbc8d6082bb32b0155889e55a3644f0bc0b147b7bda76",
+  "gate_source_commit": "3d9acfb7e4cca78831fad63837366b31edb05637",
+  "gate_sha256": "e396b49f02b7a536bcb4838092dbcd668af4ab1f18a30f37114adae2290a01a2",
+  "expected_duplicate_errors": [
+    "Duplicate/incompatible non-partial type SlayTheRequiem.SlayTheRequiemCode.Equipment.PaperDollDeathPatch: mod/SlayTheRequiemCode/Equipment/PaperDoll.cs:368, mod/SlayTheRequiemCode/Equipment/PaperDoll.cs:380"
+  ],
+  "actual_native_runs": 0
+}

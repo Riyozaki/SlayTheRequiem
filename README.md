@@ -33,8 +33,9 @@
 > **Pre-alpha после первого плейтеста.** Историческая сборка/PCK и запуск пользователем на `ec598de` подтверждены.
 > После аудита внесены [Б1: надёжное ядро](docs/review/stage-one-implementation-2026-11-18.md), игровые пакеты Б2
 > и [Б3: арт, движение, кэш и выпускные инструменты](docs/review/stage-three-quality-implementation-2026-11-18.md).
-> [CI на `dc66b0c`](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604) — **879/879 Core**, пять jobs PASS;
-> это не полный mod build и не тест игры. Новый DLL/PCK/архив ещё **не приняты**.
+> [CI на `3d9acfb`](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349) — **879/879 Core**, шесть jobs PASS,
+> в том числе 12 production node/focus helper groups в public Godot. Это не полный mod build/MegaDot и не тест игры.
+> [Передача на сборку с командами](docs/release/BUILD_HANDOFF.md). Новый DLL/PCK/архив ещё **не приняты**.
 > [Финальная матрица](docs/release/FINAL_ACCEPTANCE.md) и [установка/совместимость](docs/release/INSTALL.md) отделяют
 > исходники, автоматические проверки и фактические прогоны. Ручной/визуальный/двухклиентный плейтест — в самом конце.
 

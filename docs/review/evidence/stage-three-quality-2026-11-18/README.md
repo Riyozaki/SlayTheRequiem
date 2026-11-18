@@ -5,7 +5,38 @@
 но не проверяют новые Б1–Б3. Ручной/визуальный-в-клиенте/двухклиентный тест — только в самом конце.
 Историческое evidence Б2 не переписывалось.
 
-## Идентичность
+## Предсборочная доделка — актуальный `3d9acfb`
+
+**[`3d9acfb7e4cca78831fad63837366b31edb05637`, CI 44282711349](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349)** —
+все **6 jobs success**, **879/879 Core**. Input hash
+**`bb73a110b17a503d70890f8795a580c39286dedc3b9fd599a7e8df0acfa11952`**, 1889 build inputs.
+Новая проверка не наследует старые PASS dc66/98. `files.sha256.json` содержит **189** hashes;
+все прежние **136** сохранены без изменения bytes.
+
+| Новый корпус | Идентичность / результат | Граница |
+|---|---|---|
+| `ci-3d9acfb/run.json`, `core-tests.summary.json` | CI **44282711349**, check **134727331681**, 879/879 | Actual hosted xUnit, не full-mod game-side compile |
+| `ci-3d9acfb/core-annotations.json`, `core/` | Strict **8 частей / 611069 decoded B**, 60 scenarios / 300 act rows / 30 pairs | Actual Core rules, synthetic workload, native 0 |
+| `ci-3d9acfb/views-annotations.json`, `views/` | Check **134727331700**, все **28** actual C# trials и medians проверены | Не engine/FPS/native-event acceptance; свой runner/pair |
+| `ci-3d9acfb/presentation-annotations.json`, `presentation/` | Check **134727331596**, **12 групп PASS** в official public Godot 4.5.1 mono | Actual production node/focus helpers; **не** MegaDot, полный мод, rendered UI/art/audio, игровые window cycles или FPS |
+| `ci-3d9acfb/source-snapshot.json` | **1959 files / 80518698 B**, input hash выше, plan/docs/requirement bytes согласованы | Frozen Git source only, не реальный bundle/ZIP |
+| `local-prebuild/checks.json`, `logs/` | Matching input: **34/34**, **322 Python PASS** = 151 sim + 38 G0 + 25 release + 108 checker | Grammar **323/0**, Harmony **136/0**, пять declaration projects/0; генераторы idempotent. Local .NET/full mod/native не запускались |
+| `prebuild/declarations-before.log`, `duplicate-reproduction.json` | Новый gate реально нашёл duplicate non-partial `PaperDollDeathPatch`; исходный файл/hash привязан к `98d671b` | Expected source-only failure до исправления, не semantic mod compilation |
+| `prebuild/attempts.json` | Два failed harness CI (`f2eb029`, `166564f`) → новый полный success `3d9acfb` | Ошибки harness не спрятаны; failed run не засчитывается как успешная проверка |
+
+Godot report содержит hashes **восьми** actual production/harness/scene/workflow inputs, сверенные с Git objects.
+ZIP official mono закреплён SHA256 `b61697dd6921da76e3d2358ab592263dfaae398d0ac1229e82eab7e4a7c36cbf`;
+reported executable SHA256 `cf499495ba071c5974e68602f14da9860269cc73bda7dc495ff28128e7972b64`.
+Бинарник **не** скачивался повторно локально: receipt опирается на actual successful hosted job и pinned workflow,
+это не signed provenance. 100 same-frame named replacements / 100 clear cycles относятся к helper scene,
+**не** к 100 открытиям игровых окон. `RequiemKit`/PaperDoll/паспорт целиком здесь не компилировались и не рендерились.
+
+Новые исходники исправляют duplicate patch, same-frame overlay replacement/death alpha, live PaperDoll setting,
+exit pose, eligible/owner-scoped deferred focus, empty-shelf capacity и responsive native-modal passport/recovery.
+Точные границы/команды — [отчёт Б3](../../stage-three-quality-implementation-2026-11-18.md) и
+[передача на сборку](../../../release/BUILD_HANDOFF.md). Source/tool/isolated engine проверки не закрывают 257 game requirements.
+
+## Историческая идентичность dc66/492/6c
 
 | Корпус | К чему относится | Результат / граница |
 |---|---|---|
@@ -23,7 +54,7 @@
 | `ci-6c1234d/views-annotations.json`, `views/` | Тот же SHA, check **134677329491** | Все **28 actual C# trials**, medians проверены заново из raw data; не Godot/FPS/native invalidation |
 | `local-source/checks.json` + `logs/` | Working source поверх 6c, input **`d64e0c5f3f311dcd744a407146d7a7d2e7d07e15298a51c93f377e3ddb480716`**, 1877 build inputs | **33/33** safe local checks, actual C#/full build/native не запускались локально |
 
-Актуальный `local-buffer-cleanup/`: **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**, без skipped tests.
+Исторический `local-buffer-cleanup/` для dc66: **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**, без skipped tests.
 Исторический `local-source/` соответствует 492: 24 release / 300 unit PASS; он не переписан результатом новых тестов.
 C# grammar: **319 files / 0 errors**; Harmony declaration targets: **137 / 0 missing** по pinned native 0.107.1 source.
 Генераторы повторно проверены: ни один build input не изменился (`source-generation-idempotence.log`).
@@ -45,7 +76,7 @@ CI на dc66 покрывает последний helper cleanup и source-byte
 `local-final/` — **33/33**, **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**, input
 **`30fd08a901ccb755f6274c68c1a283a829e12d390fa05705936b89e23391ba27`** — промежуточный checkpoint byte-binding,
 на котором C# ещё совпадал с 492. Его [CI 44277344159](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277344159)
-успешен; текущий dc66 заново исполнил gate вместе с последующим C# cleanup. Название `local-final` не означает native PASS.
+успешен; последующий dc66 заново исполнил gate вместе с C# cleanup. Название `local-final` не означает native PASS.
 
 ## Реальный C# microbenchmark на 6c — не результаты нового double buffer
 

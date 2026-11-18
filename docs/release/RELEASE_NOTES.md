@@ -18,6 +18,11 @@
   фиксация фазового спрайта независимо от необязательной вспышки. Смерть/Revive отделены от idle/оружейной позы.
 - Полка Кличей сохраняет клетки физических экземпляров и показывает ожидание подтверждённого возврата.
   Не трактует любое удаление записи как успешный возврат; не меняет боевые стопки.
+- Предсборочная доделка: удалён конфликтующий дубль `PaperDollDeathPatch`, добавлен per-project declaration gate;
+  именованные overlays отсоединяются до QueueFree, death fade скрывает потомков и переживает refresh.
+  Local PaperDoll toggle применяется сразу; exit завершает motion, deferred focus не перехватывается закрытым окном.
+  Полка сохраняет `0/ёмкость` и journal target. Паспорт — responsive native modal со scroll/keyboard/gamepad;
+  подтверждения не ждут popup, который был отброшен занятым modal container.
 - Чипы постоянных черт врага: event-invalidated collect/sort и redraw только по изменению/появлению/layout.
   Double-buffer builder переиспользует два списка вместо List/ToArray на каждую мутацию; исключение не публикует
   частичный список, rebind сбрасывает поколение. Отклонённый/бросивший builder сразу очищает scratch, включая добавления
@@ -32,7 +37,16 @@
 
 ## Что реально проверено, а что нет
 
-На **`dc66b0c8398512ec608d7f6e4579af3d72ad984f`** [CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604):
+**Текущий [`3d9acfb7e4cca78831fad63837366b31edb05637`, CI 44282711349](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349):
+6/6 jobs success, 879/879 Core**, 28 strict-verified actual C# cache trials и **12 реально исполненных групп production
+node/focus helpers** в checksum-pinned official Godot 4.5.1 mono. Это не полный game-side compile, MegaDot/PCK,
+rendered UI/art/audio, 100 открытий игровых окон или FPS. Локально: **34/34** source/content/tool checks,
+**322 Python PASS** = 151 sim + 38 G0 + 25 release + 108 checker; grammar **323/0**, Harmony targets **136/0**,
+пять C# projects без дублирующихся types, source generation idempotent. Input
+`bb73a110b17a503d70890f8795a580c39286dedc3b9fd599a7e8df0acfa11952`.
+Команды для автора — [передача на сборку](BUILD_HANDOFF.md).
+
+Исторически, на **`dc66b0c8398512ec608d7f6e4579af3d72ad984f`** [CI 44277797604](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44277797604):
 **879/879 Core** и пять успешных jobs, включая новые cleanup cases и release contracts. Локально — 33 проверки /
 **301 Python unit PASS** (151 sim + 38 G0 + 25 release + 87 checker); C# grammar 319/0, Harmony declarations 137/0.
 Это не semantic mod build.

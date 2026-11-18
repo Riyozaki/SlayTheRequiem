@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "actual_native_runs": 0,
+  "bytes": 80518698,
+  "files": 1959,
+  "requirements_sha256": "7c7594fed8fee8f628cae61bdf6a8864833a7fc0db2f2dbb16e6015140b02033",
+  "scope": "Frozen Git source/digest/doc/requirements-byte check ONLY; no real bundle/DLL/PCK/archive/native-game execution",
+  "source_commit": "3d9acfb7e4cca78831fad63837366b31edb05637",
+  "source_tree_sha256": "bb73a110b17a503d70890f8795a580c39286dedc3b9fd599a7e8df0acfa11952"
+}
