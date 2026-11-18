@@ -85,7 +85,7 @@ public abstract class ActBossMonster : OwnArtMonster
     }
 
     /// <summary>Свита гибнет вместе с боссом (бой не тянется ради добивания призванных).</summary>
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature != Creature || wasRemovalPrevented) return;
         foreach (var ally in Allies.ToList()) await MegaCrit.Sts2.Core.Commands.CreatureCmd.Kill(ally);

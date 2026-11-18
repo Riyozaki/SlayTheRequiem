@@ -9,7 +9,7 @@
 жечь ману и тащить на себе всё, что они решились нести.*
 
 [![CI](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml/badge.svg)](https://github.com/Riyozaki/SlayTheRequiem/actions/workflows/ci.yml)
-![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-0.111.1-8b0000?style=flat)
+![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-0.113.0-8b0000?style=flat)
 ![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white)
 ![BaseLib](https://img.shields.io/badge/BaseLib-3.4.8-2f4f4f)
 ![Godot](https://img.shields.io/badge/Godot-4.5.1%20mono-478CBF?logo=godotengine&logoColor=white)
@@ -171,7 +171,7 @@ flowchart LR
 
 ## 🛠 Сборка и установка
 
-Проверяемый контракт: легальная Slay the Spire 2 **0.111.1**, [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
+Проверяемый контракт: легальная Slay the Spire 2 **0.113.0**, [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0),
 [BaseLib 3.4.8](https://github.com/Alchyr/BaseLib-StS2) и [MegaDot 4.5.1 mono](https://megadot.megacrit.com/).
 Релизный путь собирает и устанавливает **одну проверенную пару DLL/PCK**, не смешивает её с прежним пакетом:
 

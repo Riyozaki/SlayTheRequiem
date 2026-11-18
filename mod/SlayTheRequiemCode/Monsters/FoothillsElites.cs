@@ -68,7 +68,7 @@ public sealed class PackLeader : RequiemMonster
         }
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature == Creature && !wasRemovalPrevented) await KillMinions<PackWolf>();
     }

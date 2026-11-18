@@ -399,7 +399,7 @@ public static class ShopActions
                         () => !player.Deck.Cards.Contains(card),
                         () => TransferProtocol.Finish(() => CleanRemoved([card]), async () =>
                         {
-                            await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), player.Creature, quote.Amount, false);
+                            await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), player.Creature, quote.Amount, cardSource: null);
                             if (before - player.Creature.MaxHp != quote.Amount) throw new InvalidOperationException("Curse removed but actual max-HP price differed");
                         }));
                 }

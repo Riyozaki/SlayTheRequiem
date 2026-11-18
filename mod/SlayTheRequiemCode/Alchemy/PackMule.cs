@@ -25,7 +25,7 @@ public sealed class PackMule : RequiemRelic, IResourceSource, IWeightless
 {
     public override RelicRarity Rarity => RelicRarity.Event;
     public override bool IsAllowedInShops => false;
-    public override bool IsAllowed(IRunState runState) => false;
+    protected override bool IsAllowedInternal(IRunState runState) => false;
     /// <summary>Счётчик — сколько груза несёт зверь (10, подкованный — 15).</summary>
     public override bool ShowCounter => true;
     public override int DisplayAmount => BurdenBonus;

@@ -191,7 +191,7 @@ public abstract class SummonPower : RequiemPower
         if (power == this && amount > 0) await SyncPet();
     }
 
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength) =>
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength) =>
         creature == _pet && !wasRemovalPrevented ? Destroyed() : Task.CompletedTask;
 
     // ───────────── удары по герою ─────────────

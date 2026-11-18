@@ -425,33 +425,30 @@ public static class ShopTabsPatch
 /// после подтверждения. Заклинание выше владения сначала спрашивает своё окно (<see cref="SpellMasteryWarningPatch"/>),
 /// потом это — оба окна по очереди при любом порядке префиксов.
 /// </summary>
-[HarmonyPatch(typeof(MerchantEntry), nameof(MerchantEntry.OnTryPurchaseWrapper))]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Multiplayer.Game.MerchantSynchronizer), nameof(MegaCrit.Sts2.Core.Multiplayer.Game.MerchantSynchronizer.PurchaseLocalEntry))]
 public static class OverloadWarningPatch
 {
-    private static readonly AccessTools.FieldRef<MerchantEntry, Player> PlayerRef =
-        AccessTools.FieldRefAccess<MerchantEntry, Player>("_player");
-
     private static bool _confirmed;
 
     /// <summary>Сброс при новом забеге (ревью F-06).</summary>
     internal static void ResetForNewRun() => _confirmed = false;
 
     [HarmonyPrefix]
-    public static bool WarnAboutOverload(MerchantEntry __instance, MerchantInventory? inventory, bool ignoreCost, ref Task<bool> __result)
+    public static bool WarnAboutOverload(MerchantEntry entry, ref Task<bool> __result)
     {
-        if (ignoreCost || _confirmed || !__instance.IsStocked || !__instance.EnoughGold) return true;
-        var player = PlayerRef(__instance);
+        if (_confirmed || !entry.IsStocked || !entry.EnoughGold) return true;
+        var player = entry.Player;
         if (player == null || !LocalContext.IsMe(player) || !RequiemMode.IsInSystem(player)) return true;
-        if (ShopServices.MasteryGap(player, __instance) > 0 && !ShopServices.MasteryConfirmed) return true; // сначала окно владения
-        var weight = NShopTabs.EntryWeight(player, __instance);
+        if (ShopServices.MasteryGap(player, entry) > 0 && !ShopServices.MasteryConfirmed) return true; // сначала окно владения
+        var weight = NShopTabs.EntryWeight(player, entry);
         if (weight <= 0) return true;
         var preview = ShopUiRules.Preview(Loadout.TotalWeight(player), Loadout.Capacity(player), weight);
         if (!ShopUiRules.NeedsOverloadWarning(preview)) return true;
-        __result = ConfirmAndBuy(__instance, inventory, weight, preview);
+        __result = ConfirmAndBuy(entry, weight, preview);
         return false;
     }
 
-    private static async Task<bool> ConfirmAndBuy(MerchantEntry entry, MerchantInventory? inventory, int weight, BurdenPreview preview)
+    private static async Task<bool> ConfirmAndBuy(MerchantEntry entry, int weight, BurdenPreview preview)
     {
         if (!await RequiemNet.Confirm("SLAYTHEREQUIEM-MERCHANT_LEDGER", "overload", body =>
             {
@@ -462,7 +459,7 @@ public static class OverloadWarningPatch
             }))
             return false;
         _confirmed = true;
-        try { return await entry.OnTryPurchaseWrapper(inventory); }
+        try { return await ShopServices.BuyLocal(entry); }
         finally { _confirmed = false; }
     }
 }

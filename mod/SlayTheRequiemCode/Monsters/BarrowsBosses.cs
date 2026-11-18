@@ -72,9 +72,9 @@ public sealed class KingUnderBarrow : ActBossMonster
         for (var i = 0; i < missing; i++) await Summon<BarrowHuskarl>();
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
     {
-        await base.AfterDeath(choiceContext, creature, wasRemovalPrevented, deathAnimLength);
+        await base.AfterDeath(choiceContext, creature, source, wasRemovalPrevented, deathAnimLength);
         if (!wasRemovalPrevented && !creature.IsAlive && creature.Monster is BarrowHuskarl && Creature.IsAlive)
             await PowerCmd.Apply<V.StrengthPower>(choiceContext, Creature, FallenOathStrength, Creature, null);
     }

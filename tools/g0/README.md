@@ -12,7 +12,7 @@ Pipeline **не скачивает игру/её DLL**, не заменяет re
 На машине сборки нужны:
 
 - **Python ≥3.11**;
-- легальная **Slay the Spire 2 0.111.1**, включая `release_info.json`, `sts2.dll`, `0Harmony.dll`;
+- легальная **Slay the Spire 2 0.113.0**, включая `release_info.json`, `sts2.dll`, `0Harmony.dll`;
 - отдельно установленный **BaseLib 3.4.8**: `mods/BaseLib/BaseLib.json` и `BaseLib.dll`;
 - **.NET SDK 9.0.x**, не только runtime. Корневой `global.json` допускает актуальный feature band девятой версии;
 - **MegaDot 4.5.1 mono** из доверенного источника. Более новый/обычный non-Mono Godot не подходит.
