@@ -202,7 +202,7 @@ public static class SummonLayout
                 var target = new Vector2(hero.Position.X + SummonRules.LayoutX(half, i, player.IsOstyAlive), hero.Position.Y);
                 UI.RequiemMotion.MoveTo(node, target, 0.25);
                 node.Visuals.Modulate = hero.Visuals.Modulate;
-                node.SetIsInteractable(true, changeVisibilityImmediately: false); // 0.113: NCombatRoom.SetCreatureIsInteractable удалён
+                room.SetCreatureIsInteractable(node.Entity, true);
             }
         }
         catch (Exception e)

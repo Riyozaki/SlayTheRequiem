@@ -127,7 +127,7 @@ public sealed class LordsBride : RequiemMonster
         new MoveState("SWAP_PLACES", async _ => { await Cast(); await BuffAllies<V.StrengthPower>(2); await Block(16); }, new DefendIntent(), new BuffIntent()),
     ];
 
-    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature != Creature || wasRemovalPrevented || Creature.CombatState?.RunState is not { } run) return Task.CompletedTask;
         foreach (var player in run.Players)
@@ -232,7 +232,7 @@ public sealed class RenegadeSummoner : RequiemMonster
         }
     }
 
-    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, CardModel? source, bool wasRemovalPrevented, float deathAnimLength)
+    public override async Task AfterDeath(PlayerChoiceContext choiceContext, Creature creature, bool wasRemovalPrevented, float deathAnimLength)
     {
         if (creature != Creature || wasRemovalPrevented) return;
         await KillMinions<FlameAtronachMinion>();

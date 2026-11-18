@@ -8,7 +8,7 @@
 
 ## Воспроизводимая сборка и чистая установка
 
-Контракт: легальная игра **0.113.0**, .NET SDK **9.0.x**, [MegaDot **4.5.1 mono**](https://megadot.megacrit.com/),
+Контракт: легальная игра **0.111.1**, .NET SDK **9.0.x**, [MegaDot **4.5.1 mono**](https://megadot.megacrit.com/),
 установленный **BaseLib 3.4.8**; NuGet BaseLib `[3.4.8]` / ModAnalyzers `[0.2.1]` закреплены.
 
 Полная инструкция — [tools/g0/README.md](../tools/g0/README.md): `probe → build → verify → install`.

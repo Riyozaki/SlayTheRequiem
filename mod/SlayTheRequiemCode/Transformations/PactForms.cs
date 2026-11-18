@@ -282,7 +282,7 @@ public sealed class Phylactery : RequiemRelic, Equipment.IWeighted
 {
     public override RelicRarity Rarity => RelicRarity.Ancient;
     public override bool IsAllowedInShops => false;
-    protected override bool IsAllowedInternal(MegaCrit.Sts2.Core.Runs.IRunState runState) => false;
+    public override bool IsAllowed(MegaCrit.Sts2.Core.Runs.IRunState runState) => false;
     public int Weight => TransformationRules.PhylacteryWeight;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>

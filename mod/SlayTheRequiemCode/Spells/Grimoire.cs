@@ -23,7 +23,7 @@ public sealed class Grimoire : RequiemRelic
 {
     public override RelicRarity Rarity => RelicRarity.Starter;
     public override bool IsAllowedInShops => false;
-    protected override bool IsAllowedInternal(IRunState runState) => false;
+    public override bool IsAllowed(IRunState runState) => false;
     public override bool ShowCounter => true;
     public override int DisplayAmount => Mastery.Schools.Sum(Level);
 
