@@ -54,6 +54,21 @@ class CatalogueTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stdout.decode(errors="replace") + result.stderr.decode(errors="replace"))
             self.assertEqual((c.ROOT / "docs/release/asset-coverage.csv").read_bytes(), output.read_bytes())
 
+    def test_phase_passport_document_bytes_are_bound_not_only_the_reference_filename(self):
+        cases = c.requirements()
+        for case in cases:
+            self.assertEqual(p.digest((c.ROOT / case["source"]).read_bytes()), case["source_sha256"])
+        original = Path.read_bytes
+        passport = c.ROOT / c.PASSPORTS
+        def changed(path):
+            return original(path) + (b"\nSYNTHETIC document-only phase requirement change\n" if path == passport else b"")
+        with patch.object(Path, "read_bytes", changed):
+            updated = c.requirements()
+        self.assertEqual(len(cases), len(updated))
+        self.assertNotEqual(c.digest(cases), c.digest(updated))
+        self.assertNotEqual(next(row for row in cases if row["category"] == "encounter")["source_sha256"],
+                            next(row for row in updated if row["category"] == "encounter")["source_sha256"])
+
     def test_build_identity_includes_editable_art_not_only_runtime_exports(self):
         inputs = {name.decode() for name in b.source_inputs()}
         self.assertIn("art/illustrations/masters/king_under_barrow.png", inputs)
@@ -71,6 +86,8 @@ class SyntheticPackageFixture(unittest.TestCase):
         self.sources = {"mod/synthetic.cs": b"// synthetic fixture; not an actual build\n", "art/synthetic.svg": b"synthetic source"}
         self.sources.update({original: ("SYNTHETIC DOCUMENT, NO RELEASE: " + original).encode() for original in p.PUBLIC_DOCS.values()})
         self.sources["docs/release/final-matrix.plan.json"] = p.encoded(c.plan())  # requirement schema only; every case NOT_RUN
+        for requirement in c.requirements():
+            self.sources[requirement["source"]] = (c.ROOT / requirement["source"]).read_bytes()
         for name in b.ARTIFACTS:
             (self.bundle / name).write_bytes(b"SYNTHETIC NON-ASSEMBLY/NON-PACK " + name.encode())
         b.write_json(self.bundle / f"{b.MOD_ID}.json", dict(id=b.MOD_ID, has_dll=True, has_pck=True, version="synthetic-test-only"))
@@ -146,6 +163,14 @@ class PackageContracts(SyntheticPackageFixture):
             files[p.MANIFEST] = p.encoded(manifest)
         with self.assertRaisesRegex(b.BuildError, "compiled input hash"):
             p.verify(self.corrupted(changed_source_with_updated_manifest))
+        def changed_phase_document_with_updated_manifest(files):
+            name = "source/" + c.PASSPORTS
+            files[name] += b"\nSYNTHETIC changed phase expectation\n"
+            manifest = p.read_json(files[p.MANIFEST])
+            manifest["entries"][name] = dict(bytes=len(files[name]), sha256=p.digest(files[name]))
+            files[p.MANIFEST] = p.encoded(manifest)
+        with self.assertRaisesRegex(b.BuildError, "Requirements document changed"):
+            p.verify(self.corrupted(changed_phase_document_with_updated_manifest))
 
     def test_lifted_public_docs_retarget_internal_links_without_moving_the_guide(self):
         source = {"docs/release/INSTALL.md": b"[guide](../GUIDE.md) [policy](COMPATIBILITY.md#saves)",

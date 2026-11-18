@@ -233,8 +233,22 @@ def verify(path):
     require(source_digest(sources) == passport["source_tree_sha256"], "Archive source is not the compiled input hash")
     for target, original in PUBLIC_DOCS.items():
         require(original in sources and files[target] == public_document(target, original, sources), "Public document disagrees with source snapshot")
-    return dict(passport=passport, manifest=manifest, archive_sha256=build.sha(path),
-                plan=read_json(files["final-matrix.plan.json"]),
+    plan = read_json(files["final-matrix.plan.json"])
+    require(isinstance(plan, dict) and type(plan.get("schema")) is int and plan["schema"] == 1
+            and plan.get("producer") == "final-acceptance-plan-NOT-executed" and isinstance(plan.get("cases"), list)
+            and plan["cases"], "Missing final NOT_RUN requirements plan")
+    specs, requirement_sources = [], {}
+    for case in plan["cases"]:
+        require(isinstance(case, dict) and case.get("status") == "NOT_RUN" and isinstance(case.get("source"), str), "Candidate must contain an unexecuted source-bound requirements plan")
+        original = case["source"]
+        require(original in sources, "Requirements document missing inside the frozen archive: " + original)
+        if original not in requirement_sources:
+            requirement_sources[original] = digest(sources[original])
+        require(requirement_sources[original] == case.get("source_sha256"), "Requirements document changed/missing inside the frozen archive: " + original)
+        specs.append({key: value for key, value in case.items() if key != "status"})
+    canonical = json.dumps(specs, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    require(digest(canonical) == plan.get("requirements_sha256"), "Plan requirements digest mismatch")
+    return dict(passport=passport, manifest=manifest, archive_sha256=build.sha(path), plan=plan,
                 passport_sha256=digest(files[MOD_DIR + build.PASSPORT]))
 
 

@@ -72,7 +72,10 @@ mod ID, неизвестное содержимое или symlink — **отк�
 Инструменты: Python ≥3.11, .NET **9.0.x SDK**, MegaDot **4.5.1 mono**, легальные references игры/Harmony и BaseLib.
 Получить чистый Git checkout по `source_commit` из `candidate.json`, сверить включённые `source/` и input hash,
 следовать `tools/g0/README.md`. Файлы в `source/` — проверяемый снимок, **не Git-репозиторий**; G0 получает Git identity
-из checkout, а не выдумывает commit для распакованного ZIP. Сборки разных SDK/ОС не обещаны бит-в-бит одинаковыми.
+из checkout, а не выдумывает commit для распакованного ZIP. Для release checkout отключить автоматическую замену
+окончаний строк **локально в отдельном новом clone** (`git clone -c core.autocrlf=false …`), не перенормализовывать рабочий
+проект с пользовательскими изменениями. G0 хэширует фактические bytes, а не только clean status: checkout с CRLF вместо
+байтов Git snapshot будет корректно отвергнут упаковщиком. Сборки разных SDK/ОС не обещаны бит-в-бит одинаковыми.
 Новая сборка имеет собственные hashes и нуждается в своём паспорте/приёмке.
 
 О проблеме: [DIAGNOSTICS.md](DIAGNOSTICS.md) в репозитории. Полные saves/binlogs публично не прикладывать.

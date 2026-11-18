@@ -9,6 +9,10 @@
 
 | Корпус | К чему относится | Результат / граница |
 |---|---|---|
+| `ci-49288c9/run.json`, `core-tests.summary.json` | **`49288c96ed171c01b7197777ace9c2892392261c`**, [CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452) | **Пять jobs success; 877/877 Core**. Новые release contracts также реально исполнены; не full mod build |
+| `ci-49288c9/core-annotations.json`, `core/` | Тот же SHA, check **134703074632** | Strict **8 частей / 611069 bytes**; actual Core output, **native 0** |
+| `ci-49288c9/views-annotations.json`, `views/` | Тот же SHA, check **134703074230** | Все **28 actual C# trials** double-buffer helper; raw medians/source hashes проверены |
+| `ci-49288c9/source-snapshot.json` | 492, тот же input hash, clean checkout | **1947 source files / 80430384 B**, digest/docs/plan согласованы; это не реальный bundle/ZIP |
 | `ci-6c1234d/run.json` | **`6c1234da4f85db0ab447c1cbddd7c2d5288df0aa`**, [CI 44268028884](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884) | Пять jobs success; Core **869/869**; это не полный mod build |
 | `ci-6c1234d/core-annotations.json`, `core/` | Тот же SHA, check **134677329674** | Actual C# Core output, strict 8 частей / 611069 decoded bytes; 60 synthetic scenarios/300 act rows/30 pairs; **native 0** |
 | `ci-6c1234d/views-annotations.json`, `views/` | Тот же SHA, check **134677329491** | Все **28 actual C# trials**, medians проверены заново из raw data; не Godot/FPS/native invalidation |
@@ -21,9 +25,20 @@ Dummy bytes/archive/passports/metrics в unit tests — временные яв�
 Expected duplicate-ZIP warning и намеренные ERROR-строки в отрицательных G0 fixtures — тест отказа инструмента.
 Пути workspace в local logs заменены `<repo>`; оригиналы ignored в `.arena/stage3/local-01`.
 
-**Эти локальные изменения добавляют double-buffer helper, финальный package/matrix/metrics gate и паспортные поля.**
-CI на 6c их **не покрывает**. Новый hosted C# checkpoint будет добавлен отдельно после фактического исполнения.
-`files.sha256.json` — проверяемые hashes файлов evidence, не подпись, не certification прав/правдивости наблюдений.
+Локальный source hash совпадает с **492**; CI на 492 покрывает double-buffer helper, package/matrix/metrics contracts
+и source checks новых паспортных полей, но **не** семантически компилирует/запускает game-side C#. CI на 6c эти добавления
+не покрывал. Следующий source-byte gate паспортов/требований имеет отдельный local checkpoint, а не наследует 492 CI. `.gitattributes` сохраняет точные bytes
+этого evidence, в том числе terminal blank line C# Markdown, вместо изменения файла и нарушения его receipt.
+`files.sha256.json` — проверяемые hashes, не подпись, не certification прав/правдивости наблюдений.
+Служебные CI warnings о Node 20→24/runner image не являются разбором compiler warnings полного mod build.
+
+## Последующая финальная защита документов требований
+
+`source_sha256` каждого case теперь связывает bytes plan/checklist/combat-passport, а архив проверяет их снова.
+Исправление только паспортной фазы/порога тоже делает старую матрицу stale; filename не считается неизменным содержимым.
+`local-final/` — **33/33**, **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**, input
+**`30fd08a901ccb755f6274c68c1a283a829e12d390fa05705936b89e23391ba27`**, C#-код после 492 не менялся.
+Отдельный hosted CI для этого package gate пока ещё запускается; старый 492 не выдаётся за его исполнение.
 
 ## Реальный C# microbenchmark на 6c — не результаты нового double buffer
 
@@ -39,11 +54,28 @@ Untimed проверка membership/rank/amount/order на каждом syntheti
 | rebind/120 | 15.553 → 0.511 | 1480 → 224000 | 60000 → 500 |
 | change every frame | 8.369 → 5.109 | 1480 → **3073792** | 60000 → 12004 |
 
-Видна **allocation-регрессия** старого List+ToArray builder; она не скрыта за более быстрым idle. Поэтому следующий
-исходный пакет вводит общий production/benchmark `InvalidatedListView<T>` с двумя переиспользуемыми списками и
-отдельными xUnit-тестами reset/reentry/exception/роста/очистки references. Пока свежий CI не исполнен, никаких его
-цифр здесь нет. Native event subscriptions/gear/load, allocations всей игры, 100 оконных циклов и аппаратный FPS
-этим benchmark не проверяются; для них нужен frozen `str_metrics` baseline/result и реальный клиент.
+Видна **allocation-регрессия** старого List+ToArray builder; она не скрыта за более быстрым idle. Поэтому 492 ввёл
+общий production/benchmark `InvalidatedListView<T>` с двумя переиспользуемыми списками. Его **8 новых xUnit cases PASS**
+проверяют reset/reentry/exception/рост/очистку references в составе 877/877; это всё ещё не native lifecycle.
+
+## Свежий C# checkpoint 492 — фактически исполнен
+
+Тот же протокол/.NET 9.0.23/Ubuntu 26.04.1/X64/4 logical CPUs, **свой** CI runner и собственная baseline/candidate пара.
+Времена 6c и 492 не сравниваются как одна hardware session. `list_cache_sha256` дополнительно pin-ит реальный helper;
+trials SHA **`5e3ce4036beef5edbe4e51aa8df0cf48dd1d3d3d9b191b93e07fb9087d8af18b`**.
+
+| Workload | Whole-workload median ms, baseline → 492 | Allocated B | Rebuilds |
+|---|---:|---:|---:|
+| idle | 11.281 → 0.199 | 1480 → **1480** | 60000 → 5 |
+| change/60 | 5.223 → 0.218 | 1480 → **2960** | 60000 → 204 |
+| rebind/120 | 10.813 → 0.284 | 1480 → **2960** | 60000 → 500 |
+| change every frame | 5.975 → 1.384 | 1480 → **2960** | 60000 → 12004 |
+
+Exact synthetic membership/rank/amount/order и checksums совпадают во всех 28 trials; GC counts 0. Капаситеты двух
+буферов выделяются при первом заполнении, поэтому 2960 B всё ещё выше baseline 1480 B и не объявлены нулевыми allocations.
+Но они не растут с 204 до 12004 rebuilds. Вся prepare/JIT/forced GC — вне timed interval по исходнику benchmark.
+**Никаких native/FPS/engine-GC выводов** отсюда нет. Subscriptions/gear/load, 100 оконных циклов и общая память игры
+проверяются только frozen `str_metrics` baseline/result в реальном клиенте.
 
 ## Повторная проверка сохранённого CI без artifact-host download
 
@@ -52,8 +84,10 @@ Untimed проверка membership/rank/amount/order на каждом syntheti
 ```bash
 python tools/balance/collect_core_evidence.py docs/review/evidence/stage-three-quality-2026-11-18/ci-6c1234d/core-annotations.json --commit 6c1234da4f85db0ab447c1cbddd7c2d5288df0aa --out .arena/recheck-core-6c
 python tools/perf/collect_views.py --annotations docs/review/evidence/stage-three-quality-2026-11-18/ci-6c1234d/views-annotations.json --commit 6c1234da4f85db0ab447c1cbddd7c2d5288df0aa --out .arena/recheck-views-6c
+python tools/balance/collect_core_evidence.py docs/review/evidence/stage-three-quality-2026-11-18/ci-49288c9/core-annotations.json --commit 49288c96ed171c01b7197777ace9c2892392261c --out .arena/recheck-core-492
+python tools/perf/collect_views.py --annotations docs/review/evidence/stage-three-quality-2026-11-18/ci-49288c9/views-annotations.json --commit 49288c96ed171c01b7197777ace9c2892392261c --out .arena/recheck-views-492
 ```
 
-Оба output должны быть новыми. Collectors отвергают неполные/повторные/смешанные packets, source mismatch,
+Все output должны быть новыми. Collectors отвергают неполные/повторные/смешанные packets, source mismatch,
 неверные medians/types и oversized decompression; они ничего не реконструируют по выдуманным значениям.
 Перенос источника/хэша не превращает синтетику в native-прогон.

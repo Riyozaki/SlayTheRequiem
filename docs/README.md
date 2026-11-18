@@ -76,9 +76,11 @@
 сборки, потери карт и состояния вещей; наличие кода ещё не означает готовность функции.
 
 После этого внесены исправления Б1, игровые пакеты Б2 и исходники Б3. Исторические **560/560 Core** относятся к
-`b82c909` ([evidence Б1](review/evidence/stage-one-2026-11-18/README.md)). На `6c1234d` публичный
-[CI 44268028884](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884) подтвердил **869/869 Core**, пять jobs PASS
-и 28 реальных C# cache trials; последующие изменения требуют собственного CI, а не наследуют эти числа.
+`b82c909` ([evidence Б1](review/evidence/stage-one-2026-11-18/README.md)). На **`49288c9`** публичный
+[CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452) подтвердил **877/877 Core**, пять jobs PASS,
+включая release contracts, и 28 реальных C# trials нового double-buffer helper.
+[Evidence Б3](review/evidence/stage-three-quality-2026-11-18/README.md) сохраняет также предыдущий `6c1234d` (869/869),
+не скрывая найденную тогда allocation-регрессию. Microbenchmark не является engine/FPS-приёмкой.
 Full-build workflow с легальной игрой подготовлен, но не исполнен здесь; новый PCK/игра/кооп и measured **native** baseline
 не приняты. Актуальные исходники/границы — [отчёт Б3](review/stage-three-quality-implementation-2026-11-18.md). Аудит и
 [матрица реализации](review/implementation-matrix-2026-11-18.md) описывают исходную базу; старые разделы «Статус реализации»

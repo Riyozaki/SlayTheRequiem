@@ -7,18 +7,26 @@
 
 ## Идентифицированные автоматические результаты
 
-- [`6c1234da4f85db0ab447c1cbddd7c2d5288df0aa`, CI 44268028884](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884):
-  **869/869 Core**, все **5 jobs success**. Actual Core output strict-collected: 8 частей / 611069 decoded bytes,
-  60 synthetic scenarios / 300 act rows / 30 pairs, **native 0**. Не semantically compiled mod и не балансная приёмка.
-- На том же SHA реально исполнены **28 C# collection/cache trials** (4 workloads × 7). Полные raw trials, summary,
-  source hashes, annotations и проверенные medians сохранены в новом [evidence Б3](evidence/stage-three-quality-2026-11-18/README.md),
-  не поверх evidence Б2. Baseline — collection reimplementation, не старый игровой binary.
-- Следующий рабочий input hash **`d64e0c5f3f311dcd744a407146d7a7d2e7d07e15298a51c93f377e3ddb480716`**:
+- **[`49288c96ed171c01b7197777ace9c2892392261c`, CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452)**:
+  **877/877 Core**, все **5 jobs success**, включая новые release contracts. Actual Core output strict-collected:
+  8 частей / 611069 decoded bytes, 60 synthetic scenarios / 300 act rows / 30 pairs, **native 0**.
+- На 492 реально исполнены и strict-verified **28 C# trials** double-buffer helper (4 workloads × 7).
+  Также сохранён предыдущий [`6c1234d`, CI 44268028884](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44268028884)
+  с **869/869** и его собственной allocation-регрессией. Raw trials/annotations/receipts обоих checkpoints — в новом
+  [evidence Б3](evidence/stage-three-quality-2026-11-18/README.md), не поверх Б2. Baseline — collection reimplementation,
+  не старый игровой binary; ни Core, ни microbenchmark не являются semantic mod build или балансной приёмкой.
+- Совпадающий с 492 input hash **`d64e0c5f3f311dcd744a407146d7a7d2e7d07e15298a51c93f377e3ddb480716`**:
   **33/33** local checks; **151 sim + 38 G0 + 24 release + 87 checker = 300 PASS**, без skipped suites;
   **319 C# grammar files / 0 errors**, **137 Harmony declarations / 0 missing**; генераторы не изменили build inputs.
   Package/native-metrics unit fixtures — временная синтетика, не реальные DLL/PCK/passports/runs.
-- **CI на 6c не покрывает** последующие double-buffer helper, package/matrix/metrics tools и новые диагностические поля.
-  Их отдельный hosted checkpoint будет записан только после фактического исполнения. Core/xUnit не запускает Godot hooks.
+- Source snapshot на 492 успешно собран/связан с тем же input hash: **1947 files / 80430384 bytes**, docs links/plan согласованы.
+  Это только чтение Git source, **не** реальный ZIP/DLL/PCK. Core/xUnit не запускает Godot hooks. CI содержит служебные
+  предупреждения Actions v4/Node 20→24 и смены runner image; это не compiler/analyzer warnings полного мода.
+- После 492 дополнительно закрыта привязка **bytes**, а не имени документов требований: `source_sha256` для plan/checklist/
+  combat-passport сверяется с archive source и requirements digest. Локально на input
+  **`30fd08a901ccb755f6274c68c1a283a829e12d390fa05705936b89e23391ba27`** прошли снова **33/33**, теперь
+  **151 sim + 38 G0 + 25 release + 87 checker = 301 PASS**. C#-код не менялся; отдельный CI этой финальной защиты запускается.
+  Числа CI 492 не приписываются автоматически новому package-коду.
 
 ## Б3.1. Собственные материалы, исходники и осмысленный fallback
 
@@ -82,8 +90,12 @@ Compact-toggle переукладывает UI без удаления/прим�
 против 1480 B у старого списка. Результат сохранён, не скрыт за быстрым idle. Поэтому следующий код вводит
 `InvalidatedListView<T>`: два переиспользуемых списка, rebuild только inactive buffer, очистка старых references после swap/exit,
 исключение не публикует partial, Reset не принимает продолжение старого владельца. Borrowed view действителен до следующего
-refresh/reset, не хранится как immutable snapshot. 8 новых xUnit cases подготовлены для настоящего helper.
-Benchmark теперь линкует **тот же production helper**, pin проверяет оба cache sources; его новые цифры не выдуманы заранее.
+refresh/reset, не хранится как immutable snapshot. **8 новых xUnit cases прошли** в составе 877/877.
+Benchmark линкует **тот же production helper**, pin проверяет оба cache sources. На 492 stress baseline → candidate:
+**5.975 → 1.384 ms**, **1480 → 2960 B**, 60000 → 12004 builds; idle **11.281 → .199 ms**, 1480 → 1480 B.
+2960 B включают первоначальное заполнение обоих буферов (у baseline один); они одинаковы при 204/500/12004 rebuilds.
+GC counts 0 и exact synthetic view equality true во всех workloads. Это не нулевые allocations native UI и не FPS.
+Времена сравниваются только попарно внутри одного CI runner, не между 6c/492 jobs.
 
 `str_metrics` schema 2: до 1024 последних frame/reward/trait samples, allocation/GC/node/memory deltas, CPU/GPU/runtime
 и паспорт. OFF замораживает sample. Passport дополнен реальным run nonce, role/local Net ID, vsync/refresh Hz/frame cap.

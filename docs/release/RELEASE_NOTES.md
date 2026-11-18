@@ -29,13 +29,20 @@
 
 ## Что реально проверено, а что нет
 
-Core CI на **`6c1234da4f85db0ab447c1cbddd7c2d5288df0aa`**: **869/869** и пять успешных jobs.
-Это не semantic mod build. Отдельно исполнены 28 C# cache microbenchmark trials (5×24 powers, 12000 условных кадров,
-7 повторений на workload). У **той версии** меньше collect/sort в idle, но выделения памяти при изменениях выше,
-чем у старого переиспользуемого списка: до 3 073 792 B в stress. Это послужило основанием для последующего double-buffer
-исправления, а не замером нового helper. Ни один из этих C# результатов не является Godot/FPS/доказательством улучшения
-native GC; точные source checkpoints и границы — в evidence/отчёте Б3.
-Последующие исходные checkpoints и новые проверки указываются отдельно, не приписываются этому SHA.
+На **`49288c96ed171c01b7197777ace9c2892392261c`** [CI 44275682452](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44275682452):
+**877/877 Core** и пять успешных jobs, включая 24 release contracts. Локально — 33 проверки / 300 Python unit PASS;
+C# grammar 319/0, Harmony declarations 137/0. Это не semantic mod build.
+
+На том же 492 реально исполнены и strict-verified **28 C# cache trials** (5×24 powers, 12000 условных кадров,
+7 повторений/workload). Внутри этого runner stress baseline → candidate: **5.975 → 1.384 ms**, **1480 → 2960 B**,
+60000 → 12004 builds; idle **11.281 → .199 ms**, **1480 → 1480 B**. Дополнительные 1480 B — начальная ёмкость
+второго буфера в измеренном workload, не новые List/ToArray на каждый rebuild и не нулевые allocations всей игры.
+
+Предыдущий `6c1234d` (869/869) сохранён отдельно: старый List+ToArray builder выделял до **3 073 792 B** в stress.
+Его regression стала основанием для исправления. Тайминги разных CI jobs не сравниваются как одна hardware session;
+в обоих запусках baseline/candidate измерялись попарно. Это **не** Godot/FPS/доказательство улучшения native GC.
+Точные SHA, raw trials, hashes/границы и source-only snapshot receipt — в [отчёте Б3](../review/stage-three-quality-implementation-2026-11-18.md).
+Последующие source/pair changes требуют отдельного подтверждения, не наследуют эти PASS автоматически.
 
 ## Открытые выпускные ограничения
 

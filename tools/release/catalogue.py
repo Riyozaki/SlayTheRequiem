@@ -44,12 +44,15 @@ def bosses():
 
 
 def requirements():
-    cases = []
+    cases, source_hashes = [], {}
 
     def add(ident, category, expected, *, context=None, clients=1, evidence=None, source=None):
+        source = source or "docs/plan/next-playable-release-2026-11-18.md"
+        if source not in source_hashes:
+            source_hashes[source] = hashlib.sha256((ROOT / source).read_bytes()).hexdigest()
         cases.append(dict(id=ident, category=category, expected=expected, context=context or {},
                           minimum_clients=clients, evidence=evidence or (["native_log"] if clients else ["review"]),
-                          source=source or "docs/plan/next-playable-release-2026-11-18.md"))
+                          source=source, source_sha256=source_hashes[source]))
 
     # Preserve ALL previously promised data/UI/failure cases instead of replacing them with a short smoke list.
     for line in (ROOT / REGRESSION).read_text(encoding="utf-8").splitlines():

@@ -10,6 +10,7 @@
       "id": "ALCHEMY-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -23,6 +24,7 @@
       "id": "ART-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -36,6 +38,7 @@
       "id": "ART-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -51,6 +54,7 @@
       "id": "BALANCE-Ironclad-01",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -66,6 +70,7 @@
       "id": "BALANCE-Ironclad-02",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -81,6 +86,7 @@
       "id": "BALANCE-Ironclad-03",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -96,6 +102,7 @@
       "id": "BALANCE-Ironclad-04",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -111,6 +118,7 @@
       "id": "BALANCE-Ironclad-05",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -126,6 +134,7 @@
       "id": "BALANCE-Ironclad-06",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -141,6 +150,7 @@
       "id": "BALANCE-Ironclad-07",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -156,6 +166,7 @@
       "id": "BALANCE-Ironclad-08",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -171,6 +182,7 @@
       "id": "BALANCE-Ironclad-09",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -186,6 +198,7 @@
       "id": "BALANCE-Ironclad-10",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -201,6 +214,7 @@
       "id": "BALANCE-Regent-01",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -216,6 +230,7 @@
       "id": "BALANCE-Regent-02",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -231,6 +246,7 @@
       "id": "BALANCE-Regent-03",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -246,6 +262,7 @@
       "id": "BALANCE-Regent-04",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -261,6 +278,7 @@
       "id": "BALANCE-Regent-05",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -276,6 +294,7 @@
       "id": "BALANCE-Regent-06",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -291,6 +310,7 @@
       "id": "BALANCE-Regent-07",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -306,6 +326,7 @@
       "id": "BALANCE-Regent-08",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -321,6 +342,7 @@
       "id": "BALANCE-Regent-09",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -336,6 +358,7 @@
       "id": "BALANCE-Regent-10",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -351,6 +374,7 @@
       "id": "BALANCE-Silent-01",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -366,6 +390,7 @@
       "id": "BALANCE-Silent-02",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -381,6 +406,7 @@
       "id": "BALANCE-Silent-03",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -396,6 +422,7 @@
       "id": "BALANCE-Silent-04",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -411,6 +438,7 @@
       "id": "BALANCE-Silent-05",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -426,6 +454,7 @@
       "id": "BALANCE-Silent-06",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -441,6 +470,7 @@
       "id": "BALANCE-Silent-07",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -456,6 +486,7 @@
       "id": "BALANCE-Silent-08",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -471,6 +502,7 @@
       "id": "BALANCE-Silent-09",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -486,6 +518,7 @@
       "id": "BALANCE-Silent-10",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -502,6 +535,7 @@
       "id": "BETA-A1-Ironclad-1",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -518,6 +552,7 @@
       "id": "BETA-A1-Ironclad-2",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -534,6 +569,7 @@
       "id": "BETA-A1-Ironclad-3",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -550,6 +586,7 @@
       "id": "BETA-A1-Regent-1",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -566,6 +603,7 @@
       "id": "BETA-A1-Regent-2",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -582,6 +620,7 @@
       "id": "BETA-A1-Regent-3",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -598,6 +637,7 @@
       "id": "BETA-A1-Silent-1",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -614,6 +654,7 @@
       "id": "BETA-A1-Silent-2",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -630,6 +671,7 @@
       "id": "BETA-A1-Silent-3",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -642,6 +684,7 @@
       "id": "BUILD-01",
       "minimum_clients": 0,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -654,6 +697,7 @@
       "id": "BUILD-02",
       "minimum_clients": 0,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -666,6 +710,7 @@
       "id": "BUILD-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -678,6 +723,7 @@
       "id": "BUILD-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -690,6 +736,7 @@
       "id": "BUILD-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -705,6 +752,7 @@
       "id": "BUILD-DIRECTION-plate_shield",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -720,6 +768,7 @@
       "id": "BUILD-DIRECTION-plate_voice",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -735,6 +784,7 @@
       "id": "BUILD-DIRECTION-plate_weapon",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -750,6 +800,7 @@
       "id": "BUILD-DIRECTION-regent_elements",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -765,6 +816,7 @@
       "id": "BUILD-DIRECTION-regent_mana",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -780,6 +832,7 @@
       "id": "BUILD-DIRECTION-regent_summons",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -795,6 +848,7 @@
       "id": "BUILD-DIRECTION-silent_hunt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -810,6 +864,7 @@
       "id": "BUILD-DIRECTION-silent_poison",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -825,6 +880,7 @@
       "id": "BUILD-DIRECTION-silent_stealth",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -837,6 +893,7 @@
       "id": "CAMP-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -849,6 +906,7 @@
       "id": "CARD-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -861,6 +919,7 @@
       "id": "CARD-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -873,6 +932,7 @@
       "id": "CARD-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -885,6 +945,7 @@
       "id": "CARD-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -897,6 +958,7 @@
       "id": "CARD-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -909,6 +971,7 @@
       "id": "CARD-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -921,6 +984,7 @@
       "id": "CARD-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -933,6 +997,7 @@
       "id": "CARD-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -945,6 +1010,7 @@
       "id": "CARD-09",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -957,6 +1023,7 @@
       "id": "CARD-10",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -969,6 +1036,7 @@
       "id": "CARD-11",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -981,6 +1049,7 @@
       "id": "CARD-12",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -993,6 +1062,7 @@
       "id": "CARD-13",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1005,6 +1075,7 @@
       "id": "COOP-01",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1017,6 +1088,7 @@
       "id": "COOP-02",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1029,6 +1101,7 @@
       "id": "COOP-03",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1041,6 +1114,7 @@
       "id": "COOP-04",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1053,6 +1127,7 @@
       "id": "COOP-05",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1065,6 +1140,7 @@
       "id": "COOP-06",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1077,6 +1153,7 @@
       "id": "COOP-07",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1093,6 +1170,7 @@
       "id": "COOP-FULL-FIVE-ACTS",
       "minimum_clients": 2,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1109,6 +1187,7 @@
       "id": "CYCLES-act_doors",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1125,6 +1204,7 @@
       "id": "CYCLES-camp",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1141,6 +1221,7 @@
       "id": "CYCLES-card_rewards",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1157,6 +1238,7 @@
       "id": "CYCLES-chest",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1173,6 +1255,7 @@
       "id": "CYCLES-hero_creation",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1189,6 +1272,7 @@
       "id": "CYCLES-hero_sheet",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1205,6 +1289,7 @@
       "id": "CYCLES-shop",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1217,6 +1302,7 @@
       "id": "DAMAGE-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1229,6 +1315,7 @@
       "id": "DAMAGE-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1241,6 +1328,7 @@
       "id": "DAMAGE-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1253,6 +1341,7 @@
       "id": "DAMAGE-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1265,6 +1354,7 @@
       "id": "DAMAGE-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1277,6 +1367,7 @@
       "id": "DAMAGE-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1289,6 +1380,7 @@
       "id": "DAMAGE-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1301,6 +1393,7 @@
       "id": "DAMAGE-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1313,6 +1406,7 @@
       "id": "DAMAGE-09",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1325,6 +1419,7 @@
       "id": "DAMAGE-10",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -1343,6 +1438,7 @@
       "id": "DISPLAY-1080-100-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1361,6 +1457,7 @@
       "id": "DISPLAY-1080-100-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1379,6 +1476,7 @@
       "id": "DISPLAY-1080-100-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1397,6 +1495,7 @@
       "id": "DISPLAY-1080-100-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1415,6 +1514,7 @@
       "id": "DISPLAY-1080-125-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1433,6 +1533,7 @@
       "id": "DISPLAY-1080-125-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1451,6 +1552,7 @@
       "id": "DISPLAY-1080-125-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1469,6 +1571,7 @@
       "id": "DISPLAY-1080-125-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1487,6 +1590,7 @@
       "id": "DISPLAY-1440-100-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1505,6 +1609,7 @@
       "id": "DISPLAY-1440-100-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1523,6 +1628,7 @@
       "id": "DISPLAY-1440-100-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1541,6 +1647,7 @@
       "id": "DISPLAY-1440-100-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1559,6 +1666,7 @@
       "id": "DISPLAY-1440-125-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1577,6 +1685,7 @@
       "id": "DISPLAY-1440-125-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1595,6 +1704,7 @@
       "id": "DISPLAY-1440-125-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1613,6 +1723,7 @@
       "id": "DISPLAY-1440-125-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1631,6 +1742,7 @@
       "id": "DISPLAY-720-100-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1649,6 +1761,7 @@
       "id": "DISPLAY-720-100-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1667,6 +1780,7 @@
       "id": "DISPLAY-720-100-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1685,6 +1799,7 @@
       "id": "DISPLAY-720-100-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1703,6 +1818,7 @@
       "id": "DISPLAY-720-125-eng-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1721,6 +1837,7 @@
       "id": "DISPLAY-720-125-eng-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1739,6 +1856,7 @@
       "id": "DISPLAY-720-125-rus-gamepad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1757,6 +1875,7 @@
       "id": "DISPLAY-720-125-rus-keyboard",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -1771,6 +1890,7 @@
       "id": "ENCOUNTER-ArchmageSimulacrum",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1785,6 +1905,7 @@
       "id": "ENCOUNTER-AstrolabeKeeper",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1799,6 +1920,7 @@
       "id": "ENCOUNTER-AutomatonArchitect",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1813,6 +1935,7 @@
       "id": "ENCOUNTER-BarrowReaper",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1827,6 +1950,7 @@
       "id": "ENCOUNTER-BarrowWailer",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1841,6 +1965,7 @@
       "id": "ENCOUNTER-BlackWanderer",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1855,6 +1980,7 @@
       "id": "ENCOUNTER-BloodCourtLord",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1869,6 +1995,7 @@
       "id": "ENCOUNTER-BoilerWyrm",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1883,6 +2010,7 @@
       "id": "ENCOUNTER-BoneFrostWyrm",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1897,6 +2025,7 @@
       "id": "ENCOUNTER-ChaliceHierophant",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1911,6 +2040,7 @@
       "id": "ENCOUNTER-ClockworkColossus",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1925,6 +2055,7 @@
       "id": "ENCOUNTER-CrimsonCountess",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1939,6 +2070,7 @@
       "id": "ENCOUNTER-DeepMasterSmith",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1953,6 +2085,7 @@
       "id": "ENCOUNTER-EchoKnight",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1967,6 +2100,7 @@
       "id": "ENCOUNTER-EclipseWarden",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1981,6 +2115,7 @@
       "id": "ENCOUNTER-FirstSummoner",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -1995,6 +2130,7 @@
       "id": "ENCOUNTER-GatebreakerEnvoy",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -2009,6 +2145,7 @@
       "id": "ENCOUNTER-KingUnderBarrow",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -2023,6 +2160,7 @@
       "id": "ENCOUNTER-LeyWyrm",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -2037,6 +2175,7 @@
       "id": "ENCOUNTER-NamelessShadow",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -2051,6 +2190,7 @@
       "id": "ENCOUNTER-WorldEater",
       "minimum_clients": 1,
       "source": "docs/review/stage-two-combat-passports-2026-11-18.md",
+      "source_sha256": "46a10eff72e7623e649456610764795c7ab159f8c34fecb8f2d3e99520a7df71",
       "status": "NOT_RUN"
     },
     {
@@ -2063,6 +2203,7 @@
       "id": "ENEMY-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2075,6 +2216,7 @@
       "id": "ENEMY-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2087,6 +2229,7 @@
       "id": "ENEMY-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2099,6 +2242,7 @@
       "id": "ENEMY-04",
       "minimum_clients": 2,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2111,6 +2255,7 @@
       "id": "ENEMY-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2123,6 +2268,7 @@
       "id": "ENEMY-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2135,6 +2281,7 @@
       "id": "ENEMY-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2147,6 +2294,7 @@
       "id": "FINAL-AUTOMATION",
       "minimum_clients": 0,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2159,6 +2307,7 @@
       "id": "FINAL-BETA",
       "minimum_clients": 0,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2171,6 +2320,7 @@
       "id": "FINAL-BLOCKERS",
       "minimum_clients": 0,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2183,6 +2333,7 @@
       "id": "FINAL-PACKAGE",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2195,6 +2346,7 @@
       "id": "FINAL-RIGHTS",
       "minimum_clients": 0,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2207,6 +2359,7 @@
       "id": "FINAL-WARNINGS",
       "minimum_clients": 0,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2221,6 +2374,7 @@
       "id": "FORM-Clockwork",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2235,6 +2389,7 @@
       "id": "FORM-DarkPact",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2249,6 +2404,7 @@
       "id": "FORM-Herald",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2263,6 +2419,7 @@
       "id": "FORM-Lich",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2277,6 +2434,7 @@
       "id": "FORM-Righteous",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2291,6 +2449,7 @@
       "id": "FORM-Vampire",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2305,6 +2464,7 @@
       "id": "FORM-Werewolf",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2328,6 +2488,7 @@
       "id": "FULL-Ironclad-ClockworkDepths-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2351,6 +2512,7 @@
       "id": "FULL-Ironclad-ClockworkDepths-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2374,6 +2536,7 @@
       "id": "FULL-Ironclad-FrozenBarrows-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2397,6 +2560,7 @@
       "id": "FULL-Ironclad-FrozenBarrows-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2420,6 +2584,7 @@
       "id": "FULL-Regent-ClockworkDepths-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2443,6 +2608,7 @@
       "id": "FULL-Regent-ClockworkDepths-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2466,6 +2632,7 @@
       "id": "FULL-Regent-FrozenBarrows-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2489,6 +2656,7 @@
       "id": "FULL-Regent-FrozenBarrows-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2512,6 +2680,7 @@
       "id": "FULL-Silent-ClockworkDepths-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2535,6 +2704,7 @@
       "id": "FULL-Silent-ClockworkDepths-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2558,6 +2728,7 @@
       "id": "FULL-Silent-FrozenBarrows-BloodCourt",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2581,6 +2752,7 @@
       "id": "FULL-Silent-FrozenBarrows-StarTower",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2593,6 +2765,7 @@
       "id": "MAP-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2605,6 +2778,7 @@
       "id": "MAP-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2617,6 +2791,7 @@
       "id": "MAP-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2629,6 +2804,7 @@
       "id": "MEMORY-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2641,6 +2817,7 @@
       "id": "MEMORY-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2653,6 +2830,7 @@
       "id": "MEMORY-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2665,6 +2843,7 @@
       "id": "MEMORY-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2679,6 +2858,7 @@
       "id": "PATH-Assassin",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2693,6 +2873,7 @@
       "id": "PATH-Barbarian",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2707,6 +2888,7 @@
       "id": "PATH-Battlemage",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2721,6 +2903,7 @@
       "id": "PATH-BlackKnight",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2735,6 +2918,7 @@
       "id": "PATH-Blightbringer",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2749,6 +2933,7 @@
       "id": "PATH-Champion",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2763,6 +2948,7 @@
       "id": "PATH-ElementLord",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2777,6 +2963,7 @@
       "id": "PATH-Medium",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2791,6 +2978,7 @@
       "id": "PATH-Monk",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2805,6 +2993,7 @@
       "id": "PATH-MysticArcher",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2819,6 +3008,7 @@
       "id": "PATH-Paladin",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2833,6 +3023,7 @@
       "id": "PATH-Reborn",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2847,6 +3038,7 @@
       "id": "PATH-Reflector",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2862,6 +3054,7 @@
       "id": "PERF-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2875,6 +3068,7 @@
       "id": "PERF-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2888,6 +3082,7 @@
       "id": "PERF-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2903,6 +3098,7 @@
       "id": "PERF-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -2918,6 +3114,7 @@
       "id": "PRESENTATION-all_off",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2933,6 +3130,7 @@
       "id": "PRESENTATION-compact_toggle",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2948,6 +3146,7 @@
       "id": "PRESENTATION-reduced_motion",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2963,6 +3162,7 @@
       "id": "PRESENTATION-sound_off",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2978,6 +3178,7 @@
       "id": "PRESENTATION-vfx_off",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -2991,6 +3192,7 @@
       "id": "REWARD-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3004,6 +3206,7 @@
       "id": "REWARD-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3017,6 +3220,7 @@
       "id": "REWARD-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3030,6 +3234,7 @@
       "id": "REWARD-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3043,6 +3248,7 @@
       "id": "REWARD-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3056,6 +3262,7 @@
       "id": "REWARD-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3069,6 +3276,7 @@
       "id": "REWARD-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3082,6 +3290,7 @@
       "id": "REWARD-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3095,6 +3304,7 @@
       "id": "REWARD-09",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3107,6 +3317,7 @@
       "id": "SAVE-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3119,6 +3330,7 @@
       "id": "SAVE-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3131,6 +3343,7 @@
       "id": "SAVE-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3143,6 +3356,7 @@
       "id": "SAVE-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3155,6 +3369,7 @@
       "id": "SAVE-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3167,6 +3382,7 @@
       "id": "SHOP-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3179,6 +3395,7 @@
       "id": "SHOP-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3191,6 +3408,7 @@
       "id": "SHOP-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3203,6 +3421,7 @@
       "id": "SHOP-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3215,6 +3434,7 @@
       "id": "SHOP-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3227,6 +3447,7 @@
       "id": "SHOP-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3248,6 +3469,7 @@
       "id": "SHORT-Ironclad",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3269,6 +3491,7 @@
       "id": "SHORT-Regent",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3290,6 +3513,7 @@
       "id": "SHORT-Silent",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3302,6 +3526,7 @@
       "id": "START-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3314,6 +3539,7 @@
       "id": "START-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3326,6 +3552,7 @@
       "id": "START-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3338,6 +3565,7 @@
       "id": "START-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3350,6 +3578,7 @@
       "id": "START-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3362,6 +3591,7 @@
       "id": "START-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3374,6 +3604,7 @@
       "id": "START-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3386,6 +3617,7 @@
       "id": "START-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3398,6 +3630,7 @@
       "id": "START-09",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3410,6 +3643,7 @@
       "id": "STORE-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3422,6 +3656,7 @@
       "id": "STORE-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3434,6 +3669,7 @@
       "id": "STORE-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3446,6 +3682,7 @@
       "id": "STORE-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3458,6 +3695,7 @@
       "id": "STORE-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3470,6 +3708,7 @@
       "id": "STORE-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3482,6 +3721,7 @@
       "id": "STORE-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3494,6 +3734,7 @@
       "id": "STORE-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3506,6 +3747,7 @@
       "id": "STORE-09",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3519,6 +3761,7 @@
       "id": "UI-01",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3532,6 +3775,7 @@
       "id": "UI-02",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3545,6 +3789,7 @@
       "id": "UI-03",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3558,6 +3803,7 @@
       "id": "UI-04",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3571,6 +3817,7 @@
       "id": "UI-05",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3584,6 +3831,7 @@
       "id": "UI-06",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3597,6 +3845,7 @@
       "id": "UI-07",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3610,6 +3859,7 @@
       "id": "UI-08",
       "minimum_clients": 1,
       "source": "docs/review/regression-checklist-2026-11-18.md",
+      "source_sha256": "2fc8631d1d660ff74934e281cfea70dc6f7a1ced0c0617a215c209b629faf278",
       "status": "NOT_RUN"
     },
     {
@@ -3624,6 +3874,7 @@
       "id": "VARIANT-beast_alpha",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3638,6 +3889,7 @@
       "id": "VARIANT-beast_hunter",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3652,6 +3904,7 @@
       "id": "VARIANT-beast_stalker",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3666,6 +3919,7 @@
       "id": "VARIANT-clockwork_orbs",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3680,6 +3934,7 @@
       "id": "VARIANT-herald_three_stances",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3694,6 +3949,7 @@
       "id": "VARIANT-lich_necromancy",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     },
     {
@@ -3708,11 +3964,12 @@
       "id": "VARIANT-vampire_thirst_and_lord",
       "minimum_clients": 1,
       "source": "docs/plan/next-playable-release-2026-11-18.md",
+      "source_sha256": "944da1d3d67025ec300d39588c57068db5d1dd93b544cc4faf9edb21ec4e4a3e",
       "status": "NOT_RUN"
     }
   ],
   "note": "All NOT_RUN. Manual/visual/two-client acceptance only at the final end. No accepted build or release is declared.",
   "producer": "final-acceptance-plan-NOT-executed",
-  "requirements_sha256": "e83bc7d68b122cf813148fe7d52a1152c0258fb7024bf2e40e106c37f9faa2f5",
+  "requirements_sha256": "7c7594fed8fee8f628cae61bdf6a8864833a7fc0db2f2dbb16e6015140b02033",
   "schema": 1
 }

@@ -8,7 +8,9 @@ and two-client runs are performed only at the final end, per the owner. Source/C
 
 - `catalogue.py`: deterministic requirements from the full regression checklist, 21 encounter classes, forms/Paths,
   nine build recipes, 12 full solo routes, separate short routes, co-op, display, window cycles and final reviews.
-  `requirements_sha256` binds documentary changes separately from the build input hash. No skip/waiver closes a case.
+  Each case also hashes the actual referenced plan/checklist/combat-passport bytes (`source_sha256`), not just a filename.
+  `requirements_sha256` binds documentary changes separately from the build input hash; archive verification rechecks
+  these hashes against its frozen documents. A document-only phase change also reopens acceptance. No skip/waiver closes a case.
 - `package_release.py candidate`: checks the real G0 bundle, clean checkout/source hash, and its committed source tree.
   Packages only matched mod DLL/PCK/manifest and a nested-allowlisted public build passport, installation docs and frozen
   sources including editable art. Historical review evidence/contact sheets are deliberately not shipped; no game DLLs,
