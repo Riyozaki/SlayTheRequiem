@@ -20,7 +20,16 @@ jobs:
         with:
           dotnet-version: 9.0.x
       - name: dotnet test
-        run: dotnet test mod/SlayTheRequiem.Tests --logger "console;verbosity=normal"
+        shell: bash
+        run: |
+          set +e
+          dotnet test mod/SlayTheRequiem.Tests --logger "console;verbosity=normal" --logger "trx;LogFileName=core.trx" --results-directory .arena-ci/test-results > core-tests.log 2>&1
+          result=$?
+          cat core-tests.log
+          if [ "$result" != 0 ]; then
+            python3 tools/ci/report_test_failures.py core-tests.log --trx .arena-ci/test-results/core.trx
+          fi
+          exit "$result"
 
   sim:
     name: Rules sim · Python
@@ -107,4 +116,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: G0 tool contract tests
-        run: python -m unittest discover -s tools/g0 -v
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tools/g0 -v > build-contracts.log 2>&1
+          result=$?
+          cat build-contracts.log
+          if [ "$result" != 0 ]; then python tools/ci/report_test_failures.py build-contracts.log; fi
+          exit "$result"
