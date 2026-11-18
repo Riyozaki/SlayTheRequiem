@@ -146,6 +146,7 @@ public static partial class IntegrityRegression
             ("path-sign-late-insert-no-second-obtain", PathSignLateInsert),
             ("raw-native-read-preflight-no-repair", RawSavePreflight),
             ("boon-hp-writeahead-save-and-revoke", BoonHpWriteAhead),
+            ("creation-refused-lease-same-room-retry", CreationLeaseRetry),
             ("creation-gold-receipt-not-replayed", CreationGold),
             ("creation-common-potion-exact-source", CreationPotion),
             ("creation-full-belt-bonus-only-retry", CreationFullBelt),
@@ -1354,12 +1355,15 @@ public static partial class IntegrityRegression
 
     private static Task WireRoundTrip()
     {
-        var protocol = new HeroCreationProtocolMessage();
-        var protocolWriter = new PacketWriter(); protocol.Serialize(protocolWriter);
-        var protocolReader = new PacketReader(); protocolReader.Reset(protocolWriter.Buffer);
-        var protocolCopy = new HeroCreationProtocolMessage(); protocolCopy.Deserialize(protocolReader);
-        Require(protocolCopy.protocol == StartupState.Protocol && protocolReader.BitPosition == protocolWriter.BitPosition,
-            "Hero creation ready protocol changed on the native wire");
+        foreach (var control in new[] { StartupState.LobbyQuery, StartupState.LobbyOffer, StartupState.LobbyAgreement })
+        {
+            var protocol = new RunSettingsMessage { data = control };
+            var protocolWriter = new PacketWriter(); protocol.Serialize(protocolWriter);
+            var protocolReader = new PacketReader(); protocolReader.Reset(protocolWriter.Buffer);
+            var protocolCopy = new RunSettingsMessage(); protocolCopy.Deserialize(protocolReader);
+            Require(protocolCopy.data == control && protocolReader.BitPosition == protocolWriter.BitPosition,
+                "Existing settings-string envelope changed during startup negotiation");
+        }
         var run = OperationIdentity.RunKey("seed", "saved-nonce", ulong.MaxValue);
         var request = new ShopRequest(run, OperationIdentity.Id(run, 17), 17, OperationIdentity.Hash("before"), ShopAction.Sell, -4, 9, "r:19,r:20");
         var message = new ShopActionMessage { location = new RunLocation(2, null, 1), request = request };

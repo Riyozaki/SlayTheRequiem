@@ -50,6 +50,22 @@ public static partial class IntegrityRegression
         HeroRecord.Of(grimoire.Owner)!.RecordNativeSchools();
     }
 
+    private static async Task CreationLeaseRetry()
+    {
+        var owner = Fixture(); var grimoire = ConfirmStart(owner, StartingBonus.Gold);
+        await ApplyConfirmed(grimoire); AcknowledgeStart(grimoire);
+        var gate = InventoryGate.For(owner);
+        var room = new MegaCrit.Sts2.Core.Rooms.MapRoom();
+        gate.Blocked = true;
+        await grimoire.AfterRoomEntered(room);
+        gate.Blocked = false; // fixture-only refusal; no uncertain native mutation to recover
+        using var held = await gate.Enter() ?? throw new InvalidOperationException("Fixture lease unavailable");
+        var retry = grimoire.AfterRoomEntered(room);
+        Require(!retry.IsCompleted, "Refused lease incorrectly suppressed the next same-room resume");
+        held.Dispose();
+        await retry;
+    }
+
     private static async Task CreationGold()
     {
         var owner = Fixture(); var hp = owner.Creature.MaxHp; var gold = owner.Gold;

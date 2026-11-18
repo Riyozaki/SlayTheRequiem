@@ -505,6 +505,31 @@ public class IdentityAndProgressionRulesTests
 public class HeroCreationPeerProtocolTests
 {
     [Fact]
+    public void Lobby_controls_reuse_a_known_string_envelope_not_a_new_packet_type_or_saved_rules()
+    {
+        var controls = new[] { StartupState.LobbyQuery, StartupState.LobbyOffer, StartupState.LobbyAgreement };
+        Assert.Equal(3, controls.Distinct().Count());
+        Assert.All(controls, value =>
+        {
+            Assert.StartsWith(StartupState.LobbyPrefix, value);
+            Assert.Null(RunSettingsData.Decode(value));
+            Assert.DoesNotContain("v=", value);
+        });
+        Assert.EndsWith("/" + StartupState.Protocol, StartupState.LobbyOffer);
+        Assert.EndsWith("/" + StartupState.Protocol, StartupState.LobbyAgreement);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void Client_cannot_ready_for_an_old_unknown_or_future_host(int protocol)
+    {
+        Assert.Throws<InvalidOperationException>(() => StartupState.RequireHost(protocol));
+        StartupState.RequireHost(StartupState.Protocol);
+    }
+
+    [Fact]
     public void New_lobbies_require_explicit_current_rules_but_old_saved_rules_stay_readable()
     {
         var legacy = RunSettingsData.Decode("v=1;hp=95")!;

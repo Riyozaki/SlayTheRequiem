@@ -161,7 +161,8 @@ public sealed class ActDoorMessage : ICustomMessage
 }
 
 /// <summary>
-/// Хост → клиенты в лобби: снимок игровых настроек забега (ревью F-03, <see cref="Config.RunSettings"/>). Отправляется до
+/// Existing string envelope: host settings and authenticated startup capability negotiation in the lobby.
+/// Хост → клиенты: снимок игровых настроек забега (ревью F-03, <see cref="Config.RunSettings"/>). Отправляется до
 /// <c>LobbyBeginRunMessage</c> и обрабатывается сразу (без буфера): клиент должен знать правила до генерации актов.
 /// </summary>
 public sealed class RunSettingsMessage : ICustomMessage
@@ -176,17 +177,6 @@ public sealed class RunSettingsMessage : ICustomMessage
     public void Deserialize(PacketReader reader) => data = reader.ReadString();
 
     public void HandleMessage(ulong senderId) => Config.RunSettings.OnHostSettings(data, senderId);
-}
-
-/// <summary>Client → current lobby host before Ready; separate type so legacy personal-choice packets cannot be misread as agreement.</summary>
-public sealed class HeroCreationProtocolMessage : ICustomMessage
-{
-    public int protocol = Core.StartupState.Protocol;
-    public bool ShouldBroadcast => false;
-    public bool ShouldBuffer => false;
-    public void Serialize(PacketWriter writer) => writer.WriteInt(protocol, 8);
-    public void Deserialize(PacketReader reader) => protocol = reader.ReadInt(8);
-    public void HandleMessage(ulong senderId) => Config.RunSettings.OnStartupProtocol(senderId, protocol);
 }
 
 /// <summary>Клиент → хост в лобби: личный выбор (происхождения трёх героев и предыстория) — при нажатии «Готов».</summary>

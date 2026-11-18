@@ -35,6 +35,7 @@ public static class RunSettings
     private static RunSettingsData? _fromHost;
     private static readonly Dictionary<ulong, PersonalChoices> LobbyChoices = new();
     private static readonly Dictionary<ulong, int> LobbyStartupProtocols = new();
+    private static int _hostStartupProtocol;
     private static WeakReference<StartRunLobby>? _lobby;
     private static StartRunLobby? Lobby => _lobby != null && _lobby.TryGetTarget(out var lobby) ? lobby : null;
 
@@ -161,6 +162,7 @@ public static class RunSettings
                 // Starting with local rules would already desynchronize combat, before operation guards can help.
                 throw new InvalidOperationException("Requiem host settings/run identity missing; update the same mod version on all peers and restart the lobby");
             }
+            StartupState.RequireHost(_hostStartupProtocol);
             StartupState.RequireNewRules(_fromHost);
             _active = _fromHost;
         }
@@ -293,9 +295,29 @@ public static class RunSettings
     /// <summary>Клиент: снимок хоста (до сообщения о старте забега).</summary>
     public static void OnHostSettings(string code, ulong senderId)
     {
+        if (Lobby is { } hostLobby && hostLobby.NetService.Type == NetGameType.Host)
+        {
+            if (senderId == hostLobby.NetService.NetId || !hostLobby.Players.Any(p => p.id == senderId)) return;
+            if (code == StartupState.LobbyQuery) OfferStartupProtocol(hostLobby, senderId);
+            else if (code == StartupState.LobbyAgreement) OnStartupProtocol(senderId, StartupState.Protocol);
+            else if (code != null && code.StartsWith(StartupState.LobbyPrefix, StringComparison.Ordinal)) LobbyStartupProtocols.Remove(senderId);
+            return; // a client can never install rules on the host
+        }
         if (Lobby?.NetService is not INetClientGameService { NetClient: { } client } || senderId != client.HostNetId)
         {
             MainFile.Logger.Warn($"RunSettings: ignored non-host/out-of-lobby settings from {senderId}");
+            return;
+        }
+        if (code == StartupState.LobbyOffer)
+        {
+            _hostStartupProtocol = StartupState.Protocol;
+            CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyAgreement }, Lobby!.NetService);
+            return;
+        }
+        if (code != null && code.StartsWith(StartupState.LobbyPrefix, StringComparison.Ordinal))
+        {
+            _hostStartupProtocol = 0; _fromHost = null;
+            MainFile.Logger.Warn("RunSettings: incompatible host startup capability; use the same mod build");
             return;
         }
         _fromHost = null; // an invalid NEW host snapshot must not silently reuse a previous start attempt
@@ -304,10 +326,19 @@ public static class RunSettings
             MainFile.Logger.Warn($"RunSettings: invalid/missing run identity in host snapshot from {senderId}");
             return;
         }
-        try { StartupState.RequireNewRules(data); }
-        catch (FormatException e) { MainFile.Logger.Error($"RunSettings: host wizard protocol rejected: {e.Message}"); return; }
+        try { StartupState.RequireHost(_hostStartupProtocol); StartupState.RequireNewRules(data); }
+        catch (Exception e) when (e is FormatException or InvalidOperationException) { MainFile.Logger.Error($"RunSettings: host wizard protocol rejected: {e.Message}"); return; }
         _fromHost = data;
         MainFile.Logger.Info($"RunSettings: получен снимок хоста {code}");
+    }
+
+    private static void OfferStartupProtocol(StartRunLobby lobby, ulong peerId) =>
+        lobby.NetService.SendMessage(new CustomMessageWrapper { Message = new RunSettingsMessage { data = StartupState.LobbyOffer } }, peerId);
+
+    private static void RefuseStartup(string reason)
+    {
+        MainFile.Logger.Warn("RunSettings: startup refused: " + reason);
+        UI.NRequiemToast.Show(UI.RequiemUi.TipText("CREATION.protocolMismatch.title"));
     }
 
     /// <summary>Authenticated ready-time agreement; old/missing/future clients cannot start a different choice stream.</summary>
@@ -348,8 +379,17 @@ public static class RunSettings
             LobbyMessageBridge.Ensure(__instance.NetService);
             _lobby = new(__instance);
             _fromHost = null;
+            _hostStartupProtocol = 0;
             LobbyChoices.Clear(); // no choices/nonce from a previously cancelled lobby
             LobbyStartupProtocols.Clear();
+            __instance.PlayerConnected += player =>
+            {
+                if (!ReferenceEquals(Lobby, __instance)) return;
+                if (__instance.NetService.Type == NetGameType.Host && player.id != __instance.NetService.NetId)
+                    OfferStartupProtocol(__instance, player.id);
+                else if (__instance.NetService.Type == NetGameType.Client && player.id == __instance.NetService.NetId)
+                    CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyQuery }, __instance.NetService);
+            };
             __instance.PlayerDisconnected += player =>
             {
                 if (!ReferenceEquals(Lobby, __instance)) return;
@@ -364,7 +404,11 @@ public static class RunSettings
         [HarmonyPostfix]
         public static void Postfix(StartRunLobby __instance)
         {
-            if (ReferenceEquals(Lobby, __instance)) _lobby = null;
+            if (ReferenceEquals(Lobby, __instance))
+            {
+                _lobby = null; _hostStartupProtocol = 0;
+                LobbyChoices.Clear(); LobbyStartupProtocols.Clear();
+            }
         }
     }
 
@@ -377,10 +421,12 @@ public static class RunSettings
             AccessTools.FieldRefAccess<StartRunLobby, bool>("_isBeginningRun");
 
         [HarmonyPrefix]
-        public static void Prefix(StartRunLobby __instance)
+        public static bool Prefix(StartRunLobby __instance)
         {
-            if (__instance.NetService.Type != NetGameType.Host || IsBeginning(__instance)) return;
-            var data = BuildHostSnapshot(__instance);
+            if (__instance.NetService.Type != NetGameType.Host || IsBeginning(__instance)) return true;
+            RunSettingsData data;
+            try { data = BuildHostSnapshot(__instance); }
+            catch (InvalidOperationException e) { _fromHost = null; RefuseStartup(e.Message); return false; }
             _fromHost = data;
             try { CustomMessageWrapper.Send(new RunSettingsMessage { data = data.Encode() }, __instance.NetService); }
             catch (Exception e)
@@ -390,6 +436,7 @@ public static class RunSettings
                 MainFile.Logger.Error($"RunSettings: снимок не разослан, старт отменён: {e}");
                 throw; // fail before LobbyBeginRunMessage/local mutation, not a silent host-only start
             }
+            return true;
         }
     }
 
@@ -408,13 +455,19 @@ public static class RunSettings
     public static class ClientSendsChoices
     {
         [HarmonyPrefix]
-        public static void Prefix(StartRunLobby __instance, bool ready)
+        public static bool Prefix(StartRunLobby __instance, bool ready)
         {
-            if (!ready || __instance.NetService.Type != NetGameType.Client) return;
+            if (!ready || __instance.NetService.Type != NetGameType.Client) return true;
+            if (_hostStartupProtocol != StartupState.Protocol)
+            {
+                CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyQuery }, __instance.NetService);
+                RefuseStartup("No compatible host capability yet; ready again after all peers use the same build");
+                return false; // do not let an old host start before the modern client can reject its rules
+            }
             var c = LocalChoices();
             try
             {
-                CustomMessageWrapper.Send(new HeroCreationProtocolMessage { protocol = StartupState.Protocol }, __instance.NetService);
+                CustomMessageWrapper.Send(new RunSettingsMessage { data = StartupState.LobbyAgreement }, __instance.NetService);
                 CustomMessageWrapper.Send(new PersonalChoicesMessage
                 {
                     platebearer = c.PlatebearerOrigin, silent = c.SilentOrigin, regent = c.RegentOrigin, background = c.Background,
@@ -425,6 +478,7 @@ public static class RunSettings
                 MainFile.Logger.Error($"RunSettings: protocol/choices not sent; ready rejected: {e}");
                 throw;
             }
+            return true;
         }
     }
 
@@ -472,6 +526,7 @@ public static class RunSettings
         {
             _active = null;
             _fromHost = null;
+            _hostStartupProtocol = 0;
             LobbyStartupProtocols.Clear();
             SourceName = "menu (no run snapshot)";
             Debugging.RunDiagnostics.LaunchKind = "unknown";

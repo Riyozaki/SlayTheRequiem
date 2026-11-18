@@ -44,6 +44,8 @@ _CREATION = {
     "bonusRetry": ("Identity effects have already been applied once. Only the unconsumed starting bonus can change now.",
                    "Эффекты личности уже применены один раз. Сейчас можно изменить только ещё не полученный стартовый бонус."),
     "incompatible": ("Unavailable with your current form or oath.", "Недоступно при текущей форме или клятве."),
+    "protocolMismatch": ("Startup not agreed. All players need the same mod build; wait for the lobby check, then ready again.",
+                         "Старт не согласован. У всех должна быть одна сборка мода; дождитесь проверки лобби и снова нажмите «Готов»."),
     "identitySchool": ("Identity mastery: +1 {School}; this school counts as native while this identity is active.",
                        "Владение от личности: +1, {School}; пока эта личность активна, школа считается родной."),
     "schoolPreview": ("{School}: {Level}/5 · {Native}", "{School}: {Level}/5 · {Native}"),

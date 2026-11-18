@@ -346,5 +346,7 @@
   "SLAYTHEREQUIEM-CREATION.rebirthPreserved.title": "Skills, treatises and acquired loot retained. No starting gift repeated.",
   "SLAYTHEREQUIEM-CREATION.rebirthPreserved.description": "Skills, treatises and acquired loot retained. No starting gift repeated.",
   "SLAYTHEREQUIEM-CREATION.legacyRebirth.title": "Reborn is unavailable: this hero lacks a complete, source-accounted mastery/stat/identity snapshot, or an earlier operation is unresolved. No Path has been consumed and no refund guessed. Completed legacy saves retain their recorded values; use the matching build/checkpoint for an unfinished old start.",
-  "SLAYTHEREQUIEM-CREATION.legacyRebirth.description": "Reborn is unavailable: this hero lacks a complete, source-accounted mastery/stat/identity snapshot, or an earlier operation is unresolved. No Path has been consumed and no refund guessed. Completed legacy saves retain their recorded values; use the matching build/checkpoint for an unfinished old start."
+  "SLAYTHEREQUIEM-CREATION.legacyRebirth.description": "Reborn is unavailable: this hero lacks a complete, source-accounted mastery/stat/identity snapshot, or an earlier operation is unresolved. No Path has been consumed and no refund guessed. Completed legacy saves retain their recorded values; use the matching build/checkpoint for an unfinished old start.",
+  "SLAYTHEREQUIEM-CREATION.protocolMismatch.title": "Startup not agreed. All players need the same mod build; wait for the lobby check, then ready again.",
+  "SLAYTHEREQUIEM-CREATION.protocolMismatch.description": "Startup not agreed. All players need the same mod build; wait for the lobby check, then ready again."
 }

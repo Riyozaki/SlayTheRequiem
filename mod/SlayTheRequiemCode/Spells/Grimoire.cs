@@ -182,18 +182,19 @@ public sealed class Grimoire : RequiemRelic
     {
         if (_starting || ReferenceEquals(_processedRoom, room) || !RequiemMode.IsInSystem(Owner)) return;
         _starting = true;
-        _processedRoom = room;
+        var run = Owner.RunState;
+        var wasLive = ReferenceEquals(run, Net.RequiemNet.State);
         try
         {
             using var lease = await InventoryGate.For(Owner).Enter();
-            if (lease == null) return;
+            if (lease == null || wasLive && (!ReferenceEquals(run, Net.RequiemNet.State) || !ReferenceEquals(run.CurrentRoom, room))) return;
             var resumingRebirth = RebirthData.Length > 0 && HeroCreationPlan.Read(RebirthData).Stage != CreationStage.Complete;
             if (!StartingChoicesComplete) await Progression.HeroCreation.ResumeStart(this, lease);
             if (StartingChoicesComplete) await Progression.HeroCreation.ResumeRebirth(this, lease);
             if (StartingChoicesComplete && !resumingRebirth && Progression.HeroRecord.Of(Owner) is { } hero)
                 await hero.ResumePendingPaths(lease);
+            _processedRoom = room; // a refused lease is NOT a processed room; a same-room retry must still enter
         }
-        catch { _processedRoom = null; throw; }
         finally { _starting = false; }
     }
 
@@ -261,6 +262,7 @@ public static class StartupActBoundaryPatch
         if (runState.CurrentRoom is MegaCrit.Sts2.Core.Rooms.MapRoom room)
             foreach (var player in runState.Players)
             {
+                if (!ReferenceEquals(runState, Net.RequiemNet.State) || !ReferenceEquals(runState.CurrentRoom, room)) return;
                 if (!RequiemMode.IsInSystem(player)) continue;
                 if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
                 if (Mastery.GrimoireOf(player) is { } grimoire) await grimoire.AfterRoomEntered(room);
@@ -284,6 +286,7 @@ public static class HeroCreationCombatBoundaryPatch
         if (!ReferenceEquals(runState, Net.RequiemNet.State) || room is not MegaCrit.Sts2.Core.Rooms.CombatRoom) return;
         foreach (var player in runState.Players)
         {
+            if (!ReferenceEquals(runState, Net.RequiemNet.State) || !ReferenceEquals(runState.CurrentRoom, room)) return;
             if (!RequiemMode.IsInSystem(player)) continue;
             Progression.HeroRecord.Of(player)?.NoteRoomVisit(room); // preview the actual next-combat stamina pool
             if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
@@ -314,6 +317,7 @@ public static class HeroCreationRestoreBoundaryPatch
             || room is not MegaCrit.Sts2.Core.Rooms.MapRoom && !room.IsPreFinished) return;
         foreach (var player in runState.Players)
         {
+            if (!ReferenceEquals(runState, Net.RequiemNet.State) || !ReferenceEquals(runState.CurrentRoom, room)) return;
             if (!RequiemMode.IsInSystem(player)) continue;
             if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
             if (Mastery.GrimoireOf(player) is { } grimoire) await grimoire.AfterRoomEntered(room);

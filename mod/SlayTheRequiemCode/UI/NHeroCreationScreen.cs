@@ -19,6 +19,7 @@ public partial class NHeroCreationScreen : Control, IScreenContext
     public sealed record Choice(string Id, string Title, string Description = "", bool Enabled = true);
     private readonly TaskCompletionSource<int> _result = new();
     private readonly List<Button> _buttons = new();
+    private IRunState? _run;
     private bool _closing;
     public Control? DefaultFocusedControl => _buttons.FirstOrDefault(b => !b.Disabled);
 
@@ -26,6 +27,12 @@ public partial class NHeroCreationScreen : Control, IScreenContext
     {
         if (choices.Count == 0 || !choices.Any(c => c.Enabled) || choices.Select(c => c.Id).Distinct().Count() != choices.Count)
             throw new ArgumentException("A hero decision requires distinct, available choices", nameof(choices));
+        var run = owner.RunState;
+        void RequireCurrentRun()
+        {
+            if (!ReferenceEquals(run, Net.RequiemNet.State)) throw new OperationCanceledException("Hero decision belongs to an exited run");
+        }
+        RequireCurrentRun();
         var manager = RunManager.Instance;
         var synchronizer = manager.PlayerChoiceSynchronizer;
         var choiceId = synchronizer.ReserveChoiceId(owner); // same deterministic order on every peer
@@ -33,9 +40,11 @@ public partial class NHeroCreationScreen : Control, IScreenContext
         if (LocalContext.IsMe(owner) && manager.NetService.Type != NetGameType.Replay)
         {
             index = await ShowLocal(owner, heading, body, choices);
+            RequireCurrentRun(); // do not send an old choice through a new run's synchronizer after quit/load
             synchronizer.SyncLocalChoice(owner, choiceId, PlayerChoiceResult.FromIndex(index));
         }
         else index = (await synchronizer.WaitForRemoteChoice(owner, choiceId)).AsIndex();
+        RequireCurrentRun();
         if (index == -1) throw new OperationCanceledException("Hero creation UI closed; the saved draft is retained");
         if (index < 0 || index >= choices.Count || !choices[index].Enabled)
             throw new InvalidOperationException("Invalid synchronized hero creation choice; no default applied");
@@ -54,9 +63,10 @@ public partial class NHeroCreationScreen : Control, IScreenContext
             await container.ToSignal(tree.CreateTimer(0.1), SceneTreeTimer.SignalName.Timeout);
         }
         if (!IsInstanceValid(container) || !ReferenceEquals(owner.RunState, Net.RequiemNet.State)) return -1;
-        var screen = new NHeroCreationScreen { Name = "RequiemHeroCreation" };
+        var screen = new NHeroCreationScreen { Name = "RequiemHeroCreation", _run = owner.RunState };
         screen.Build(heading, body, choices);
         container.Add(screen);
+        if (!ReferenceEquals(container.OpenModal, screen)) { screen.QueueFree(); return -1; }
         return await screen._result.Task;
     }
 
@@ -125,6 +135,12 @@ public partial class NHeroCreationScreen : Control, IScreenContext
             enabled[i].FocusNeighborBottom = enabled[(i + 1) % enabled.Count].GetPath();
         }
         DefaultFocusedControl?.CallDeferred(Control.MethodName.GrabFocus);
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_closing && (!ReferenceEquals(_run, Net.RequiemNet.State)
+            || !ReferenceEquals(NModalContainer.Instance?.OpenModal, this))) Finish(-1);
     }
 
     public override void _UnhandledInput(InputEvent @event)
