@@ -405,3 +405,116 @@ public class AsyncBoundaryTests
         Assert.False(await AsyncTaskBoundary.Settle(() => [Task.FromResult(++count)], () => true));
     }
 }
+
+public class SavedOperationVersionTests
+{
+    [Theory]
+    [InlineData(-1, 1, false, "", false)]
+    [InlineData(4, 1, false, "", false)]
+    [InlineData(3, 2, false, "", false)]
+    [InlineData(0, 0, true, "", false)]
+    [InlineData(0, 0, false, "old-partial", false)]
+    [InlineData(3, 0, true, "", false)]
+    [InlineData(0, 0, false, "", true)]
+    [InlineData(3, 1, true, "known-partial", true)]
+    public void Legacy_uncertainty_is_a_read_only_refusal_not_an_unexplained_imported_block(int schema, int protocol, bool blocked, string pending, bool allowed)
+    {
+        if (allowed) SavedOperationState.Validate(schema, protocol, blocked, pending, 3, 1);
+        else Assert.Throws<FormatException>(() => SavedOperationState.Validate(schema, protocol, blocked, pending, 3, 1));
+    }
+}
+
+public class RawReadBoundaryTests
+{
+    public sealed class Document { public List<Entry> Players { get; set; } = []; }
+    public sealed class Entry { public int Gold { get; set; } }
+    private static byte[] Bytes(string value) => System.Text.Encoding.UTF8.GetBytes(value);
+
+    [Theory]
+    [InlineData("{\"id\":\"SlayTheRequiem-GRIMOIRE\"}", true)]
+    [InlineData("{\"id\":\"\\u0053layTheRequiem-GRIMOIRE\"}", true)]
+    [InlineData("{\"id\":\"SLAYTHEREQUIEM-GRIMOIRE\"}", true)]
+    [InlineData("{\"players\":[{\"relics\":[\"slaytherequiem-PACK\"]}]}", true)]
+    [InlineData("{\"id\":\"SlayTheRequiem-GRIMOIRE\" broken", true)]
+    [InlineData("{\"id\":\"BURNING_BLOOD\"}", false)]
+    public void Guard_identifies_primary_or_backup_even_with_escaped_model_ids(string raw, bool expected) =>
+        Assert.Equal(expected, RawRunDocument.Mentions(Bytes(raw), "SlayTheRequiem"));
+
+    [Fact]
+    public void Typed_preflight_rejects_nested_unknown_fields_and_wrong_types_without_invoking_a_native_reader()
+    {
+        var options = new JsonSerializerOptions();
+        Assert.Throws<JsonException>(() => RawRunDocument.DeserializeStrict<Document>(Bytes("{\"Players\":[{\"Gold\":7,\"UnknownCharges\":[2]}]}"), options));
+        Assert.Throws<JsonException>(() => RawRunDocument.DeserializeStrict<Document>(Bytes("{\"Players\":[{\"Gold\":\"broken\"}]}"), options));
+        var bom = new byte[] { 0xef, 0xbb, 0xbf }.Concat(Bytes("{\"Players\":[{\"Gold\":7}]}\r\n")).ToArray();
+        Assert.Equal(7, RawRunDocument.DeserializeStrict<Document>(bom, options).Players[0].Gold);
+        // Options belong to the game and must not be made strict or frozen by a load attempt.
+        Assert.Equal(System.Text.Json.Serialization.JsonUnmappedMemberHandling.Skip, options.UnmappedMemberHandling);
+        Assert.False(options.IsReadOnly);
+    }
+}
+
+public class RestoreOwnershipTests
+{
+    [Fact]
+    public void Restore_lease_excludes_other_transitions_and_stale_disposal_cannot_release_its_successor()
+    {
+        var gate = new OperationGate();
+        Assert.False(gate.IsHeld);
+        var old = gate.TryEnter()!;
+        Assert.True(gate.IsHeld);
+        Assert.Null(gate.TryEnter());
+        old.Dispose();
+        using var next = gate.TryEnter();
+        Assert.NotNull(next);
+        old.Dispose(); // e.g. finally from a completed generation
+        Assert.True(gate.IsHeld);
+        Assert.Null(gate.TryEnter());
+    }
+}
+
+public class RelicEntitlementTests
+{
+    [Fact]
+    public void Companion_cannot_finish_before_issuer_hooks_but_can_resume_without_replaying_them()
+    {
+        var prepared = RelicGrantState.Prepare("r:41", "{\"id\":\"SIGN\",\"props\":{\"strings\":[{\"name\":\"Opaque\",\"value\":\"kept\"}]}}");
+        var saved = RelicGrantState.Read(prepared.Encode())!;
+        Assert.Equal(prepared, saved);
+        Assert.Throws<InvalidOperationException>(() => saved.Complete());
+        var ready = RelicGrantState.Read(saved.IssuerCompleted().Encode())!;
+        Assert.Equal(RelicGrantState.Ready, ready.Phase);
+        var complete = ready.Complete();
+        Assert.Equal(complete, RelicGrantState.Read(complete.Encode())!.Complete());
+        Assert.Equal(prepared.Key, complete.Key);
+        Assert.Equal(prepared.Payload, complete.Payload); // completion remains proof even after item loss/storage
+    }
+
+    [Fact]
+    public void Legacy_absence_does_not_prove_non_delivery_and_no_sign_paths_complete_explicitly()
+    {
+        Assert.Null(RelicGrantState.Read(""));
+        var noSign = RelicGrantState.Prepare("", "").IssuerCompleted().Complete();
+        Assert.Equal(noSign, RelicGrantState.Read(noSign.Encode()));
+        Assert.Throws<FormatException>(() => RelicGrantState.Prepare("r:7", ""));
+    }
+
+    [Theory]
+    [InlineData("{\"Version\":2,\"Phase\":1,\"Key\":\"r:1\",\"Payload\":\"{}\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":3,\"Key\":\"r:1\",\"Payload\":\"{}\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":1,\"Key\":\"r:01\",\"Payload\":\"{}\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":1,\"Key\":\"r:0\",\"Payload\":\"{}\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":1,\"Key\":\"r:1\",\"Payload\":\"[]\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":1,\"Phase\":2,\"Key\":\"r:1\",\"Payload\":\"{}\"}")]
+    [InlineData("{\"Version\":1,\"Phase\":1,\"Key\":\"r:1\",\"Payload\":\"{}\",\"FutureEffect\":7}")]
+    public void Unknown_ambiguous_or_invalid_rights_are_retained_not_guessed(string text) =>
+        Assert.Throws<FormatException>(() => RelicGrantState.Read(text));
+
+    [Theory]
+    [InlineData(-1)] [InlineData(999)]
+    public void Undefined_form_never_falls_through_to_Clockwork(int kind)
+    {
+        Assert.False(TransformationRules.IsWorldview((FormKind)kind));
+        Assert.False(TransformationRules.CanTakeWorldview(FormKind.None, (FormKind)kind, true, false, false));
+    }
+}

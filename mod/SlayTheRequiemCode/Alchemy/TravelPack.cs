@@ -436,7 +436,7 @@ public sealed class TravelPack : RequiemRelic, IResourceSource
                 // Legacy names have neither saved identity nor properties. Migrate this one known instance
                 // BEFORE AddRelicInternal; an insertion save must not leave a repeatable legacy name behind.
                 item.Owner = Owner;
-                key = InventoryIdentity.NewStoredRelicKey(Owner, item);
+                key = InventoryIdentity.NewUnattachedRelicKey(Owner, item);
                 record = new(key, JsonSerializer.Serialize(item.ToSerializable(), JsonSerializationUtility.GetTypeInfo<SerializableRelic>()));
                 items[index] = record;
                 SaveItems(items);

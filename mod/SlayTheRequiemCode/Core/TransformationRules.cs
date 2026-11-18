@@ -63,7 +63,7 @@ public static class TransformationRules
     // ═════════════ совместимость (06 §3) ═════════════
 
     /// <summary>Мировоззрение (одно на забег): всё, кроме Заводного сердца.</summary>
-    public static bool IsWorldview(FormKind kind) => kind is not (FormKind.None or FormKind.Clockwork);
+    public static bool IsWorldview(FormKind kind) => Enum.IsDefined(kind) && kind is not (FormKind.None or FormKind.Clockwork);
 
     /// <summary>Формы, делающие Отступником (пока активны): вампир, оборотень, путь Договора.</summary>
     public static bool IsApostateForm(FormKind kind) =>

@@ -34,6 +34,8 @@ public static class InventoryIdentity
         maximum = Math.Max(maximum, player.Deck.Cards.Select(c => Sequence(CardAcquisition.ClaimKey(c))).DefaultIfEmpty(0).Max());
         if (StoredItemCodec.TryRead(pack.StoredItemData, pack.StoredItems, out var stored, out _))
             maximum = Math.Max(maximum, stored.Select(s => Sequence(s.Key)).DefaultIfEmpty(0).Max());
+        maximum = Math.Max(maximum, player.Relics.OfType<Transformations.PathEssence>()
+            .Select(p => Sequence(RelicGrantState.Read(p.SignGrant)?.Key ?? "")).DefaultIfEmpty(0).Max());
         pack.InstanceSequence = Math.Max(pack.InstanceSequence, maximum);
         var seen = new HashSet<int>();
         int Unique(int id)
@@ -61,12 +63,12 @@ public static class InventoryIdentity
         }
     }
 
-    /// <summary>Only a legacy class-name record may be migrated this way; persist its new payload before attach.</summary>
-    internal static string NewStoredRelicKey(Player player, RelicModel relic)
+    /// <summary>Reserve a new exact instance for a legacy chest entry or a write-ahead companion grant BEFORE attach.</summary>
+    internal static string NewUnattachedRelicKey(Player player, RelicModel relic)
     {
         Ensure(player);
         if (!relic.IsMutable || player.Relics.Contains(relic) || Relics[relic] != 0)
-            throw new InvalidOperationException("Expected an unattached legacy chest relic without an instance ID");
+            throw new InvalidOperationException("Expected an unattached relic without an instance ID");
         var pack = TravelPack.Of(player) ?? throw new InvalidOperationException("Missing durable chest store");
         pack.InstanceSequence = checked(pack.InstanceSequence + 1);
         Relics[relic] = pack.InstanceSequence;

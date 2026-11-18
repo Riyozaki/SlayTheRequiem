@@ -142,6 +142,7 @@ public static class Forms
     /// <summary>Принять форму. Ступень Договора заменяет предыдущую. false — несовместимо.</summary>
     public static async Task<bool> Grant(Player player, FormKind kind)
     {
+        if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
         using var lease = await InventoryGate.For(player).Enter();
         if (lease == null || !CanTake(player, kind)) return false;
         using var mutation = InventoryGate.Track(player, lease, "form:" + kind);

@@ -73,7 +73,7 @@ public static class CoopMemoryStone
 
     public static async Task Propose(RunState state, SerializableRun ended)
     {
-        if (_proposing || !RequiemNet.IsHost || !ReferenceEquals(state, RequiemNet.State) || MessageKey(state).Length == 0) return;
+        if (_proposing || MemoryStone.Restoring || !RequiemNet.IsHost || !ReferenceEquals(state, RequiemNet.State) || MessageKey(state).Length == 0) return;
         _proposing = true;
         var generation = _generation;
         try { await ProposeCore(state, ended, generation); }
@@ -132,7 +132,8 @@ public static class CoopMemoryStone
             return;
         }
 
-        MemoryStone.Restoring = true;
+        using var transition = MemoryStone.TryBeginRestore();
+        if (transition == null) return;
         try
         {
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
@@ -144,6 +145,7 @@ public static class CoopMemoryStone
             await Task.WhenAll(Task.Delay(500), UI.RequiemVfx.Rewind(round));
             if (!Current(state, generation)) return;
             await NGame.Instance.ReturnToMainMenu();
+            if (generation != _generation || RequiemNet.State != null) return;
             var submenu = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu();
             submenu?.StartHost(save);
         }
@@ -151,10 +153,6 @@ public static class CoopMemoryStone
         {
             MainFile.Logger.Error($"[SlayTheRequiem] Камень Памяти (кооп): возврат не удался ({e.Message}).");
             Send(StonePhase.Abort, round, 0, 0, state);
-        }
-        finally
-        {
-            MemoryStone.Restoring = false;
         }
     }
 
@@ -207,20 +205,23 @@ public static class CoopMemoryStone
     internal static async Task RejoinAsClient(ulong hostNetId)
     {
         var original = RequiemNet.State;
-        var platform = RunManager.Instance.NetService?.Platform ?? PlatformType.None;
+        var service = RunManager.Instance.NetService;
+        if (original == null || !RequiemNet.IsClient) return;
+        var generation = _generation;
+        var platform = service?.Platform ?? PlatformType.None;
         NJoinFriendScreen? screen = null;
-        MemoryStone.Restoring = true;
-        try
+        using (var transition = MemoryStone.TryBeginRestore())
         {
-            await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
-            if (!ReferenceEquals(original, RequiemNet.State)) return;
-            await NGame.Instance.ReturnToMainMenu();
-            screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
-        }
-        finally
-        {
-            MemoryStone.Restoring = false;
-            _clientState = null;
+            if (transition == null) return;
+            try
+            {
+                await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
+                if (!ReferenceEquals(original, RequiemNet.State) || !ReferenceEquals(service, RunManager.Instance.NetService)) return;
+                await NGame.Instance.ReturnToMainMenu();
+                if (generation != _generation || RequiemNet.State != null) return;
+                screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
+            }
+            finally { if (ReferenceEquals(_clientState, original)) _clientState = null; }
         }
         if (screen == null || hostNetId == 0) return;
 
@@ -234,6 +235,7 @@ public static class CoopMemoryStone
                 if (platform == PlatformType.Steam)
                 {
                     var open = await PlatformUtil.GetFriendsWithOpenLobbies(PlatformType.Steam);
+                    if (!ScreenOpen(screen) || Connected() || generation != _generation) return;
                     if (!open.Contains(hostNetId)) continue;
                     MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти (кооп): лобби хоста найдено (попытка {attempt + 1}), вход.");
                     await screen.JoinGameAsync(SteamClientConnectionInitializer.FromPlayer(hostNetId));

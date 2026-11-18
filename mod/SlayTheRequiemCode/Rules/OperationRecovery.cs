@@ -137,7 +137,7 @@ public static class OperationRecovery
             var body = RequiemUi.Tip("RECOVERY_BODY.title"); body.Add("Floor", cp.Floor);
             if (!await popup.WaitForConfirmation(body, RequiemUi.Tip("RECOVERY_HEADER.title"),
                 RequiemUi.Tip("RUN_PASSPORT_CLOSE.title"), RequiemUi.Tip("RECOVERY_RESTORE.title"))) return;
-            if (!ReferenceEquals(state, RequiemNet.State) || CombatManager.Instance.IsInProgress) return;
+            if (generation != _generation || MemoryStone.Restoring || !ReferenceEquals(state, RequiemNet.State) || CombatManager.Instance.IsInProgress) return;
             if (state.Players.Select(TravelPack.Of).OfType<TravelPack>().Any(p => InventoryGate.IsMutating(p.Owner))) return;
             var parsed = JsonSerializationUtility.FromJson<SerializableRun>(cp.SaveJson);
             if (!parsed.Success || parsed.SaveData == null) throw new InvalidOperationException("Checkpoint native run payload is invalid");
@@ -150,11 +150,16 @@ public static class OperationRecovery
             RotateTimeline(save);
             if (RequiemNet.IsMultiplayer)
             {
+                using var transition = MemoryStone.TryBeginRestore(); // preserve the prepared checkpoint across all callbacks
+                if (transition == null) return;
                 CapturePreparedRun(save, "inventory-recovery", coop: true);
                 await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
+                if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsHost) return;
                 CustomMessageWrapper.Send(new InventoryRecoveryMessage { timeline = Timeline(state), seed = state.Rng.StringSeed });
                 await Task.Delay(500);
+                if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsHost) return;
                 await NGame.Instance.ReturnToMainMenu();
+                if (generation != _generation || RequiemNet.State != null) return;
                 NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.StartHost(save);
             }
             else await MemoryStone.ReturnSingleplayer(save, "inventory-recovery");

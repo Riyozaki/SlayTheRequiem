@@ -84,6 +84,7 @@ public sealed class OperationGate
 {
     private readonly SemaphoreSlim _serial = new(1, 1);
     private object? _active;
+    public bool IsHeld => _active != null;
     public bool Blocked { get; set; }
 
     public sealed class Lease : IDisposable

@@ -25,6 +25,7 @@ using MegaCrit.Sts2.Core.Unlocks;
 using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Cards;
 using SlayTheRequiem.SlayTheRequiemCode.Spells;
+using SlayTheRequiem.SlayTheRequiemCode.Transformations;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
@@ -141,6 +142,10 @@ public static class IntegrityRegression
             ("timeline-rotation-keeps-unknown-properties", TimelineOpaqueProperties),
             ("receipt-epoch-and-mutation-disposal", ReceiptDisposal),
             ("mutable-service-clones-isolated", ServiceCloneIsolation),
+            ("path-pending-sign-reload-no-issuer-replay", PathPendingSign),
+            ("path-sign-late-insert-no-second-obtain", PathSignLateInsert),
+            ("raw-native-read-preflight-no-repair", RawSavePreflight),
+            ("boon-hp-writeahead-save-and-revoke", BoonHpWriteAhead),
         };
         var failures = 0;
         try
@@ -1253,6 +1258,88 @@ public static class IntegrityRegression
         var recordCopy = (HeroRecord)record.MutableClone();
         Require(!ReferenceEquals(record.Learned, recordCopy.Learned), "HeroRecord clones share the learned-skill set");
         return Task.CompletedTask;
+    }
+
+    private static async Task PathPendingSign()
+    {
+        var owner = Fixture();
+        var essence = (PaladinEssence)ModelDb.Relic<PaladinEssence>().ToMutable();
+        PathGrants.Prepare(essence, owner);
+        owner.AddRelicInternal(essence, silent: true); // fixture has confirmed the pure Paladin issuer, not an OnObtained replay
+        essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
+        var originalKey = RelicGrantState.Read(essence.SignGrant)!.Key;
+        owner = Reload(owner);
+        await Paths.Grant(owner, HeroPath.Paladin);
+        essence = owner.Relics.OfType<PaladinEssence>().Single();
+        var sign = owner.Relics.OfType<RadiantCuirass>().Single();
+        Require(InventoryIdentity.RelicKey(sign) == originalKey && RelicGrantState.Read(essence.SignGrant)!.Phase == RelicGrantState.Completed,
+            "An existing essence suppressed/lost its ready companion entitlement");
+        owner.RemoveRelicInternal(sign, silent: true); // deliberate loss is NOT a fresh entitlement after Continue
+        owner = Reload(owner);
+        await Paths.Grant(owner, HeroPath.Paladin);
+        Require(!owner.Relics.OfType<RadiantCuirass>().Any() && owner.Relics.OfType<PaladinEssence>().Count() == 1,
+            "Completed path replayed its sign or issuer after deliberate loss/reload");
+    }
+
+    private static async Task PathSignLateInsert()
+    {
+        var owner = Fixture();
+        var essence = (PaladinEssence)ModelDb.Relic<PaladinEssence>().ToMutable();
+        PathGrants.Prepare(essence, owner); owner.AddRelicInternal(essence, silent: true);
+        essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
+        void Fail(RelicModel relic) { if (relic is RadiantCuirass) throw new InvalidOperationException("injected late sign insertion"); }
+        owner.RelicObtained += Fail;
+        try { Require((await PathGrants.CompleteSign(essence)).Status == OperationStatus.PartialCommit, "Late sign obtain was reported as a safe veto"); }
+        finally { owner.RelicObtained -= Fail; }
+        Require(owner.Relics.OfType<RadiantCuirass>().Count() == 1 && InventoryGate.For(owner).Blocked
+            && RelicGrantState.Read(essence.SignGrant)!.Phase == RelicGrantState.Completed, "Late sign insertion left a repeatable source");
+        owner = Reload(owner);
+        await Paths.Grant(owner, HeroPath.Paladin);
+        Require(owner.Relics.OfType<RadiantCuirass>().Count() == 1 && InventoryGate.For(owner).Blocked, "Continue duplicated/unblocked a partial path transition");
+    }
+
+    private static Task RawSavePreflight()
+    {
+        var owner = Fixture();
+        var save = new SerializableRun { SchemaVersion = SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>(), Players = [owner.ToSerializable()] };
+        var original = Json(save);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(original);
+        Require(RunSaveReadGuard.ReadStrict(bytes).Players.Count == 1 && original == Json(save), "Strict native preflight changed a valid input");
+        var document = System.Text.Json.Nodes.JsonNode.Parse(original)!;
+        document["schema_version"] = save.SchemaVersion + 1;
+        try { RunSaveReadGuard.ReadStrict(System.Text.Encoding.UTF8.GetBytes(document.ToJsonString())); throw new InvalidOperationException("Future native schema accepted"); }
+        catch (FormatException) { Require(original == Json(save), "Refusal changed the native input object"); }
+        document["schema_version"] = save.SchemaVersion;
+        document["players"]![0]!["future_native_field"] = 7;
+        try { RunSaveReadGuard.ReadStrict(System.Text.Encoding.UTF8.GetBytes(document.ToJsonString())); throw new InvalidOperationException("Unknown nested native field accepted"); }
+        catch (JsonException) { Require(original == Json(save), "Nested-field refusal changed the input"); }
+        return Task.CompletedTask;
+    }
+
+    private static async Task BoonHpWriteAhead()
+    {
+        var owner = Fixture(); var hp = owner.Creature.MaxHp;
+        var omen = (Pantheon.OmenOfTheBlade)ModelDb.Relic<Pantheon.OmenOfTheBlade>().ToMutable();
+        owner.AddRelicInternal(omen, silent: true);
+        SerializablePlayer? during = null;
+        void SaveInside(int before, int after) { during ??= RoundTrip(owner.ToSerializable()); }
+        owner.Creature.MaxHpChanged += SaveInside;
+        try { await omen.SyncMaxHp(); }
+        finally { owner.Creature.MaxHpChanged -= SaveInside; }
+        Require(during != null && omen.GrantedMaxHp == omen.ActiveBoon.MaxHp && owner.Creature.MaxHp == hp + omen.GrantedMaxHp,
+            "Passive boon HP failed to apply its delta");
+        await omen.SyncMaxHp();
+        Require(owner.Creature.MaxHp == hp + omen.GrantedMaxHp, "Repeated boon reconciliation applied the same delta twice");
+        var interrupted = Player.FromSerializable(during!);
+        RunState.CreateForTest([interrupted], seed: "STR-G1-INTEGRITY");
+        var savedHp = interrupted.Creature.MaxHp;
+        await interrupted.Relics.OfType<Pantheon.OmenOfTheBlade>().Single().SyncMaxHp();
+        Require(Pack(interrupted).OperationPending.StartsWith("boon-hp:", StringComparison.Ordinal)
+            && InventoryGate.For(interrupted).Blocked && interrupted.Creature.MaxHp == savedHp,
+            "A save inside MaxHpChanged silently replayed an uncertain HP delta on Continue");
+        await omen.Revoke();
+        Require(omen.GrantedMaxHp == 0 && owner.Creature.MaxHp == hp && Pack(owner).OperationPending.Length == 0,
+            "Normal boon revoke lost its granted HP accounting or left a false pending marker");
     }
 
     private static Task WireRoundTrip()

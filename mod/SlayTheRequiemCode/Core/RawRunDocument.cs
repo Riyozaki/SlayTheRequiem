@@ -1,4 +1,6 @@
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Core;
 
@@ -11,12 +13,34 @@ public static class RawRunDocument
 {
     public const int MaximumBytes = 32 * 1024 * 1024;
 
-    public static void Validate(ReadOnlyMemory<byte> original, IReadOnlySet<string> knownFields, int latestNativeSchema)
+    // JSON does not admit a BOM, but some older text writers added one. It stays in the exact-byte backup.
+    private static ReadOnlyMemory<byte> WithoutBom(ReadOnlyMemory<byte> original) =>
+        original.Span.StartsWith(new byte[] { 0xef, 0xbb, 0xbf }) ? original[3..] : original;
+
+    /// <summary>Also recognizes escaped identifiers; inspect BOTH primary and native backup before choosing a reader.</summary>
+    public static bool Mentions(ReadOnlyMemory<byte> original, string identifier)
+    {
+        if (string.IsNullOrEmpty(identifier)) throw new ArgumentException("Empty save identifier", nameof(identifier));
+        if (Encoding.UTF8.GetString(original.Span).Contains(identifier, StringComparison.OrdinalIgnoreCase)) return true;
+        try
+        {
+            using var document = JsonDocument.Parse(WithoutBom(original));
+            return Contains(document.RootElement);
+            bool Contains(JsonElement node) => node.ValueKind switch
+            {
+                JsonValueKind.String => node.GetString()?.Contains(identifier, StringComparison.OrdinalIgnoreCase) == true,
+                JsonValueKind.Array => node.EnumerateArray().Any(Contains),
+                JsonValueKind.Object => node.EnumerateObject().Any(p => p.Name.Contains(identifier, StringComparison.OrdinalIgnoreCase) || Contains(p.Value)),
+                _ => false,
+            };
+        }
+        catch (JsonException) { return false; } // malformed native text can still be identified by the literal fast path
+    }
+
+    public static int Validate(ReadOnlyMemory<byte> original, IReadOnlySet<string> knownFields, int latestNativeSchema)
     {
         if (original.Length == 0 || original.Length > MaximumBytes) throw new FormatException("Run document is empty or too large; original retained");
-        // JSON does not admit a BOM, but some older text writers added one. It stays in the exact-byte backup.
-        var json = original.Span.StartsWith(new byte[] { 0xef, 0xbb, 0xbf }) ? original[3..] : original;
-        using var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(WithoutBom(original));
         var root = doc.RootElement;
         if (root.ValueKind != JsonValueKind.Object) throw new FormatException("Run document is not an object; original retained");
         RequireUniqueFields(root);
@@ -26,6 +50,19 @@ public static class RawRunDocument
         if (!root.TryGetProperty("schema_version", out var schema) || schema.ValueKind != JsonValueKind.Number
             || !schema.TryGetInt32(out var version) || version <= 0 || version > latestNativeSchema)
             throw new FormatException("Missing/future native run schema; no lossy native recovery or save rewrite permitted");
+        return version;
+    }
+
+    /// <summary>
+    /// Preflight with the game's actual serializer/converters, without invoking the native repair/rename reader.
+    /// Unmapped typed fields (including nested ones) fail rather than silently disappearing on the next save.
+    /// A custom converter/extension-data field retains its own contract; no arbitrary opaque migration is claimed.
+    /// </summary>
+    public static T DeserializeStrict<T>(ReadOnlyMemory<byte> original, JsonSerializerOptions options) where T : class
+    {
+        if (original.Length == 0 || original.Length > MaximumBytes) throw new FormatException("Run document is empty or too large; original retained");
+        var strict = new JsonSerializerOptions(options) { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+        return JsonSerializer.Deserialize<T>(WithoutBom(original).Span, strict) ?? throw new FormatException("Empty run object; original retained");
     }
 
     private static void RequireUniqueFields(JsonElement node)

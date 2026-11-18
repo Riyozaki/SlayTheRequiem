@@ -1,4 +1,3 @@
-using System.Text;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Saves;
@@ -23,12 +22,26 @@ internal static class RunSaveReadGuard
         return File.ReadAllBytes(path);
     }
 
-    internal static void CopyExact(string path, string destination)
+    internal static void CopyExact(string path, string destination) => CopyBytes(ReadBytes(path), destination);
+
+    private static void CopyBytes(byte[] bytes, string destination)
     {
-        var bytes = ReadBytes(path);
         if (File.Exists(destination) && new FileInfo(destination).Length == bytes.Length
             && File.ReadAllBytes(destination).AsSpan().SequenceEqual(bytes)) return; // menu reads must not rotate backups
         AtomicSaveFile.WriteBytes(destination, bytes);
+    }
+
+    internal static SerializableRun ReadStrict(byte[] original)
+    {
+        var fields = JsonSerializationUtility.GetTypeInfo<SerializableRun>().Properties.Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+        var latest = SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>();
+        var version = RawRunDocument.Validate(original, fields, latest);
+        // Native migration failure can rename the file BEFORE a postfix sees the result. Old GAME schemas
+        // require their matching game build; legacy MOD schemas in the current native format migrate separately.
+        if (version != latest) throw new FormatException("Different native game save schema; open its retained original with the matching game build");
+        var save = RawRunDocument.DeserializeStrict<SerializableRun>(original, JsonSerializationUtility.Options);
+        Config.RunSettings.ValidateSaved(save);
+        return save;
     }
 
     internal static bool BeforeRead(ISaveStore store, IProfileIdProvider profiles, bool coop,
@@ -38,19 +51,21 @@ internal static class RunSaveReadGuard
         try
         {
             var path = ProjectSettings.GlobalizePath(store.GetFullPath(RunSaveManager.GetRunSavePath(profiles.CurrentProfileId, NativeFile(coop))));
-            var selected = File.Exists(path) ? path : path + ".backup";
             // Non-disk native test stores are not redirected to a user's profile by this adapter.
-            if (!File.Exists(selected)) return true;
-            var original = ReadBytes(selected);
-            if (!Encoding.UTF8.GetString(original).Contains(MainFile.ModId, StringComparison.OrdinalIgnoreCase)) return true;
+            var primary = File.Exists(path) ? ReadBytes(path) : null;
+            var backup = File.Exists(path + ".backup") ? ReadBytes(path + ".backup") : null;
+            if (!(primary != null && RawRunDocument.Mentions(primary, MainFile.ModId))
+                && !(backup != null && RawRunDocument.Mentions(backup, MainFile.ModId))) return true;
             guarded = true;
             var directory = Path.GetDirectoryName(path)!;
             var name = "requiem_before_load" + (coop ? "_coop" : "");
-            if (File.Exists(path)) CopyExact(path, Path.Combine(directory, name + ".save"));
-            if (File.Exists(path + ".backup")) CopyExact(path + ".backup", Path.Combine(directory, name + ".native-backup.save"));
-            var fields = JsonSerializationUtility.GetTypeInfo<SerializableRun>().Properties.Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
-            RawRunDocument.Validate(original, fields, SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>());
-            return true;
+            if (primary != null) CopyBytes(primary, Path.Combine(directory, name + ".save"));
+            if (backup != null) CopyBytes(backup, Path.Combine(directory, name + ".native-backup.save"));
+            // Use the SAME inspected bytes, not a second native read with a repair/fallback/rename side effect.
+            // A missing primary may use its exact backup. A corrupt existing primary is an explicit refusal:
+            // never silently roll the player back to an older file just because its newer save did not parse.
+            result = new ReadSaveResult<SerializableRun>(ReadStrict(primary ?? backup!));
+            return false;
         }
         catch (Exception e)
         {
@@ -72,7 +87,7 @@ internal static class RunSaveReadGuard
         catch (Exception e) { result = Reject(e); }
     }
 
-    private static ReadSaveResult<SerializableRun> Reject(Exception e)
+    internal static ReadSaveResult<SerializableRun> Reject(Exception e)
     {
         var message = "Requiem: сохранение не изменено / save not modified. " + e.Message
             + ". Keep current_run[ _mp].save and requiem_before_load files; use the matching game/mod build or a known-safe backup.";
@@ -103,4 +118,26 @@ public static class GuardMultiplayerSaveRead
         RunSaveReadGuard.BeforeRead(____saveStore, ____profileIdProvider, true, ref __result, out __state);
     [HarmonyPostfix]
     public static void Postfix(bool __state, ref ReadSaveResult<SerializableRun> __result) => RunSaveReadGuard.AfterRead(__state, ref __result);
+}
+
+/// <summary>Native canonicalization renames both files on a model/ID error; a guarded load must remain read-only.</summary>
+[CriticalPatch]
+[HarmonyPatch(typeof(RunSaveManager), nameof(RunSaveManager.LoadAndCanonicalizeMultiplayerRunSave))]
+public static class GuardMultiplayerCanonicalization
+{
+    [HarmonyPrefix]
+    public static bool Prefix(ulong localPlayerId, ISaveStore ____saveStore, IProfileIdProvider ____profileIdProvider,
+        ref ReadSaveResult<SerializableRun> __result)
+    {
+        if (RunSaveReadGuard.BeforeRead(____saveStore, ____profileIdProvider, true, ref __result, out _)) return true;
+        if (!__result.Success || __result.SaveData == null) return false;
+        try
+        {
+            var canonical = MegaCrit.Sts2.Core.Runs.RunManager.CanonicalizeSave(__result.SaveData, localPlayerId);
+            Config.RunSettings.ValidateSaved(canonical);
+            __result = new ReadSaveResult<SerializableRun>(canonical);
+        }
+        catch (Exception e) { __result = RunSaveReadGuard.Reject(e); }
+        return false;
+    }
 }

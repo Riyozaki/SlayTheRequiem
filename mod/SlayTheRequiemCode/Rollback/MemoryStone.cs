@@ -49,7 +49,12 @@ public static class MemoryStone
     private static Imprint? _imprint;
     private static bool _imprintIsCoop;
 
-    internal static bool Restoring { get; set; }
+    // One shared transition owner: Memory Stone, inventory restore and client rejoin must not race or let an
+    // old finally clear a newer transition's flag. The live lease intentionally spans CleanUp/new-run Launch.
+    private static readonly OperationGate RestoreGate = new();
+    private static readonly OperationGate OfferGate = new();
+    internal static bool Restoring => RestoreGate.IsHeld;
+    internal static OperationGate.Lease? TryBeginRestore() => RestoreGate.TryEnter();
 
     public static bool Enabled => RunSettings.EnableMemoryStone && RunSettings.EnableRequiemSystems;
 
@@ -229,6 +234,8 @@ public static class MemoryStone
     /// <summary>Окно «Вернуться к Камню Памяти?», выбор Шрама и возврат.</summary>
     private static async Task OfferSingleplayer(RunState state, SerializableRun ended)
     {
+        using var offer = OfferGate.TryEnter();
+        if (offer == null || Restoring || !ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer) return;
         var me = state.Players.FirstOrDefault();
         var imprint = ImprintFor(state, ended);
         if (me == null || imprint == null) return;
@@ -241,9 +248,10 @@ public static class MemoryStone
             }))
             return;
 
+        if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer || Restoring) return;
         // Пропуск выбора Шрама = отказ от возврата.
         var scar = await ChooseScar(state, me, canSkip: true);
-        if (scar == null) return;
+        if (scar == null || !ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer || Restoring) return;
 
         var save = BuildReturnSave(imprint, state, new Dictionary<ulong, Scar> { [me.NetId] = scar.Value });
         if (save == null) return;
@@ -382,30 +390,35 @@ public static class MemoryStone
 
     internal static async Task ReturnSingleplayer(SerializableRun save, string operation = "memory-stone-return")
     {
-        Restoring = true;
+        using var transition = TryBeginRestore();
+        var original = RequiemNet.State;
+        if (transition == null || original == null || !RequiemNet.IsSingleplayer) return;
+        RunState? loaded = null;
         try
         {
             OperationRecovery.CapturePreparedRun(save, operation, coop: false);
             await UI.RequiemVfx.Rewind(save.GetHashCode());
+            if (!ReferenceEquals(original, RequiemNet.State)) return;
             await NGame.Instance.Transition.FadeOut();
+            if (!ReferenceEquals(original, RequiemNet.State)) return;
             RunManager.Instance.CleanUp();
             // Штатный путь «Продолжить» (NMainMenu.OnContinueButtonPressedAsync).
-            var runState = RunState.FromSerializable(save);
-            await RunManager.Instance.SetUpSavedSingleplayer(runState, save);
+            loaded = RunState.FromSerializable(save);
+            await RunManager.Instance.SetUpSavedSingleplayer(loaded, save);
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             NGame.Instance.ReactionContainer.InitializeNetworking(new NetSingleplayerGameService());
-            await NGame.Instance.LoadRun(runState, save.PreFinishedRoom);
+            await NGame.Instance.LoadRun(loaded, save.PreFinishedRoom);
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             await NGame.Instance.Transition.FadeIn();
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             // Сразу записать забег: «Сохранить и выйти» после возврата не должен терять Шрам.
-            await SaveManager.Instance.SaveRun(runState.CurrentRoom?.IsPreFinished == true ? runState.CurrentRoom : null);
+            await SaveManager.Instance.SaveRun(loaded.CurrentRoom?.IsPreFinished == true ? loaded.CurrentRoom : null);
         }
         catch (Exception e)
         {
             MainFile.Logger.Error($"[SlayTheRequiem] Камень Памяти: возврат не удался ({e.Message}).");
-            await NGame.Instance.ReturnToMainMenuWithInternalError(e);
-        }
-        finally
-        {
-            Restoring = false;
+            if (RequiemNet.State == null || ReferenceEquals(original, RequiemNet.State) || ReferenceEquals(loaded, RequiemNet.State))
+                await NGame.Instance.ReturnToMainMenuWithInternalError(e);
         }
     }
 

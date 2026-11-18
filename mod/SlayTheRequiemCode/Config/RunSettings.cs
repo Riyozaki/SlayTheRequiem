@@ -179,12 +179,14 @@ public static class RunSettings
             var grimoires = player.Relics.Where(r => r.Id == grimoireId).ToList();
             if (grimoires.Count > 1) throw new FormatException("Duplicate saved Grimoire; no save rewrite");
             if (grimoires.Count == 1) codes.Add(SavedString(grimoires[0].Props, nameof(Grimoire.RunSettingsCode)));
-            foreach (var pack in player.Relics.Where(r => r.Id == packId))
-            {
-                if (SavedInt(pack.Props, nameof(Alchemy.TravelPack.DataSchema)) is < 0 or > Debugging.RunDiagnostics.SaveSchema
-                    || SavedInt(pack.Props, nameof(Alchemy.TravelPack.ShopProtocol)) is < 0 or > Shops.ShopOperations.Protocol)
-                    throw new FormatException("Newer Requiem save/protocol; use the matching build, original save retained");
-            }
+            var packs = player.Relics.Where(r => r.Id == packId).ToList();
+            if (packs.Count > 1) throw new FormatException("Duplicate saved TravelPack; no save rewrite");
+            foreach (var pack in packs)
+                SavedOperationState.Validate(SavedInt(pack.Props, nameof(Alchemy.TravelPack.DataSchema)),
+                    SavedInt(pack.Props, nameof(Alchemy.TravelPack.ShopProtocol)), SavedBool(pack.Props, nameof(Alchemy.TravelPack.OperationBlocked)),
+                    SavedString(pack.Props, nameof(Alchemy.TravelPack.OperationPending)), Debugging.RunDiagnostics.SaveSchema, Shops.ShopOperations.Protocol);
+            foreach (var path in player.Relics.Where(r => ModelDb.GetByIdOrNull<RelicModel>(r.Id) is Transformations.PathEssence))
+                _ = RelicGrantState.Read(SavedString(path.Props, nameof(Transformations.PathEssence.SignGrant)));
         }
         var timelines = save.Players.SelectMany(p => p.Relics).Where(r => r.Id == packId)
             .Select(r => SavedString(r.Props, nameof(Alchemy.TravelPack.OperationRunId)))
@@ -198,6 +200,12 @@ public static class RunSettings
         var values = props?.strings?.Where(p => p.name == name).ToList();
         if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
         return values is { Count: 1 } ? values[0].value : null;
+    }
+    private static bool SavedBool(SavedProperties? props, string name)
+    {
+        var values = props?.bools?.Where(p => p.name == name).ToList();
+        if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
+        return values is { Count: 1 } && values[0].value;
     }
     private static int SavedInt(SavedProperties? props, string name)
     {

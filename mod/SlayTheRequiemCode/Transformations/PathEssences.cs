@@ -32,6 +32,16 @@ public abstract class PathEssence : BoonRelic
 {
     public abstract HeroPath Path { get; }
 
+    private string _signGrant = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string SignGrant { get => _signGrant; set { AssertMutable(); _signGrant = value ?? ""; } }
+
+    public override async Task AfterRoomEntered(MegaCrit.Sts2.Core.Rooms.AbstractRoom room)
+    {
+        await base.AfterRoomEntered(room);
+        if (SignGrant.Length > 0 && !CombatManager.Instance.IsInProgress) await PathGrants.CompleteSign(this);
+    }
+
     protected override Boon ComputeBoon() => Boon.None;
 
     protected Creature Hero => Owner.Creature;
@@ -111,19 +121,21 @@ public static class Paths
     {
         if (!Enum.IsDefined(path)) throw new ArgumentOutOfRangeException(nameof(path));
         using var lease = await InventoryGate.For(player).Enter();
-        if (lease == null || path == HeroPath.None || Of(player) != null) return;
+        if (lease == null || path == HeroPath.None) return;
+        if (Of(player) is { } current)
+        {
+            if (current.Path == path) await PathGrants.CompleteSign(current, lease); // same issuer, never replay its one-shot effects
+            return;
+        }
         using var mutation = InventoryGate.Track(player, lease, "path:" + path);
         try
         {
-            var essence = Forms.Create(EssenceType(path));
+            var essence = (PathEssence)Forms.Create(EssenceType(path));
+            PathGrants.Prepare(essence, player); // exact companion/source exists in an insertion save, before AfterObtained
             await RelicCmd.Obtain(essence, player);
             if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
-            if (SignType(path) is { } sign)
-            {
-                var item = Forms.Create(sign);
-                await RelicCmd.Obtain(item, player);
-                if (!player.Relics.Contains(item)) throw new InvalidOperationException("Path sign did not commit");
-            }
+            essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
+            await PathGrants.CompleteSign(essence, lease);
             mutation.Complete();
         }
         catch (Exception e)
