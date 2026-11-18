@@ -117,34 +117,43 @@ public static class Paths
             n => n <= 0 ? 0 : player.PlayerRng.Rewards.NextInt(n), Forms.IsOrdinator(player));
 
     /// <summary>Принять Путь: Сущность и Знак.</summary>
-    public static async Task Grant(Player player, HeroPath path)
+    public static async Task Grant(Player player, HeroPath path, OperationGate.Lease? held = null)
     {
         if (!Enum.IsDefined(path)) throw new ArgumentOutOfRangeException(nameof(path));
-        using var lease = await InventoryGate.For(player).Enter();
-        if (lease == null || path == HeroPath.None) return;
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null || path == HeroPath.None || InventoryGate.For(player).Blocked) return;
         if (Of(player) is { } current)
         {
-            if (current.Path == path) await PathGrants.CompleteSign(current, lease); // same issuer, never replay its one-shot effects
+            if (current.Path == path) await PathGrants.CompleteSign(current, lease); // never replay a one-shot essence
             return;
         }
-        using var mutation = InventoryGate.Track(player, lease, "path:" + path);
-        try
+        if (!TransformationRules.PathAllowed(path, Forms.Worldview(player), Apostate(player), Unarmed(player), Forms.IsOrdinator(player))) return;
+        // Every Reborn decision and final source preflight happens BEFORE obtaining/consuming a Path.
+        if (path == HeroPath.Reborn && !await HeroCreation.PrepareRebirth(player)) return;
         {
-            var essence = (PathEssence)Forms.Create(EssenceType(path));
-            PathGrants.Prepare(essence, player); // exact companion/source exists in an insertion save, before AfterObtained
-            await RelicCmd.Obtain(essence, player);
-            if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
-            essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
-            await PathGrants.CompleteSign(essence, lease);
-            mutation.Complete();
+            using var mutation = InventoryGate.Track(player, lease, "path:" + path);
+            try
+            {
+                var essence = (PathEssence)Forms.Create(EssenceType(path));
+                PathGrants.Prepare(essence, player);
+                await RelicCmd.Obtain(essence, player);
+                if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
+                essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
+                await PathGrants.CompleteSign(essence, lease);
+                if (InventoryGate.For(player).Blocked) throw new InvalidOperationException("Path companion callback has an uncertain result");
+                if (HeroRecord.Of(player) is { } hero) hero.PathOfferData = "";
+                mutation.Complete();
+            }
+            catch (Exception e)
+            {
+                InventoryGate.Block(player, $"Path grant interrupted; restore its pre-transition checkpoint: {e}");
+                mutation.Complete(); throw;
+            }
         }
-        catch (Exception e)
-        {
-            InventoryGate.Block(player, $"Path grant interrupted; restore its pre-transition checkpoint: {e}");
-            mutation.Complete();
-            throw;
-        }
+        if (path == HeroPath.Reborn && Mastery.GrimoireOf(player) is { } grimoire)
+            await HeroCreation.ResumeRebirth(grimoire, lease); // summary is resumable, not an uncertain effect
     }
+
 }
 
 // ═════════════ 13 Сущностей ═════════════
@@ -507,33 +516,10 @@ public sealed class MediumEssence : PathEssence
     };
 }
 
-/// <summary>
-/// Перерождённый: без бонуса — единожды сменить предысторию (выбор среди предысторий происхождения и Бродяги)
-/// и перераспределить очки характеристик (все возвращаются в свободные — распределить в лагере).
-/// </summary>
+/// <summary>Reborn: confirmed origin/background change and source-accounted stat refund, no replay of starter gifts.</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class RebornEssence : PathEssence
 {
     public override HeroPath Path => HeroPath.Reborn;
-
-    protected override async Task OnObtained()
-    {
-        if (HeroRecord.Of(Owner) is { } hero)
-        {
-            hero.StatHealth = hero.StatStamina = hero.StatMana = hero.StatBurden = hero.StatMastery = 0;
-            await hero.SyncMaxHp();
-        }
-        var current = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault();
-        var options = BackgroundRelic.Options(Owner.Relics.OfType<OriginRelic>().FirstOrDefault())
-            .Append(typeof(VagrantBackground))
-            .Where(t => t != null && t != current?.GetType())
-            .Distinct()
-            .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable())
-            .ToList();
-        if (options.Count == 0) return;
-        var chosen = await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
-        if (chosen == null) return;
-        if (current != null) await RelicCmd.Remove(current);
-        await RelicCmd.Obtain(chosen, Owner);
-    }
+    protected override Task OnObtained() => HeroCreation.ApplyRebirth(Owner);
 }

@@ -23,6 +23,7 @@ from loc_flavor import FLAVOR  # noqa: E402
 from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
 from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
+from loc_creation import CREATION_SETTINGS, CREATION_TIPS  # noqa: E402
 from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
 from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
@@ -265,7 +266,7 @@ def main() -> None:
         # EncounterModel.GetLossMessageFor() requires "<ENCOUNTER>.loss" (shown on the game-over screen).
         loss_text = {"eng": "Slain by {encounter}.", "rus": "Вы погибли в бою: {encounter}."}[lang]
         encounters.update({f"{PREFIX}{key}.loss": loss_text for key in all_encounters})
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang]}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang], **CREATION_SETTINGS[lang]}.items()}
         potions = {}
         for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS + M6_POTIONS:
             k = PREFIX + snake(cls)
@@ -279,7 +280,7 @@ def main() -> None:
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
         n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
-        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang]}.items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang], **CREATION_TIPS[lang]}.items()})
         n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 

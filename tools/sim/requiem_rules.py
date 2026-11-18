@@ -1457,12 +1457,12 @@ def unknown_room_event(act: int, total: int, roll: int, pick: int, seen_mask: in
 
 
 # Путь Героя
-def path_offer_act_index(total: int) -> int:
-    return 2 if total >= 5 else max(0, total - 2)
+def path_offer_act_index(total: int, short_run: bool = False) -> int:
+    return 0 if short_run else 2 if total >= 5 else max(0, total - 2)
 
 
-def path_offer_due(level: int, boss_act: int, total: int, has_path: bool) -> bool:
-    return not has_path and level >= 8 and boss_act >= path_offer_act_index(total)
+def path_offer_due(level: int, boss_act: int, total: int, has_path: bool, short_run: bool = False) -> bool:
+    return not has_path and level >= (1 if short_run else 8) and boss_act >= path_offer_act_index(total, short_run)
 
 
 def path_allowed(path: str, worldview: str, apostate: bool, unarmed: bool, ordinator: bool = False) -> bool:

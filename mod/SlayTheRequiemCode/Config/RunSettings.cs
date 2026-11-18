@@ -34,6 +34,7 @@ public static class RunSettings
     private static RunSettingsData? _active;
     private static RunSettingsData? _fromHost;
     private static readonly Dictionary<ulong, PersonalChoices> LobbyChoices = new();
+    private static readonly Dictionary<ulong, int> LobbyStartupProtocols = new();
     private static WeakReference<StartRunLobby>? _lobby;
     private static StartRunLobby? Lobby => _lobby != null && _lobby.TryGetTarget(out var lobby) ? lobby : null;
 
@@ -110,6 +111,7 @@ public static class RunSettings
             EnableMemoryStone = RequiemConfig.EnableMemoryStone,
             MemoryStoneCandles = RequiemConfig.MemoryStoneCandles,
         };
+        StartupState.StampNewRules(data);
         if (localNetId is { } id) data.Personal[id] = LocalChoices();
         return data;
     }
@@ -135,6 +137,8 @@ public static class RunSettings
     /// <summary>Хост: снимок с личным выбором всех игроков лобби — рассылается до сообщения о старте забега.</summary>
     private static RunSettingsData BuildHostSnapshot(StartRunLobby lobby)
     {
+        if (lobby.NetService.Type == NetGameType.Host)
+            StartupState.RequirePeers(lobby.Players.Where(p => p.id != lobby.NetService.NetId).Select(p => p.id), LobbyStartupProtocols);
         var data = FromConfig(lobby.NetService.NetId);
         data.RunId = Guid.NewGuid().ToString("N");
         foreach (var player in lobby.Players)
@@ -157,6 +161,7 @@ public static class RunSettings
                 // Starting with local rules would already desynchronize combat, before operation guards can help.
                 throw new InvalidOperationException("Requiem host settings/run identity missing; update the same mod version on all peers and restart the lobby");
             }
+            StartupState.RequireNewRules(_fromHost);
             _active = _fromHost;
         }
         else
@@ -165,6 +170,7 @@ public static class RunSettings
         }
         _fromHost = null;
         LobbyChoices.Clear();
+        LobbyStartupProtocols.Clear();
         MainFile.Logger.Info($"RunSettings: забег начат с настройками {_active.Encode()}");
     }
 
@@ -187,6 +193,7 @@ public static class RunSettings
                     SavedString(pack.Props, nameof(Alchemy.TravelPack.OperationPending)), Debugging.RunDiagnostics.SaveSchema, Shops.ShopOperations.Protocol);
             foreach (var path in player.Relics.Where(r => ModelDb.GetByIdOrNull<RelicModel>(r.Id) is Transformations.PathEssence))
                 _ = RelicGrantState.Read(SavedString(path.Props, nameof(Transformations.PathEssence.SignGrant)));
+            HeroProgressionSave.Validate(player);
         }
         var timelines = save.Players.SelectMany(p => p.Relics).Where(r => r.Id == packId)
             .Select(r => SavedString(r.Props, nameof(Alchemy.TravelPack.OperationRunId)))
@@ -195,23 +202,37 @@ public static class RunSettings
         return SavedRulesSnapshot.Read(codes);
     }
 
-    private static string? SavedString(SavedProperties? props, string name)
+    internal static string? SavedString(SavedProperties? props, string name)
     {
+        RequireSavedKind(props, name, "strings");
         var values = props?.strings?.Where(p => p.name == name).ToList();
         if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
         return values is { Count: 1 } ? values[0].value : null;
     }
-    private static bool SavedBool(SavedProperties? props, string name)
+    internal static bool SavedBool(SavedProperties? props, string name)
     {
+        RequireSavedKind(props, name, "bools");
         var values = props?.bools?.Where(p => p.name == name).ToList();
         if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
         return values is { Count: 1 } && values[0].value;
     }
-    private static int SavedInt(SavedProperties? props, string name)
+    internal static int SavedInt(SavedProperties? props, string name)
     {
+        RequireSavedKind(props, name, "ints");
         var values = props?.ints?.Where(p => p.name == name).ToList();
         if (values is { Count: > 1 }) throw new FormatException($"Ambiguous saved property {name}");
         return values is { Count: 1 } ? values[0].value : 0;
+    }
+
+    private static void RequireSavedKind(SavedProperties? props, string name, string kind)
+    {
+        if (props == null) return;
+        if (kind != "ints" && props.ints?.Any(p => p.name == name) == true
+            || kind != "bools" && props.bools?.Any(p => p.name == name) == true
+            || kind != "strings" && props.strings?.Any(p => p.name == name) == true
+            || props.intArrays?.Any(p => p.name == name) == true || props.modelIds?.Any(p => p.name == name) == true
+            || props.cards?.Any(p => p.name == name) == true || props.cardArrays?.Any(p => p.name == name) == true)
+            throw new FormatException($"Saved field {name} is in an unexpected property bucket; no silent default/rewrite");
     }
 
     /// <summary>Loading a disabled/vanilla run never enables Requiem from the local menu.</summary>
@@ -238,7 +259,7 @@ public static class RunSettings
         var timelines = packs.Select(p => p.OperationRunId).Where(id => id.Length > 0).Distinct(StringComparer.Ordinal).ToList();
         if (timelines.Count > 1) throw new FormatException("Saved Requiem operation timelines disagree; original save retained");
         var records = state.Players.Select(Progression.HeroRecord.Of).OfType<Progression.HeroRecord>().ToList();
-        var needsMigration = validation.MissingCopies || grimoires.Any(g => StartupState.NeedsLegacyMigration(g.StartProtocol))
+        var needsMigration = validation.MissingCopies || grimoires.Any(g => StartupState.NeedsLegacyMigration(g.StartProtocol) || g.MasterySourceData.Length == 0)
             || records.Any(r => r.FatigueVisitKey.Length == 0) || packs.Any(p => p.OperationRunId.Length == 0
                 || p.DataSchema < Debugging.RunDiagnostics.SaveSchema || p.ShopProtocol < Shops.ShopOperations.Protocol)
             || validation.Rules is { RunId.Length: 0 };
@@ -250,7 +271,12 @@ public static class RunSettings
             var code = _active.Encode();
             foreach (var grimoire in grimoires) grimoire.RunSettingsCode = code;
         }
-        foreach (var grimoire in grimoires) grimoire.MigrateLegacyStart();
+        foreach (var grimoire in grimoires)
+        {
+            grimoire.MigrateLegacyMastery(); // opaque exact counters, no reconstruction of historical paid ranks
+            grimoire.MigrateLegacyStart();
+        }
+        foreach (var record in records.Where(r => !InventoryGate.For(r.Owner).Blocked)) record.RecordNativeSchools();
         foreach (var record in records.Where(r => r.FatigueVisitKey.Length == 0))
             record.FatigueVisitKey = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{state.CurrentActIndex}:{state.TotalFloor}");
         var timeline = timelines.FirstOrDefault() ?? (_active?.RunId is { Length: > 0 } id ? id
@@ -278,8 +304,20 @@ public static class RunSettings
             MainFile.Logger.Warn($"RunSettings: invalid/missing run identity in host snapshot from {senderId}");
             return;
         }
+        try { StartupState.RequireNewRules(data); }
+        catch (FormatException e) { MainFile.Logger.Error($"RunSettings: host wizard protocol rejected: {e.Message}"); return; }
         _fromHost = data;
         MainFile.Logger.Info($"RunSettings: получен снимок хоста {code}");
+    }
+
+    /// <summary>Authenticated ready-time agreement; old/missing/future clients cannot start a different choice stream.</summary>
+    public static void OnStartupProtocol(ulong senderId, int protocol)
+    {
+        if (Lobby is not { } lobby || lobby.NetService.Type != NetGameType.Host || senderId == lobby.NetService.NetId
+            || !lobby.Players.Any(p => p.id == senderId)) return;
+        LobbyStartupProtocols.Remove(senderId);
+        if (protocol == StartupState.Protocol) LobbyStartupProtocols[senderId] = protocol;
+        else MainFile.Logger.Error($"RunSettings: incompatible hero creation protocol {protocol} from {senderId}");
     }
 
     /// <summary>Хост: личный выбор клиента (при «Готов»).</summary>
@@ -311,6 +349,12 @@ public static class RunSettings
             _lobby = new(__instance);
             _fromHost = null;
             LobbyChoices.Clear(); // no choices/nonce from a previously cancelled lobby
+            LobbyStartupProtocols.Clear();
+            __instance.PlayerDisconnected += player =>
+            {
+                if (!ReferenceEquals(Lobby, __instance)) return;
+                LobbyChoices.Remove(player.id); LobbyStartupProtocols.Remove(player.id); // no stale agreement on rejoin
+            };
         }
     }
 
@@ -359,6 +403,7 @@ public static class RunSettings
     }
 
     /// <summary>Клиент отправляет хосту свой личный выбор, нажимая «Готов» (до сообщения о готовности).</summary>
+    [CriticalPatch]
     [HarmonyPatch(typeof(StartRunLobby), nameof(StartRunLobby.SetReady))]
     public static class ClientSendsChoices
     {
@@ -369,12 +414,17 @@ public static class RunSettings
             var c = LocalChoices();
             try
             {
+                CustomMessageWrapper.Send(new HeroCreationProtocolMessage { protocol = StartupState.Protocol }, __instance.NetService);
                 CustomMessageWrapper.Send(new PersonalChoicesMessage
                 {
                     platebearer = c.PlatebearerOrigin, silent = c.SilentOrigin, regent = c.RegentOrigin, background = c.Background,
                 }, __instance.NetService);
             }
-            catch (Exception e) { MainFile.Logger.Warn($"RunSettings: личный выбор не отправлен: {e.Message}"); }
+            catch (Exception e)
+            {
+                MainFile.Logger.Error($"RunSettings: protocol/choices not sent; ready rejected: {e}");
+                throw;
+            }
         }
     }
 
@@ -422,6 +472,7 @@ public static class RunSettings
         {
             _active = null;
             _fromHost = null;
+            LobbyStartupProtocols.Clear();
             SourceName = "menu (no run snapshot)";
             Debugging.RunDiagnostics.LaunchKind = "unknown";
         }

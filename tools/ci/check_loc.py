@@ -18,6 +18,7 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 LOC = os.path.join(ROOT, "mod", "SlayTheRequiem", "localization")
@@ -179,12 +180,55 @@ def check_moves(errors: list) -> int:
     return checked
 
 
+def creation_keys(source: str, ui_source: str, stages: list[str], schools: list[str]) -> set[str]:
+    """Finite dynamically assembled CREATION keys, not a C# compiler or a visual-layout test."""
+    keys = set(re.findall(r'\bText\("([A-Za-z][A-Za-z0-9.]*)"', source))
+    for a, b in re.findall(r'\bText\([^;\n]*?\?\s*"([A-Za-z][A-Za-z0-9.]*)"\s*:\s*"([A-Za-z][A-Za-z0-9.]*)"', source):
+        keys.update((a, b))
+    for body in re.findall(r'\bText\(\w+\s+switch\s*\{([^}]+)\}', source):
+        keys.update(re.findall(r'=>\s*"([A-Za-z][A-Za-z0-9.]*)"', body))
+    keys.update(re.findall(r'"CREATION\.([A-Za-z][A-Za-z0-9.]*)\.title"', ui_source))
+    if "stage." in keys:
+        keys.remove("stage.")
+        keys.update("stage." + name for name in stages)
+    if "school." in keys:
+        keys.remove("school.")
+        keys.update("school." + name for name in schools)
+    return keys
+
+
+def enum_names(path: str, name: str) -> list[str]:
+    source = re.sub(r"//[^\n]*", "", Path(path).read_text(encoding="utf-8"))
+    body = re.search(r"\benum\s+" + re.escape(name) + r"\s*\{([^}]+)\}", source)
+    if not body:
+        raise ValueError(f"Missing enum {name} in {path}")
+    return [item.split("=")[0].strip() for item in body[1].split(",") if item.strip()]
+
+
+def check_creation_keys(errors: list) -> int:
+    source = Path(CODE, "Progression", "HeroCreation.cs").read_text(encoding="utf-8")
+    ui = Path(CODE, "UI", "NHeroCreationScreen.cs").read_text(encoding="utf-8")
+    keys = creation_keys(source, ui, enum_names(os.path.join(CODE, "Core", "HeroCreationPlan.cs"), "CreationStage"),
+                         enum_names(os.path.join(CODE, "Core", "SpellAffinity.cs"), "SpellSchool"))
+    tables = {lang: json.loads(Path(LOC, lang, "static_hover_tips.json").read_text(encoding="utf-8")) for lang in ("eng", "rus")}
+    for key in sorted(keys):
+        name = f"{PREFIX}CREATION.{key}.title"
+        for lang, table in tables.items():
+            if name not in table:
+                errors.append(f"HeroCreation: нет {lang}/static_hover_tips.json → {name}")
+        placeholders = [set(re.findall(r"\{([A-Za-z]\w*)\}", tables[lang].get(name, ""))) for lang in ("eng", "rus")]
+        if placeholders[0] != placeholders[1]:
+            errors.append(f"HeroCreation: несовместимые параметры RU/EN → {name}")
+    return len(keys)
+
+
 def main() -> int:
     errors: list = []
     check_parity(errors)
     checked = check_models(errors)
     checked += check_moves(errors)
     checked += check_ui_keys(errors)
+    checked += check_creation_keys(errors)
     for e in errors:
         print("✗", e)
     print(f"Моделей проверено: {checked}; ошибок: {len(errors)}")

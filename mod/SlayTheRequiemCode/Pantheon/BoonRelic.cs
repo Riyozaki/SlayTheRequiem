@@ -98,6 +98,36 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         if (!await UpdateGrantedMaxHp(0)) throw new InvalidOperationException("Boon HP reconciliation busy/blocked; relic must not be removed yet");
     }
 
+    /// <summary>
+    /// Reborn may change stat HP AND identity-dependent gifts (e.g. Ash Nomad). Reconcile every retained Boon
+    /// in one native delta, not separately clamped losses/gains that manufacture max HP near the floor.
+    /// The surrounding Path scope already owns the checkpoint/write-ahead marker.
+    /// </summary>
+    internal static async Task SyncIdentityMaxHp(Player owner, int identityDelta)
+    {
+        if (!InventoryGate.IsMutating(owner) || InventoryGate.For(owner).Blocked)
+            throw new InvalidOperationException("Identity HP reconciliation requires a live tracked transition");
+        var changes = owner.Relics.OfType<BoonRelic>().Select(relic => (relic, target: relic.ActiveBoon.MaxHp)).ToList();
+        if (changes.Any(c => c.relic._updatingMaxHp)) throw new InvalidOperationException("Identity HP reconciliation is already executing");
+        var delta = HeroIdentityRules.ReconciledHpDelta(owner.Creature.MaxHp, changes.Sum(c => c.relic.GrantedMaxHp),
+            changes.Sum(c => c.target), identityDelta);
+        foreach (var (relic, _) in changes) relic._updatingMaxHp = true;
+        try
+        {
+            if (delta > 0) await CreatureCmd.GainMaxHp(owner.Creature, delta);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), owner.Creature, -delta, false);
+            if (changes.Any(c => !owner.Relics.Contains(c.relic) || c.target != c.relic.ActiveBoon.MaxHp))
+                throw new InvalidOperationException("Identity HP sources changed during a native callback");
+            foreach (var (relic, target) in changes) relic.GrantedMaxHp = target;
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(owner, $"Identity HP source reconciliation interrupted; restore the Path checkpoint: {e}");
+            throw;
+        }
+        finally { foreach (var (relic, _) in changes) relic._updatingMaxHp = false; }
+    }
+
     private async Task<bool> UpdateGrantedMaxHp(int target)
     {
         if (_updatingMaxHp || InventoryGate.For(Owner).Blocked) return false;
@@ -112,9 +142,9 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         _updatingMaxHp = true;
         try
         {
-            var delta = target - _grantedMaxHp;
+            var delta = HeroIdentityRules.ReconciledHpDelta(Owner.Creature.MaxHp, _grantedMaxHp, target);
             if (delta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, delta);
-            else await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, Math.Min(-delta, Owner.Creature.MaxHp - 1), false);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -delta, false);
             GrantedMaxHp = target;
             mutation?.Complete();
             return true;

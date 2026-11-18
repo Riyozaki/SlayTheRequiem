@@ -86,7 +86,7 @@
         <AssemblyMetadata Include="GitCommit" Value="$(SourceRevisionId)" />
         <AssemblyMetadata Include="SourceTreeHash" Value="$(SourceTreeHash)" />
         <AssemblyMetadata Include="GitDirty" Value="$(GitDirty)" />
-        <AssemblyMetadata Include="SaveSchema" Value="3" />
+        <AssemblyMetadata Include="SaveSchema" Value="4" />
         <AssemblyMetadata Include="ShopProtocol" Value="1" />
     </ItemGroup>
 

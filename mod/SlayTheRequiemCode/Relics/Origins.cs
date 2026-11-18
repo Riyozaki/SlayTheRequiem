@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.RelicPools;
 using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Runs;
+using MegaCrit.Sts2.Core.Saves.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
@@ -28,6 +29,10 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
     public override bool IsAllowed(IRunState runState) => false;
 
     protected virtual int MaxHpDelta => 0;
+    internal int IdentityMaxHp => MaxHpDelta;
+    private bool _identityReplacement;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public bool IdentityReplacement { get => _identityReplacement; set { AssertMutable(); _identityReplacement = value; } }
     public virtual int StaminaPoolBonus => 0;
     public virtual int StaminaRegenBonus => 0;
     public virtual int ManaPoolBonus => 0;
@@ -41,6 +46,8 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
 
     public override async Task AfterObtained()
     {
+        if (IdentityReplacement) return; // the confirmed Reborn adapter reconciles the net passive delta once
+        Mastery.GrimoireOf(Owner)?.RefreshIdentitySources();
         if (MaxHpDelta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, MaxHpDelta);
         else if (MaxHpDelta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -MaxHpDelta, false);
     }
@@ -72,29 +79,27 @@ public abstract class OriginRelic : RequiemRelic, IResourceSource
         _ => null,
     };
 
-    /// <summary>Варианты для экрана выбора (настройка «На выбор»); null — выбора нет, берётся <see cref="ForHero"/>.</summary>
+    /// <summary>All supported choices, regardless of a legacy Random/fixed menu default. None is explicit in the wizard.</summary>
     public static List<RelicModel>? Choices(Player player)
     {
         Type[]? types = player.Character.GetType().Name switch
         {
-            "Ironclad" when RunSettings.PlatebearerOrigin(player) == PlatebearerOriginChoice.Choose =>
+            "Ironclad" =>
                 [typeof(FrostbornOrigin), typeof(ForgebloodOrigin), typeof(DunebladeOrigin), typeof(CitadelOrigin)],
-            "Silent" when RunSettings.SilentOrigin(player) == SilentOriginChoice.Choose =>
+            "Silent" =>
                 [typeof(MoonbornOrigin), typeof(ThicketbornOrigin), typeof(MarshbornOrigin)],
-            "Regent" when RunSettings.RegentOrigin(player) == RegentOriginChoice.Choose =>
+            "Regent" =>
                 [typeof(HighbornOrigin), typeof(MistbornOrigin), typeof(AshbornOrigin)],
             _ => null,
         };
         return types?.Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t)).ToMutable()).ToList();
     }
 
-    /// <summary>Происхождение: экран выбора (MP-синхронный) или по настройке.</summary>
+    /// <summary>Synchronized choice; cancellation never falls back to Random.</summary>
     public static async Task<OriginRelic?> Pick(Player player)
     {
-        if (Choices(player) is { Count: > 0 } options
-            && await RelicSelectCmd.FromChooseARelicScreen(player, options) is OriginRelic chosen)
-            return chosen;
-        return ForHero(player);
+        return Choices(player) is { Count: > 0 } options
+            ? await RelicSelectCmd.FromChooseARelicScreen(player, options) as OriginRelic : null;
     }
 
     public static OriginRelic? ForPlatebearer(Player player)

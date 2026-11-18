@@ -178,6 +178,17 @@ public sealed class RunSettingsMessage : ICustomMessage
     public void HandleMessage(ulong senderId) => Config.RunSettings.OnHostSettings(data, senderId);
 }
 
+/// <summary>Client → current lobby host before Ready; separate type so legacy personal-choice packets cannot be misread as agreement.</summary>
+public sealed class HeroCreationProtocolMessage : ICustomMessage
+{
+    public int protocol = Core.StartupState.Protocol;
+    public bool ShouldBroadcast => false;
+    public bool ShouldBuffer => false;
+    public void Serialize(PacketWriter writer) => writer.WriteInt(protocol, 8);
+    public void Deserialize(PacketReader reader) => protocol = reader.ReadInt(8);
+    public void HandleMessage(ulong senderId) => Config.RunSettings.OnStartupProtocol(senderId, protocol);
+}
+
 /// <summary>Клиент → хост в лобби: личный выбор (происхождения трёх героев и предыстория) — при нажатии «Готов».</summary>
 public sealed class PersonalChoicesMessage : ICustomMessage
 {

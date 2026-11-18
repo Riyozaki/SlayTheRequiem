@@ -42,7 +42,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Debugging;
 /// SINGLEPLAYER run, outside combat, BaseLib + this mod only. Never swap RunManager.State/TestMode or write saves.
 /// This is an adapter regression, NOT reward UI, disk Continue/rollback, two-client or visual acceptance.
 /// </summary>
-public static class IntegrityRegression
+public static partial class IntegrityRegression
 {
     private static bool _running;
     private static string Json<T>(T value) => JsonSerializer.Serialize(value, JsonSerializationUtility.GetTypeInfo<T>());
@@ -146,6 +146,15 @@ public static class IntegrityRegression
             ("path-sign-late-insert-no-second-obtain", PathSignLateInsert),
             ("raw-native-read-preflight-no-repair", RawSavePreflight),
             ("boon-hp-writeahead-save-and-revoke", BoonHpWriteAhead),
+            ("creation-gold-receipt-not-replayed", CreationGold),
+            ("creation-common-potion-exact-source", CreationPotion),
+            ("creation-full-belt-bonus-only-retry", CreationFullBelt),
+            ("creation-basic-exact-removal", CreationRemoval),
+            ("creation-vagrant-preselected-removal", CreationVagrant),
+            ("reborn-refund-retains-skills-treatises-loot", RebornSources),
+            ("reborn-opaque-legacy-preflight", RebornLegacy),
+            ("reborn-insertion-save-fails-closed", RebornInterrupted),
+            ("creation-invalid-saved-source-readonly", CreationPreflight),
         };
         var failures = 0;
         try
@@ -1193,7 +1202,8 @@ public static class IntegrityRegression
         var owner = Fixture(); var grimoire = Mastery.GrimoireOf(owner)!;
         var hp = owner.Creature.MaxHp; var deck = owner.Deck.Cards.Count;
         grimoire.StartProtocol = 0; grimoire.StartPhase = 0; grimoire.OriginGranted = true;
-        grimoire.MigrateLegacyStart();
+        grimoire.CreationData = ""; grimoire.MasterySourceData = ""; // a real pre-v2 fixture, not mixed current metadata
+        grimoire.MigrateLegacyMastery(); grimoire.MigrateLegacyStart();
         Require(grimoire.StartingChoicesComplete && grimoire.OriginChoiceId == "none" && grimoire.BackgroundChoiceId == "none",
             "Legacy completed 'none' decision became unfinished");
         var restored = Reload(owner); var after = Mastery.GrimoireOf(restored)!; after.MigrateLegacyStart();
@@ -1344,6 +1354,12 @@ public static class IntegrityRegression
 
     private static Task WireRoundTrip()
     {
+        var protocol = new HeroCreationProtocolMessage();
+        var protocolWriter = new PacketWriter(); protocol.Serialize(protocolWriter);
+        var protocolReader = new PacketReader(); protocolReader.Reset(protocolWriter.Buffer);
+        var protocolCopy = new HeroCreationProtocolMessage(); protocolCopy.Deserialize(protocolReader);
+        Require(protocolCopy.protocol == StartupState.Protocol && protocolReader.BitPosition == protocolWriter.BitPosition,
+            "Hero creation ready protocol changed on the native wire");
         var run = OperationIdentity.RunKey("seed", "saved-nonce", ulong.MaxValue);
         var request = new ShopRequest(run, OperationIdentity.Id(run, 17), 17, OperationIdentity.Hash("before"), ShopAction.Sell, -4, 9, "r:19,r:20");
         var message = new ShopActionMessage { location = new RunLocation(2, null, 1), request = request };

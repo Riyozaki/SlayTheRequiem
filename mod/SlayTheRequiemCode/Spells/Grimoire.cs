@@ -54,34 +54,92 @@ public sealed class Grimoire : RequiemRelic
         _ => 0,
     };
 
-    public void SetLevel(SpellSchool school, int value)
+    private string _masterySourceData = "", _creationData = "", _rebirthData = "";
+    private bool _legacyCreation;
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string MasterySourceData
     {
-        value = Math.Clamp(value, 0, SpellAffinity.MaxMastery);
-        switch (school)
+        get => _masterySourceData;
+        set { AssertMutable(); if (!string.IsNullOrEmpty(value)) _ = MasterySources.Read(value); _masterySourceData = value ?? ""; }
+    }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string CreationData
+    {
+        get => _creationData;
+        set { AssertMutable(); if (!string.IsNullOrEmpty(value) && HeroCreationPlan.Read(value).Mode != CreationMode.Start) throw new FormatException("Wrong startup plan mode"); _creationData = value ?? ""; }
+    }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string RebirthData
+    {
+        get => _rebirthData;
+        set { AssertMutable(); if (!string.IsNullOrEmpty(value) && HeroCreationPlan.Read(value).Mode != CreationMode.Rebirth) throw new FormatException("Wrong rebirth plan mode"); _rebirthData = value ?? ""; }
+    }
+    /// <summary>Explicit compatibility receipt: already-completed old startup, no new bonus or replay.</summary>
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public bool LegacyCreation { get => _legacyCreation; set { AssertMutable(); _legacyCreation = value; } }
+
+    internal int[] MasteryCounters => Mastery.Schools.Select(Level).ToArray();
+    internal MasterySources Sources
+    {
+        get
         {
-            case SpellSchool.Destruction: Destruction = value; break;
-            case SpellSchool.Restoration: Restoration = value; break;
-            case SpellSchool.Alteration: Alteration = value; break;
-            case SpellSchool.Conjuration: Conjuration = value; break;
-            case SpellSchool.Illusion: Illusion = value; break;
+            var sources = MasterySources.Read(MasterySourceData);
+            sources.RequireCounters(MasteryCounters);
+            return sources;
         }
+    }
+    internal void ApplySources(MasterySources sources)
+    {
+        var encoded = sources.Encode(); // validate/encode before changing any field
+        AssertMutable();
+        _destruction = sources.Level(SpellSchool.Destruction);
+        _restoration = sources.Level(SpellSchool.Restoration);
+        _alteration = sources.Level(SpellSchool.Alteration);
+        _conjuration = sources.Level(SpellSchool.Conjuration);
+        _illusion = sources.Level(SpellSchool.Illusion);
+        _masterySourceData = encoded;
         InvokeDisplayAmountChanged();
     }
-
-    /// <summary>+1 владения (трактат, узел ветки, Наставник). false — уже Мастер.</summary>
+    internal void MigrateLegacyMastery()
+    {
+        if (MasterySourceData.Length == 0) MasterySourceData = MasterySources.PreserveLegacy(MasteryCounters).Encode();
+    }
+    /// <summary>Debug fixture override, deliberately opaque/non-refundable; gameplay must use source-qualified APIs.</summary>
+    public void SetLevel(SpellSchool school, int value)
+    {
+        if (!Enum.IsDefined(school)) throw new ArgumentOutOfRangeException(nameof(school));
+        var levels = MasteryCounters;
+        levels[(int)school] = Math.Clamp(value, 0, SpellAffinity.MaxMastery);
+        ApplySources(MasterySources.PreserveLegacy(levels));
+    }
+    /// <summary>Treatise/event acquisition. Paid stats and learned skills have distinct entry points.</summary>
     public bool Raise(SpellSchool school)
     {
-        var current = Level(school);
-        if (current >= SpellAffinity.MaxMastery) return false;
-        SetLevel(school, current + 1);
-        return true;
+        if (!Sources.TryRaiseAcquired(school, out var next)) return false;
+        ApplySources(next); return true;
+    }
+    internal bool BuyMastery(SpellSchool school, int points)
+    {
+        if (!Sources.TryBuyStat(school, points, out var next)) return false;
+        ApplySources(next); return true;
+    }
+    internal void ApplySkill(Skill skill) => ApplySources(Sources.WithSkill(skill));
+    internal void RefreshIdentitySources()
+    {
+        if (!Sources.IdentityKnown) return; // preserve opaque legacy counters, do not invent new old grants
+        ApplySources(Sources.WithIdentity(
+            HeroIdentityRules.OriginMastery(Owner.Relics.OfType<OriginRelic>().SingleOrDefault()?.GetType().Name),
+            HeroIdentityRules.BackgroundMastery(Owner.Relics.OfType<BackgroundRelic>().SingleOrDefault()?.GetType().Name)));
+        Progression.HeroRecord.Of(Owner)?.RecordNativeSchools();
     }
 
     private bool _starting;
+    private MegaCrit.Sts2.Core.Rooms.AbstractRoom? _processedRoom;
     private int _startPhase, _startProtocol;
     private string _originChoiceId = "", _backgroundChoiceId = "";
 
-    /// <summary>0/1: origin not selected/selected; 2/3: origin committed/background selected; 4: complete.</summary>
+    // Keep v1 field names for backed-up migration; the v2 wizard's actual progress is CreationData.
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int StartPhase
     {
@@ -98,19 +156,18 @@ public sealed class Grimoire : RequiemRelic
     public string OriginChoiceId { get => _originChoiceId; set { AssertMutable(); _originChoiceId = value ?? ""; } }
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public string BackgroundChoiceId { get => _backgroundChoiceId; set { AssertMutable(); _backgroundChoiceId = value ?? ""; } }
-    public bool StartingChoicesComplete => StartupState.IsComplete(StartPhase, OriginGranted);
+    public bool StartingChoicesComplete => StartupState.IsComplete(StartPhase, OriginGranted)
+        && (LegacyCreation || CreationData.Length > 0 && HeroCreationPlan.Read(CreationData).Stage == CreationStage.Complete);
 
     internal void MigrateLegacyStart()
     {
         if (!StartupState.NeedsLegacyMigration(StartProtocol)) return;
-        StartPhase = StartupState.LegacyPhase(OriginGranted);
-        if (!OriginGranted && Owner.Relics.Any(r => r is OriginRelic or BackgroundRelic))
-            InventoryGate.Block(Owner, "Legacy startup contains choice relics without its completed declaration. One-shot bonuses cannot be safely replayed; retain the migration backup and restore a known-safe checkpoint.");
-        if (OriginGranted)
-        {
-            OriginChoiceId = Owner.Relics.OfType<OriginRelic>().FirstOrDefault()?.Id.Entry ?? "none";
-            BackgroundChoiceId = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault()?.Id.Entry ?? "none";
-        }
+        if (!OriginGranted || StartProtocol == 1 && StartPhase != StartupState.Complete)
+            throw new FormatException("Unfinished legacy identity has no safe one-shot receipt; retain the pre-load backup and use its matching build/checkpoint");
+        StartPhase = StartupState.Complete;
+        OriginChoiceId = Owner.Relics.OfType<OriginRelic>().SingleOrDefault()?.Id.Entry ?? "none";
+        BackgroundChoiceId = Owner.Relics.OfType<BackgroundRelic>().SingleOrDefault()?.Id.Entry ?? "none";
+        LegacyCreation = true;
         StartProtocol = StartupState.Protocol;
     }
 
@@ -118,71 +175,25 @@ public sealed class Grimoire : RequiemRelic
     {
         base.DeepCloneFields();
         _starting = false;
+        _processedRoom = null; // journals are immutable strings, no mutable plan/cache shared across players
     }
 
-    /// <summary>Resume only unfinished startup steps; flags follow observed grants, never precede an await.</summary>
     public override async Task AfterRoomEntered(MegaCrit.Sts2.Core.Rooms.AbstractRoom room)
     {
-        if (_starting || StartPhase == 4 || !RequiemMode.IsInSystem(Owner)) return;
+        if (_starting || ReferenceEquals(_processedRoom, room) || !RequiemMode.IsInSystem(Owner)) return;
         _starting = true;
+        _processedRoom = room;
         try
         {
             using var lease = await InventoryGate.For(Owner).Enter();
             if (lease == null) return;
-            using var mutation = InventoryGate.Track(Owner, lease, "starting-choices");
-            try
-            {
-                var origin = Owner.Relics.OfType<OriginRelic>().FirstOrDefault();
-                if (origin != null && StartPhase < 2) { OriginChoiceId = origin.Id.Entry; StartPhase = 2; }
-                if (StartPhase == 0)
-                {
-                    var chosen = await OriginRelic.Pick(Owner);
-                    OriginChoiceId = chosen?.Id.Entry ?? "none";
-                    StartPhase = 1; // persist the decision BEFORE the obtain callback
-                }
-                if (StartPhase == 1)
-                {
-                    if (OriginChoiceId != "none")
-                    {
-                        var canonical = ModelDb.AllRelics.OfType<OriginRelic>().FirstOrDefault(r => r.Id.Entry == OriginChoiceId)
-                            ?? throw new InvalidOperationException("Selected origin model unavailable; saved decision retained");
-                        origin = (OriginRelic)canonical.ToMutable();
-                        await RelicCmd.Obtain(origin, Owner);
-                        if (!Owner.Relics.Contains(origin)) throw new InvalidOperationException("Origin grant did not commit");
-                    }
-                    StartPhase = 2;
-                }
-                origin ??= Owner.Relics.OfType<OriginRelic>().FirstOrDefault();
-                var background = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault();
-                if (background != null) { BackgroundChoiceId = background.Id.Entry; StartPhase = 4; }
-                if (StartPhase == 2)
-                {
-                    var chosen = await BackgroundRelic.Pick(Owner, origin);
-                    BackgroundChoiceId = chosen?.Id.Entry ?? "none";
-                    StartPhase = 3;
-                }
-                if (StartPhase == 3)
-                {
-                    if (BackgroundChoiceId != "none")
-                    {
-                        var canonical = ModelDb.AllRelics.OfType<BackgroundRelic>().FirstOrDefault(r => r.Id.Entry == BackgroundChoiceId)
-                            ?? throw new InvalidOperationException("Selected background model unavailable; saved decision retained");
-                        background = (BackgroundRelic)canonical.ToMutable();
-                        await RelicCmd.Obtain(background, Owner);
-                        if (!Owner.Relics.Contains(background)) throw new InvalidOperationException("Background grant did not commit");
-                    }
-                    StartPhase = 4;
-                }
-                OriginGranted = StartPhase == 4; // HeroRecord may now offer the next independent startup step
-                mutation.Complete();
-            }
-            catch (Exception e)
-            {
-                // AfterObtained can fail after adding a relic/HP/cards. Never replay unknown one-shot bonuses.
-                InventoryGate.Block(Owner, $"Starting choices interrupted at phase={StartPhase}: {e}");
-                mutation.Complete();
-            }
+            var resumingRebirth = RebirthData.Length > 0 && HeroCreationPlan.Read(RebirthData).Stage != CreationStage.Complete;
+            if (!StartingChoicesComplete) await Progression.HeroCreation.ResumeStart(this, lease);
+            if (StartingChoicesComplete) await Progression.HeroCreation.ResumeRebirth(this, lease);
+            if (StartingChoicesComplete && !resumingRebirth && Progression.HeroRecord.Of(Owner) is { } hero)
+                await hero.ResumePendingPaths(lease);
         }
+        catch { _processedRoom = null; throw; }
         finally { _starting = false; }
     }
 
@@ -201,9 +212,11 @@ public sealed class Grimoire : RequiemRelic
 
     public void InitFor(string? heroTypeName)
     {
-        foreach (var school in Mastery.Schools)
-            SetLevel(school, SpellAffinity.StartingMastery(heroTypeName, school));
+        ApplySources(MasterySources.ForNewHero(heroTypeName ?? ""));
+        StartProtocol = StartupState.Protocol;
+        CreationData = HeroCreationPlan.Empty(CreationMode.Start).Encode();
     }
+
 }
 
 /// <summary>Трактат владения: при получении +1 к школе и исчезает (docs/design/08 §8.3).</summary>
@@ -250,8 +263,60 @@ public static class StartupActBoundaryPatch
             {
                 if (!RequiemMode.IsInSystem(player)) continue;
                 if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
-                if (Mastery.GrimoireOf(player) is { StartingChoicesComplete: false } grimoire) await grimoire.AfterRoomEntered(room);
+                if (Mastery.GrimoireOf(player) is { } grimoire) await grimoire.AfterRoomEntered(room);
             }
         Rollback.MemoryStone.AfterActHooksCompleted(runState);
+    }
+}
+
+/// <summary>Resume mandatory choices before combat resources are prepared, not after a stale pool was installed.</summary>
+[CriticalPatch]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Hooks.Hook), nameof(MegaCrit.Sts2.Core.Hooks.Hook.BeforeRoomEntered))]
+public static class HeroCreationCombatBoundaryPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(IRunState runState, MegaCrit.Sts2.Core.Rooms.AbstractRoom room, ref Task __result) =>
+        __result = Finish(__result, runState, room);
+
+    private static async Task Finish(Task native, IRunState runState, MegaCrit.Sts2.Core.Rooms.AbstractRoom room)
+    {
+        await native;
+        if (!ReferenceEquals(runState, Net.RequiemNet.State) || room is not MegaCrit.Sts2.Core.Rooms.CombatRoom) return;
+        foreach (var player in runState.Players)
+        {
+            if (!RequiemMode.IsInSystem(player)) continue;
+            Progression.HeroRecord.Of(player)?.NoteRoomVisit(room); // preview the actual next-combat stamina pool
+            if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
+            if (Mastery.GrimoireOf(player) is { } grimoire)
+            {
+                await grimoire.AfterRoomEntered(room);
+                if (!grimoire.StartingChoicesComplete || grimoire.RebirthData.Length > 0
+                    && HeroCreationPlan.Read(grimoire.RebirthData).Stage != CreationStage.Complete)
+                    throw new InvalidOperationException("Mandatory hero decisions are incomplete/blocked; restore the safe checkpoint before combat");
+            }
+        }
+    }
+}
+
+/// <summary>Continue skips ordinary room hooks for MapRoom and prefinished rooms. Resume only decisions/receipts, never victory gifts.</summary>
+[CriticalPatch]
+[HarmonyPatch(typeof(MegaCrit.Sts2.Core.Rooms.AbstractRoom), nameof(MegaCrit.Sts2.Core.Rooms.AbstractRoom.Enter))]
+public static class HeroCreationRestoreBoundaryPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(MegaCrit.Sts2.Core.Rooms.AbstractRoom __instance, IRunState? runState,
+        bool isRestoringRoomStackBase, ref Task __result) => __result = Finish(__result, __instance, runState, isRestoringRoomStackBase);
+
+    private static async Task Finish(Task native, MegaCrit.Sts2.Core.Rooms.AbstractRoom room, IRunState? runState, bool restoringBase)
+    {
+        await native;
+        if (restoringBase || runState == null || !ReferenceEquals(runState, Net.RequiemNet.State)
+            || room is not MegaCrit.Sts2.Core.Rooms.MapRoom && !room.IsPreFinished) return;
+        foreach (var player in runState.Players)
+        {
+            if (!RequiemMode.IsInSystem(player)) continue;
+            if (Alchemy.HerbalistPouch.Of(player) is { BeltGranted: false } pouch) await pouch.AfterRoomEntered(room);
+            if (Mastery.GrimoireOf(player) is { } grimoire) await grimoire.AfterRoomEntered(room);
+        }
     }
 }

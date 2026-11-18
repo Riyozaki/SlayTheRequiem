@@ -76,6 +76,8 @@ jobs:
           git diff --exit-code -- mod/SlayTheRequiem/localization || (echo "::error::Run python3 tools/loc/build_loc.py and commit the result" && exit 1)
       - name: Localization coverage (eng = rus, every model has a title, model ids are unique)
         run: python tools/ci/check_loc.py
+      - name: Content checker regressions (including dynamic creation localization)
+        run: python -m unittest discover -s tools/ci -v
       - name: C# syntax (all mod files)
         run: python tools/ci/check_csharp_syntax.py
       - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)

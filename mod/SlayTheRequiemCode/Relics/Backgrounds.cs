@@ -1,5 +1,4 @@
 using BaseLib.Utils;
-using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Commands.Builders;
@@ -37,6 +36,12 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     public override bool IsAllowed(IRunState runState) => false;
 
     protected virtual int MaxHpDelta => 0;
+    internal int IdentityMaxHp => MaxHpDelta;
+    private bool _identityReplacement, _startupSetupDone;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public bool IdentityReplacement { get => _identityReplacement; set { AssertMutable(); _identityReplacement = value; } }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public bool StartupSetupDone { get => _startupSetupDone; set { AssertMutable(); _startupSetupDone = value; } }
     public virtual int StaminaPoolBonus => 0;
     public virtual int StaminaRegenBonus => 0;
     public virtual int ManaPoolBonus => 0;
@@ -45,12 +50,16 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     public virtual int PoiseBonus => 0;
     public virtual int BurdenBonus => 0;
 
-    /// <summary>Разовая настройка старта: замена карт, зелья, владение.</summary>
+    /// <summary>One-shot starter gifts only. Permanent mastery belongs to the identity source journal.</summary>
     protected virtual Task SetUpStart() => Task.CompletedTask;
 
     public override async Task AfterObtained()
     {
+        if (IdentityReplacement || StartupSetupDone) return;
+        StartupSetupDone = true; // an exception is uncertain, never permission to issue these gifts again
+        Mastery.GrimoireOf(Owner)?.RefreshIdentitySources();
         if (MaxHpDelta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, MaxHpDelta);
+        else if (MaxHpDelta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -MaxHpDelta, false);
         await SetUpStart();
     }
 
@@ -73,8 +82,6 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
 
     /// <summary>Стартовый предмет: снаряжение надевается само (<see cref="Equipment.EquipmentRelic.AfterObtained"/>).</summary>
     protected Task GiveRelic<T>() where T : RelicModel => RelicCmd.Obtain(ModelDb.Relic<T>().ToMutable(), Owner);
-
-    protected void RaiseMastery(SpellSchool school) => Mastery.GrimoireOf(Owner)?.Raise(school);
 
     /// <summary>Аура на врагов в первый ход героя (враги уже подготовлены правилами боя).</summary>
     protected static bool IsFirstTurnOf(Player player, Player owner) =>
@@ -112,13 +119,9 @@ public abstract class BackgroundRelic : RequiemRelic, IResourceSource
     /// <summary>Предыстория: экран выбора при настройке «На выбор» (готовые предыстории происхождения + Бродяга).</summary>
     public static async Task<BackgroundRelic?> Pick(Player player, OriginRelic? origin)
     {
-        if (RunSettings.Background(player) == BackgroundChoice.Choose)
-        {
-            var options = Options(origin).Where(t => t != null).Append(typeof(VagrantBackground)).Distinct()
-                .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable()).ToList();
-            if (await RelicSelectCmd.FromChooseARelicScreen(player, options) is BackgroundRelic chosen) return chosen;
-        }
-        return For(player, origin);
+        var options = Options(origin).Where(t => t != null).Append(typeof(VagrantBackground)).Distinct()
+            .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable()).ToList();
+        return await RelicSelectCmd.FromChooseARelicScreen(player, options) as BackgroundRelic;
     }
 
     public static BackgroundRelic? For(Player player, OriginRelic? origin)
@@ -154,12 +157,7 @@ public sealed class VagrantBackground : BackgroundRelic
     public override int ManaPoolBonus => 1;
     public override int BurdenBonus => 3;
 
-    protected override async Task SetUpStart()
-    {
-        var prefs = new CardSelectorPrefs(CardSelectorPrefs.RemoveSelectionPrompt, 1) { Cancelable = true };
-        var picked = (await CardSelectCmd.FromDeckForRemoval(Owner, prefs)).ToList();
-        if (picked.Count > 0) await CardPileCmd.RemoveFromDeck(picked);
-    }
+    protected override Task SetUpStart() => Progression.HeroCreation.ApplyVagrantRemoval(Owner);
 }
 
 // ═════════════ Латоносец · Инеерождённые ═════════════
@@ -243,7 +241,6 @@ public sealed class ThunderShamanBackground : BackgroundRelic
 {
     protected override Task SetUpStart()
     {
-        RaiseMastery(SpellSchool.Destruction);
         return ReplaceStarter<Sparks>(CardTag.Strike);
     }
 
@@ -261,7 +258,6 @@ public sealed class DawnBrotherBackground : BackgroundRelic
 {
     protected override Task SetUpStart()
     {
-        RaiseMastery(SpellSchool.Restoration);
         return Task.CompletedTask;
     }
 
@@ -322,7 +318,6 @@ public sealed class CitadelMageBackground : BackgroundRelic
 {
     protected override Task SetUpStart()
     {
-        RaiseMastery(SpellSchool.Alteration);
         return ReplaceStarter<Telekinesis>(CardTag.Strike);
     }
 }
@@ -367,7 +362,6 @@ public sealed class DuskSingerBackground : BackgroundRelic
 {
     protected override async Task SetUpStart()
     {
-        RaiseMastery(SpellSchool.Restoration);
         await GivePotion<MoonSugarElixir>();
     }
 }
@@ -495,7 +489,6 @@ public sealed class ShadowSorcererBackground : BackgroundRelic
 {
     protected override Task SetUpStart()
     {
-        RaiseMastery(SpellSchool.Illusion);
         return ReplaceStarter<Confusion>(CardTag.Strike);
     }
 }

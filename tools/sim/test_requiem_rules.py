@@ -778,6 +778,18 @@ class Stage6(unittest.TestCase):
         self.assertEqual(r.reflected(9), 4)
         self.assertEqual(r.champion_unshakeable_stagger(3), 2)
 
+    def test_short_route_path_is_early_without_changing_vanilla_three_acts(self):
+        self.assertEqual(r.path_offer_act_index(3, short_run=True), 0)
+        self.assertTrue(r.path_offer_due(1, 0, 3, False, short_run=True))
+        self.assertTrue(r.path_offer_due(7, 1, 3, False, short_run=True))
+        self.assertFalse(r.path_offer_due(8, 0, 3, True, short_run=True))
+        self.assertFalse(r.path_offer_due(1, -1, 3, False, short_run=True))
+        self.assertEqual(r.path_offer_act_index(3), 1)
+        self.assertFalse(r.path_offer_due(7, 1, 3, False))
+        self.assertTrue(r.path_offer_due(8, 1, 3, False))
+        self.assertFalse(r.path_offer_due(7, 3, 5, False))
+        self.assertTrue(r.path_offer_due(8, 2, 5, False))
+
     def test_card_enchants(self):
         self.assertTrue(r.can_enchant_card("Lightened", False, False))
         self.assertFalse(r.can_enchant_card("Flaming", False, True))

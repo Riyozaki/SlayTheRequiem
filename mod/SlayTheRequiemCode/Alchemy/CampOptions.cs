@@ -718,7 +718,7 @@ public sealed class TrainRestSiteOption(Player owner) : RequiemRestSiteOption(ow
             switch (tag)
             {
                 case Skill skill:
-                    changed |= await hero.Learn(skill);
+                    changed |= await hero.Learn(skill, InventoryLease);
                     break;
                 case StatAxis.Mastery:
                 {
@@ -726,11 +726,11 @@ public sealed class TrainRestSiteOption(Player owner) : RequiemRestSiteOption(ow
                         .Select(s => new CampMenu.Choice(CampMenu.SchoolCard(s), Mastery.GrimoireOf(Owner)?.Level(s) ?? 0, hero.MasteryCost(s), s))
                         .ToList();
                     if (await CampMenu.Pick(Owner, schools, "SLAYTHEREQUIEM_SCHOOL_PROMPT") is SpellSchool school)
-                        changed |= await hero.SpendStat(StatAxis.Mastery, school);
+                        changed |= await hero.SpendStat(StatAxis.Mastery, school, InventoryLease);
                     break;
                 }
                 case StatAxis axis:
-                    changed |= await hero.SpendStat(axis);
+                    changed |= await hero.SpendStat(axis, held: InventoryLease);
                     break;
                 default:
                     return changed;
@@ -910,7 +910,7 @@ public sealed class TavernRestSiteOption(Player owner) : RequiemRestSiteOption(o
                     if (await CampMenu.Pick(Owner, nodes, "SLAYTHEREQUIEM_MENTOR_PROMPT") is not SkillNode node) break;
                     if (SkillPrice(hero.IsNativeNode(node)) is not { } price || price > Owner.Gold) break;
                     hero.MentorPoints += 1;
-                    if (!await hero.Learn(node.Skill))
+                    if (!await hero.Learn(node.Skill, InventoryLease))
                     {
                         hero.MentorPoints -= 1;
                         break;

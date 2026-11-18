@@ -520,7 +520,7 @@
   "SLAYTHEREQUIEM-PICK_PATH_MEDIUM.title": "Медиум",
   "SLAYTHEREQUIEM-PICK_PATH_MEDIUM.description": "Путь: Медиум. +1 слот призыва; призывы +2 урона.",
   "SLAYTHEREQUIEM-PICK_PATH_REBORN.title": "Перерождённый",
-  "SLAYTHEREQUIEM-PICK_PATH_REBORN.description": "Путь: Перерождённый. Без бонуса. Единожды: новая предыстория и сброс очков характеристик (распределить заново в лагере).",
+  "SLAYTHEREQUIEM-PICK_PATH_REBORN.description": "Путь: Перерождённый. Единожды: смена происхождения и предыстории, возврат вложений характеристик с отменой оплаченного ими владения. Навыки, трактаты и добыча остаются. Стартовые подарки не повторяются. Нужна история источников; отмена не тратит Путь.",
   "SLAYTHEREQUIEM-PICK_BEAST_HUNTER.title": "Клык",
   "SLAYTHEREQUIEM-PICK_BEAST_HUNTER.description": "Узел {Value}: I +2 урона зверя, II звериные атаки — 2 [gold]Кровотечения[/gold], III ещё +2 урона.",
   "SLAYTHEREQUIEM-PICK_BEAST_STALKER.title": "Долгая ночь",

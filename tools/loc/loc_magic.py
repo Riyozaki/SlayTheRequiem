@@ -136,11 +136,11 @@ MAGIC_RELICS = [
      "Something on the other side reads along.", "С той стороны кто-то читает вместе с вами."),
     ("TreatiseOfIllusion", "Treatise: Illusion", "On pickup: +1 mastery of Illusion.", "Трактат: Иллюзия", "При получении: +1 владения Иллюзией.",
      "You are sure it had more pages.", "Вы уверены, что страниц было больше."),
-    ("HighbornOrigin", "Highborn", "Max ✦ +3, Max HP −5. The first spell each turn costs 1 less ✦. [gold]Magic weakness I[/gold].",
-     "Златокровные", "Пул ✦ +3, ♥ −5. Первое заклинание каждого хода на 1 ✦ дешевле. [gold]Уязвимость к магии I[/gold].",
+    ("HighbornOrigin", "Highborn", "+1 Destruction mastery. Max ✦ +3, Max HP −5. The first spell each turn costs 1 less ✦. [gold]Magic weakness I[/gold].",
+     "Златокровные", "+1 владения Разрушением. Пул ✦ +3, ♥ −5. Первое заклинание каждого хода на 1 ✦ дешевле. [gold]Уязвимость к магии I[/gold].",
      "Starlight runs thinner in other veins.", "В чужих жилах звёздный свет жиже."),
-    ("MistbornOrigin", "Mistborn", "Max ◆ +1. [gold]Magic resistance I[/gold]. The first enemy spell each combat is absorbed.",
-     "Туманные", "Пул ◆ +1. [gold]Сопротивление магии I[/gold]. Первое вражеское заклинание в бою поглощается.",
+    ("MistbornOrigin", "Mistborn", "+1 Restoration mastery. Max ◆ +1. [gold]Magic resistance I[/gold]. The first enemy spell each combat is absorbed.",
+     "Туманные", "+1 владения Восстановлением. Пул ◆ +1. [gold]Сопротивление магии I[/gold]. Первое вражеское заклинание в бою поглощается.",
      "The fog remembers every oath.", "Туман помнит каждую клятву."),
     ("AshbornOrigin", "Ashborn", "Max HP +5. [gold]Fire resistance I[/gold]. [gold]Heirs of the Tribunal[/gold]: gifts of Treachery, the Web Weaver "
      "and the Dusk Star cost no righteousness, one of them is always offered at the Dark Shrine, and their Price is halved "

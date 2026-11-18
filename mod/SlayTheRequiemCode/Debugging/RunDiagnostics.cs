@@ -20,7 +20,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Debugging;
 /// <summary>No saves or local paths in the passport. Runtime facts are distinct from build and visual acceptance.</summary>
 public static class RunDiagnostics
 {
-    public const int SaveSchema = 3;
+    public const int SaveSchema = 4;
     private static object? _binaries;
     private static string FileHash(string path)
     {

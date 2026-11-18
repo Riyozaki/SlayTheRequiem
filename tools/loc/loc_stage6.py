@@ -147,8 +147,8 @@ PATHS = [
      "SpiritBell", "Spirit Bell", "Колокольчик духов", "Amulet. Summon a spirit wolf (8 HP) at the start of each combat.",
      "Амулет. В начале боя — волк-дух (8 ♥)."),
     ("Reborn", "Reborn", "Перерождённый",
-     "No bonus. Once: choose a new background and reset your stat points (spend them again at camp).",
-     "Без бонуса. Единожды: новая предыстория и сброс очков характеристик (распределить заново в лагере).",
+     "Once: change origin and background; refund stat investment and remove paid stat mastery. Skills, treatises and loot stay. No starter gifts are repeated. Requires known mastery sources; cancellation does not consume the Path.",
+     "Единожды: смена происхождения и предыстории, возврат вложений характеристик с отменой оплаченного ими владения. Навыки, трактаты и добыча остаются. Стартовые подарки не повторяются. Нужна история источников; отмена не тратит Путь.",
      None, None, None, None, None),
 ]
 
