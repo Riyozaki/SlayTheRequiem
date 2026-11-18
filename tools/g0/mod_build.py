@@ -171,7 +171,7 @@ def require_core_results(results: object) -> None:
 
 def source_inputs() -> list[bytes]:
     names = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--",
-                                     "mod", "tools", ".github", "global.json"], cwd=ROOT).split(b"\0")
+                                     "mod", "tools", "art", ".github", "global.json"], cwd=ROOT).split(b"\0")
     return sorted(set(n for n in names if n))
 
 
@@ -330,11 +330,17 @@ def verify_bundle(bundle: Path) -> dict:
     if bundle.is_symlink() or (bundle / PASSPORT).is_symlink():
         raise BuildError("Bundle/passport symlinks are not accepted")
     passport = read_object(bundle / PASSPORT)
-    if passport.get("schema") != 1 or passport.get("game_version") != GAME_VERSION or passport.get("baselib_version") != BASELIB_VERSION:
+    if type(passport.get("schema")) is not int or passport["schema"] != 1 \
+            or passport.get("game_version") != GAME_VERSION or passport.get("baselib_version") != BASELIB_VERSION:
         raise BuildError("Unsupported bundle schema/dependencies")
-    if type(passport.get("save_schema")) is not int or passport["save_schema"] != SAVE_SCHEMA \
-            or type(passport.get("shop_protocol")) is not int or passport["shop_protocol"] != SHOP_PROTOCOL:
-        raise BuildError("Bundle save schema/shop protocol does not match this installer; use the matching source checkout")
+    contracts = {"save_schema": SAVE_SCHEMA, "shop_protocol": SHOP_PROTOCOL, "session_protocol": SESSION_PROTOCOL,
+                 "creation_schema": CREATION_SCHEMA, "economy_revision": ECONOMY_REVISION}
+    if any(type(passport.get(key)) is not int or passport[key] != value for key, value in contracts.items()):
+        raise BuildError("Bundle save/shop/session/creation/economy contracts do not match this installer; use the matching source checkout")
+    if not isinstance(passport.get("git_sha"), str) or not re.fullmatch(r"[0-9a-f]{40}", passport["git_sha"]) \
+            or not isinstance(passport.get("source_tree_sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", passport["source_tree_sha256"]) \
+            or type(passport.get("dirty")) is not bool:
+        raise BuildError("Missing or invalid build source identity")
     proof = passport.get("proof", {})
     if not isinstance(proof, dict) or not all(proof.get(stage) is True for stage in ("full_mod_build", "core_tests", "pack_export")):
         raise BuildError("Incomplete build/test/export proof")

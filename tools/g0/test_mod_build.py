@@ -20,6 +20,8 @@ class BundleTests(unittest.TestCase):
         b.write_json(self.bundle / f"{b.MOD_ID}.json", {"id": b.MOD_ID, "has_dll": True, "has_pck": True})
         self.passport = {"schema": 1, "game_version": b.GAME_VERSION, "baselib_version": b.BASELIB_VERSION,
                          "save_schema": b.SAVE_SCHEMA, "shop_protocol": b.SHOP_PROTOCOL,
+                         "session_protocol": b.SESSION_PROTOCOL, "creation_schema": b.CREATION_SCHEMA, "economy_revision": b.ECONOMY_REVISION,
+                         "git_sha": "a" * 40, "source_tree_sha256": "b" * 64, "dirty": False,
                          "artifacts": {name: {"sha256": b.sha(self.bundle / name), "bytes": (self.bundle / name).stat().st_size}
                                        for name in b.ARTIFACTS},
                          "proof": {"full_mod_build": True, "core_tests": True, "core_test_results": {"total": 1, "executed": 1, "passed": 1, "failed": 0}, "pack_export": True,
@@ -103,9 +105,21 @@ class BundleTests(unittest.TestCase):
         with self.assertRaises(b.BuildError):
             b.verify_bundle(self.bundle)
 
-    def test_wrong_or_missing_save_schema_or_shop_protocol_fails(self):
-        for key in ("save_schema", "shop_protocol"):
+    def test_wrong_or_missing_release_contracts_fail(self):
+        for key in ("save_schema", "shop_protocol", "session_protocol", "creation_schema", "economy_revision"):
             for value in (None, -1, "3", True):
+                with self.subTest(key=key, value=value):
+                    original = self.passport[key]
+                    self.passport[key] = value
+                    self.save()
+                    with self.assertRaises(b.BuildError):
+                        b.verify_bundle(self.bundle)
+                    self.passport[key] = original
+
+    def test_missing_or_malformed_source_identity_cannot_verify(self):
+        for key, values in (("git_sha", (None, "unrecorded", "a" * 39)),
+                            ("source_tree_sha256", (None, "b" * 63, True)), ("dirty", (None, 0, "false"))):
+            for value in values:
                 with self.subTest(key=key, value=value):
                     original = self.passport[key]
                     self.passport[key] = value

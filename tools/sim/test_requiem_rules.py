@@ -1551,7 +1551,12 @@ class M7VfxLooks(unittest.TestCase):
         for target in ("CombatHistory), nameof(CombatHistory.DamageReceived)", "NDamageBlockedVfx), nameof(NDamageBlockedVfx._Ready)",
                        "NBossMapPoint), nameof(NBossMapPoint._Ready)", "NCombatRoom), nameof(NCombatRoom._Ready)"):
             self.assertIn(target, patches)
-        self.assertIn("public static bool CombatVfx { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        # A backed setting is intentional: changing it must stop live decorative effects, not only affect new nodes.
+        config = self.src("Config", "RequiemConfig.cs")
+        self.assertIn("private static bool _combatVfx = true;", config)
+        setting = config.split("public static bool CombatVfx", 1)[1].split("\n    }", 1)[0]
+        self.assertIn("get => _combatVfx;", setting)
+        self.assertIn("_combatVfx = value; UI.RequiemMotion.SettingsChanged();", setting)
         sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
         from loc_m7vfx import VFX_TIPS
         self.assertEqual(VFX_TIPS["rus"]["VFX.dodge"], "Уворот!")
@@ -1640,7 +1645,12 @@ class M7SfxRules(unittest.TestCase):
         self.assertIn("RequiemConfig.RequiemSounds", sfx)
         self.assertTrue(os.path.isfile(self.TABLE + ".import"))
         self.assertIn('importer="keep"', open(self.TABLE + ".import", encoding="utf-8").read())
-        self.assertIn("public static bool RequiemSounds { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        config = self.src("Config", "RequiemConfig.cs")
+        self.assertIn("private static bool _requiemSounds = true;", config)
+        setting = config.split("public static bool RequiemSounds", 1)[1].split("\n    }", 1)[0]
+        self.assertIn("get => _requiemSounds;", setting)
+        self.assertIn("_requiemSounds = value; UI.RequiemMotion.SettingsChanged();", setting)
+        self.assertIn("if (!Enabled) { player.Stop(); player.QueueFree(); }", sfx)
         sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
         import loc_ui
         self.assertEqual(loc_ui.UI_SETTINGS["rus"]["REQUIEM_SOUNDS.title"], "Звуки Реквиема")

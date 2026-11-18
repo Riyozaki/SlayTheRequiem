@@ -4,6 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- No tier transitions halfway through the first measured workload. Still a microbenchmark, not game settings. -->
+    <TieredCompilation>false</TieredCompilation>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../../mod/SlayTheRequiemCode/Core/InvalidatedView.cs" Link="Core/InvalidatedView.cs" />
