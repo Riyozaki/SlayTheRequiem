@@ -27,6 +27,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 public static class OperationRecovery
 {
     private static bool _offering;
+    private static int _generation;
+    internal static void ResetForNewRun() { _generation++; _offering = false; }
     private static string PathFor(string name, bool? coop = null) => ProjectSettings.GlobalizePath(SaveManager.Instance.GetProfileScopedPath(
         Path.Combine(UserDataPathProvider.SavesDir, name + ((coop ?? RequiemNet.IsMultiplayer) ? "_coop" : "") + ".save")));
     private static string Timeline(RunState state) => state.Players.Select(TravelPack.Of).OfType<TravelPack>()
@@ -117,8 +119,9 @@ public static class OperationRecovery
 
     public static async Task OfferRestore()
     {
-        if (_offering) return;
+        if (_offering || MemoryStone.Restoring) return;
         _offering = true;
+        var generation = _generation;
         try
         {
             var state = RequiemNet.State;
@@ -161,7 +164,7 @@ public static class OperationRecovery
             MainFile.Logger.Error($"[InventoryRecovery] Restore failed, copies retained: {e}");
             NRequiemToast.Show(RequiemUi.TipText("RECOVERY_UNAVAILABLE.title"));
         }
-        finally { _offering = false; }
+        finally { if (generation == _generation) _offering = false; }
     }
 
     internal static void RotateTimeline(SerializableRun save)
@@ -187,11 +190,11 @@ public static class OperationRecovery
             || RunManager.Instance.NetService is not INetClientGameService { NetClient: { } client }
             || sender != client.HostNetId || state.Rng.StringSeed != seed || Timeline(state) != timeline || timeline.Length == 0) return;
         _offering = true; // authenticated duplicates cannot start a second menu transition
-        TaskHelper.RunSafely(Rejoin(sender));
+        TaskHelper.RunSafely(Rejoin(sender, _generation));
     }
-    private static async Task Rejoin(ulong host)
+    private static async Task Rejoin(ulong host, int generation)
     {
         try { await CoopMemoryStone.RejoinAsClient(host); }
-        finally { _offering = false; }
+        finally { if (generation == _generation) _offering = false; }
     }
 }

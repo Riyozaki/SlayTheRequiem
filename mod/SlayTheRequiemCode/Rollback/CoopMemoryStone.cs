@@ -35,7 +35,7 @@ public static class CoopMemoryStone
     public static readonly TimeSpan VoteTimeout = TimeSpan.FromSeconds(45);
     public static readonly TimeSpan ScarTimeout = TimeSpan.FromSeconds(60);
 
-    private static int _round, _clientStep;
+    private static int _round, _clientStep, _generation;
     private static bool _proposing;
     internal static string MessageKey(RunState state)
     {
@@ -53,11 +53,12 @@ public static class CoopMemoryStone
 
     /// <summary>
     /// Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31). Голоса и Шрамы нужны только до сборки
-    /// сохранения возврата — к запуску следующего забега раунд закончен. Счётчик раундов не сбрасывается:
-    /// по нему отсекаются опоздавшие сообщения прошлого раунда.
+    /// сохранения возврата — к запуску следующего забега раунд закончен. Пакеты привязаны к сохранённой timeline,
+    /// а generation не даёт finally/таймауту старого забега очистить новый раунд.
     /// </summary>
     internal static void ResetForNewRun()
     {
+        _generation++;
         Votes.Clear();
         Scars.Clear();
         _round = _clientStep = 0; // packets also carry the saved timeline: an old run's round can never match
@@ -74,11 +75,15 @@ public static class CoopMemoryStone
     {
         if (_proposing || !RequiemNet.IsHost || !ReferenceEquals(state, RequiemNet.State) || MessageKey(state).Length == 0) return;
         _proposing = true;
-        try { await ProposeCore(state, ended); }
-        finally { _proposing = false; _votesDone = _scarsDone = null; }
+        var generation = _generation;
+        try { await ProposeCore(state, ended, generation); }
+        finally { if (generation == _generation) { _proposing = false; _votesDone = _scarsDone = null; } }
     }
 
-    private static async Task ProposeCore(RunState state, SerializableRun ended)
+    private static bool Current(RunState state, int generation) =>
+        generation == _generation && ReferenceEquals(state, RequiemNet.State) && RequiemNet.IsHost;
+
+    private static async Task ProposeCore(RunState state, SerializableRun ended, int generation)
     {
         var imprint = MemoryStone.ImprintFor(state, ended);
         var me = LocalContext.GetMe(state);
@@ -93,7 +98,7 @@ public static class CoopMemoryStone
             }))
             return;
 
-        if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsHost) return;
+        if (!Current(state, generation)) return;
         var round = ++_round;
         _expected = state.Players.Count;
         Votes.Clear();
@@ -103,6 +108,7 @@ public static class CoopMemoryStone
         Send(StonePhase.Proposal, round, imprint.ActIndex + 1, shownCandles, state);
         CheckVotes();
         await WaitOrTimeout(_votesDone.Task, VoteTimeout);
+        if (!Current(state, generation)) return;
 
         var yes = Votes.Values.Count(v => v);
         var no = Votes.Values.Count(v => !v);
@@ -113,11 +119,12 @@ public static class CoopMemoryStone
 
         _scarsDone = new TaskCompletionSource();
         var myScar = await MemoryStone.ChooseScar(state, me, canSkip: false) ?? MemoryStoneRules.DefaultScar;
+        if (!Current(state, generation)) return;
         Scars[me.NetId] = myScar;
         CheckScars();
         await WaitOrTimeout(_scarsDone.Task, ScarTimeout);
 
-        if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsHost) return;
+        if (!Current(state, generation)) return;
         var save = MemoryStone.BuildReturnSave(imprint, state, Scars);
         if (save == null)
         {
@@ -131,9 +138,11 @@ public static class CoopMemoryStone
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
             OperationRecovery.CapturePreparedRun(save, "memory-stone-return", coop: true);
             await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
+            if (!Current(state, generation)) return;
             Send(StonePhase.Go, round, 0, 0, state);
             // дать сообщению уйти до разрыва соединения; тем временем — трещины отката
             await Task.WhenAll(Task.Delay(500), UI.RequiemVfx.Rewind(round));
+            if (!Current(state, generation)) return;
             await NGame.Instance.ReturnToMainMenu();
             var submenu = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu();
             submenu?.StartHost(save);

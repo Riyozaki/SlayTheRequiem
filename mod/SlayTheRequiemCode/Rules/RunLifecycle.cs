@@ -36,6 +36,7 @@ public static class RunLifecycle
             MapGraph.Reset();
             ActDoors.Reset();
             CoopMemoryStone.ResetForNewRun();
+            OperationRecovery.ResetForNewRun();
             // Флаги незакрытых окон прошлого забега (ревью F-06): иначе, например, «Дальше» на наградах босса молчит.
             PortalPromptPatch.ResetForNewRun();
             ShopServices.ResetForNewRun();
