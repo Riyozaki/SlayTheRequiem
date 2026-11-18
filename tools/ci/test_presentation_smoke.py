@@ -12,7 +12,7 @@ class PresentationSmokeReportTests(unittest.TestCase):
         self.engine = "c" * 64
         self.info = dict(schema=1, producer="actual-godot-presentation-helper-smoke", scope=smoke.SCOPE,
                          source_commit=self.commit, source_sha256=self.hashes, godot_executable_sha256=self.engine,
-                         engine="4.5.1.stable.mono.official.fixture", passed=smoke.CASES.copy(),
+                         engine="4.5.1-stable (official)", passed=smoke.CASES.copy(),
                          actual_native_runs=0, same_frame_replacement_cycles=100, child_clear_cycles=100)
 
     def verify(self, info):
@@ -29,7 +29,8 @@ class PresentationSmokeReportTests(unittest.TestCase):
 
     def test_scope_engine_and_native_claims_are_not_promoted(self):
         for key, value in (("scope", "full-mod-build"), ("actual_native_runs", 1), ("actual_native_runs", False),
-                           ("engine", "4.6.stable.mono.official"), ("engine", "4.5.1.stable.official"),
+                           ("engine", "4.6-stable (official)"), ("engine", "4.5.1.stable.mono.official.fixture"),
+                           ("engine", "4.5.1-stable (custom_build)"),
                            ("same_frame_replacement_cycles", True), ("child_clear_cycles", 99)):
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
                 self.verify(dict(self.info, **{key: value}))

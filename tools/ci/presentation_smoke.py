@@ -46,7 +46,9 @@ def validate_report(info, commit, hashes, engine_hash):
     require(info.get("producer") == "actual-godot-presentation-helper-smoke" and info.get("scope") == SCOPE, "Wrong smoke scope")
     require(info.get("source_commit") == commit and info.get("source_sha256") == hashes, "Smoke/source identity mismatch")
     require(info.get("godot_executable_sha256") == engine_hash, "Wrong engine hash")
-    require(isinstance(info.get("engine"), str) and info["engine"].startswith("4.5.1.") and ".mono." in info["engine"], "Wrong engine version")
+    # Engine.GetVersionInfo()["string"] is NOT the --version CLI format. The managed scene executing
+    # proves C# support; the workflow pins the official mono archive and the report binds its executable hash.
+    require(info.get("engine") == "4.5.1-stable (official)", "Wrong Engine.GetVersionInfo version")
     require(info.get("passed") == CASES, "Missing, duplicate or unknown helper cases")
     for name, count in (("actual_native_runs", 0), ("same_frame_replacement_cycles", 100), ("child_clear_cycles", 100)):
         require(type(info.get(name)) is int and info[name] == count, "Wrong scope/count: " + name)
@@ -101,6 +103,9 @@ def main():
         print("::notice title=STR_PRESENTATION_SMOKE_V1::" + notice)
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
+        diagnostic = str(error).replace(str(ROOT), "<repo>")[:2200]
+        diagnostic = diagnostic.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print("::error title=STR_PRESENTATION_FAILURE::" + diagnostic)
         print("ERROR:", error)
         return 1
 
