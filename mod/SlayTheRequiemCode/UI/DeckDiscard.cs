@@ -3,6 +3,8 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Players;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Screens;
@@ -30,6 +32,11 @@ public static class DeckDiscard
         && card.Rarity is not (CardRarity.Basic or CardRarity.Quest or CardRarity.Curse or CardRarity.Status)
         && card.Type is not (CardType.Curse or CardType.Status);
 
+    /// <summary>Shared authority for UI AND every executor branch; no local-screen condition on remote peers.</summary>
+    public static bool CanExecute(Player owner, CardModel card) =>
+        card.IsMutable && AcquisitionPolicy.CanDiscard(RequiemMode.IsInSystem(owner), CombatManager.Instance.IsInProgress,
+            ShopActionPolicy.OwnsCard(owner, card), CanDiscard(card), Loadout.Overload(owner).Excess);
+
     /// <summary>Можно ли сейчас выбросить эту карту (локальный игрок, его колода, вне боя, перегруз).</summary>
     public static bool Available(CardModel card, out string reasonKey)
     {
@@ -48,10 +55,8 @@ public static class DeckDiscard
     public static async Task Discard(CardModel card)
     {
         var owner = card.Owner;
-        if (owner == null) return;
-        var index = owner.Deck.Cards.ToList().IndexOf(card);
-        if (index < 0) return;
-        await ShopActions.Perform(owner, ShopAction.DiscardCard, index, 0, card.Id.Entry);
+        if (owner == null || !CanExecute(owner, card)) return;
+        await ShopActions.Perform(owner, ShopAction.DiscardCard, 0, 0, InventoryIdentity.CardKey(card));
     }
 }
 

@@ -98,6 +98,7 @@ M = {
 MOD = {
     "TombGuardian": ("undead", 1, 3, "magic", "элита «Хранитель Гробницы» (Морокей)"),
     "CrimsonChieftain": ("humanoid", 0, 2, "phys", "элита «Атаманша Багряных Ножей» (Диджа)"),
+    "ShopGuard": ("humanoid", 1, 0, "phys", "стража лавки (облегчённая элита)"),
     "CrimsonBandit": ("humanoid", 0, 0, "phys", "шайка Атаманши"),
     # ── этап 7: элиты актов (11 §5) ──
     "PackLeader": ("beast", 0, 2, "phys", "элита акта 1 «Вожак стаи»"),
@@ -144,6 +145,7 @@ MOD = {
     "BarrowDead": ("undead", 0, 0, "phys", "курганный мертвец"),
     "DeepMasterSmith": ("construct", 5, 5, "phys", "супербосс 2б «Мастер-кузнец Глубин»"),
     "SteamValve": ("construct", 0, 0, "phys", "вентиль (объект)"),
+    "SolarStandard": ("humanoid", 0, 0, "phys", "солнечный штандарт (объект)"),
     "GatebreakerEnvoy": ("abyss", 3, 5, "magic", "супербосс Улья «Посланник Разрушителя Врат»"),
     "BloodCourtLord": ("undead", 0, 5, "magic", "супербосс 4а «Владыка Кровавого Двора»"),
     "GargoyleServant": ("construct", 1, 0, "phys", "гаргулья-слуга"),
@@ -152,6 +154,7 @@ MOD = {
     "CultistThrall": ("cultist", 0, 0, "phys", "раб-культист"),
     "WorldEater": ("beast", 2, 6, "fire", "супербосс Славы «Пожиратель Миров»"),
     "FacelessPriest": ("cultist", 0, 0, "magic", "Безликий жрец"),
+    "DevouredSoulGhost": ("spirit", 0, 0, "magic", "призрак поглощённой души"),
     "NamelessShadow": ("spirit", 0, 6, "magic", "★ «Тень Без Имени»"),
     "ShadowSoul": ("spirit", 0, 0, "magic", "душа Тени"),
     "EchoKnight": ("spirit", 0, 3, "phys", "элита Безымянного предела «Рыцарь-эхо»"),
@@ -187,14 +190,58 @@ MOD = {
     "BoneThrallSummon": ("undead", 0, 0, "magic", "призыв «Костяной прислужник» (Лич)"),
 }
 
+# Individual combat roles, independent of an encounter's reward type. Keep these explicit: Queen's
+# Amalgam and Kin followers are minions; BOTH Kaiser Crab bodies are bosses. Wriggler is a parasite's
+# minion even when the parasite itself is an elite. Native secondary powers override non-prop roles.
+BOSSES = set("""KinPriest Vantom CeremonialBeast LagavulinMatriarch SoulFysh WaterfallGiant TheInsatiable
+KnowledgeDemon Queen TestSubject Aeonglass Crusher Rocket Architect TheAdversaryMkOne TheAdversaryMkTwo
+TheAdversaryMkThree BlackWanderer BarrowReaper DeepMasterSmith GatebreakerEnvoy BloodCourtLord FirstSummoner
+WorldEater NamelessShadow KingUnderBarrow BoneFrostWyrm BarrowWailer ClockworkColossus AutomatonArchitect
+BoilerWyrm CrimsonCountess EclipseWarden ChaliceHierophant AstrolabeKeeper LeyWyrm ArchmageSimulacrum""".split())
+ELITES = set("""BygoneEffigy Byrdonis DecimillipedeSegmentFront DecimillipedeSegmentMiddle DecimillipedeSegmentBack
+Entomancer InfestedPrism FlailKnight MagiKnight SpectralKnight MechaKnight PhantasmalGardener PhrogParasite
+SkulkingColony SoulNexus TerrorEel TombGuardian CrimsonChieftain PackLeader MossElder CauldronMistress
+GlacierGiant PhantomBlade FirstSnowPrince DeepCenturion SpiderMatriarch RenegadeMechanic ReactorHeart
+AbyssWarlord PlagueMother SwarmDevourer BarrowPriest BoneChampion AbyssBlackKnight BloodNoble GargoyleWarden
+VampireHunter LordsBride SorceressIlvarre RenegadeSummoner MirrorWarden StarExaminer EchoKnight ShopGuard""".split())
+MINIONS = set("""KinFollower TorchHeadAmalgam Wriggler GasBomb Ovicopter CrimsonBandit PackWolf IceAtronach
+RepairSpider MechanicTurret ReactorGuard SwarmlingBug BoneShieldbearer BloodThrall FlameAtronachMinion
+StormAtronachMinion WraithThrall BarrowDead GargoyleServant CultistThrall FacelessPriest DevouredSoulGhost BarrowHuskarl
+BrassSentry ChaliceAcolyte MirrorShard SpiritWolfSummon BeastWolfSummon BeastSabertoothSummon BeastBearSummon
+FlameAtronachSummon FrostAtronachSummon StormAtronachSummon RaisedDeadSummon AbyssGuardianSummon
+SpectralKnightSummon LoyalGuardSummon BoneThrallSummon""".split())
+PROPS = {"AbyssGateObject", "SteamValve", "DragonEgg", "ShadowSoul", "SolarStandard"}
+# Dremora/Scamp also occur as ordinary enemies in AbyssRiftNormal. Their summoned instances acquire the
+# native secondary marker, not a global secondary flag that would auto-win their standalone encounter.
+MOD_NORMALS = {"Dremora", "AbyssScamp"}
+
+
+def role_of(key):
+    for role, keys in (("boss", BOSSES), ("elite", ELITES), ("minion", MINIONS), ("prop", PROPS)):
+        if key in keys:
+            return role
+    return "normal"
+
+
+def validate_roles():
+    groups = (BOSSES, ELITES, MINIONS, PROPS)
+    if sum(map(len, groups)) != len(set.union(*groups)):
+        raise ValueError("Monster role sets overlap")
+    unknown = set.union(*groups) - M.keys() - MOD.keys()
+    missing = MOD.keys() - set.union(*groups) - MOD_NORMALS
+    if unknown or missing:
+        raise ValueError(f"Unknown roles={sorted(unknown)}, missing mod roles={sorted(missing)}")
+
+
 SKIP = {"BigDummy", "DeprecatedMonster", "MultiAttackMoveMonster", "SingleAttackMoveMonster", "OneHpMonster",
         "TenHpMonster", "FakeMerchantMonster", "Osty"}
 
 FIELDS = ["key", "faction", "plating", "poise_bonus", "res_fire", "res_frost", "res_shock", "res_poison", "res_magic",
-          "attack_type", "note"]
+          "attack_type", "role", "note"]
 
 
 def main() -> int:
+    validate_roles()
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     out = os.path.join(root, "mod", "SlayTheRequiem", "data", "monsters_requiem.csv")
     known = set(sys.argv[1].split(",")) if len(sys.argv) > 1 else None
@@ -215,7 +262,7 @@ def main() -> int:
             fac, plating, poise, atk, note = rows[key]
             r = FACTIONS[fac]
             w.writerow(dict(key=key, faction=fac, plating=plating, poise_bonus=poise, res_fire=r[0], res_frost=r[1],
-                            res_shock=r[2], res_poison=r[3], res_magic=r[4], attack_type=atk, note=note))
+                            res_shock=r[2], res_poison=r[3], res_magic=r[4], attack_type=atk, role=role_of(key), note=note))
     print(f"OK: {len(M)} ванильных + {len(MOD)} мода → {out}")
     return 0
 

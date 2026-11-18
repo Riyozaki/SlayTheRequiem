@@ -70,7 +70,7 @@ public static class EnemyResponses
     {
         if (enemy.Monster == null || !enemy.IsAlive || enemy.IsStunned || enemy.HasPower<UnshakeablePower>()) return;
         var mana = enemy.GetPower<EnemyManaPower>();
-        if (mana == null || mana.DisplayAmount >= EnemyRules.MinSpellMana || !enemy.Monster.IntendsToAttack) return;
+        if (mana == null || mana.DisplayAmount >= EnemyActionBudget.CostOf(enemy) || !enemy.Monster.IntendsToAttack) return;
 
         MarkResting(enemy, RestKind.Focus);
         await CreatureCmd.Stun(enemy, async _ =>
@@ -88,8 +88,10 @@ public static class EnemyResponses
     public static async Task<bool> TryParalyze(PlayerChoiceContext ctx, Creature enemy, SpellTier tier, Creature? source, CardModel? card)
     {
         if (enemy.Monster == null || !enemy.IsAlive) return false;
-        var rank = EnemySetup.RankOf(enemy.CombatState);
-        if (rank == EnemyRank.Boss || enemy.HasPower<UnshakeablePower>() || enemy.HasPower<ParalysisWardPower>())
+        if (card is Spells.SpellCard && await SpellInterception.InterceptEffect(ctx, enemy, source, card)) return false;
+        var role = EnemySetup.RoleOf(enemy);
+        if (role == EnemyRole.Prop) return false;
+        if (!EnemyRoleRules.CanControl(role) || enemy.HasPower<UnshakeablePower>() || enemy.HasPower<ParalysisWardPower>())
         {
             await PowerCmd.Apply<StaggerPower>(ctx, enemy, BossParalysisStagger, source, card);
             return false;

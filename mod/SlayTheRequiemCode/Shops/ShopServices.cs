@@ -116,7 +116,7 @@ public abstract class OrderCard : CounterCard
 /// </summary>
 public static class ShopServices
 {
-    private sealed record Option(Func<RunState, Player, CounterCard> Make, int Price, int Amount, Func<Task> Run);
+    private sealed record Option(Func<RunState, Player, CounterCard> Make, int Price, int Amount, Func<Task> Run, bool Enabled = true);
 
     private static bool _open;
 
@@ -214,19 +214,19 @@ public static class ShopServices
         if (ledger == null || !MerchantLedger.Active(player)) return list;
         var trust = ledger.CurrentTrust;
         var gold = player.Gold;
-        var act = Acts.ActKinds.Tier(player.RunState);
+        var economy = ShopEconomy.Context(player.RunState);
         int Price(int basePrice) => ShopRules.ApplyTrust(basePrice, trust);
 
         void Paid<T>(int price, int amount, Func<Task> run) where T : CounterCard
         {
-            if (price <= gold) list.Add(new Option((s, p) => s.CreateCard<T>(p), price, amount, run));
+            list.Add(new Option((s, p) => s.CreateCard<T>(p), price, amount, run, price <= gold));
         }
 
         // Камень душ (Чародей, Ювелир): сила по акту.
-        void AddStone(int actIndex)
+        void AddStone()
         {
             if (Progression.HeroRecord.Of(player) == null) return;
-            var power = ShopRules.SoulStonePower(actIndex);
+            var power = EconomyRules.SoulStonePower(economy);
             var price = Price(ShopRules.SoulStonePrice(power));
             Paid<CounterSoulStone>(price, power, () => ShopActions.Perform(player, ShopAction.BuyStone, price, power));
         }
@@ -259,19 +259,19 @@ public static class ShopServices
                 {
                     var price = Price(ShopRules.SharpenPrice(weapon.Tier));
                     Paid<CounterSharpenWeapon>(price, weapon.Upgrades + 1,
-                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, weapon.Id.Entry));
+                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, InventoryIdentity.RelicKey(weapon)));
                 }
                 if (ArmorToSharpen(player) is { } armor)
                 {
                     var price = Price(ShopRules.SharpenPrice(armor.Tier));
                     Paid<CounterSharpenArmor>(price, armor.Upgrades + 1,
-                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, armor.Id.Entry));
+                        () => ShopActions.Perform(player, ShopAction.Sharpen, price, 0, InventoryIdentity.RelicKey(armor)));
                 }
                 if (weapon != null && ReforgeResult(player, weapon) is { } next)
                 {
                     var price = Price(ShopRules.ReforgePrice);
                     Paid<CounterReforge>(price, weapon.Tier,
-                        () => ShopActions.Perform(player, ShopAction.Reforge, price, 0, $"{weapon.Id.Entry}|{next.Id.Entry}"));
+                        () => ShopActions.Perform(player, ShopAction.Reforge, price, 0, $"{InventoryIdentity.RelicKey(weapon)}|{next.Id.Entry}"));
                 }
                 break;
             }
@@ -285,7 +285,7 @@ public static class ShopServices
 
                 if (HerbalistPouch.Of(player) is { } pouch)
                 {
-                    var kitPrice = Price(ShopRules.ReagentKitPrice(act));
+                    var kitPrice = Price(EconomyRules.ReagentKitPrice(economy));
                     var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
                     Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
                         () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
@@ -310,20 +310,20 @@ public static class ShopServices
                         var price = Price(ShopRules.EnchantServicePrice(own, ownStone: true));
                         Paid<CounterEnchantOwnStone>(price, own, () => ShopActions.Perform(player, ShopAction.EnchantItem, price, own, "own"));
                     }
-                    var shopStone = ShopRules.SoulStonePower(act);
+                    var shopStone = EconomyRules.SoulStonePower(economy);
                     var shopPrice = Price(ShopRules.EnchantServicePrice(shopStone, ownStone: false));
                     Paid<CounterEnchantShopStone>(shopPrice, shopStone, () => ShopActions.Perform(player, ShopAction.EnchantItem, shopPrice, shopStone, "shop"));
                 }
                 if (player.PotionSlots.OfType<RequiemScroll>().FirstOrDefault() is { } scroll)
                 {
                     var price = Price(ShopRules.RewriteScrollPrice);
-                    Paid<CounterRewriteScroll>(price, scroll.Tier, () => ShopActions.Perform(player, ShopAction.RewriteScroll, price, 0, scroll.Id.Entry));
+                    Paid<CounterRewriteScroll>(price, scroll.Tier, () => ShopActions.Perform(player, ShopAction.RewriteScroll, price, 0, InventoryIdentity.PotionKey(scroll)));
                 }
                 {
                     var price = Price(ShopRules.CardEnchantPrice);
                     Paid<CounterEnchantCard>(price, 1, () => ShopActions.Perform(player, ShopAction.EnchantCard, price, 0));
                 }
-                AddStone(act);
+                AddStone();
                 break;
             }
             case ShopType.Jeweler:
@@ -338,7 +338,7 @@ public static class ShopServices
                     var price = Price(ShopRules.FacetPrice);
                     Paid<CounterFacet>(price, 0, () => ShopActions.Perform(player, ShopAction.Facet, price, 0));
                 }
-                AddStone(act);
+                AddStone();
                 break;
             }
             case ShopType.Temple:
@@ -389,7 +389,7 @@ public static class ShopServices
                 // Реагенты в лавках (09, M5 п. 5): Караван везёт и травы — тот же набор, что у Травницы.
                 if (HerbalistPouch.Of(player) != null)
                 {
-                    var kitPrice = Price(ShopRules.ReagentKitPrice(act));
+                    var kitPrice = Price(EconomyRules.ReagentKitPrice(economy));
                     var kit = string.Join(",", ReagentKit(player).Select(r => ((int)r).ToString()));
                     Paid<CounterReagentKit>(kitPrice, ShopRules.ReagentKitSize,
                         () => ShopActions.Perform(player, ShopAction.BuyReagents, kitPrice, 0, kit));
@@ -442,12 +442,11 @@ public static class ShopServices
     private static async Task OrderMenu(Player player, MerchantLedger ledger)
     {
         var shop = ledger.CurrentShop;
-        var act = Acts.ActKinds.Tier(player.RunState);
+        var economy = ShopEconomy.Context(player.RunState);
         var options = new List<Option>();
         foreach (var category in ShopRules.OrderOptions(shop))
         {
-            var price = ShopRules.ApplyTrust(ShopRules.OrderPrice(ShopRules.OrderItemPrice(category, act)), ledger.CurrentTrust);
-            if (price > player.Gold) continue;
+            var price = ShopRules.ApplyTrust(ShopRules.OrderPrice(EconomyRules.OrderItemPrice(category, economy)), ledger.CurrentTrust);
             Func<RunState, Player, CounterCard> make = category switch
             {
                 OrderCategory.Weapon => (s, p) => s.CreateCard<OrderWeapon>(p),
@@ -459,8 +458,8 @@ public static class ShopServices
                 _ => (s, p) => s.CreateCard<OrderEquipment>(p),
             };
             var cat = category;
-            options.Add(new Option(make, price, ShopRules.OrderTier(shop, act),
-                () => ShopActions.Perform(player, ShopAction.PlaceOrder, (int)shop, (int)cat, price.ToString())));
+            options.Add(new Option(make, price, EconomyRules.OrderTier(shop, economy),
+                () => ShopActions.Perform(player, ShopAction.PlaceOrder, (int)shop, (int)cat, price.ToString()), price <= player.Gold));
         }
         if (options.Count == 0) return;
         var picked = await Choose(player, options);
@@ -469,49 +468,26 @@ public static class ShopServices
 
     private static async Task<Option?> Choose(Player player, IReadOnlyList<Option> options)
     {
-        var paged = options.Count > 3;
-        var perPage = paged ? 2 : 3;
-        var page = 0;
-        for (var guard = 0; guard < 32; guard++)
-        {
-            var slice = options.Skip(page * perPage).Take(perPage).ToList();
-            var index = await Show(player, slice, paged);
-            if (index == -2)
-            {
-                page = (page + 1) * perPage >= options.Count ? 0 : page + 1;
-                continue;
-            }
-            return index >= 0 && index < slice.Count ? slice[index] : null;
-        }
-        return null;
-    }
-
-    /// <summary>Показать карты услуг: индекс выбранной, −1 — пропуск, −2 — «Ещё…».</summary>
-    private static async Task<int> Show(Player player, List<Option> slice, bool withMore)
-    {
         var state = RequiemNet.State;
-        if (state == null) return -1;
+        if (state == null || options.Count == 0) return null;
         var cards = new List<CardModel>();
         try
         {
-            foreach (var option in slice)
+            var choices = new List<UI.NHeroCreationScreen.Choice>();
+            for (var i = 0; i < options.Count; i++)
             {
-                var card = option.Make(state, player);
-                card.SetDisplay(option.Price, option.Amount);
-                cards.Add(card);
+                var option = options[i]; var card = option.Make(state, player);
+                card.SetDisplay(option.Price, option.Amount); cards.Add(card);
+                var description = UI.RequiemText.Plain(card.GetDescriptionForPile(PileType.None)) + "\n"
+                    + UI.RequiemUi.TipText("UI.servicePrice.title", ("Gold", option.Price))
+                    + (option.Enabled ? "" : "\n" + UI.RequiemUi.TipText("UI.noGold.title"));
+                choices.Add(new(i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title.GetFormattedText(), description, option.Enabled));
             }
-            if (withMore) cards.Add(state.CreateCard<CounterMore>(player));
-
-            // Экран напрямую (а не CardSelectCmd): выбор чисто локальный, PlayerChoiceSynchronizer не нужен.
-            var chosen = await RequiemNet.ChooseCard(cards, canSkip: true);
-            if (chosen == null) return -1;
-            if (chosen is CounterMore) return -2;
-            return cards.IndexOf(chosen);
+            var index = await UI.NHeroCreationScreen.ChooseLocal(player, UI.RequiemUi.TipText("SHOP_TAB_SERVICES.title"),
+                UI.RequiemUi.TipText("UI.serviceHint.title"), choices);
+            return index >= 0 && index < options.Count && options[index].Enabled ? options[index] : null;
         }
-        finally
-        {
-            foreach (var card in cards) state.RemoveCard(card);
-        }
+        finally { foreach (var card in cards) state.RemoveCard(card); }
     }
 
     // ───── кража (14 §1) ─────
@@ -542,7 +518,9 @@ public static class ShopServices
             }))
             return false;
 
-        await ShopActions.Perform(player, ShopAction.TheftAttempt);
+        if (!CanSteal(player, entry)) return false;
+        var attempt = await ShopActions.Perform(player, ShopAction.TheftAttempt);
+        if (!attempt.Succeeded) return false;
         var hash = ShopRules.Fnv1a($"{player.RunState.Rng.StringSeed}|theft|{player.NetId}|{price}", player.RunState.TotalFloor);
         if (ShopRules.TheftSucceeds(hash, price))
         {
@@ -554,9 +532,9 @@ public static class ShopServices
         // Пойманного вора выставляет Стража: в одиночной игре — бой с облегчённой элитой (лавка закрывается),
         // в коопе (бой общий, а лавка у каждого своя) — по-прежнему потеря 20 % макс. ♥.
         var fight = !RequiemNet.IsMultiplayer;
-        await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop,
+        var failure = await ShopActions.Perform(player, ShopAction.TheftFailed, (int)ledger.CurrentShop,
             fight ? 0 : ShopRules.TheftFailDamage(player.Creature.MaxHp));
-        if (fight) StartGuardFight(player);
+        if (fight && failure.Succeeded) StartGuardFight(player);
         return false;
     }
 
@@ -583,13 +561,13 @@ public static class ShopServices
     /// <summary>Разрыв ступени и владения у заклинания с витрины (0 — колдуется свободно).</summary>
     public static int MasteryGap(Player player, MerchantEntry entry) =>
         entry is MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell } && RequiemMode.IsInSystem(player)
-            ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.Of(player, spell.School)))
+            ? Math.Max(0, SpellAffinity.Gap(spell.Tier, Spells.Mastery.ForSpell(player, spell)))
             : 0;
 
     public static async Task<bool> ConfirmMasteryAndBuy(MerchantEntry entry, MerchantInventory? inventory, Player player)
     {
         if (entry is not MerchantCardEntry { CreationResult.Card: Spells.SpellCard spell }) return false;
-        var mastery = Spells.Mastery.Of(player, spell.School);
+        var mastery = Spells.Mastery.ForSpell(player, spell);
         var gap = MasteryGap(player, entry);
         if (!await RequiemNet.Confirm("SLAYTHEREQUIEM-MERCHANT_LEDGER", "mastery", body =>
             {

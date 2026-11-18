@@ -21,6 +21,11 @@ public static class RunLifecycle
         if (_hooked) return;
         _hooked = true;
         RunManager.Instance.RunStarted += OnRunStarted;
+        RunManager.Instance.RoomEntered += () =>
+        {
+            MemoryStone.OnRoomEntered();
+            Debugging.RunDiagnostics.Log(RunManager.Instance.DebugOnlyGetState(), "room");
+        };
     }
 
     private static void OnRunStarted(RunState state)
@@ -31,9 +36,11 @@ public static class RunLifecycle
             MapGraph.Reset();
             ActDoors.Reset();
             CoopMemoryStone.ResetForNewRun();
+            OperationRecovery.ResetForNewRun();
             // Флаги незакрытых окон прошлого забега (ревью F-06): иначе, например, «Дальше» на наградах босса молчит.
             PortalPromptPatch.ResetForNewRun();
             ShopServices.ResetForNewRun();
+            Alchemy.Camp.ResetForNewRun();
             OverloadWarningPatch.ResetForNewRun();
             MapVisuals.ResetForNewRun();
         }
@@ -41,5 +48,7 @@ public static class RunLifecycle
         {
             MainFile.Logger.Error($"RunLifecycle: сброс состояния не удался: {e}");
         }
+        Debugging.RunDiagnostics.OnLaunch(state);
+        MemoryStone.OnLaunch(state);
     }
 }

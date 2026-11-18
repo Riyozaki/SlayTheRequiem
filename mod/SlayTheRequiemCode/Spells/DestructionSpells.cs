@@ -197,7 +197,8 @@ public sealed class ChainLightning : SpellCard
     protected override async Task OnPlay(PlayerChoiceContext ctx, CardPlay play)
     {
         var first = CombatState.HittableEnemies.FirstOrDefault(e => e.HasPower<EnemyManaPower>()) ?? CombatState.HittableEnemies.FirstOrDefault();
-        if (first?.GetPower<EnemyManaPower>() is { } mana) await mana.Drain(mana.DisplayAmount);
+        if (first?.GetPower<EnemyManaPower>() is { } mana
+            && !await Rules.SpellInterception.InterceptEffect(ctx, first, Owner.Creature, this)) await mana.Drain(mana.DisplayAmount);
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue).FromCard(this).TargetingRandomOpponents(CombatState)
             .WithHitCount((int)Var("Hits")).Unpowered().WithHitFx("vfx/vfx_attack_lightning").Execute(ctx);
     }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>form_rites</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M12 44 Q3 22 23 8 Q38 1 51 16 Q61 34 45 48 L46 57 H18 V50 Z" fill="#b3a0da" stroke="#302922" stroke-width="4"/><path d="M32 12 Q18 29 32 45 Q46 28 32 12 Z" fill="#302922" stroke="#302922" stroke-width="4"/><path d="M32 16 V41" fill="none" stroke="#eee3c8" stroke-width="4"/>
+  </g>
+</svg>

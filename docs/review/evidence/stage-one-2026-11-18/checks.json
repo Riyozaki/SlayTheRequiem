@@ -1,0 +1,419 @@
+{
+  "recorded_at_utc": "2026-11-18T03:28:34.272921+00:00",
+  "code_source_commit": "b82c909375a453dcf96aa459b34993519659bc5b",
+  "base_commit": "8000886e9c52db78227972bdd4740ee71f7eca03",
+  "branch": "arena/5906afa4-slaytherequiem",
+  "workspace_overlay": "Documentation only; changed executable inputs were verified byte-for-byte against the CI code commit before these checks.",
+  "reference_game_source_commit": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+  "python_dependencies": {
+    "tree-sitter": "0.26.1",
+    "tree-sitter-c-sharp": "0.23.5",
+    "pillow": "13.0.0",
+    "numpy": "2.4.6"
+  },
+  "checks": [
+    {
+      "name": "build-contracts",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/g0",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 0.172,
+      "log": "logs/build-contracts.log",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 35 tests in 0.069s",
+        "",
+        "OK"
+      ],
+      "log_sha256": "ab7d71fe8687f4bb8aa3542280da262d709a778008e19ad0b395ba4f2a52a676"
+    },
+    {
+      "name": "sim",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/sim",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 0.823,
+      "log": "logs/sim.log",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 150 tests in 0.734s",
+        "",
+        "OK"
+      ],
+      "log_sha256": "d771b7f653351e31b73561960d506ff1541d8b41d5a89ba95bea10170b2dad18"
+    },
+    {
+      "name": "localization-build",
+      "command": [
+        "python3",
+        "tools/loc/build_loc.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.057,
+      "log": "logs/localization-build.log",
+      "summary": [
+        "eng: 3593 ключей",
+        "rus: 3593 ключей"
+      ],
+      "log_sha256": "2603b7b3ba92c1411d92287c02f4ab1151681fc6b3a838be87ca78222df8f440"
+    },
+    {
+      "name": "localization",
+      "command": [
+        "python3",
+        "tools/ci/check_loc.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.13,
+      "log": "logs/localization.log",
+      "summary": [
+        "Моделей проверено: 1206; ошибок: 0"
+      ],
+      "log_sha256": "fabaa7aa353556c02a238af11a209084767645d1b7d4a837c0eaf0796c645d12"
+    },
+    {
+      "name": "csharp-syntax",
+      "command": [
+        "python3",
+        "tools/ci/check_csharp_syntax.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.465,
+      "log": "logs/csharp-syntax.log",
+      "summary": [
+        "267 files 0 errors"
+      ],
+      "log_sha256": "17f579dcd83bfb354a78479cb397b7a41a696a95d8119c395a9fe007f75dcaa8"
+    },
+    {
+      "name": "harmony-targets",
+      "command": [
+        "python3",
+        "tools/ci/check_harmony_targets.py",
+        "<sts2-rl-agent-checkout>/decompiled"
+      ],
+      "exit_code": 0,
+      "seconds": 0.079,
+      "log": "logs/harmony-targets.log",
+      "summary": [
+        "Патчей проверено: 123; ошибок: 0"
+      ],
+      "log_sha256": "5660306f96926cf0106a564cfa3d849829b161565a277e5bfcb7a4750a34d525"
+    },
+    {
+      "name": "vanilla-art",
+      "command": [
+        "python3",
+        "tools/art/build_vanilla_art.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.109,
+      "log": "logs/vanilla-art.log",
+      "summary": [
+        "power         118/118  с ванильным артом",
+        "relic         203/203  с ванильным артом",
+        "event           9/9    с ванильным артом",
+        "enchantment     6/6    с ванильным артом"
+      ],
+      "log_sha256": "a1cded7e429148222d1c6ad2f66b91d25ea19a7542ff0b259268ab63e9f7c2b1"
+    },
+    {
+      "name": "art-fit",
+      "command": [
+        "python3",
+        "tools/art/art_fit.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.223,
+      "log": "logs/art-fit.log",
+      "summary": [
+        "Арт карт: нарушений 0, повторов внутри мода 0, исключений с причиной 0",
+        "Значки реликвий: нарушений 0, исключений с причиной 0, своих значков 197"
+      ],
+      "log_sha256": "39de9bdbc6f257b29a7ae75cf22815c2f4f48f8470c512bd442316a670737cf9"
+    },
+    {
+      "name": "boss-icons",
+      "command": [
+        "python3",
+        "tools/art/monsters/build_boss_icons.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 4.373,
+      "log": "logs/boss-icons.log",
+      "summary": [
+        "значки боссов: 12 × 2 OK"
+      ],
+      "log_sha256": "d6f3aa395c3b4bd026d177415ecbd709f240a7161d6655af79af5ae4da5f4570"
+    },
+    {
+      "name": "scenes",
+      "command": [
+        "python3",
+        "tools/art/scenes/build_scenes.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.032,
+      "log": "logs/scenes.log",
+      "summary": [
+        "сцены: 4, ошибок: 0"
+      ],
+      "log_sha256": "3a108c2f543adfabca63afc2973eecd660db33c9511c4a638c8b19b6de5a676d"
+    },
+    {
+      "name": "events-art",
+      "command": [
+        "python3",
+        "tools/art/events/build_events.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.086,
+      "log": "logs/events-art.log",
+      "summary": [
+        "события: 34, ошибок: 0"
+      ],
+      "log_sha256": "9797611d896cb07dc33c60ca6a19b86b3fa76f30ac8dbd7a184a63d285ca0b0a"
+    },
+    {
+      "name": "acts-art",
+      "command": [
+        "python3",
+        "tools/art/acts/build_acts.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.053,
+      "log": "logs/acts-art.log",
+      "summary": [
+        "фоны актов: 5 × 6, ошибок: 0"
+      ],
+      "log_sha256": "5ff133065849d7a41700ff310a693ab6414f165846e93d8d7c4efd6a489baa30"
+    },
+    {
+      "name": "origins-art",
+      "command": [
+        "python3",
+        "tools/art/relics/draw_origins.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.032,
+      "log": "logs/origins-art.log",
+      "summary": [
+        "значки происхождений и предысторий: 10 + 31, ошибок: 0"
+      ],
+      "log_sha256": "f1ef2be45be76b16b58df8ea40748132b29937432e4d37eefd6011253d1c9074"
+    },
+    {
+      "name": "relics-art",
+      "command": [
+        "python3",
+        "tools/art/relics/draw_relics.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.068,
+      "log": "logs/relics-art.log",
+      "summary": [
+        "свои значки реликвий (M7 п. 6): 156, ошибок: 0"
+      ],
+      "log_sha256": "9234e0b124128adda5ef97d9e11c7455ed205ade691e73242ca34aa3f725c1f8"
+    },
+    {
+      "name": "cards-art",
+      "command": [
+        "python3",
+        "tools/art/cards/draw_portraits.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.039,
+      "log": "logs/cards-art.log",
+      "summary": [
+        "свои портреты карт (M7 п. 6): 20, ошибок: 0"
+      ],
+      "log_sha256": "f4424764679bde4ca3f99075bbc42c06aa6aab205b37ab5df18beab772292056"
+    },
+    {
+      "name": "sounds",
+      "command": [
+        "python3",
+        "tools/audio/build_sfx.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.193,
+      "log": "logs/sounds.log",
+      "summary": [
+        "звуки: событий 19, строк таблицы 23 (fmod 15, game 1, own 7); своих звуков 7, 6.6 с; ошибок: 0"
+      ],
+      "log_sha256": "b993dca03a3c3429880a81e55c65d9c2eaf2df4ac53b3bf7187a0a193ca4525e"
+    },
+    {
+      "name": "events",
+      "command": [
+        "python3",
+        "tools/ci/check_events.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.024,
+      "log": "logs/events.log",
+      "summary": [
+        "событий актов: 33 (FrozenBarrows 9, ClockworkDepths 6, BloodCourt 6, StarTower 6, Hive 3, Glory 3); событий узлов: 1; ошибок: 0"
+      ],
+      "log_sha256": "09607d72ea3e2b164dedf3575915419f07204f8aaf4be26968c83d5a2e47531b"
+    },
+    {
+      "name": "assets",
+      "command": [
+        "python3",
+        "tools/assets/asset_manifest.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.119,
+      "log": "logs/assets.log",
+      "summary": [
+        "monster            86       86     38      48      0",
+        "rest_option        13       13      0      13      0",
+        "ui                  0      106    106       0      0",
+        "итого             895     1951    833    1118      0"
+      ],
+      "log_sha256": "5aa6623480b4f41c6bfe0dcca29e553571abf5255b06d04e23accd26c81887ab"
+    },
+    {
+      "name": "card-audit",
+      "command": [
+        "python3",
+        "tools/cards/audit_cards.py",
+        "--check",
+        "--out",
+        "docs/plan/card-audit.md"
+      ],
+      "exit_code": 0,
+      "seconds": 0.249,
+      "log": "logs/card-audit.log",
+      "summary": [
+        "Карт: 340; ошибок: 0; предупреждений: 1"
+      ],
+      "log_sha256": "ea9a48db89a65f75e7b8e6bf50593093084777c999827865ac9f1c854584759e"
+    },
+    {
+      "name": "design-tables",
+      "command": [
+        "python3",
+        "tools/cards/design_tables.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.121,
+      "log": "logs/design-tables.log",
+      "summary": [
+        "Таблицы карт: актуальны"
+      ],
+      "log_sha256": "1317e5e0af1d86f0b35faa0461dce41d0826582f2fee9b3628bb2a380ed2a985"
+    },
+    {
+      "name": "card-catalog",
+      "command": [
+        "python3",
+        "tools/cards/card_catalog.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.117,
+      "log": "logs/card-catalog.log",
+      "summary": [
+        "docs/plan/card-catalog.md: актуален"
+      ],
+      "log_sha256": "9bcb85f416a16f29793e38ce48304fc49358beeb55dd2d05f1a9292efd06ae60"
+    },
+    {
+      "name": "pools",
+      "command": [
+        "python3",
+        "tools/pools/build_pools.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.12,
+      "log": "logs/pools.log",
+      "summary": [
+        "Пулы: изъято 22, открывается трансформациями 12"
+      ],
+      "log_sha256": "fa0c4890efa140bf09b10693188857020e8bb2bad0ad8a9ed97ba49010fa35a1"
+    },
+    {
+      "name": "relics",
+      "command": [
+        "python3",
+        "tools/relics/build_relics.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.058,
+      "log": "logs/relics.log",
+      "summary": [
+        "Реликвий: 295 (остаются 277, в бижутерию 6, перерабатываются 12); ошибок: 0"
+      ],
+      "log_sha256": "3cfc3e518e9e0bc51b3d411478db4085b2da0b033995ea40925a1d39e2d61f01"
+    },
+    {
+      "name": "generated-localization-unchanged",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "mod/SlayTheRequiem/localization"
+      ],
+      "exit_code": 0,
+      "seconds": 0.017,
+      "log": "logs/generated-localization-unchanged.log",
+      "summary": [],
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.004,
+      "log": "logs/diff-whitespace.log",
+      "summary": [],
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "not_executed": [
+    "local dotnet/Core: no SDK",
+    "full game-facing build: no legal game references or SDK",
+    "MegaDot import/export and isolated PCK loading: no engine",
+    "native adapter fixtures",
+    "gameplay and two-client playtest (scheduled at the end)",
+    "measured runtime/performance baseline"
+  ],
+  "game_runtime": false,
+  "co_op": false
+}

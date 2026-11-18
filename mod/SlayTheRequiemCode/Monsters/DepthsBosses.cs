@@ -76,6 +76,7 @@ public sealed class ClockworkColossus : ActBossMonster
 /// </summary>
 public sealed class AutomatonArchitect : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<BrassSentry>()];
     public const int BaseHp = 280;
     public const int MaxSentries = 2;
     public const int ReinforcePlating = 3;
@@ -156,9 +157,11 @@ public sealed class BoilerWyrm : ActBossMonster
     public override string ArtKey => "boiler_wyrm";
 
     private int _alternate;
+    private int _pressureRound;
 
     private int Pressure => Creature.GetPower<PressurePower>()?.Amount ?? 0;
     private int Threshold => Phase == 2 ? PressureThresholdPhaseTwo : PressureThreshold;
+    private BoilerMove PressureMove => BossCounterplayRules.BoilerMoveAt(Pressure, Threshold, _alternate);
 
     /// <summary>Ходы выбираются по давлению (ветвление), а не циклом.</summary>
     protected override IReadOnlyList<MoveState> PhaseOne() =>
@@ -174,8 +177,8 @@ public sealed class BoilerWyrm : ActBossMonster
     {
         var moves = PhaseOne();
         var next = new ConditionalBranchState("BOILER_NEXT");
-        next.AddState(moves[2], () => Pressure >= Threshold);
-        next.AddState(moves[0], () => _alternate % 2 == 0);
+        next.AddState(moves[2], () => PressureMove == BoilerMove.Release);
+        next.AddState(moves[0], () => PressureMove == BoilerMove.Bite);
         next.AddState(moves[1], () => true);
         foreach (var move in moves) move.FollowUpState = next;
         return new MonsterMoveStateMachine(moves.Cast<MonsterState>().Append(next).ToList(), moves[0]);
@@ -194,8 +197,15 @@ public sealed class BoilerWyrm : ActBossMonster
     public override async Task AfterSideTurnStart(MegaCrit.Sts2.Core.Combat.CombatSide side, IReadOnlyList<Creature> participants, MegaCrit.Sts2.Core.Combat.ICombatState combatState)
     {
         await base.AfterSideTurnStart(side, participants, combatState);
-        if (side == MegaCrit.Sts2.Core.Combat.CombatSide.Player && Creature.IsAlive)
+        if (side != MegaCrit.Sts2.Core.Combat.CombatSide.Player || !Creature.IsAlive) return;
+        if (_pressureRound != combatState.RoundNumber)
+        {
+            // A peer/extra player turn is not a second enemy action. Keep the pressure visible during the
+            // response window, but grow it once per round, not once per extra turn or refresh.
+            _pressureRound = combatState.RoundNumber;
             await PowerCmd.Apply<PressurePower>(Ctx, Creature, 1, Creature, null);
+        }
+        RefreshPressureIntent();
     }
 
     public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
@@ -204,6 +214,29 @@ public sealed class BoilerWyrm : ActBossMonster
         if (target != Creature || !Creature.IsAlive || result.UnblockedDamage <= 0) return;
         if (DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Frost && Creature.GetPower<PressurePower>() is { } power)
             await PowerCmd.Decrement(power);
+        RefreshPressureIntent(); // includes phase-two's lower threshold, even for a non-Frost phase trigger
+    }
+
+    public override Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
+    {
+        if (power is PressurePower && power.Owner == Creature) RefreshPressureIntent();
+        return Task.CompletedTask;
+    }
+
+    private void RefreshPressureIntent()
+    {
+        // Do not reroll the state machine: that would advance a move/log/RNG. Do not erase a native stun or
+        // the resource breather chosen by EnemySetup either, or replace the action while it is executing.
+        if (!Creature.IsAlive || IsPerformingMove || Creature.CombatState?.CurrentSide != MegaCrit.Sts2.Core.Combat.CombatSide.Player
+            || NextMove?.Id is not ("SCALDING_BITE" or "IRON_COIL" or "PRESSURE_RELEASE")) return;
+        var id = PressureMove switch
+        {
+            BoilerMove.Release => "PRESSURE_RELEASE",
+            BoilerMove.Coil => "IRON_COIL",
+            _ => "SCALDING_BITE",
+        };
+        if (NextMove.Id != id && MoveStateMachine is { } machine && machine.States.TryGetValue(id, out var state) && state is MoveState move)
+            SetMoveImmediate(move, forceTransition: true);
     }
 }
 

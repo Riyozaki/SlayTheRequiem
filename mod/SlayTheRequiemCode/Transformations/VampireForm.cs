@@ -35,6 +35,7 @@ public sealed class VampireForm : FormRelic, ITransformationForm
     public override FormKind Kind => FormKind.Vampire;
     public bool IsActiveForm => true;
     protected override IEnumerable<Type> FormCards => [typeof(Bite)];
+    protected override IEnumerable<Type> CardsToRemove => [typeof(Bite), typeof(BloodLordStance)];
     public override Color? Tint => new Color(0.86f, 0.84f, 0.96f);
     public override Color FlashColor => new(0.75f, 0.05f, 0.1f);
 
@@ -130,9 +131,9 @@ public sealed class VampireForm : FormRelic, ITransformationForm
         Flash();
         if (!_bloodLord && TransformationRules.BecomesBloodLord(_feedings))
         {
-            BloodLord = true;
             var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(typeof(BloodLordStance)));
-            await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+            await CardAcquisition.GrantOnceOrDefer(this, Owner.RunState.CreateCard(canonical, Owner), "blood-lord");
+            BloodLord = true; // the durable source exists even if burden deferred its actual delivery
         }
     }
 

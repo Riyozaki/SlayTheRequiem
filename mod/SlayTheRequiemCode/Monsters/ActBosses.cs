@@ -14,7 +14,8 @@ using SlayTheRequiem.SlayTheRequiemCode.Extensions;
 namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
 // Боссы актов 2 и 4 (docs/design/11 §6.1, M5 п. 1): по 3 на каждый вариант — 2а, 2б, 4а, 4б.
-// ♥ по кривой 13 §2.1 (акт 2 — 260–320, акт 4 — 400–460); надбавки акта/уровня/Непоколебимость даёт EnemySetup (ранг Boss).
+// ♥ по кривой 13 §2.1 (акт 2 — 260–320, акт 4 — 400–460); настройку HP/уровня/Непоколебимость даёт EnemySetup.
+// Economy revision 1 не добавляет к уже авторскому HP второй бюджет заимствованного акта; старый сейв revision 0 сохраняет надбавку.
 // Облик — свой PNG (OwnArtMonster), фаза 2 — своя картинка «_p2» со вспышкой.
 
 /// <summary>
@@ -23,6 +24,8 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// </summary>
 public abstract class ActBossMonster : OwnArtMonster
 {
+    public override EnemyRole CombatRole => EnemyRole.Boss;
+
     public const string PhaseTwoArt = "p2";
 
     /// <summary>Порог фазы 2 в % ♥; 0 — у босса одна фаза (картинки меняет сам, напр. стойки).</summary>
@@ -103,6 +106,8 @@ public abstract class ActBossMonster : OwnArtMonster
 /// <summary>Свита боссов со своей картинкой.</summary>
 public abstract class OwnArtMinion : OwnArtMonster
 {
+    public override EnemyRole CombatRole => EnemyRole.Minion;
+
     protected override MonsterModel LookOf => ModelDb.Monster<MegaCrit.Sts2.Core.Models.Monsters.TheLost>();
 }
 

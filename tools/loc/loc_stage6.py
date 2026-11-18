@@ -129,8 +129,8 @@ PATHS = [
      "Выстрелы из лука и арбалета накладывают стихию последнего заклинания (2 стака).",
      "RunicQuiver", "Runic Quiver", "Рунный колчан", "Cloak. +2 max ✦.", "Плащ. +2 пул ✦."),
     ("ElementLord", "Element Lord", "Повелитель стихии",
-     "Choose an element: its signature spell joins your deck; your statuses of that element +1 stack.",
-     "Выбор стихии: её подписное заклинание — в колоду; ваши статусы этой стихии +1 стак.",
+     "Choose an element: its signature spell joins your deck and this essence teaches that spell at full mastery (no other school grants); your statuses of that element +1 stack.",
+     "Выбор стихии: её подписное заклинание — в колоду и освоено этой Сущностью полностью (без прибавки другим заклинаниям школы); ваши статусы этой стихии +1 стак.",
      "ElementStaff", "Elemental Staff", "Посох стихии", "Staff. +3 max ✦, +1 ✦ regeneration.", "Посох. +3 пул ✦, +1 прирост ✦."),
     ("Battlemage", "Battlemage", "Боевой маг",
      "Any elemental Cloak puts on the other two as well; your attacks add 2 elemental damage (fire → frost → shock).",
@@ -147,8 +147,8 @@ PATHS = [
      "SpiritBell", "Spirit Bell", "Колокольчик духов", "Amulet. Summon a spirit wolf (8 HP) at the start of each combat.",
      "Амулет. В начале боя — волк-дух (8 ♥)."),
     ("Reborn", "Reborn", "Перерождённый",
-     "No bonus. Once: choose a new background and reset your stat points (spend them again at camp).",
-     "Без бонуса. Единожды: новая предыстория и сброс очков характеристик (распределить заново в лагере).",
+     "Once: change origin and background; refund stat investment and remove paid stat mastery. Skills, treatises and loot stay. No starter gifts are repeated. Requires known mastery sources; cancellation does not consume the Path.",
+     "Единожды: смена происхождения и предыстории, возврат вложений характеристик с отменой оплаченного ими владения. Навыки, трактаты и добыча остаются. Стартовые подарки не повторяются. Нужна история источников; отмена не тратит Путь.",
      None, None, None, None, None),
 ]
 
@@ -215,16 +215,16 @@ FORM_RELICS = [
      "Каждые 2 Обращения в выигранных боях — узел ветки в лагере: Клык {Hunter}/3, Долгая ночь {Stalker}/3, Альфа {Alpha}/3 (ждут: {Pending})." + _APOSTATE["rus"],
      "The moon always finds you.", "Луна всегда тебя находит."),
     ("DarkPactForm", "Dark Pact",
-     "+4 max ✦; summoning spells cost 1 less ✦; −8 max HP. Defeat the Tomb Guardian to become a Herald." + _APOSTATE["eng"],
+     "+4 max ✦; summoning spells cost 1 less ✦; −8 max HP. Become a Herald: defeat the Tomb Guardian OR win 2 elite combats with the Pact. Form rites at camp are a fallback." + _APOSTATE["eng"],
      "Тёмный договор",
-     "+4 пул ✦; заклинания призыва на 1 ✦ дешевле; −8 макс. ♥. Победите Хранителя Гробницы, чтобы стать Вестником." + _APOSTATE["rus"],
+     "+4 пул ✦; заклинания призыва на 1 ✦ дешевле; −8 макс. ♥. Для Вестника победите Хранителя Гробницы ИЛИ выиграйте 2 боя с элитами под Договором. Обряды в лагере — запасной вход." + _APOSTATE["rus"],
      "The urn remembers every name.", "Урна помнит каждое имя."),
     ("HeraldForm", "Herald",
      "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. [gold]Stance[/gold]: your spells apply Plague (2 [gold]Blight[/gold]), Discord (−1 [gold]Strength[/gold]) "
-     "or Decay (1 [gold]Sunder[/gold]). Wins as Herald: {Wins}/{Required} (the Phylactery event — Lich)." + _APOSTATE["eng"],
+     "or Decay (1 [gold]Sunder[/gold]). Wins as Herald: {Wins}/{Required} (late-act camp rite or Phylactery event — Lich; short route needs 6 wins)." + _APOSTATE["eng"],
      "Вестник",
      "Договор: +4 пул ✦, призыв −1 ✦, −8 макс. ♥. [gold]Стойка[/gold]: ваши заклинания накладывают Чуму (2 [gold]Хвори[/gold]), Раздор (−1 [gold]Силы[/gold]) "
-     "или Распад (1 [gold]Раскола[/gold]). Побед Вестником: {Wins}/{Required} (событие «Филактерия» — Лич)." + _APOSTATE["rus"],
+     "или Распад (1 [gold]Раскола[/gold]). Побед Вестником: {Wins}/{Required} (поздний обряд лагеря или событие «Филактерия» — Лич; в коротком нужно 6 побед)." + _APOSTATE["rus"],
      "Three voices, one mouth.", "Три голоса, одни уста."),
     ("LichForm", "Lich",
      "Pact: +4 max ✦, summoning −1 ✦, −8 max HP. Bone: −30% max HP, physical damage taken −25%, immune to Poison, Blight and Bleed; "

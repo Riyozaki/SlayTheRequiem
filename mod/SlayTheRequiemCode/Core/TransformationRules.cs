@@ -63,7 +63,7 @@ public static class TransformationRules
     // ═════════════ совместимость (06 §3) ═════════════
 
     /// <summary>Мировоззрение (одно на забег): всё, кроме Заводного сердца.</summary>
-    public static bool IsWorldview(FormKind kind) => kind is not (FormKind.None or FormKind.Clockwork);
+    public static bool IsWorldview(FormKind kind) => Enum.IsDefined(kind) && kind is not (FormKind.None or FormKind.Clockwork);
 
     /// <summary>Формы, делающие Отступником (пока активны): вампир, оборотень, путь Договора.</summary>
     public static bool IsApostateForm(FormKind kind) =>
@@ -287,11 +287,11 @@ public static class TransformationRules
     /// <summary>Доля наград-карт, заменяемых картой Пути (если у героя есть Путь).</summary>
     public const int PathCardRewardPercent = 25;
 
-    /// <summary>После какого босса предлагается Путь: 3-го акта (пять актов) или предпоследнего (обычный забег).</summary>
-    public static int PathOfferActIndex(int totalActs) => totalActs >= 5 ? 2 : Math.Max(0, totalActs - 2);
+    /// <summary>Full five acts: boss 3. Explicit short 1→3→5: boss 1. Vanilla three-act compatibility stays separate.</summary>
+    public static int PathOfferActIndex(int totalActs, bool shortRun = false) => shortRun ? 0 : totalActs >= 5 ? 2 : Math.Max(0, totalActs - 2);
 
-    public static bool PathOfferDue(int level, int bossActIndex, int totalActs, bool hasPath) =>
-        !hasPath && level >= PathLevelGate && bossActIndex >= PathOfferActIndex(totalActs);
+    public static bool PathOfferDue(int level, int bossActIndex, int totalActs, bool hasPath, bool shortRun = false) =>
+        !hasPath && level >= (shortRun ? 1 : PathLevelGate) && bossActIndex >= PathOfferActIndex(totalActs, shortRun);
 
     /// <summary>
     /// Требования Пути: Паладин — форма Праведника (или Ординатор, 06 §3); Чёрный рыцарь — Отступник (Ординатору закрыт);

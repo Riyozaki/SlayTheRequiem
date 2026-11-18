@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>train</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M31 9 H39 V57 H31 Z" fill="#b58a58" stroke="#302922" stroke-width="4"/><path d="M15 22 L28 16 H42 L55 22 L50 36 L41 32 L44 47 H25 L28 32 L19 36 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M5 5 L10 9 L22 26 M9 27 L19 18" fill="none" stroke="#302922" stroke-width="5"/>
+  </g>
+</svg>

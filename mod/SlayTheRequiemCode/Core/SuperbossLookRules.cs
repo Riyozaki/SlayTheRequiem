@@ -64,7 +64,7 @@ public static class SuperbossLookRules
         "SteamValve" => Superboss.DeepMasterSmith,
         "GargoyleServant" => Superboss.BloodCourtLord,
         "DragonEgg" or "CultistThrall" => Superboss.FirstSummoner,
-        "FacelessPriest" => Superboss.WorldEater,
+        "FacelessPriest" or "DevouredSoulGhost" => Superboss.WorldEater,
         "ShadowSoul" => Superboss.NamelessShadow,
         _ => null,
     };

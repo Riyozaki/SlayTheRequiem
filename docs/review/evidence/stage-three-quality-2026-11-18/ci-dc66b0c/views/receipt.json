@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "producer": "verified-csharp-microbenchmark-transport",
+  "source_commit": "dc66b0c8398512ec608d7f6e4579af3d72ad984f",
+  "trials_sha256": "c31324a40823253c38d9476550248029f61df6aca91fea4711ceae7ffe921f85",
+  "trials": 28,
+  "scope": "not-engine-not-FPS-not-native-event-validation",
+  "native_runs": 0,
+  "note": "API annotations plus identified source; hash consistency, not signed provenance or native performance."
+}

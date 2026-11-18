@@ -62,14 +62,14 @@ public static class CampMenu
                 if (card is PickCard pick) pick.SetDisplay(choice.Value, choice.Cost);
                 cards.Add(card);
             }
-            var prefs = new CardSelectorPrefs(new LocString("rest_site_ui", promptKey), 1)
-            {
-                Cancelable = true,
-            };
-            var chosen = (await CardSelectCmd.FromSimpleGrid(new ThrowingPlayerChoiceContext(), cards, owner, prefs)).FirstOrDefault();
-            if (chosen == null) return null;
-            var index = cards.IndexOf(chosen);
-            return index >= 0 ? choices[index].Tag : null;
+            var options = cards.Select((card, i) => new UI.NHeroCreationScreen.Choice(
+                i.ToString(System.Globalization.CultureInfo.InvariantCulture), card.Title.GetFormattedText(),
+                UI.RequiemText.Plain(card.GetDescriptionForPile(PileType.None)),
+                Group: choices[i].Tag is Skill skill ? UI.RequiemText.Branch(SkillTree.Node(skill).Branch) : "")).ToList();
+            var picked = await UI.NHeroCreationScreen.Pick(owner, new LocString("rest_site_ui", promptKey).GetFormattedText(),
+                UI.RequiemUi.TipText("UI.campMenu.title"), options, cancelable: true);
+            return int.TryParse(picked, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var index)
+                && index >= 0 && index < choices.Count ? choices[index].Tag : null;
         }
         finally
         {

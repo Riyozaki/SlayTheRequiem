@@ -1,0 +1,646 @@
+[
+  {
+    "workload": "idle",
+    "trial": 0,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.5654,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2505,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 1,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.6784,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2652,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 2,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 16.3381,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2507,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 3,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.605,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2511,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 4,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.6892,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2509,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 5,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.9863,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2484,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "idle",
+    "trial": 6,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.5637,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.2687,
+      "AllocatedBytes": 2240,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 5,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 0,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 7.6153,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3515,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 1,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 7.5516,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.37,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 2,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 7.6258,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3492,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 3,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 7.5593,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3163,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 4,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 7.5085,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3463,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 5,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 7.5247,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3529,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "one-change-per-60-frames",
+    "trial": 6,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 7.5017,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -472134912
+    },
+    "candidate": {
+      "Milliseconds": 0.3365,
+      "AllocatedBytes": 49776,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 204,
+      "Checksum": -472134912
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 0,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.6301,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.5572,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 1,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.4616,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.4844,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 2,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.553,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.562,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 3,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.5192,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.5391,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 4,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.556,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.5071,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 5,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 15.5025,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.5073,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "rebind-every-120-frames",
+    "trial": 6,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 15.7067,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": 1541982208
+    },
+    "candidate": {
+      "Milliseconds": 0.5113,
+      "AllocatedBytes": 224000,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 500,
+      "Checksum": 1541982208
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 0,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 8.5109,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 5.1089,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 1,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 8.3936,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 4.0684,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 2,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 8.3627,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 5.1411,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 3,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 8.3691,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 3.964,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 4,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 8.3851,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 5.1323,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 5,
+    "first": "candidate",
+    "baseline": {
+      "Milliseconds": 8.3618,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 4.0026,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  },
+  {
+    "workload": "change-every-frame",
+    "trial": 6,
+    "first": "baseline",
+    "baseline": {
+      "Milliseconds": 8.3638,
+      "AllocatedBytes": 1480,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 60000,
+      "Checksum": -515536896
+    },
+    "candidate": {
+      "Milliseconds": 5.1097,
+      "AllocatedBytes": 3073792,
+      "Gen0": 0,
+      "Gen1": 0,
+      "Gen2": 0,
+      "Builds": 12004,
+      "Checksum": -515536896
+    }
+  }
+]

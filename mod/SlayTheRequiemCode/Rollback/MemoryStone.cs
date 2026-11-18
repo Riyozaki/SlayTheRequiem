@@ -1,19 +1,25 @@
+using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Combat;
+using SlayTheRequiem.SlayTheRequiemCode.Spells;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Multiplayer;
+using MegaCrit.Sts2.Core.Multiplayer.Game;
+using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 using SlayTheRequiem.SlayTheRequiemCode.Config;
+using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
-using FileAccess = Godot.FileAccess;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rollback;
 
@@ -21,7 +27,7 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Rollback;
 /// Камень Памяти (docs/design/15): Отпечаток забега в начале каждого акта и возврат к нему с экрана поражения.
 ///
 /// Отпечаток — обычный <see cref="SerializableRun"/> (тот же, что пишет «Сохранить и выйти»), снятый на хуке
-/// <c>AfterActEntered</c>; хранится в памяти (как JSON) и копией в папке сохранений профиля, чтобы пережить перезапуск
+/// подтверждённой границе после всех стартовых/событийных задач; хранится в памяти (как JSON) и копией в папке сохранений профиля, чтобы пережить перезапуск
 /// игры. В коопе Отпечаток снимает только хост — у него же сохранение кооп-забега.
 ///
 /// Возврат: Отпечаток дополняется итогами погибшей попытки (Свечи, Шрамы, Месть, «перестроить карту») прямо в
@@ -43,31 +49,116 @@ public static class MemoryStone
     private static Imprint? _imprint;
     private static bool _imprintIsCoop;
 
-    internal static bool Restoring { get; set; }
+    // One shared transition owner: Memory Stone, inventory restore and client rejoin must not race or let an
+    // old finally clear a newer transition's flag. The live lease intentionally spans CleanUp/new-run Launch.
+    private static readonly OperationGate RestoreGate = new();
+    private static readonly OperationGate OfferGate = new();
+    internal static bool Restoring => RestoreGate.IsHeld;
+    internal static OperationGate.Lease? TryBeginRestore() => RestoreGate.TryEnter();
 
     public static bool Enabled => RunSettings.EnableMemoryStone && RunSettings.EnableRequiemSystems;
 
     // ───── Отпечаток ─────
 
-    /// <summary>Снять Отпечаток (после входа в акт — стартовый узел уже закрыт). В коопе — только хост.</summary>
-    public static void TakeImprint()
+    private static WeakReference<RunState>? _waitingState;
+    private static int _waitingAct;
+    private static bool _actEntrySettled;
+    private static EventRoom? _settledAncient;
+    private static EventRoom? _checkingAncient;
+    private static IReadOnlyList<Task> PendingEventTasks(EventSynchronizer synchronizer) =>
+        AccessTools.Field(typeof(EventSynchronizer), "_pendingOptionTasks")?.GetValue(synchronizer) is List<Task> tasks
+            ? tasks.ToArray() : throw new MissingFieldException("Event task adapter incompatible; no Memory Stone imprint will be taken");
+
+    /// <summary>Arm, do not assume that entering the room completed its Ancient/startup decisions.</summary>
+    public static void RequestImprint()
     {
-        if (!Enabled || RequiemNet.IsClient || !RunManager.Instance.ShouldSave) return;
-        var state = RunManager.Instance.DebugOnlyGetState();
-        if (state == null || !state.Players.Any(p => RequiemMode.IsInSystem(p))) return;
-        try
+        if (!Enabled || RequiemNet.IsClient || RequiemNet.State is not { } state) return;
+        _waitingState = new(state);
+        _waitingAct = state.CurrentActIndex;
+        _actEntrySettled = false; // Hook.AfterActEntered has not finished its later listeners yet
+        if (!ReferenceEquals(_settledAncient, state.CurrentRoom)) _settledAncient = null;
+    }
+
+    internal static void OnLaunch(RunState state)
+    {
+        _waitingState = null;
+        _settledAncient = _checkingAncient = null;
+        _actEntrySettled = Debugging.RunDiagnostics.LaunchKind != "new";
+        // Continue of an unfinished act start can finish its pending checkpoint. Never invent a mid-act imprint.
+        if (!RequiemNet.IsClient && state.VisitedMapCoords.All(c => c.row <= 0))
         {
             var save = RunManager.Instance.ToSave(null);
-            var json = JsonSerializationUtility.ToJson(save);
-            _imprint = new Imprint(json, save.SerializableRng?.Seed ?? string.Empty, save.StartTime, save.CurrentActIndex, save.SchemaVersion);
-            _imprintIsCoop = RequiemNet.IsMultiplayer;
-            WriteToDisk(json, _imprintIsCoop);
-            MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти: Отпечаток акта {save.CurrentActIndex + 1} сохранён.");
+            var existing = ImprintFor(state, save);
+            if (existing?.ActIndex != state.CurrentActIndex)
+            { _waitingState = new(state); _waitingAct = state.CurrentActIndex; }
         }
-        catch (Exception e)
+    }
+
+    internal static void AfterActHooksCompleted(IRunState state)
+    {
+        if (!ReferenceEquals(state, RequiemNet.State)) return;
+        _actEntrySettled = true;
+        OnRoomEntered();
+    }
+
+    internal static void OnRoomEntered()
+    {
+        if (RequiemNet.State?.CurrentRoom is EventRoom { IsPreFinished: true } room) QueueAncientBoundary(room);
+        else TryTakeImprint();
+    }
+
+    internal static void QueueAncientBoundary(EventRoom room)
+    {
+        if (_waitingState == null || RequiemNet.IsClient || ReferenceEquals(_checkingAncient, room)) return;
+        _checkingAncient = room;
+        TaskHelper.RunSafely(AfterAncientTasks(room));
+    }
+
+    private static async Task AfterAncientTasks(EventRoom room)
+    {
+        try
         {
-            MainFile.Logger.Warn($"[SlayTheRequiem] Камень Памяти: Отпечаток не снят ({e.Message}).");
+            // StateChanged fires INSIDE EventOption.Chosen, before task registration/history. Cleanup can
+            // append another task; stabilize the full set without clearing or swallowing native bookkeeping.
+            var state = RequiemNet.State;
+            bool Current() => state != null && ReferenceEquals(state, RequiemNet.State) && ReferenceEquals(state.CurrentRoom, room);
+            if (!await AsyncTaskBoundary.Settle(() => PendingEventTasks(RunManager.Instance.EventSynchronizer), Current)
+                || !room.IsPreFinished || !RunManager.Instance.EventSynchronizer.Events.All(e => e.IsFinished)) return;
+            _settledAncient = room;
+            TryTakeImprint();
         }
+        catch (Exception e) { MainFile.Logger.Error($"[MemoryStone] Ancient task did not settle; no imprint: {e}"); }
+        finally { if (ReferenceEquals(_checkingAncient, room)) _checkingAncient = null; }
+    }
+
+    public static void TryTakeImprint()
+    {
+        if (!_actEntrySettled || !Enabled || RequiemNet.IsClient || !RunManager.Instance.ShouldSave || Restoring
+            || _waitingState == null || !_waitingState.TryGetTarget(out var pending)
+            || !ReferenceEquals(pending, RequiemNet.State) || pending.CurrentActIndex != _waitingAct) return;
+        var state = pending;
+        if (state.CurrentRoom is not (MapRoom or EventRoom) || CombatManager.Instance.IsInProgress) return;
+        var ancientUnfinished = state.CurrentRoom is EventRoom eventRoom
+            && (!eventRoom.IsPreFinished || !ReferenceEquals(eventRoom, _settledAncient));
+        var startersReady = state.Players.SelectMany(p => p.Relics.OfType<Grimoire>()).All(g => g.StartingChoicesComplete);
+        var mutating = state.Players.Select(TravelPack.Of).OfType<TravelPack>()
+            .Any(p => p.OperationPending.Length > 0 || p.OperationBlocked || InventoryGate.IsMutating(p.Owner));
+        if (!MemoryStoneRules.CanCaptureImprint(ancientUnfinished, startersReady, mutating)) return;
+        if (!state.Players.Any(p => RequiemMode.IsInSystem(p))) return;
+        try
+        {
+            // Preserve the finished Ancient room in the native snapshot, otherwise Continue offers it again.
+            var save = RunManager.Instance.ToSave(state.CurrentRoom is EventRoom ? state.CurrentRoom : null);
+            var json = JsonSerializationUtility.ToJson(save);
+            var imprint = new Imprint(json, save.SerializableRng?.Seed ?? string.Empty, save.StartTime, save.CurrentActIndex, save.SchemaVersion);
+            WriteToDisk(json, RequiemNet.IsMultiplayer); // a failed write must not claim a durable checkpoint
+            _imprint = imprint;
+            _imprintIsCoop = RequiemNet.IsMultiplayer;
+            _waitingState = null;
+            _settledAncient = null;
+            MainFile.Logger.Info($"[MemoryStone] boundary=confirmed-start act={save.CurrentActIndex + 1} preFinished={save.PreFinishedRoom != null}");
+        }
+        catch (Exception e) { MainFile.Logger.Warn($"[MemoryStone] Capture delayed; previous imprint retained: {e}"); }
     }
 
     private static string? DiskPath(bool coop)
@@ -78,40 +169,39 @@ public static class MemoryStone
 
     private static void WriteToDisk(string json, bool coop)
     {
-        var path = DiskPath(coop);
-        if (path == null) return;
-        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
-        file?.StoreString(json);
+        var path = DiskPath(coop) ?? throw new IOException("Memory Stone save path unavailable");
+        AtomicSaveFile.Write(Godot.ProjectSettings.GlobalizePath(path), json);
     }
 
-    private static Imprint? ReadFromDisk(bool coop)
+    private static Imprint? ReadFromDisk(bool coop, string seed, long startTime, int act)
     {
         var path = DiskPath(coop);
-        if (path == null || !FileAccess.FileExists(path)) return null;
-        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-        if (file == null) return null;
-        var json = file.GetAsText();
-        var result = JsonSerializationUtility.FromJson<SerializableRun>(json);
-        if (!result.Success || result.SaveData == null) return null;
-        var save = result.SaveData;
-        return new Imprint(json, save.SerializableRng?.Seed ?? string.Empty, save.StartTime, save.CurrentActIndex, save.SchemaVersion);
+        if (path == null) return null;
+        return AtomicSaveFile.ReadValidated(Godot.ProjectSettings.GlobalizePath(path), json =>
+        {
+            var parsed = JsonSerializationUtility.FromJson<SerializableRun>(json);
+            var save = parsed.SaveData;
+            if (!parsed.Success || save == null || save.SerializableRng?.Seed != seed || save.StartTime != startTime
+                || save.CurrentActIndex != act || !MemoryStoneRules.IsSnapshotCompatible(save.SchemaVersion,
+                    SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>())) return null;
+            return new Imprint(json, seed, startTime, save.CurrentActIndex, save.SchemaVersion);
+        });
     }
 
-    /// <summary>Отпечаток именно этого забега (по зерну и времени старта) и совместимой версии схемы.</summary>
+    /// <summary>Only this run AND this act. Never silently return to a previous act when capture was unavailable.</summary>
     internal static Imprint? ImprintFor(RunState state, SerializableRun ended)
     {
         var coop = RequiemNet.IsMultiplayer;
-        if (_imprint == null || _imprintIsCoop != coop)
+        var seed = ended.SerializableRng?.Seed ?? state.Rng.StringSeed;
+        if (_imprint == null || _imprintIsCoop != coop || _imprint.Seed != seed || _imprint.StartTime != ended.StartTime
+            || _imprint.ActIndex != state.CurrentActIndex)
         {
-            _imprint = ReadFromDisk(coop);
+            _imprint = ReadFromDisk(coop, seed, ended.StartTime, state.CurrentActIndex);
             _imprintIsCoop = coop;
         }
         var imprint = _imprint;
-        if (imprint == null) return null;
-        var seed = ended.SerializableRng?.Seed ?? state.Rng.StringSeed;
-        if (imprint.Seed != seed || imprint.StartTime != ended.StartTime) return null;
-        if (!MemoryStoneRules.IsSnapshotCompatible(imprint.Schema, SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>())) return null;
-        return imprint;
+        if (imprint == null || imprint.ActIndex != state.CurrentActIndex) return null;
+        return MemoryStoneRules.IsSnapshotCompatible(imprint.Schema, SaveManager.Instance.GetLatestSchemaVersion<SerializableRun>()) ? imprint : null;
     }
 
     // ───── Свечи отряда ─────
@@ -144,6 +234,8 @@ public static class MemoryStone
     /// <summary>Окно «Вернуться к Камню Памяти?», выбор Шрама и возврат.</summary>
     private static async Task OfferSingleplayer(RunState state, SerializableRun ended)
     {
+        using var offer = OfferGate.TryEnter();
+        if (offer == null || Restoring || !ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer) return;
         var me = state.Players.FirstOrDefault();
         var imprint = ImprintFor(state, ended);
         if (me == null || imprint == null) return;
@@ -156,9 +248,10 @@ public static class MemoryStone
             }))
             return;
 
+        if (!ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer || Restoring) return;
         // Пропуск выбора Шрама = отказ от возврата.
         var scar = await ChooseScar(state, me, canSkip: true);
-        if (scar == null) return;
+        if (scar == null || !ReferenceEquals(state, RequiemNet.State) || !RequiemNet.IsSingleplayer || Restoring) return;
 
         var save = BuildReturnSave(imprint, state, new Dictionary<ulong, Scar> { [me.NetId] = scar.Value });
         if (save == null) return;
@@ -245,7 +338,21 @@ public static class MemoryStone
                 stone.RevengeAct1 = imprint.ActIndex + 1;
                 stone.MapRerollAct1 = imprint.ActIndex + 1;
 
-                relicSave.Props = SavedProperties.From(stone);
+                // Do not round-trip unrelated/unknown properties through this version's mutable model.
+                var props = relicSave.Props ??= new SavedProperties();
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.PendingFlesh), stone.PendingFlesh);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.PendingSoul), stone.PendingSoul);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.PendingPurse), stone.PendingPurse);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.CandlesUsed), stone.CandlesUsed);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.BonusCandles), stone.BonusCandles);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.CryptCandles), stone.CryptCandles);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.Rollbacks), stone.Rollbacks);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.FleshScars), stone.FleshScars);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.SoulScars), stone.SoulScars);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.PurseScars), stone.PurseScars);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.RevengeAct1), stone.RevengeAct1);
+                SavedPropertyWrite.Int(props, nameof(MemoryStoneRelic.MapRerollAct1), stone.MapRerollAct1);
+                SavedPropertyWrite.Text(props, nameof(MemoryStoneRelic.RevengeTargets), stone.RevengeTargets);
             }
 
             // Слава (02 §5, 15): половина Славы, набранной после Отпечатка, сохраняется.
@@ -260,8 +367,13 @@ public static class MemoryStone
                 var retained = ProgressionRules.RetainedRenown(record.Renown, deadRecord.Renown);
                 if (retained == record.Renown) continue;
                 record.Renown = retained;
-                recordSave.Props = SavedProperties.From(record);
+                SavedPropertyWrite.Int(recordSave.Props ??= new SavedProperties(), nameof(Progression.HeroRecord.Renown), record.Renown);
             }
+
+            // A rollback is a NEW operation timeline. Reusing the imprint's nonce/revision would let an old message
+            // from the abandoned attempt become valid again. Generated ONCE by the host/save builder and persisted
+            // for all peers; an ordinary Continue keeps its existing nonce and high-water revision unchanged.
+            OperationRecovery.RotateTimeline(save);
 
             // Новая карта (15 §1.3): без сохранённой карты акт строит её заново, а Камень подменяет зерно.
             if (imprint.ActIndex >= 0 && imprint.ActIndex < save.Acts.Count) save.Acts[imprint.ActIndex].SavedMap = null;
@@ -276,31 +388,37 @@ public static class MemoryStone
 
     // ───── возврат в одиночной игре ─────
 
-    private static async Task ReturnSingleplayer(SerializableRun save)
+    internal static async Task ReturnSingleplayer(SerializableRun save, string operation = "memory-stone-return")
     {
-        Restoring = true;
+        using var transition = TryBeginRestore();
+        var original = RequiemNet.State;
+        if (transition == null || original == null || !RequiemNet.IsSingleplayer) return;
+        RunState? loaded = null;
         try
         {
+            OperationRecovery.CapturePreparedRun(save, operation, coop: false);
             await UI.RequiemVfx.Rewind(save.GetHashCode());
+            if (!ReferenceEquals(original, RequiemNet.State)) return;
             await NGame.Instance.Transition.FadeOut();
+            if (!ReferenceEquals(original, RequiemNet.State)) return;
             RunManager.Instance.CleanUp();
             // Штатный путь «Продолжить» (NMainMenu.OnContinueButtonPressedAsync).
-            var runState = RunState.FromSerializable(save);
-            await RunManager.Instance.SetUpSavedSingleplayer(runState, save);
+            loaded = RunState.FromSerializable(save);
+            await RunManager.Instance.SetUpSavedSingleplayer(loaded, save);
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             NGame.Instance.ReactionContainer.InitializeNetworking(new NetSingleplayerGameService());
-            await NGame.Instance.LoadRun(runState, save.PreFinishedRoom);
+            await NGame.Instance.LoadRun(loaded, save.PreFinishedRoom);
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             await NGame.Instance.Transition.FadeIn();
+            if (!ReferenceEquals(loaded, RequiemNet.State)) return;
             // Сразу записать забег: «Сохранить и выйти» после возврата не должен терять Шрам.
-            await SaveManager.Instance.SaveRun(null);
+            await SaveManager.Instance.SaveRun(loaded.CurrentRoom?.IsPreFinished == true ? loaded.CurrentRoom : null);
         }
         catch (Exception e)
         {
             MainFile.Logger.Error($"[SlayTheRequiem] Камень Памяти: возврат не удался ({e.Message}).");
-            await NGame.Instance.ReturnToMainMenuWithInternalError(e);
-        }
-        finally
-        {
-            Restoring = false;
+            if (RequiemNet.State == null || ReferenceEquals(original, RequiemNet.State) || ReferenceEquals(loaded, RequiemNet.State))
+                await NGame.Instance.ReturnToMainMenuWithInternalError(e);
         }
     }
 
@@ -318,9 +436,21 @@ public static class MemoryStone
         if (creature.CurrentHp > creature.MaxHp) await CreatureCmd.SetCurrentHp(creature, creature.MaxHp);
 
         for (var i = 0; i < soul; i++)
-            await CardPileCmd.Add(player.RunState.CreateCard<DeathEcho>(player), PileType.Deck);
+            await CardAcquisition.AddOrDefer(player.RunState.CreateCard<DeathEcho>(player));
 
         for (var i = 0; i < purse; i++)
             await PlayerCmd.SetGold(MemoryStoneRules.PurseScarGold(player.Gold), player);
+    }
+}
+
+
+/// <summary>Called only after ALL synchronized Ancient events have finished, not when the room merely opens.</summary>
+[HarmonyPatch(typeof(EventRoom), "OnEventStateChanged")]
+public static class MemoryStoneAncientBoundaryPatch
+{
+    [HarmonyPostfix]
+    public static void Postfix(EventRoom __instance)
+    {
+        if (__instance.IsPreFinished) MemoryStone.QueueAncientBoundary(__instance);
     }
 }

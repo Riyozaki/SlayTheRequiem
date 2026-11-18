@@ -120,6 +120,9 @@ public sealed class ShrineEvent : PantheonEvent
     private List<EventOption> BuildOptions()
     {
         var player = Owner!;
+        // A partially changed blessing must not trap the player in a disabled native callback or offer new paid
+        // mutations as though the result were known. Keep an explicit way to leave; the persistent Block remains.
+        if (InventoryGate.For(player).Blocked) return [Choice(Leave, "LEAVE")];
         var god = God;
         var options = new List<EventOption>();
         var current = CelestialBlessing.Of(player);
@@ -170,8 +173,19 @@ public sealed class ShrineEvent : PantheonEvent
 
     private async Task Bless(Celestial god)
     {
-        await CelestialBlessing.Grant(Owner!, god);
-        Refresh("BLESSED");
+        var player = Owner!;
+        try
+        {
+            await CelestialBlessing.Grant(player, god);
+            Refresh("BLESSED");
+        }
+        catch (Exception e)
+        {
+            MainFile.Logger.Error($"[InventoryOperation] shrine-blessing: {e}");
+            Refresh("INITIAL"); // never claim a successful change after a refused/partial result
+            if (MegaCrit.Sts2.Core.Context.LocalContext.IsMe(player))
+                UI.NRequiemToast.Show(UI.RequiemUi.TipText(InventoryGate.For(player).Blocked ? "OPERATION_BLOCKED.title" : "OP_STATUS_ERROR.title"));
+        }
     }
 
     private async Task Redeem()

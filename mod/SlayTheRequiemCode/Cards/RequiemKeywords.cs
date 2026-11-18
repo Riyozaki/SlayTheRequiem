@@ -14,6 +14,7 @@ public static class RequiemKeywords
 {
     // ───── ресурсы и груз ─────
     [CustomEnum][KeywordProperties(AutoKeywordPosition.None)] public static CardKeyword Stamina;
+    [CustomEnum][KeywordProperties(AutoKeywordPosition.None)] public static CardKeyword RequiredStamina;
     [CustomEnum][KeywordProperties(AutoKeywordPosition.None)] public static CardKeyword Mana;
     [CustomEnum][KeywordProperties(AutoKeywordPosition.None)] public static CardKeyword Burden;
     [CustomEnum][KeywordProperties(AutoKeywordPosition.None)] public static CardKeyword Weight;

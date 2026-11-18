@@ -69,10 +69,18 @@ public sealed class DarkPactForm : PactStage
     public override FormKind Kind => FormKind.DarkPact;
     public override Color? Tint => new Color(0.88f, 0.95f, 0.88f);
 
-    /// <summary>Победа над элитой «Хранитель Гробницы» — ступень Вестника.</summary>
+    private int _eliteVictories;
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public int EliteVictories { get => _eliteVictories; set { AssertMutable(); _eliteVictories = Math.Max(0, value); } }
+
+    /// <summary>The themed elite is an early shortcut, not a mandatory random encounter/door.
+    /// Two elite wins after accepting the pact work on either branch and on short 1→3→5.</summary>
     public override async Task AfterCombatVictory(CombatRoom room)
     {
-        if (!Owned || room.Encounter is not Monsters.TombGuardianElite) return;
+        if (!Owned) return;
+        var tombGuardian = room.Encounter is Monsters.TombGuardianElite;
+        if (room.RoomType == RoomType.Elite || tombGuardian) EliteVictories++;
+        if (!BuildAccessRules.HeraldDue(tombGuardian, EliteVictories)) return;
         Flash();
         await Forms.Grant(Owner, FormKind.Herald);
     }
@@ -96,6 +104,9 @@ public sealed class HeraldForm : PactStage
     protected override IEnumerable<DynamicVar> CanonicalVars =>
         [new DynamicVar("Wins", 0), new DynamicVar("Required", TransformationRules.LichWinsRequired)];
 
+    public int RequiredWins => BuildAccessRules.LichWinsRequired(BuildAccessRules.IsShortRoute(
+        Config.RunSettings.FiveActs, Config.RunSettings.ShortRun, Owner.RunState.Acts.Count));
+
     private int _wins;
     private int _stance;
 
@@ -108,6 +119,7 @@ public sealed class HeraldForm : PactStage
             AssertMutable();
             _wins = Math.Max(0, value);
             if (DynamicVars.TryGetValue("Wins", out var v)) v.BaseValue = _wins;
+            if (Owner != null && DynamicVars.TryGetValue("Required", out var needed)) needed.BaseValue = RequiredWins;
             InvokeDisplayAmountChanged();
         }
     }
@@ -162,7 +174,19 @@ public sealed class HeraldForm : PactStage
         return Task.CompletedTask;
     }
 
-    public bool CanBecomeLich => TransformationRules.CanBecomeLich(Kind, _wins);
+    protected override Task OnFormGained()
+    {
+        DynamicVars["Required"].BaseValue = RequiredWins;
+        return Task.CompletedTask;
+    }
+
+    public override async Task AfterRoomEntered(AbstractRoom room)
+    {
+        await base.AfterRoomEntered(room);
+        DynamicVars["Required"].BaseValue = RequiredWins;
+    }
+
+    public bool CanBecomeLich => Kind == FormKind.Herald && _wins >= RequiredWins;
 }
 
 /// <summary>Стойка Вестника: 0⚡ — сменить Стойку (Чума → Раздор → Распад).</summary>

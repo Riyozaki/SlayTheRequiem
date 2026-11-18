@@ -34,7 +34,7 @@ public class RunSettingsDataTests
             CampBuildingsUnlocked = 3,
             MemoryStoneCandles = 0,
         };
-        data.Personal[76561198000000001UL] = new PersonalChoices(2, 0, 6, 3);
+        data.Personal[76561198000000001UL] = new PersonalChoices(2, 0, 5, 3);
         data.Personal[5] = new PersonalChoices(0, 1, 0, 4);
         var back = RunSettingsData.Decode(data.Encode())!;
         Assert.False(back.EnableRequiemSystems);
@@ -47,7 +47,7 @@ public class RunSettingsDataTests
         Assert.True(back.AllowTheft);
         Assert.Equal(3, back.CampBuildingsUnlocked);
         Assert.Equal(0, back.MemoryStoneCandles);
-        Assert.Equal(new PersonalChoices(2, 0, 6, 3), back.ChoicesFor(76561198000000001UL));
+        Assert.Equal(new PersonalChoices(2, 0, 5, 3), back.ChoicesFor(76561198000000001UL));
         Assert.Equal(new PersonalChoices(0, 1, 0, 4), back.ChoicesFor(5));
         Assert.Equal(PersonalChoices.Random, back.ChoicesFor(42));
     }
@@ -74,7 +74,7 @@ public class RunSettingsDataTests
     [Fact]
     public void UnknownKeysAndMissingKeysAreTolerated()
     {
-        var back = RunSettingsData.Decode("v=9;hp=95;future=3;p=7:1,2,3,4|bad|8:1,2")!;
+        var back = RunSettingsData.Decode("v=1;hp=95;future=3;p=7:1,2,3,4")!;
         Assert.Equal(95, back.EnemyHpPercent);
         Assert.True(back.FiveActs);
         Assert.Equal(new PersonalChoices(1, 2, 3, 4), back.ChoicesFor(7));

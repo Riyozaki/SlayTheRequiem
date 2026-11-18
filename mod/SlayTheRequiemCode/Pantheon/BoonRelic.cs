@@ -77,26 +77,85 @@ public abstract class BoonRelic : RequiemRelic, IWeightless, IResourceSource, IP
         }
     }
 
-    /// <summary>Довести выданный запас ♥ до текущего набора.</summary>
+    private bool _updatingMaxHp;
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _updatingMaxHp = false;
+    }
+
+    /// <summary>Довести выданный запас ♥ до текущего набора; busy passive reconciliation waits for a later hook.</summary>
     public async Task SyncMaxHp()
     {
-        if (Owner?.Creature == null) return;
-        var target = ActiveBoon.MaxHp;
-        var delta = target - _grantedMaxHp;
-        if (delta == 0) return;
-        if (delta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, delta);
-        else await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, Math.Min(-delta, Owner.Creature.MaxHp - 1), false);
-        GrantedMaxHp = target;
+        if (Owner?.Creature == null || InventoryGate.For(Owner).Blocked) return;
+        await UpdateGrantedMaxHp(ActiveBoon.MaxHp);
     }
 
     /// <summary>Забрать выданное перед снятием реликвии (смена благословения, конец акта у Осколка).</summary>
     public async Task Revoke()
     {
-        if (Owner?.Creature == null || _grantedMaxHp == 0) return;
-        if (_grantedMaxHp > 0)
-            await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, Math.Min(_grantedMaxHp, Owner.Creature.MaxHp - 1), false);
-        else await CreatureCmd.GainMaxHp(Owner.Creature, -_grantedMaxHp);
-        GrantedMaxHp = 0;
+        if (Owner?.Creature == null) return;
+        if (!await UpdateGrantedMaxHp(0)) throw new InvalidOperationException("Boon HP reconciliation busy/blocked; relic must not be removed yet");
+    }
+
+    /// <summary>
+    /// Reborn may change stat HP AND identity-dependent gifts (e.g. Ash Nomad). Reconcile every retained Boon
+    /// in one native delta, not separately clamped losses/gains that manufacture max HP near the floor.
+    /// The surrounding Path scope already owns the checkpoint/write-ahead marker.
+    /// </summary>
+    internal static async Task SyncIdentityMaxHp(Player owner, int identityDelta)
+    {
+        if (!InventoryGate.IsMutating(owner) || InventoryGate.For(owner).Blocked)
+            throw new InvalidOperationException("Identity HP reconciliation requires a live tracked transition");
+        var changes = owner.Relics.OfType<BoonRelic>().Select(relic => (relic, target: relic.ActiveBoon.MaxHp)).ToList();
+        if (changes.Any(c => c.relic._updatingMaxHp)) throw new InvalidOperationException("Identity HP reconciliation is already executing");
+        var delta = HeroIdentityRules.ReconciledHpDelta(owner.Creature.MaxHp, changes.Sum(c => c.relic.GrantedMaxHp),
+            changes.Sum(c => c.target), identityDelta);
+        foreach (var (relic, _) in changes) relic._updatingMaxHp = true;
+        try
+        {
+            if (delta > 0) await CreatureCmd.GainMaxHp(owner.Creature, delta);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), owner.Creature, -delta, false);
+            if (changes.Any(c => !owner.Relics.Contains(c.relic) || c.target != c.relic.ActiveBoon.MaxHp))
+                throw new InvalidOperationException("Identity HP sources changed during a native callback");
+            foreach (var (relic, target) in changes) relic.GrantedMaxHp = target;
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(owner, $"Identity HP source reconciliation interrupted; restore the Path checkpoint: {e}");
+            throw;
+        }
+        finally { foreach (var (relic, _) in changes) relic._updatingMaxHp = false; }
+    }
+
+    private async Task<bool> UpdateGrantedMaxHp(int target)
+    {
+        if (_updatingMaxHp || InventoryGate.For(Owner).Blocked) return false;
+        if (target == _grantedMaxHp) return true;
+        // This is a PASSIVE native obtain/room/remove callback, not a new user action. An outer tracked
+        // transition already marks its entire callback chain uncertain. Otherwise own a fresh nonblocking
+        // scope; do not deadlock behind a selector lease, or let a save in MaxHpChanged apply the delta twice.
+        var nestedCallback = InventoryGate.IsMutating(Owner);
+        using var lease = nestedCallback ? null : InventoryGate.For(Owner).TryEnter();
+        if (!nestedCallback && lease == null) return false;
+        using var mutation = nestedCallback ? null : InventoryGate.Track(Owner, lease!, "boon-hp:" + Id.Entry);
+        _updatingMaxHp = true;
+        try
+        {
+            var delta = HeroIdentityRules.ReconciledHpDelta(Owner.Creature.MaxHp, _grantedMaxHp, target);
+            if (delta > 0) await CreatureCmd.GainMaxHp(Owner.Creature, delta);
+            else if (delta < 0) await CreatureCmd.LoseMaxHp(new ThrowingPlayerChoiceContext(), Owner.Creature, -delta, false);
+            GrantedMaxHp = target;
+            mutation?.Complete();
+            return true;
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(Owner, $"Boon HP callback interrupted; restore checkpoint instead of applying its delta again: {Id}: {e}");
+            mutation?.Complete();
+            throw;
+        }
+        finally { _updatingMaxHp = false; }
     }
 
     /// <summary>Снять реликвию, вернув ♥.</summary>

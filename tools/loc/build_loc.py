@@ -23,6 +23,10 @@ from loc_flavor import FLAVOR  # noqa: E402
 from loc_pools import POOLS_CARDS, POOLS_POWERS  # noqa: E402
 from loc_clans import CLANS_CARDS, CLANS_EQUIPMENT, CLANS_POTIONS, CLANS_POWERS, CLANS_RELICS, CLANS_SETTINGS  # noqa: E402
 from loc_ui import UI_CHARACTERS, UI_KEYWORDS, UI_SETTINGS, UI_TIPS  # noqa: E402
+from loc_creation import CREATION_SETTINGS, CREATION_TIPS  # noqa: E402
+from loc_builds import BUILD_CARDS, BUILD_REST_SITE, BUILD_TIPS  # noqa: E402
+from loc_counterplay import COUNTER_CARDS, COUNTER_POWERS, COUNTER_MONSTERS  # noqa: E402
+from loc_quality import QUALITY_SETTINGS, QUALITY_TIPS  # noqa: E402
 from loc_m4cards import M4_CARDS, M4_POWERS  # noqa: E402
 from loc_m5bosses import M5_ENCOUNTERS, M5_MONSTERS, M5_POWERS  # noqa: E402
 from loc_m5doors import DOORS_SETTINGS, DOORS_TIPS  # noqa: E402
@@ -109,6 +113,10 @@ CARDS = [
 
 # (класс, eng title, eng desc, rus title, rus desc) — {Amount} подставляется игрой.
 POWERS = [
+    ("PlatingPower", "Plating", "Each powered attack hit deals {Amount} less damage after multipliers and before caps and Block (minimum 1; a zero hit stays zero). Spells and True damage ignore it.",
+     "Латы", "Каждый силовой удар атакой слабее на {Amount} после множителей, до ограничения урона и Блока (не ниже 1; ноль остаётся нулём). Заклинания и чистый урон игнорируют Латы."),
+    ("SunderPower", "Sunder", "Effective Plating −{Amount}. Excess Sunder adds damage to EACH powered hit, before damage caps and Block. It does not change permanent Plating. True damage ignores both. −1 at the start of the target's turn.",
+     "Раскол", "Действующие Латы −{Amount}. Избыток Раскола усиливает КАЖДЫЙ силовой удар до ограничения урона и Блока. Постоянные Латы не изменяются. Чистый урон игнорирует оба эффекта. −1 в начале хода цели."),
     ("FireResistancePower", "Fire Resistance", "Fire damage and [gold]Burning[/gold] reduced by tier {Amount} (I −25%, II −50%, III −75%, IV immune; negative — vulnerable).",
      "Сопротивление огню", "Урон огнём и [gold]Горение[/gold] снижены на ступень {Amount} (I −25 %, II −50 %, III −75 %, IV иммунитет; отрицательная — уязвимость)."),
     ("FrostResistancePower", "Frost Resistance", "Frost damage and [gold]Chill[/gold] reduced by tier {Amount}.",
@@ -141,8 +149,8 @@ POWERS = [
      "Кровь стужи", "Накладываемый вами Озноб +{Amount}. Озноб на вас спадает целиком."),
     ("UnbreakablePower", "Unbreakable", "Cannot receive [gold]Stagger[/gold].",
      "Непоколебимость", "На вас не накладывается [gold]Шаткость[/gold]."),
-    ("DodgePower", "Dodge", "{Amount} times per combat, negate an enemy attack by spending 2 ◆.",
-     "Уворот", "{Amount} раз(а) за бой погасить атаку врага ценой 2 ◆."),
+    ("DodgePower", "Dodge", "{Amount} times per turn, negate one enemy attack HIT that would cost HP by spending 2 ◆. Block is used first.",
+     "Уворот", "{Amount} раз(а) за ход погасить один УДАР атаки врага, который должен снять ♥, ценой 2 ◆. Сначала тратится Блок."),
     ("WardPower", "Ward", "The first {Amount} HP damage each turn is paid with ✦ instead.",
      "Покров", "Первые {Amount} урона по ♥ за ход оплачиваются ✦."),
 ]
@@ -211,8 +219,8 @@ def check_unique() -> None:
     """Один класс — один текст. Повтор с другим текстом молча перетирал первый
     (так «Удавка» Безмолвной потеряла строку «Подлый»). Одинаковые повторы (Клич в таблице Кличей) допустимы."""
     tables = {
-        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS,
-        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS,
+        "cards": CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS + COUNTER_CARDS,
+        "powers": POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS + COUNTER_POWERS,
         "relics": RELICS + STAGE3_EQUIPMENT + STAGE6_EQUIPMENT + CLANS_EQUIPMENT + RELICS_EQUIPMENT + MAGIC_RELICS + STAGE3_RELICS + STAGE35_RELICS
                   + STAGE4_RELICS + STAGE5_RELICS + STAGE6_RELICS + STAGE7_RELICS + CLANS_RELICS + RELICS_BACKPACK + M5_STAVES + M5_CAMP_RELICS + M6_RELICS,
     }
@@ -231,11 +239,11 @@ def main() -> None:
     check_unique()
     for li, lang in ((0, "eng"), (1, "rus")):
         cards, powers, relics = {}, {}, {}
-        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS:
+        for cls, et, ed, rt, rd in CARDS + SPELL_CARDS + STAGE3_CARDS + STAGE35_CARDS + STAGE36_CARDS + STAGE5_CARDS + STAGE6_CARDS + POOLS_CARDS + CLANS_CARDS + M4_CARDS + M5_SHOP_CARDS + M5_CAMP_CARDS + M6_SUMMON_CARDS + BUILD_CARDS + COUNTER_CARDS:
             k = PREFIX + snake(cls)
             cards[f"{k}.title"] = (et, rt)[li]
             cards[f"{k}.description"] = (ed, rd)[li]
-        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS:
+        for cls, et, ed, rt, rd in POWERS + MAGIC_POWERS + STAGE3_POWERS + STAGE5_POWERS + STAGE6_POWERS + STAGE7_POWERS + POOLS_POWERS + CLANS_POWERS + M4_POWERS + M5_POWERS + M6_SUMMON_POWERS + COUNTER_POWERS:
             k = PREFIX + snake(cls)
             powers[f"{k}.title"] = (et, rt)[li]
             powers[f"{k}.description"] = (ed, rd)[li]
@@ -255,7 +263,7 @@ def main() -> None:
             if not relics.get(f"{PREFIX}{key}.flavor"):
                 relics[f"{PREFIX}{key}.flavor"] = texts[li]
         monsters = {}
-        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS, **M5_MONSTERS, **M5_SHOP_MONSTERS, **M6_SUMMON_MONSTERS}.items():
+        for key, langs in {**MONSTERS, **STAGE3_MONSTERS, **STAGE7_MONSTERS, **M5_MONSTERS, **M5_SHOP_MONSTERS, **M6_SUMMON_MONSTERS, **COUNTER_MONSTERS}.items():
             data = langs[lang]
             monsters[f"{PREFIX}{key}.name"] = data["name"]
             for move, title in data["moves"].items():
@@ -265,7 +273,7 @@ def main() -> None:
         # EncounterModel.GetLossMessageFor() requires "<ENCOUNTER>.loss" (shown on the game-over screen).
         loss_text = {"eng": "Slain by {encounter}.", "rus": "Вы погибли в бою: {encounter}."}[lang]
         encounters.update({f"{PREFIX}{key}.loss": loss_text for key in all_encounters})
-        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang]}.items()}
+        settings = {f"{PREFIX}{key}": text for key, text in {**SETTINGS[lang], **STAGE3_SETTINGS[lang], **STAGE35_SETTINGS[lang], **STAGE36_SETTINGS[lang], **STAGE4_SETTINGS[lang], **STAGE6_SETTINGS[lang], **STAGE7_SETTINGS[lang], **UI_SETTINGS[lang], **CLANS_SETTINGS[lang], **DOORS_SETTINGS[lang], **M5_CAMP_SETTINGS[lang], **CREATION_SETTINGS[lang], **QUALITY_SETTINGS[lang]}.items()}
         potions = {}
         for cls, et, ed, rt, rd in STAGE3_POTIONS + CLANS_POTIONS + RELICS_POTIONS + M5_SCROLLS + M6_POTIONS:
             k = PREFIX + snake(cls)
@@ -273,13 +281,13 @@ def main() -> None:
             potions[f"{k}.description"] = (ed, rd)[li]
         n = merge(lang, "monsters.json", monsters) + merge(lang, "encounters.json", encounters) + merge(lang, "settings_ui.json", settings)
         n += merge(lang, "cards.json", cards) + merge(lang, "powers.json", powers) + merge(lang, "relics.json", relics)
-        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang], **M5_SHOP_REST_SITE[lang]})
+        n += merge(lang, "potions.json", potions) + merge(lang, "rest_site_ui.json", {**STAGE3_REST_SITE[lang], **STAGE36_REST_SITE[lang], **STAGE5_REST_SITE[lang], **STAGE6_REST_SITE[lang], **STAGE7_REST_SITE[lang], **M5_SHOP_REST_SITE[lang], **BUILD_REST_SITE[lang]})
         n += merge(lang, "events.json", {**STAGE4_EVENTS[lang], **STAGE6_EVENTS[lang], **M5_EVENTS[lang]}) + merge(lang, "ancients.json", STAGE4_ANCIENTS[lang])
         n += merge(lang, "enchantments.json", STAGE6_ENCHANTMENTS[lang]) + merge(lang, "badges.json", STAGE6_BADGES[lang])
         n += merge(lang, "acts.json", {f"{PREFIX}{key}": text for key, text in STAGE7_ACTS[lang].items()})
         # M1, интерфейс: ключевые слова-подсказки, подписи шкал, имя Латоносца.
         n += merge(lang, "card_keywords.json", {f"{PREFIX}{key}": text for key, text in UI_KEYWORDS[lang].items()})
-        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang]}.items()})
+        n += merge(lang, "static_hover_tips.json", {f"{PREFIX}{key}": text for key, text in {**UI_TIPS[lang], **RELICS_TIPS[lang], **DOORS_TIPS[lang], **MAP_TIPS[lang], **SHOP_TIPS[lang], **ORIGIN_TIPS[lang], **VFX_TIPS[lang], **CREATION_TIPS[lang], **BUILD_TIPS[lang], **QUALITY_TIPS[lang]}.items()})
         n += merge(lang, "characters.json", {f"{PREFIX}{key}": text for key, text in UI_CHARACTERS[lang].items()})
         print(f"{lang}: {n} ключей")
 

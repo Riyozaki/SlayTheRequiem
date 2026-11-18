@@ -1,0 +1,6 @@
+mod/SlayTheRequiem.Tests/SlayTheRequiem.Tests.csproj: 88 source files, 290 type declarations, 0 duplicate errors
+mod/SlayTheRequiem.csproj: 300 source files, 1656 type declarations, 1 duplicate errors
+tools/balance/Trace/BalanceTrace.csproj: 72 source files, 214 type declarations, 0 duplicate errors
+tools/perf/Views/Views.csproj: 3 source files, 6 type declarations, 0 duplicate errors
+mod/SlayTheRequiem.csproj: Duplicate/incompatible non-partial type SlayTheRequiem.SlayTheRequiemCode.Equipment.PaperDollDeathPatch: mod/SlayTheRequiemCode/Equipment/PaperDoll.cs:368, mod/SlayTheRequiemCode/Equipment/PaperDoll.cs:380
+Declaration source gate: 1 errors; NOT full mod semantic compilation

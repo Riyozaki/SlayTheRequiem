@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M8 60 V24 C8 10 20 4 32 4 C44 4 56 10 56 24 V60 Z" fill="#7d8da3"/><path d="M20 60 V20 M32 60 V8 M44 60 V20 M8 34 H56"/><path d="M22 40 H42 V56 H22 Z" fill="#E2B24A"/><path d="M26 40 V34 C26 28 38 28 38 34 V40" fill="none"/><circle cx="32" cy="48" r="2.5" fill="#2b2118"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>locked_gate</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 57 V26 Q7 4 32 4 Q57 4 57 26 V57 H48 V27 Q48 14 32 14 Q16 14 16 27 V57 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/><path d="M25 23 V56 M39 23 V56 M17 43 H47" fill="none" stroke="#302922" stroke-width="4"/><path d="M25 34 Q25 25 32 25 Q39 25 39 34 V40 H25 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

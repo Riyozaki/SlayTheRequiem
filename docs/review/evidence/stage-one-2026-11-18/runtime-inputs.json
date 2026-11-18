@@ -1,0 +1,407 @@
+{
+  "code_source_commit": "b82c909375a453dcf96aa459b34993519659bc5b",
+  "base_commit": "8000886e9c52db78227972bdd4740ee71f7eca03",
+  "note": "Changed executable/runtime/config inputs, verified against the successful CI code commit; documentation is an uncommitted overlay at recording time. Not a full build passport.",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "105472754065f8ab480e79483c1e63e0d5a8d8dc45aceec9e3507e4db27591ba"
+    },
+    {
+      "path": ".github/workflows/legal-game-build.yml",
+      "sha256": "3753c01880aceae24142e6d2edcfcc13978184b5c851997047509e7751bb03af"
+    },
+    {
+      "path": "global.json",
+      "sha256": "2693f0081d22422714daa1d306742a5654d9d856ad0a84151b179adac6b789b0"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/IntegrityTests.cs",
+      "sha256": "6e458e6276fa09a9ea5b374f4c8be7988fd4a4d4f74ede20b5fd7facd269dbe2"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/ReviewFixTests.cs",
+      "sha256": "5d5546994406e0e7d30914e57a5a482f3e2a9787ff9f48c930ad10c331639c95"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/SavedPayloadTests.cs",
+      "sha256": "b794d39e8d9f9dd1951cededc18b9e30f4c20b6dce48be92bc1590ffe7682538"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/StageOneTests.cs",
+      "sha256": "d57755ae03b81b9dbb0164e9f5dba4a3afd3c777f6d3fbb0c4d3a4aefd1fb295"
+    },
+    {
+      "path": "mod/SlayTheRequiem.csproj",
+      "sha256": "9f06638ed14e3fc61ddd6b866c4185b1790b0c93329d09ef53edcfa1f3ccc59d"
+    },
+    {
+      "path": "mod/SlayTheRequiem.json",
+      "sha256": "532f3778172c3f972abd627133b8ed7e5b745dee98eabf5dd02f75a9c1d92268"
+    },
+    {
+      "path": "mod/SlayTheRequiem/localization/eng/static_hover_tips.json",
+      "sha256": "8d1f806bd6daae7f9b82f6cf80a1ac587231297d9fa866cd1b52ae1d6de27e2c"
+    },
+    {
+      "path": "mod/SlayTheRequiem/localization/rus/static_hover_tips.json",
+      "sha256": "9b60db830bd3649e243bf4429867c46ef72f99504f750322b4ed2d5fa0d411f2"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Acts/WideActMap.cs",
+      "sha256": "e5a24ca585ce9df81e87fe7510a5a514b4331a85f1e420abcf86ef9dfe2cd4f7"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/CampOptions.cs",
+      "sha256": "09a5a137ae400d2eb7bff6ee39d640d5b3275c60fd1c9af025dee9e54be8bcf8"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/HerbalistPouch.cs",
+      "sha256": "92bab8f70a5bae2eb9a1aa4ba79c31e441e63ff4a7d583f050f87d0658b762e1"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/TravelPack.cs",
+      "sha256": "f344241f70fa76b8d89bc403384cef291092e8383605460b87d08ce0761780ef"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Cards/Shouts.cs",
+      "sha256": "feb98feb5c2d5b8b12a1fdf073cdee71a8a1f8272fa6faca8c3929fce6c12675"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Config/RunSettings.cs",
+      "sha256": "d35e13e802ca2bef48b8580925b94d51f887fe067e41a59bcb6aec0bba57e890"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/AlchemyRules.cs",
+      "sha256": "b857e0abd6b4415052ff955f98b9e555ed9722ecc6a3748efd848d7b5388c42b"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/AsyncTaskBoundary.cs",
+      "sha256": "cf0a252bf89bc1e27ad8efe425e3a9508265e74416edffdb7fcfb1ba32f6a5fa"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/CampVisitState.cs",
+      "sha256": "3b7d95c6fb002261753e07a91c548cf326bf7b074b054d7bebd3ef62cbbdc0ea"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/CooldownShelf.cs",
+      "sha256": "55bce01d53ebb3e78ca7c0ca9a855a6c2f0c106cb292413b0171b3254abab28f"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/MandatoryGrantLedger.cs",
+      "sha256": "f952e0a025622ed49493cb01fe1ec1d2ff95d1791defba2ccac3b38076ede144"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/MemoryStoneRules.cs",
+      "sha256": "5c50a9934fc7e0201e12c933260145be798f4f3fa9a80f4e4edcf5ef8ea4da7a"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/MetricWindow.cs",
+      "sha256": "896cd75996c6aa9f0bbefb0a33eecf2ad2ae8230e900ef34750220b948ec3d62"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationContracts.cs",
+      "sha256": "93726b15caea6e201465036665554faaefcab36b9624ee0842e8c1e1eac26f7a"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationIdentity.cs",
+      "sha256": "59876e7342f97a91a32583668a430011d8b483c540bd73feaa8518906afadf35"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationJournal.cs",
+      "sha256": "33f7df1bc38af32c054e03aad8508e70babc0976a4cc09ddbb658a7fce0c8bbf"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/RawRunDocument.cs",
+      "sha256": "1aca9f9727df3eb58661cd23d4ca6030b758b81e84ecb9b3be0f398c72765e3b"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/RecoveryContracts.cs",
+      "sha256": "1d25eed4586ede1db17fb6cdb83fc6254c044d157077c33d03a619eb5434c974"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/RelicGrantState.cs",
+      "sha256": "d8e27ee1287f71c196e267033ff38aacf91459e6ab05693475301c612758554e"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/RunSettingsData.cs",
+      "sha256": "050fadbc8fdd5ce8dfb38f059fc55d10fd8864d4cbdfaccb0eb3ef8d5b35d086"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/SavedOperationState.cs",
+      "sha256": "d993aa70f9f49875d2a7d9c99485cfd89fd0ec7ceb55bbde9748b38542d45678"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/SavedPayload.cs",
+      "sha256": "313fc29fe11452823ce1e2e8aa2a1c59201d2bbd7f9fa890b4fafe26115ba391"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/SavedRulesSnapshot.cs",
+      "sha256": "eb69e242544eafd31a5aec41079fcd4cacc788b64bbb83533abb853b169c94f7"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/ShoutRules.cs",
+      "sha256": "ac332868f35a9f10f66791aa38bd632202004fb07e0dac72832b6d7e6499a671"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/StartupState.cs",
+      "sha256": "53d401e57eb42c44b370b408790c92daac7a36ce25b1800e7cc927e463460f1a"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/TransformationRules.cs",
+      "sha256": "a7281779e9353246c3f62ddfc61739ced0f9c15cb5aa108a96e6fe0dec731651"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/CardFactoryRegression.cs",
+      "sha256": "804d74855065747775f2313f1837b69991a320dd4d1e03a5f70b95c05570325d"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/CardRewardDiagnostics.cs",
+      "sha256": "fa84917fb102f103add7f07bf5d2a572a6d36f277a30dfcb75e54a50da7a0a86"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs",
+      "sha256": "516f1ab7b0b7346dc7cd0df141e333402233f7ceda72584e72e3fe8e889fba1c"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/RequiemConsoleCommands.cs",
+      "sha256": "75b69747acc0dced0c06693510549282e31cb706951c9fc6177a036fc2578883"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/RunDiagnostics.cs",
+      "sha256": "b21b6e26030a8a9416c2f82c79edcd9f433cff2955badcc3937779d233e18fbe"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/TechnicalMetrics.cs",
+      "sha256": "a9717f37006acb2061afdce8120418377a29e628bd01b1ee6acc1f750d9c2dd9"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Equipment/Jewelry.cs",
+      "sha256": "74076df66fffd3d886435f323bdcfdcec5679f33db266fcd391b7e62708c9d90"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/NodeEvents.cs",
+      "sha256": "dfe4a41deb504a04252bae04253ccd3daca4b4559c5242c4c9f0a39339396486"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/RequiemEvent.cs",
+      "sha256": "dcc1d30cb2a8a2445334229e2505f877d83f7fd01a95c6de6afe707070988911"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/TowerEvents.cs",
+      "sha256": "2da79f203f2757fd95ef16a606a8431db1588034eea4a3e9465ec17638404d63"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/MainFile.cs",
+      "sha256": "9aa7faaa405e0e598ce9241ecd5d3fd14ae0459737b50cc993b9dc7ccf6f752d"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/LobbyMessageBridge.cs",
+      "sha256": "69699ddac63d9e699bf913e870d80882fae520a343a1b65dd025cea133f9e6c7"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/RequiemMessages.cs",
+      "sha256": "fb828daf65e3e6ad30cf2fba7a5ce338a9d0522895ee29fa2b985a65869121f4"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/RequiemNet.cs",
+      "sha256": "7d2dab22eb1cd2a028b2723dd6800fa15f9c6f73551d6a6350bf5317db682285"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Pantheon/BoonRelic.cs",
+      "sha256": "0996c4b7156b2d1520333284d399ea2d3cddf936f7d1b0110c61704f54945506"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Pantheon/Celestials.cs",
+      "sha256": "9950290d34051fea42299448ef8b13b7972960afc5d83054d49a2678fd046ce9"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Pantheon/PantheonEvents.cs",
+      "sha256": "7c705995af3ee736fc86d3198684a1e8098789d6438a5eb6a61980572f8c1684"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Patches/StartingRelicsPatch.cs",
+      "sha256": "e995a351007de5ff4e3b65da0301793ba80fd20db4b23d0289e1a23b31c85c61"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Powers/DefensePowers.cs",
+      "sha256": "f4dc876308eabc419bd6991e6742e4a6640a41b892f5befc3a8f02d2aa3cc1ae"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Progression/CardEnchanting.cs",
+      "sha256": "b9d7b50ca5e314cf0ff62882b023102f4f00e2c5b1b1fd4ee58f577bdd066bc2"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Progression/HeroRecord.cs",
+      "sha256": "ebd92690042dc84d1f34abc864162361c2faf5d2646d9b77fd6c4e76f77e6dcc"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Relics/Backgrounds.cs",
+      "sha256": "90e978fd0856144326872d0858fef6881efe42624dd58f84e8ab3d9070699c82"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rollback/CoopMemoryStone.cs",
+      "sha256": "53745183f99f616896d5abdca70fedbfe8688aaa0223e2e0202ae2ad3b9a308f"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rollback/MemoryStone.cs",
+      "sha256": "a9d6c835e3f17128b206e3574bfc180e183b34df0fcd726c88bcee69f2b41bbf"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rollback/MemoryStoneRelic.cs",
+      "sha256": "5d9efcd9c01b15d965b4ae2225001b060278d8b9ff13f6e787906570b926e0c0"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/CardAcquisition.cs",
+      "sha256": "bfef4a248a0c32f7bb2dae179215914fea8ab8119a3c454c51f47f34a1450785"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/DeferredRewardScope.cs",
+      "sha256": "d19ae94769e53625634c4c7e4bb3d99afe9d858f6099daf36022104833f30bbf"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/HeroPoolRewardRules.cs",
+      "sha256": "1a060815903a05fcfaa48939917f3b28ff2a25c67aa8d0e87ebb9990b96f872a"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/InventoryGate.cs",
+      "sha256": "356d93ad67b3525e18828fd4a942c86cb28f8063c7deb386433b4feaf4207a88"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/InventoryIdentity.cs",
+      "sha256": "733477ec4d1104044b373653a47b06cffa31c83806fc769bf5a78ef28f819781"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/OperationRecovery.cs",
+      "sha256": "38026e2ae816832b5c46cfaa4052344d838a74f4cb5affff3a84e3f8d4283676"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RewardPurchase.cs",
+      "sha256": "7023e9e17e4c9e10db94d85f83cb265349f13700de735f58a3ab611f7e20c5bb"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RewardSwap.cs",
+      "sha256": "1fe7d263aca42f628b0a25136695853c9312ed09c880203b7a50b3d10013781f"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RunLifecycle.cs",
+      "sha256": "5b38a204273ce72bfabbdc80db7325f69ff1df7c8ef4466ce565645c08777908"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RunSaveReadGuard.cs",
+      "sha256": "2fc88344e8b75218f5d907e12d3f60d54401b5f40f7988209af572a5dd25b3c3"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/SavedPropertyWrite.cs",
+      "sha256": "76429334af951a15ced6887a0b9924b592ad92ebb25fa971315d81f224fa628d"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/MerchantLedger.cs",
+      "sha256": "d99b0638fd371663c29658db68262b4eb9adf1812d2062839ed6ef2bfc3c8345"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/PurchaseReceipts.cs",
+      "sha256": "a6bb1f9f1dc004081f55fd74f460066cad9339991edd89cc4ca0aa1d1c9842b7"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/Scrolls.cs",
+      "sha256": "5b24b88378b2bd2e65b99ebf9db9935fc783b14d6b1308b303709472327f841b"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/SellService.cs",
+      "sha256": "c225e92b16c920723f61f8b595828754f37b39785bbf16efe8834cfea5f98f26"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopActionPolicy.cs",
+      "sha256": "cd331ae8bc3b6413d2d163a8b87fe022f2b016b5f744cc4a38564d7f437ca942"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopActions.cs",
+      "sha256": "b3eb9f368ca2c2aec14aa8383a3ffd12c1bb793efe960658f66a2cd231e1b12c"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopOperations.cs",
+      "sha256": "fd1b858e824fb93bf8c664cd8d57037e11b48dc2588be3762aad42cb0c61c51d"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopServices.cs",
+      "sha256": "1b437dedad8bcb3d04c06cfc54ed392c536b99e07aeeb2e20fcb10d30e2bdd27"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Spells/Grimoire.cs",
+      "sha256": "5c92d6bb73dbce4e7e1972d37324cd98b2af4518146f49f351cb703c34bda068"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Spells/SpellRules.cs",
+      "sha256": "3579edf04ffa7bac024570484d6b5a52f158511c602095f41f1dfa7e6774c4ab"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/FormRelic.cs",
+      "sha256": "9f1f2ebf73681621cd295b482209f85bc5c4bb57e1c9032a051396bdd3e7f198"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/PathCards.cs",
+      "sha256": "1fdc06fffdaefbb385b75abb047a243ab2e1dc50fba583719c120865178a4c25"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/PathEssences.cs",
+      "sha256": "c272a572542b720e8cfdbf63aa84d3fdde928ebff5274486441a5316adc078ae"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/PathGrants.cs",
+      "sha256": "e821e8c25396cffa5b3761f4de0589a013fa50901b4c1b44db7b91ce0ef973af"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/VampireForm.cs",
+      "sha256": "573c04c12789aa61cc7c93a37112af56bb14eb660e8f5f635057209b002ebeb4"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/DeckDiscard.cs",
+      "sha256": "6d2fce39545fe3c08448bb583f8a0dd7872f664262d2a924a5c7446230ebbef2"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/NRunStatusBadge.cs",
+      "sha256": "318a4d9d83a239434bc3a5cadf1c14e849e7c6dad02730efdb00f97376b0ba3f"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/RewardAcquisitionPanel.cs",
+      "sha256": "148b76b5d9725019153db2450fc322f9592e413a7da262d62aafd17b6cb3e561"
+    },
+    {
+      "path": "mod/Sts2PathDiscovery.props",
+      "sha256": "67f426cd2683078fb015fa388e9eeb65266f4a53ec893942e420842ed489707a"
+    },
+    {
+      "path": "tools/ci/legal_game_build.py",
+      "sha256": "4aeb8f080b7cf7aa3ed1138d857d56dbc125d7bc0e04d9b94e13812c4330fbee"
+    },
+    {
+      "path": "tools/ci/report_test_failures.py",
+      "sha256": "07ec18d462f922a65dbf524e9a22e82c4c0c4189cff0513f9e38511d505e60c9"
+    },
+    {
+      "path": "tools/ci/requirements.txt",
+      "sha256": "648bfe94d8e9dc8465048297fa91726d9f9c6ed0c9e3f5e56e468e63e59308ea"
+    },
+    {
+      "path": "tools/g0/mod_build.py",
+      "sha256": "48b6efe03f9674141c69477247556f5ee433ebdd88545f592a0870d06064b6f4"
+    },
+    {
+      "path": "tools/g0/test_legal_ci.py",
+      "sha256": "456b3c3c5e515afbf50be90afa2cc7d891590791566edcc59a02bdcec7c23331"
+    },
+    {
+      "path": "tools/g0/test_mod_build.py",
+      "sha256": "109c9e88be6a9e20995b68a4132a680f8e78a5a8d737f59157f59d351e54c5d5"
+    },
+    {
+      "path": "tools/g0/verify_pack.gd",
+      "sha256": "8150a4de21660c696d499e41237f22e7a7847841a2372227ee3e9c162db0b6f7"
+    },
+    {
+      "path": "tools/loc/loc_ui.py",
+      "sha256": "01bc0812db0e4948740fb79aa62bb6c960739b1b81b1dc54881dac960f11b3a1"
+    }
+  ]
+}

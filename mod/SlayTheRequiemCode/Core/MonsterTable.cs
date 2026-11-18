@@ -9,7 +9,8 @@ public sealed class MonsterTable
         int Plating,
         int PoiseBonus,
         IReadOnlyDictionary<DamageType, int> Resistances,
-        DamageType AttackType);
+        DamageType AttackType,
+        EnemyRole Role = EnemyRole.Normal);
 
     public static readonly Entry Default = new("", "", 0, 0, new Dictionary<DamageType, int>(), DamageType.Physical);
 
@@ -35,7 +36,7 @@ public sealed class MonsterTable
                 [DamageType.Magic] = row.GetInt("res_magic"),
             };
             result[key] = new Entry(key, row.Get("faction"), row.GetInt("plating"), row.GetInt("poise_bonus"), res,
-                DamageTypes.Parse(row.Get("attack_type")));
+                DamageTypes.Parse(row.Get("attack_type")), EnemyRoleRules.Parse(row.Get("role")));
         }
         return new MonsterTable(result);
     }

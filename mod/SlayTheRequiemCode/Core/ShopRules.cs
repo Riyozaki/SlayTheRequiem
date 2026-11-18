@@ -190,7 +190,8 @@ public static class ShopRules
 
     public const double CombatGoldMultiplier = 1.3;
 
-    /// <summary>Золото за бои ×1.3 (§1): 13–20 → 17–26, элита 25–35 → 33–45, босс 95–105 → 124–137.</summary>
+    /// <summary>Золото за бои ×1.3 (§1). Native 0.107.1 baseline без Poverty/overrides:
+    /// обычный 10–20 → 13–26, элита 35–45 → 46–59, босс 100 → 130. Округление AwayFromZero.</summary>
     public static int CombatGold(int vanilla) =>
         vanilla <= 0 ? vanilla : (int)Math.Round(vanilla * CombatGoldMultiplier, MidpointRounding.AwayFromZero);
 

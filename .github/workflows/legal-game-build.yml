@@ -1,0 +1,44 @@
+name: Legal game build and isolated PCK verification
+
+# Never execute unreviewed PR code on a machine with a game/Steam installation or private local files.
+# Dispatch only after reviewing the selected branch. The environment should require owner approval.
+on:
+  workflow_dispatch:
+    inputs:
+      trusted_legal_environment:
+        description: "I reviewed this ref and own a legal 0.107.1 install on an isolated build runner (not my play machine)"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: requiem-legal-game-build
+  cancel-in-progress: false
+
+jobs:
+  full-build:
+    if: inputs.trusted_legal_environment
+    name: Full mod + Core + separate PCK/load (no gameplay)
+    environment: legal-game-build
+    runs-on: [self-hosted, requiem-legal-build]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # Python >=3.11, .NET 9 SDK and MegaDot 4.5.1 mono are preinstalled by the runner's owner.
+      # STS2_GAME_DIR/MEGADOT and optional STS2_GAME_DATA/STS2_MODS_DIR/DOTNET_EXE are PRIVATE runner env vars.
+      # Do NOT echo environment variables or upload .arena/**/private, project, binlog, game DLLs or saves.
+      - name: Build, Core tests, export, isolated ResourceLoader, clean directory installation
+        run: python tools/ci/legal_game_build.py --output .arena/legal-ci/run-${{ github.run_id }}-${{ github.run_attempt }} --acknowledge-legal-environment
+      - name: Upload only whitelisted public hashes, counts and status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-build-public-result-${{ github.sha }}
+          path: .arena/legal-ci/run-${{ github.run_id }}-${{ github.run_attempt }}/public-result.json
+          if-no-files-found: error
+          retention-days: 30

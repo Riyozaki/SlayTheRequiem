@@ -73,7 +73,14 @@ public partial class NStaminaCostBadge : Control
         var text = StsColors.cream;
         var outline = RequiemUi.Outline;
         var overstrain = false;
-        if (card.DisplayingPile == PileType.Hand && RequiemUi.StaminaStateFor(StaminaCosts.OwnerOf(model), cost) is { } st)
+        if (card.DisplayingPile == PileType.Hand && model is IRequiredStaminaCard)
+        {
+            // A mandatory Skill is either affordable or disabled; never promise an Attack's HP overstrain
+            // or −25/−50% damage. CostFor uses the very same fixed price as its OnPlay payment.
+            var stamina = Resources.RequiemResource.Of<Resources.StaminaResource>(StaminaCosts.OwnerOf(model));
+            if (stamina != null && stamina.Amount < cost) text = RequiemUi.OverstrainColor;
+        }
+        else if (card.DisplayingPile == PileType.Hand && RequiemUi.StaminaStateFor(StaminaCosts.OwnerOf(model), cost) is { } st)
         {
             var (state, over) = st;
             overstrain = over;

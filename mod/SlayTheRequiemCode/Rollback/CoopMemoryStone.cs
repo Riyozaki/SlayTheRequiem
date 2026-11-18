@@ -9,6 +9,8 @@ using MegaCrit.Sts2.Core.Platform;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
+using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
+using SlayTheRequiem.SlayTheRequiemCode.Rules;
 using SlayTheRequiem.SlayTheRequiemCode.Net;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rollback;
@@ -33,7 +35,13 @@ public static class CoopMemoryStone
     public static readonly TimeSpan VoteTimeout = TimeSpan.FromSeconds(45);
     public static readonly TimeSpan ScarTimeout = TimeSpan.FromSeconds(60);
 
-    private static int _round;
+    private static int _round, _clientStep, _generation;
+    private static bool _proposing;
+    internal static string MessageKey(RunState state)
+    {
+        var timeline = state.Players.Select(TravelPack.Of).OfType<TravelPack>().Select(p => p.OperationRunId).FirstOrDefault(id => id.Length > 0);
+        return string.IsNullOrEmpty(timeline) ? "" : OperationIdentity.Hash(state.Rng.StringSeed + "|" + timeline);
+    }
     private static readonly Dictionary<ulong, bool> Votes = new();
     private static readonly Dictionary<ulong, Scar> Scars = new();
     private static TaskCompletionSource? _votesDone;
@@ -45,13 +53,16 @@ public static class CoopMemoryStone
 
     /// <summary>
     /// Сброс между забегами (<see cref="Rules.RunLifecycle"/>, ревью R-31). Голоса и Шрамы нужны только до сборки
-    /// сохранения возврата — к запуску следующего забега раунд закончен. Счётчик раундов не сбрасывается:
-    /// по нему отсекаются опоздавшие сообщения прошлого раунда.
+    /// сохранения возврата — к запуску следующего забега раунд закончен. Пакеты привязаны к сохранённой timeline,
+    /// а generation не даёт finally/таймауту старого забега очистить новый раунд.
     /// </summary>
     internal static void ResetForNewRun()
     {
+        _generation++;
         Votes.Clear();
         Scars.Clear();
+        _round = _clientStep = 0; // packets also carry the saved timeline: an old run's round can never match
+        _proposing = false;
         _votesDone = null;
         _scarsDone = null;
         _expected = 0;
@@ -61,6 +72,18 @@ public static class CoopMemoryStone
     // ───── хост ─────
 
     public static async Task Propose(RunState state, SerializableRun ended)
+    {
+        if (_proposing || MemoryStone.Restoring || !RequiemNet.IsHost || !ReferenceEquals(state, RequiemNet.State) || MessageKey(state).Length == 0) return;
+        _proposing = true;
+        var generation = _generation;
+        try { await ProposeCore(state, ended, generation); }
+        finally { if (generation == _generation) { _proposing = false; _votesDone = _scarsDone = null; } }
+    }
+
+    private static bool Current(RunState state, int generation) =>
+        generation == _generation && ReferenceEquals(state, RequiemNet.State) && RequiemNet.IsHost;
+
+    private static async Task ProposeCore(RunState state, SerializableRun ended, int generation)
     {
         var imprint = MemoryStone.ImprintFor(state, ended);
         var me = LocalContext.GetMe(state);
@@ -75,56 +98,61 @@ public static class CoopMemoryStone
             }))
             return;
 
+        if (!Current(state, generation)) return;
         var round = ++_round;
         _expected = state.Players.Count;
         Votes.Clear();
         Scars.Clear();
         Votes[me.NetId] = true;
         _votesDone = new TaskCompletionSource();
-        Send(StonePhase.Proposal, round, imprint.ActIndex + 1, shownCandles);
+        Send(StonePhase.Proposal, round, imprint.ActIndex + 1, shownCandles, state);
         CheckVotes();
         await WaitOrTimeout(_votesDone.Task, VoteTimeout);
+        if (!Current(state, generation)) return;
 
         var yes = Votes.Values.Count(v => v);
         var no = Votes.Values.Count(v => !v);
         var approved = MemoryStoneRules.VoteApproved(yes, no);
         MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти (кооп): за {yes}, против {no} → {(approved ? "возврат" : "нет")}.");
-        Send(StonePhase.Decision, round, approved ? 1 : 0, yes);
+        Send(StonePhase.Decision, round, approved ? 1 : 0, yes, state);
         if (!approved) return;
 
         _scarsDone = new TaskCompletionSource();
         var myScar = await MemoryStone.ChooseScar(state, me, canSkip: false) ?? MemoryStoneRules.DefaultScar;
+        if (!Current(state, generation)) return;
         Scars[me.NetId] = myScar;
         CheckScars();
         await WaitOrTimeout(_scarsDone.Task, ScarTimeout);
 
+        if (!Current(state, generation)) return;
         var save = MemoryStone.BuildReturnSave(imprint, state, Scars);
         if (save == null)
         {
-            Send(StonePhase.Abort, round, 0, 0);
+            Send(StonePhase.Abort, round, 0, 0, state);
             return;
         }
 
-        MemoryStone.Restoring = true;
+        using var transition = MemoryStone.TryBeginRestore();
+        if (transition == null) return;
         try
         {
             // Записать как сохранение кооп-забега: если лобби не соберётся, «Мультиплеер → Загрузить» продолжит с Камня.
+            OperationRecovery.CapturePreparedRun(save, "memory-stone-return", coop: true);
             await SaveManager.Instance.IncrementNumReloads(save, isMultiplayer: true);
-            Send(StonePhase.Go, round, 0, 0);
+            if (!Current(state, generation)) return;
+            Send(StonePhase.Go, round, 0, 0, state);
             // дать сообщению уйти до разрыва соединения; тем временем — трещины отката
             await Task.WhenAll(Task.Delay(500), UI.RequiemVfx.Rewind(round));
+            if (!Current(state, generation)) return;
             await NGame.Instance.ReturnToMainMenu();
+            if (generation != _generation || RequiemNet.State != null) return;
             var submenu = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu();
             submenu?.StartHost(save);
         }
         catch (Exception e)
         {
             MainFile.Logger.Error($"[SlayTheRequiem] Камень Памяти (кооп): возврат не удался ({e.Message}).");
-            Send(StonePhase.Abort, round, 0, 0);
-        }
-        finally
-        {
-            MemoryStone.Restoring = false;
+            Send(StonePhase.Abort, round, 0, 0, state);
         }
     }
 
@@ -148,49 +176,52 @@ public static class CoopMemoryStone
         if (RequiemNet.IsClient) _clientState = state;
     }
 
-    private static async Task VoteAsClient(int round, int act, int candles)
+    private static async Task VoteAsClient(int round, int act, int candles, RunState state)
     {
         var yes = await RequiemNet.Confirm(MemoryStone.LocKey, "coopVote", body =>
         {
             body.Add("Act", act);
             body.Add("Candles", candles);
         });
-        Send(StonePhase.Vote, round, yes ? 1 : 0, 0);
+        Send(StonePhase.Vote, round, yes ? 1 : 0, 0, state);
     }
 
-    private static async Task ScarAsClient(int round)
+    private static async Task ScarAsClient(int round, RunState state)
     {
-        var state = _clientState ?? RequiemNet.State;
         var me = state == null ? null : LocalContext.GetMe(state);
         var scar = state != null && me != null
             ? await MemoryStone.ChooseScar(state, me, canSkip: false) ?? MemoryStoneRules.DefaultScar
             : MemoryStoneRules.DefaultScar;
-        Send(StonePhase.Scar, round, (int)scar, 0);
+        Send(StonePhase.Scar, round, (int)scar, 0, state);
     }
 
     /// <summary>
     /// Автопереподключение (15 §5, M5 п. 6): клиент выходит в меню, открывает «Присоединиться к другу» (ручной вход остаётся
     /// запасным путём) и сам ищет лобби хоста — паузы <see cref="MemoryStoneRules.RejoinDelayMs"/>, не больше
     /// <see cref="MemoryStoneRules.RejoinAttempts"/> попыток. Steam: ждём, пока хост появится среди друзей с открытым лобби,
-    /// и входим один раз (неудачный вход показывает окно ошибки — поэтому не «долбим» вход вслепую). Без Steam (LAN-отладка,
-    /// ENet) — один вход на 127.0.0.1 после первой паузы. Если игрок ушёл с экрана или уже подключился — поиск прекращается.
+    /// и входим один раз (неудачный вход показывает окно ошибки — поэтому не «долбим» вход вслепую). Без Steam (ENet)
+    /// оставляем штатный ручной ввод адреса: endpoint хоста нельзя безопасно угадать. Уход с экрана завершает поиск.
     /// </summary>
-    private static async Task RejoinAsClient(ulong hostNetId)
+    internal static async Task RejoinAsClient(ulong hostNetId)
     {
-        var platform = RunManager.Instance.NetService?.Platform ?? PlatformType.None;
-        var myNetId = RequiemNet.LocalNetId;
+        var original = RequiemNet.State;
+        var service = RunManager.Instance.NetService;
+        if (original == null || !RequiemNet.IsClient) return;
+        var generation = _generation;
+        var platform = service?.Platform ?? PlatformType.None;
         NJoinFriendScreen? screen = null;
-        MemoryStone.Restoring = true;
-        try
+        using (var transition = MemoryStone.TryBeginRestore())
         {
-            await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
-            await NGame.Instance.ReturnToMainMenu();
-            screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
-        }
-        finally
-        {
-            MemoryStone.Restoring = false;
-            _clientState = null;
+            if (transition == null) return;
+            try
+            {
+                await UI.RequiemVfx.Rewind((int)(hostNetId % int.MaxValue));
+                if (!ReferenceEquals(original, RequiemNet.State) || !ReferenceEquals(service, RunManager.Instance.NetService)) return;
+                await NGame.Instance.ReturnToMainMenu();
+                if (generation != _generation || RequiemNet.State != null) return;
+                screen = NGame.Instance.MainMenu?.OpenMultiplayerSubmenu()?.OnJoinFriendsPressed();
+            }
+            finally { if (ReferenceEquals(_clientState, original)) _clientState = null; }
         }
         if (screen == null || hostNetId == 0) return;
 
@@ -204,13 +235,17 @@ public static class CoopMemoryStone
                 if (platform == PlatformType.Steam)
                 {
                     var open = await PlatformUtil.GetFriendsWithOpenLobbies(PlatformType.Steam);
+                    if (!ScreenOpen(screen) || Connected() || generation != _generation) return;
                     if (!open.Contains(hostNetId)) continue;
                     MainFile.Logger.Info($"[SlayTheRequiem] Камень Памяти (кооп): лобби хоста найдено (попытка {attempt + 1}), вход.");
                     await screen.JoinGameAsync(SteamClientConnectionInitializer.FromPlayer(hostNetId));
                 }
                 else
                 {
-                    await screen.JoinGameAsync(new ENetClientConnectionInitializer(myNetId, LanHost, LanPort));
+                    // The public game API does not expose the connected ENet host endpoint. Guessing loopback
+                    // would join a different machine. Keep the native join screen for explicit LAN reconnection.
+                    MainFile.Logger.Info("[MemoryStone] LAN host endpoint unavailable; rejoin the same host manually from the open join screen.");
+                    return;
                 }
                 return;
             }
@@ -223,45 +258,49 @@ public static class CoopMemoryStone
         MainFile.Logger.Info("[SlayTheRequiem] Камень Памяти (кооп): лобби хоста не найдено — остаётся ручной вход.");
     }
 
-    /// <summary>Адрес хоста LAN-отладки (ванильный «быстрый вход»: NJoinFriendScreen.FastMpJoin).</summary>
-    private const string LanHost = "127.0.0.1";
-    private const ushort LanPort = 33771;
-
     private static bool Connected() => RunManager.Instance.NetService is { IsConnected: true, Type: NetGameType.Client };
 
     private static bool ScreenOpen(NJoinFriendScreen screen) => GodotObject.IsInstanceValid(screen) && screen.IsVisibleInTree();
 
     // ───── сообщения ─────
 
-    private static void Send(StonePhase phase, int round, int value, int extra) =>
-        RequiemNet.Send(new MemoryStoneMessage { phase = (int)phase, round = round, value = value, extra = extra });
-
-    public static void OnMessage(StonePhase phase, int round, int value, int extra, ulong senderId)
+    private static void Send(StonePhase phase, int round, int value, int extra, RunState state)
     {
+        if (!ReferenceEquals(state, RequiemNet.State)) return;
+        RequiemNet.Send(new MemoryStoneMessage { run = MessageKey(state), phase = (int)phase, round = round, value = value, extra = extra });
+    }
+
+    public static void OnMessage(StonePhase phase, int round, int value, int extra, string run, ulong senderId)
+    {
+        var state = RequiemNet.State;
+        if (state == null || !OperationIdentity.IsDigest(run) || run != MessageKey(state) || round <= 0
+            || senderId == RequiemNet.LocalNetId || !state.Players.Any(p => p.NetId == senderId)) return;
+        var fromHost = RunManager.Instance.NetService is INetClientGameService { NetClient: { } client } && senderId == client.HostNetId;
         switch (phase)
         {
-            // хост → клиенты
-            case StonePhase.Proposal when RequiemNet.IsClient:
+            case StonePhase.Proposal when RequiemNet.IsClient && fromHost && round > _round:
                 _round = round;
-                TaskHelper.RunSafely(VoteAsClient(round, value, extra));
+                _clientStep = 1;
+                TaskHelper.RunSafely(VoteAsClient(round, value, extra, state));
                 break;
-            case StonePhase.Decision when RequiemNet.IsClient && round == _round:
-                if (value == 1) TaskHelper.RunSafely(ScarAsClient(round));
+            case StonePhase.Decision when RequiemNet.IsClient && fromHost && round == _round && _clientStep == 1:
+                _clientStep = 2;
+                if (value == 1) TaskHelper.RunSafely(ScarAsClient(round, state));
                 break;
-            case StonePhase.Go when RequiemNet.IsClient && round == _round:
+            case StonePhase.Go when RequiemNet.IsClient && fromHost && round == _round && _clientStep == 2:
+                _clientStep = 3; // authenticated duplicates cannot start another menu transition
                 TaskHelper.RunSafely(RejoinAsClient(senderId));
                 break;
-            case StonePhase.Abort when RequiemNet.IsClient:
-                MainFile.Logger.Warn("[SlayTheRequiem] Камень Памяти (кооп): хост отменил возврат.");
+            case StonePhase.Abort when RequiemNet.IsClient && fromHost && round == _round && _clientStep < 3:
+                _clientStep = 3;
+                MainFile.Logger.Warn("[MemoryStone] Host cancelled the rollback; current files are retained.");
                 break;
-
-            // клиенты → хост
-            case StonePhase.Vote when RequiemNet.IsHost && round == _round:
-                Votes[senderId] = value == 1;
+            case StonePhase.Vote when RequiemNet.IsHost && _proposing && _votesDone != null && _scarsDone == null && round == _round && value is 0 or 1:
+                Votes.TryAdd(senderId, value == 1); // first immutable vote wins
                 CheckVotes();
                 break;
-            case StonePhase.Scar when RequiemNet.IsHost && round == _round:
-                Scars[senderId] = Enum.IsDefined(typeof(Scar), value) ? (Scar)value : MemoryStoneRules.DefaultScar;
+            case StonePhase.Scar when RequiemNet.IsHost && _proposing && _scarsDone != null && round == _round && Enum.IsDefined(typeof(Scar), value):
+                Scars.TryAdd(senderId, (Scar)value);
                 CheckScars();
                 break;
         }

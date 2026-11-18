@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Merchant;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using SlayTheRequiem.SlayTheRequiemCode.Alchemy;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Equipment;
@@ -44,6 +45,7 @@ public partial class NShopTabs : Control
     private NBurdenMeter _meter = null!;
     private PanelContainer _sellPanel = null!;
     private VBoxContainer _sellRows = null!;
+    private ScrollContainer _sellScroll = null!;
     private ShopTab _tab = ShopTab.Buy;
     private bool _busy, _wasOpen;
     private double _sinceRefresh = 1;
@@ -111,7 +113,7 @@ public partial class NShopTabs : Control
         {
             foreach (var tab in new[] { ShopTab.Buy, ShopTab.Sell, ShopTab.Services })
             {
-                var button = MakeButton("", 26, new Vector2(300, 58));
+                var button = MakeButton("", 24, new Vector2(Math.Min(300, view.X * .23f), 58));
                 button.ToggleMode = true;
                 var t = tab;
                 button.Pressed += () => SetTab(t);
@@ -122,16 +124,20 @@ public partial class NShopTabs : Control
         }
         _meter = new NBurdenMeter(_player, compact: false);
         column.AddChild(_meter);
+        column.AddChild(NHeroCreationScreen.MakeText(RequiemUi.TipText("UI.shopControls.title"), 17));
 
         _sellPanel = new PanelContainer { Visible = false, MouseFilter = MouseFilterEnum.Stop };
         _sellPanel.AddThemeStyleboxOverride("panel", Box(PanelColor, Gold.Darkened(0.35f), 3, 14));
-        var width = Math.Min(1040f, view.X - 760f);
-        _sellPanel.Position = new Vector2((view.X - width) / 2f + 120f, view.Y * 0.14f);
-        _sellPanel.CustomMinimumSize = new Vector2(width, 0);
         AddChild(_sellPanel);
+        _sellPanel.AnchorLeft = .29f; _sellPanel.AnchorRight = .94f;
+        _sellPanel.AnchorTop = .12f; _sellPanel.AnchorBottom = .85f;
+        _sellScroll = new ScrollContainer { FollowFocus = true, SizeFlagsVertical = SizeFlags.ExpandFill,
+            HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+        _sellPanel.AddChild(_sellScroll);
         _sellRows = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         _sellRows.AddThemeConstantOverride("separation", 8);
-        _sellPanel.AddChild(_sellRows);
+        _sellRows.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _sellScroll.AddChild(_sellRows);
         RefreshTabs();
     }
 
@@ -145,8 +151,8 @@ public partial class NShopTabs : Control
             if (open)
             {
                 Visible = true;
-                Modulate = new Color(1, 1, 1, 0);
-                CreateTween().TweenProperty(this, "modulate:a", 1f, 0.4);
+                Modulate = Colors.White;
+                RequiemKit.PopIn(this, dy: 0);
                 SetTab(ShopTab.Buy);
             }
             else
@@ -163,6 +169,23 @@ public partial class NShopTabs : Control
         if (_sinceRefresh < 0.4) return;
         _sinceRefresh = 0;
         RefreshTabs();
+    }
+
+    public override void _Input(InputEvent input)
+    {
+        if (!Visible || !_tabsOn || !_inventory.IsOpen || !ActiveScreenContext.Instance.IsCurrent(_inventory)) return;
+        var focused = GetViewport().GuiGetFocusOwner();
+        if (input is InputEventKey { Pressed: true, Echo: false, Keycode: Key.I }
+            || input is InputEventJoypadButton { Pressed: true, ButtonIndex: JoyButton.RightStick })
+        {
+            _buttons[ShopTab.Buy].GrabFocus(); GetViewport().SetInputAsHandled(); return;
+        }
+        if (focused == null || !IsAncestorOf(focused)) return;
+        if (_tab == ShopTab.Sell && RequiemFocus.Scroll(this, input, _sellScroll)) return;
+        var controls = _buttons.Values.Cast<Control>().Concat(_tab == ShopTab.Sell
+            ? _sellRows.FindChildren("*", nameof(Button), true, false).OfType<Control>() : []).ToList();
+        RequiemFocus.Handle(this, input, _busy ? [] : controls, _busy ? null : () =>
+        { SetTab(ShopTab.Buy); _inventory.DefaultFocusedControl?.GrabFocus(); });
     }
 
     private void RefreshTabs()
@@ -243,31 +266,26 @@ public partial class NShopTabs : Control
 
     private void RebuildSell()
     {
-        foreach (var child in _sellRows.GetChildren()) child.QueueFree();
+        foreach (var child in _sellRows.GetChildren()) { _sellRows.RemoveChild(child); child.QueueFree(); }
         var (trust, fence) = Terms();
         var header = RequiemUi.MakeLabel(30, RequiemUi.Outline);
+        header.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         header.Text = RequiemUi.TipText("SHOP_SELL_HEADER.title", ("Percent", ShopRules.SellPercent(trust, fence)));
         RequiemUi.SetLabelColors(header, Gold, RequiemUi.Outline);
         _sellRows.AddChild(header);
         var hint = RequiemUi.MakeLabel(18, RequiemUi.Outline);
+        hint.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         hint.Text = RequiemUi.TipText("SHOP_SELL_HINT.title");
         RequiemUi.SetLabelColors(hint, Dim, RequiemUi.Outline);
         _sellRows.AddChild(hint);
         _sellRows.AddChild(new HSeparator());
 
         var rows = SellRows();
-        foreach (var row in rows.Take(ShopUiRules.SellRowsVisible))
+        foreach (var row in rows)
         {
             var item = row.Item;
             AddRow(item.Icon, item.Title.GetFormattedText(), row.Weight, row.Value, -row.Weight,
                 () => Sell(() => SellService.Sell(_player, [item], trust, fence)));
-        }
-        if (rows.Count > ShopUiRules.SellRowsVisible)
-        {
-            var more = RequiemUi.MakeLabel(18, RequiemUi.Outline);
-            more.Text = RequiemUi.TipText("SHOP_SELL_MORE.title", ("Count", rows.Count - ShopUiRules.SellRowsVisible));
-            RequiemUi.SetLabelColors(more, Dim, RequiemUi.Outline);
-            _sellRows.AddChild(more);
         }
         if (ReagentRow() is { } reagents)
         {
@@ -283,7 +301,7 @@ public partial class NShopTabs : Control
         }
 
         _sellRows.AddChild(new HSeparator());
-        var footer = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
+        var footer = new HFlowContainer { MouseFilter = MouseFilterEnum.Ignore };
         footer.AddThemeConstantOverride("separation", 16);
         _sellRows.AddChild(footer);
         if (rows.Count > 1)
@@ -300,43 +318,24 @@ public partial class NShopTabs : Control
         var back = MakeButton(RequiemUi.TipText("SHOP_SELL_BACK.title"), 22, new Vector2(240, 52));
         back.Pressed += () => SetTab(ShopTab.Buy);
         footer.AddChild(back);
+        var focus = _buttons.Values.Concat(_sellRows.FindChildren("*", nameof(Button), true, false).OfType<Button>()).ToList();
+        RequiemFocus.Wire(focus);
+        back.CallDeferred(Control.MethodName.GrabFocus);
     }
 
     private void AddRow(Texture2D? icon, string title, int weight, int value, int preview, Action sell)
     {
-        var row = new HBoxContainer { MouseFilter = MouseFilterEnum.Pass, CustomMinimumSize = new Vector2(0, 60) };
-        row.AddThemeConstantOverride("separation", 14);
-        row.AddChild(new TextureRect
-        {
-            Texture = icon,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            CustomMinimumSize = new Vector2(56, 56),
-            MouseFilter = MouseFilterEnum.Ignore,
-        });
-        var name = RequiemUi.MakeLabel(22, RequiemUi.Outline);
-        name.Text = title;
-        name.HorizontalAlignment = HorizontalAlignment.Left;
-        name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        name.ClipText = true;
-        row.AddChild(name);
-        var burden = RequiemUi.MakeLabel(20, RequiemUi.Outline);
-        burden.Text = weight > 0 ? RequiemUi.TipText("SHOP_SELL_WEIGHT.title", ("Weight", weight)) : "";
-        burden.CustomMinimumSize = new Vector2(70, 0);
-        RequiemUi.SetLabelColors(burden, RequiemUi.BurdenColor.Lightened(0.35f), RequiemUi.Outline);
-        row.AddChild(burden);
-        var price = RequiemUi.MakeLabel(22, RequiemUi.Outline);
-        price.Text = RequiemUi.TipText("SHOP_SELL_PRICE.title", ("Gold", value));
-        price.CustomMinimumSize = new Vector2(120, 0);
-        RequiemUi.SetLabelColors(price, Gold, RequiemUi.Outline);
-        row.AddChild(price);
-        var button = MakeButton(RequiemUi.TipText("SHOP_SELL_ONE.title"), 20, new Vector2(150, 50));
-        button.MouseEntered += () => Preview(preview);
-        button.MouseExited += () => Preview(0);
-        button.Pressed += sell;
-        row.AddChild(button);
-        row.MouseEntered += () => Preview(preview);
-        row.MouseExited += () => Preview(0);
+        var row = new VBoxContainer { MouseFilter = MouseFilterEnum.Pass };
+        row.AddThemeConstantOverride("separation", 6);
+        var heading = new HBoxContainer(); row.AddChild(heading);
+        heading.AddChild(new TextureRect { Texture = icon, CustomMinimumSize = new Vector2(52, 52),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered });
+        var name = NHeroCreationScreen.MakeText(title, 22); heading.AddChild(name);
+        row.AddChild(NHeroCreationScreen.MakeText(RequiemUi.TipText("UI.sellQuote.title", ("Weight", weight), ("Gold", value)), 20));
+        var button = MakeButton(RequiemUi.TipText("SHOP_SELL_ONE.title"), 20, new Vector2(0, 48));
+        button.MouseEntered += () => Preview(preview); button.MouseExited += () => Preview(0);
+        button.FocusEntered += () => Preview(preview); button.FocusExited += () => Preview(0);
+        button.Pressed += sell; row.AddChild(button);
         _sellRows.AddChild(row);
     }
 

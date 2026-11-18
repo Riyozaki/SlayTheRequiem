@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.Models.Monsters;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Rooms;
+using SlayTheRequiem.SlayTheRequiemCode.Core;
 using SlayTheRequiem.SlayTheRequiemCode.Powers;
 using SlayTheRequiem.SlayTheRequiemCode.Rules;
 
@@ -23,8 +24,9 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 /// пока они стоят — Хранитель получает вдвое меньше урона. Уязвим к свету (нежить) и огню (таблица врагов).
 /// Облик — заимствованный у ванильного Призрачного рыцаря, пока нет своих спрайтов (этап 6).
 /// </summary>
-public sealed class TombGuardian : CustomMonsterModel
+public sealed class TombGuardian : CustomMonsterModel, IEnemyRoleSource
 {
+    public EnemyRole CombatRole => EnemyRole.Elite;
     public const int StaffDamage = 10;
     public const int StaffManaDrain = 3;
     public const int SoulFlameDamage = 4;

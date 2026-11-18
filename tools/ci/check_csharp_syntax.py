@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Синтаксическая проверка всех .cs мода (tree-sitter-c-sharp) — без игры и .NET. Запуск: python3 tools/ci/check_csharp_syntax.py"""
 import sys,glob
+from pathlib import Path
 from tree_sitter import Language, Parser
 import tree_sitter_c_sharp as cs
 p=Parser(Language(cs.language()))
 bad=0;n=0
-for f in sorted(glob.glob('mod/**/*.cs',recursive=True)):
+for f in sorted(glob.glob('mod/**/*.cs',recursive=True) + glob.glob('tools/**/*.cs',recursive=True)):
+    if set(Path(f).parts) & {'bin', 'obj', '.godot', 'node_modules'}: continue
     n+=1
     t=p.parse(open(f,'rb').read())
     errs=[]

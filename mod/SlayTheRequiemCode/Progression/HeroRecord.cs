@@ -63,6 +63,10 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     private int _vigorFights;
     private int _meditation;
     private int _nodesSinceRest;
+    private string _fatigueVisitKey = "";
+
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string FatigueVisitKey { get => _fatigueVisitKey; set { AssertMutable(); _fatigueVisitKey = value ?? ""; } }
     private int _stoneSmall, _stoneLarge, _stoneBlack;
     private int _campPoints;
     private bool _artisanUsed;
@@ -127,6 +131,12 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
     public int StoneBlack { get => _stoneBlack; set { AssertMutable(); _stoneBlack = Math.Max(0, value); } }
+
+    private string _campVisitKey = "", _campCompletedOptions = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string CampVisitKey { get => _campVisitKey; set { AssertMutable(); _campVisitKey = value ?? ""; } }
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string CampCompletedOptions { get => _campCompletedOptions; set { AssertMutable(); _campCompletedOptions = value ?? ""; } }
 
     /// <summary>Оставшиеся очки текущего привала.</summary>
     [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
@@ -204,68 +214,70 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
 
     private const int NativeRecordedBit = 1 << 7;
 
-    public bool IsNative(SpellSchool school) =>
-        SpellAffinity.IsNativeSchool(HeroName, school) || (_nativeMask & (1 << (int)school)) != 0;
+    public bool IsNative(SpellSchool school) => SpellAffinity.IsNativeSchool(HeroName, school)
+        || (Mastery.GrimoireOf(Owner) is { MasterySourceData.Length: > 0 } grimoire && grimoire.Sources.IdentityKnown
+            ? grimoire.Sources.IsIdentitySchool(school) : (_nativeMask & (1 << (int)school)) != 0);
 
-    private bool _grantSeen;
-
-    private void RecordNativeSchools()
+    internal void RecordNativeSchools()
     {
-        if ((_nativeMask & NativeRecordedBit) != 0) return;
-        // Происхождение и предыстория выдаются Гримуаром при входе в первую комнату; ждём предысторию
-        // (если её так и не выдали — записываем со следующей комнаты).
-        if (!Owner.Relics.OfType<BackgroundRelic>().Any())
-        {
-            if (Mastery.GrimoireOf(Owner) is not { OriginGranted: true }) return;
-            if (!_grantSeen) { _grantSeen = true; return; }
-        }
+        var grimoire = Mastery.GrimoireOf(Owner);
+        if (grimoire is not { MasterySourceData.Length: > 0 }) return;
+        var sources = grimoire.Sources;
+        if (!sources.IdentityKnown && (_nativeMask & NativeRecordedBit) != 0) return; // retain an old declared mask
         var mask = NativeRecordedBit;
+        var oldBackground = HeroIdentityRules.LegacyBackgroundMastery(Owner.Relics.OfType<BackgroundRelic>().SingleOrDefault()?.GetType().Name);
         foreach (var school in Mastery.Schools)
-            if ((Mastery.GrimoireOf(Owner)?.Level(school) ?? 0) > 0) mask |= 1 << (int)school;
-        NativeMask = mask;
+            if (SpellAffinity.IsNativeSchool(HeroName, school) || (sources.IdentityKnown
+                ? sources.IsIdentitySchool(school) : oldBackground == school)) mask |= 1 << (int)school;
+        NativeMask = mask; // acquisition, temporary Boons and saved-UI timing never promote a foreign school
     }
 
     public int MasteryCost(SpellSchool school) => ProgressionRules.MasteryCost(IsNative(school));
 
     /// <summary>Потратить очко характеристики (владение — 1/2 очка за +1 школы).</summary>
-    public async Task<bool> SpendStat(StatAxis axis, SpellSchool school = SpellSchool.Destruction)
+    public async Task<bool> SpendStat(StatAxis axis, SpellSchool school = SpellSchool.Destruction, OperationGate.Lease? held = null)
     {
-        var free = UnspentStatPoints;
-        switch (axis)
+        using var lease = await InventoryGate.For(Owner).Enter(held);
+        if (lease == null || InventoryGate.For(Owner).Blocked || !Enum.IsDefined(axis)
+            || Mastery.GrimoireOf(Owner) is not { StartingChoicesComplete: true } grimoire) return false;
+        if (axis == StatAxis.Mastery && !Enum.IsDefined(school)) return false;
+        var cost = axis == StatAxis.Mastery ? MasteryCost(school) : 1;
+        if (UnspentStatPoints < cost || axis == StatAxis.Mastery && grimoire.Level(school) >= SpellAffinity.MaxMastery) return false;
+        grimoire.Sources.RequireHero(HeroName, Learned, StatMastery);
+        using var mutation = InventoryGate.Track(Owner, lease, "hero-stat:" + axis);
+        try
         {
-            case StatAxis.Mastery:
+            switch (axis)
             {
-                var cost = MasteryCost(school);
-                var grimoire = Mastery.GrimoireOf(Owner);
-                if (free < cost || grimoire == null || !grimoire.Raise(school)) return false;
-                StatMastery += cost;
-                break;
+                case StatAxis.Mastery:
+                    if (!grimoire.BuyMastery(school, cost)) throw new InvalidOperationException("Validated mastery purchase no longer available");
+                    StatMastery += cost;
+                    break;
+                case StatAxis.Health: StatHealth++; break;
+                case StatAxis.Stamina: StatStamina++; break;
+                case StatAxis.Mana: StatMana++; break;
+                case StatAxis.Burden: StatBurden++; break;
             }
-            case StatAxis.Health:
-                if (free < 1) return false;
-                StatHealth++;
-                break;
-            case StatAxis.Stamina:
-                if (free < 1) return false;
-                StatStamina++;
-                break;
-            case StatAxis.Mana:
-                if (free < 1) return false;
-                StatMana++;
-                break;
-            default:
-                if (free < 1) return false;
-                StatBurden++;
-                break;
+            await SyncMaxHp();
+            TravelPack.Of(Owner)?.Refresh();
+            Flash(); Refresh();
+            mutation.Complete(); return true;
         }
-        await SyncMaxHp();
-        TravelPack.Of(Owner)?.Refresh();
-        Flash();
-        Refresh();
-        return true;
+        catch (Exception e)
+        {
+            InventoryGate.Block(Owner, $"Hero stat callback interrupted; retain its checkpoint instead of spending again: {e}");
+            mutation.Complete(); throw;
+        }
     }
 
     // ───── навыки ─────
+
+    protected override void DeepCloneFields()
+    {
+        base.DeepCloneFields();
+        _learned = _learned?.ToHashSet();
+        _schoolSpellsThisTurn = _schoolSpellsThisTurn == null ? null : (int[])_schoolSpellsThisTurn.Clone();
+    }
 
     private HashSet<Skill>? _learned;
     public IReadOnlySet<Skill> Learned => _learned ??= SkillTree.Parse(_skills);
@@ -276,20 +288,32 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
     public List<SkillNode> Learnable() =>
         SkillTree.Learnable(HeroName, Learned.ToList(), UnspentSkillPoints, IsNative);
 
-    public async Task<bool> Learn(Skill skill)
+    public async Task<bool> Learn(Skill skill, OperationGate.Lease? held = null)
     {
+        using var lease = await InventoryGate.For(Owner).Enter(held);
+        if (lease == null || InventoryGate.For(Owner).Blocked || !Enum.IsDefined(skill)
+            || Mastery.GrimoireOf(Owner) is not { StartingChoicesComplete: true } grimoire) return false;
         var node = SkillTree.Node(skill);
         if (!Learnable().Contains(node)) return false;
-        var set = Learned.ToHashSet();
-        set.Add(skill);
-        SkillPointsSpent += CostOf(node);
-        Skills = SkillTree.Serialize(SkillTree.Nodes.Select(n => n.Skill).Where(set.Contains));
-        if (SkillTree.SchoolOf(node.Branch) is { } school) Mastery.GrimoireOf(Owner)?.Raise(school);
-        await SyncMaxHp();
-        TravelPack.Of(Owner)?.Refresh();
-        Flash();
-        Refresh();
-        return true;
+        grimoire.Sources.RequireHero(HeroName, Learned, StatMastery);
+        using var mutation = InventoryGate.Track(Owner, lease, "hero-skill:" + skill);
+        try
+        {
+            var set = Learned.ToHashSet();
+            set.Add(skill);
+            SkillPointsSpent += CostOf(node);
+            Skills = SkillTree.Serialize(SkillTree.Nodes.Select(n => n.Skill).Where(set.Contains));
+            grimoire.ApplySkill(skill); // own idempotent source, including a node hidden by the visible mastery cap
+            await SyncMaxHp();
+            TravelPack.Of(Owner)?.Refresh();
+            Flash(); Refresh();
+            mutation.Complete(); return true;
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(Owner, $"Hero skill callback interrupted; retain its checkpoint instead of learning twice: {e}");
+            mutation.Complete(); throw;
+        }
     }
 
     // ───── Сытость ─────
@@ -457,6 +481,7 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         var start = Food.StartStamina;
         if (start > 0) RequiemResource.Of<StaminaResource>(Owner)?.ModifyAmount(start);
         NoteCombatStart(combatState);
+        Debugging.BalanceTrace.Snapshot("combat:start-hero-hook", Owner);
     }
 
     protected override async Task OnTurnStarted(PlayerChoiceContext ctx)
@@ -499,7 +524,13 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
             shoutCard.ShelvedByThisPlay = false;
             // Хуки ModifyCardPlayResultPileTypeAndPosition могли перенаправить карту (в изгнание, в колоду) —
             // тогда она не «нигде», и полка дала бы её копию в руку при живом оригинале.
-            if (cardPlay.ResultPile == PileType.None) await Shouts.Shelve(card, shout);
+            if (cardPlay.ResultPile == PileType.None && !await Shouts.Shelve(card, shout) && card.Pile?.Type == PileType.Play)
+            {
+                // The result pile was selected before AfterCardPlayed. If applying the shelf was vetoed or
+                // another hook filled it, moving out of Play prevents native None cleanup from losing the card.
+                Debugging.CardRewardTrace.Card("shout:shelf-unavailable", card, "preserving original in Discard", force: true);
+                await CardPileCmd.Add(card, PileType.Discard);
+            }
         }
         if (card is SpellCard spell)
         {
@@ -656,9 +687,11 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         if (_mushroomFights > 0) MushroomFights--;
         if (_vigorFights > 0) VigorFights--;
         Meditation = 0;
+        await SyncMaxHp(); // settle expired food/stat HP before a Reborn source preflight/preview
         await AfterVictoryPaths(room);
         await SyncMaxHp();
         Refresh();
+        Debugging.BalanceTrace.Snapshot("combat:victory-pre-rewards", Owner, room.Encounter.GetType().Name);
     }
 
     public override async Task AfterRoomEntered(AbstractRoom room)
@@ -666,8 +699,17 @@ public sealed partial class HeroRecord : BoonRelic, IAttackStaminaModifier, IPoi
         await base.AfterRoomEntered(room);
         if (!RequiemMode.IsInSystem(Owner)) return;
         RecordNativeSchools();
-        if (room.RoomType != RoomType.RestSite) NodesSinceRest++;
+        NoteRoomVisit(room);
         Refresh();
+        Debugging.BalanceTrace.Snapshot("room:hero-hook", Owner);
+    }
+
+    internal void NoteRoomVisit(AbstractRoom room)
+    {
+        var visit = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"{Owner.RunState.CurrentActIndex}:{Owner.RunState.TotalFloor}");
+        if (StartupState.ShouldCountVisit(FatigueVisitKey, visit, room.RoomType != RoomType.RestSite)) NodesSinceRest++;
+        FatigueVisitKey = visit; // Before-combat decisions and the ordinary AfterRoom hook count the same node once
     }
 
     public override Task AfterObtained()

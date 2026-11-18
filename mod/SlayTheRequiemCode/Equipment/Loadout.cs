@@ -25,9 +25,8 @@ public static class Loadout
     public static void Equip(Player player, EquipmentRelic item)
     {
         var others = Equipped(player).Where(r => r != item).ToList();
-        var displaced = EquipmentRules.Displaced(others.Select(r => r.Describe()).ToList(), item.Describe());
-        foreach (var old in others.Where(r => displaced.Any(d => d.Key == r.GetType().Name && d.Slot == r.Slot)))
-            old.IsStowed = true;
+        var displaced = EquipmentRules.DisplacedIndices(others.Select(r => r.Describe()).ToArray(), item.Describe());
+        foreach (var index in displaced) others[index].IsStowed = true;
         item.IsStowed = false;
         PaperDoll.Refresh(player); // в бою («Сменить хват») — сразу на модели
     }
@@ -66,8 +65,8 @@ public static class Loadout
         _ => 1,
     };
 
-    public static int CardWeight(CardModel card) =>
-        TransformationRules.CardWeightAfter(
+    public static int CardWeight(CardModel card) => card is Cards.EncounterCounterCard ? 0
+        : TransformationRules.CardWeightAfter(
             BurdenRules.DefaultCardWeight(card.Rarity.ToString(), card.Type == CardType.Curse, card.Type == CardType.Status),
             Progression.RequiemCardEnchantment.Has(card, CardEnchant.Lightened));
 

@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44 H58 V58 H6 Z" fill="#6B4E33"/><path d="M4 40 H60 V46 H4 Z" fill="#8A6844"/><path d="M14 46 V58 M50 46 V58" /><path d="M12 38 C12 30 16 28 20 28 C22 20 26 18 30 24 C34 18 38 20 40 28 L46 28 C46 18 52 14 56 18 L54 22 L50 22 L50 38" fill="#E2B24A"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>caravan</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 39 V24 Q7 9 26 9 H37 Q48 9 48 24 V39 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M8 25 H48 M26 10 V39" fill="none" stroke="#302922" stroke-width="4"/><path d="M5 39 H50 L56 29 H60 M10 39 V48 H48 V39" fill="none" stroke="#302922" stroke-width="5"/><circle cx="17" cy="51" r="7" fill="#b8a886" stroke="#302922" stroke-width="4"/><circle cx="43" cy="51" r="7" fill="#b8a886" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

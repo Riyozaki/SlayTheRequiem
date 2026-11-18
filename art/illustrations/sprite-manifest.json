@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "created_utc": "2026-11-18",
+  "pipeline": "tools/art/monsters/illustrated_sprites.py",
+  "matte": "uniform magenta background removed with deterministic alpha unmatting; no manual pixel paint-over recorded",
+  "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+  "acceptance_policy": "source-candidate is not author approval, paint-over completion or in-game visual acceptance; these remain in the final release matrix",
+  "assets": [
+    {
+      "key": "king_under_barrow",
+      "model": "KingUnderBarrow",
+      "master": "art/illustrations/masters/king_under_barrow.png",
+      "master_sha256": "8052acc8d7b789d3f1ab3c43bdf4f5ac73a6341cb35d99c8dce669a73af8fd6b",
+      "runtime": "res://SlayTheRequiem/images/monsters/king_under_barrow.png",
+      "canvas": [
+        440,
+        520
+      ],
+      "fit_box_xyxy": [
+        40,
+        50,
+        400,
+        512
+      ],
+      "flip_x": true,
+      "reference_master": null,
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "prompt_file": "art/illustrations/quality-prompts.json",
+      "prompt_key": "king_under_barrow",
+      "mechanical_intent": "Phase one: seated sword-at-rest ruler, faces left after documented horizontal flip. Same runtime canvas/hit bounds as phase two.",
+      "acceptance": "source-candidate; source/cutout/downsample review by agent; native-client/author and licensing acceptance pending",
+      "source_safe_crop_xyxy": [
+        8,
+        8,
+        936,
+        1112
+      ]
+    },
+    {
+      "key": "king_under_barrow_p2",
+      "model": "KingUnderBarrow",
+      "master": "art/illustrations/masters/king_under_barrow_p2.png",
+      "master_sha256": "4c27ce289badca3a1c523ca103f20305afcd75ee8e9ec399bd37ff1f59d53758",
+      "runtime": "res://SlayTheRequiem/images/monsters/king_under_barrow_p2.png",
+      "canvas": [
+        440,
+        520
+      ],
+      "fit_box_xyxy": [
+        12,
+        18,
+        428,
+        512
+      ],
+      "flip_x": false,
+      "reference_master": "art/illustrations/masters/king_under_barrow.png",
+      "provenance": "AI-generated in this Arena session with generate_image using the retained generated base master as the only input. No external/game image input.",
+      "prompt_file": "art/illustrations/quality-prompts.json",
+      "prompt_key": "king_under_barrow_p2",
+      "mechanical_intent": "Phase two: standing two-handed judgement stance, throne removed; silhouette changes without depending on flash/color. Same runtime canvas/hit bounds as phase one.",
+      "acceptance": "source-candidate; source/cutout/downsample review by agent; native-client/author and licensing acceptance pending",
+      "source_safe_crop_xyxy": [
+        8,
+        8,
+        936,
+        1112
+      ]
+    },
+    {
+      "key": "hero_werewolf",
+      "model": "HeroLooks.Werewolf",
+      "master": "art/illustrations/masters/hero_werewolf.png",
+      "master_sha256": "213bfb2ebc70a489e97c91edc5f414c719c5ff0f08dedaa728053843e06178ee",
+      "runtime": "res://SlayTheRequiem/images/monsters/hero_werewolf.png",
+      "canvas": [
+        300,
+        400
+      ],
+      "fit_box_xyxy": [
+        32,
+        30,
+        272,
+        394
+      ],
+      "flip_x": false,
+      "reference_master": null,
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "prompt_file": "art/illustrations/quality-prompts.json",
+      "prompt_key": "hero_werewolf",
+      "mechanical_intent": "Base Cursed Beast origin: human hunter in wolf pelt, facing right. Equipment in art is archetypal, not a locked equipment slot.",
+      "acceptance": "source-candidate; source/cutout/downsample review by agent; native-client/author and licensing acceptance pending",
+      "source_safe_crop_xyxy": [
+        8,
+        8,
+        888,
+        1192
+      ]
+    },
+    {
+      "key": "hero_werewolf_beast",
+      "model": "HeroLooks.Werewolf + BeastFormPower",
+      "master": "art/illustrations/masters/hero_werewolf_beast.png",
+      "master_sha256": "af56873087628d40f5a3dd00e0aab25b63ff56de3e564a154c14c73ffbd0300e",
+      "runtime": "res://SlayTheRequiem/images/monsters/hero_werewolf_beast.png",
+      "canvas": [
+        300,
+        400
+      ],
+      "fit_box_xyxy": [
+        8,
+        12,
+        292,
+        394
+      ],
+      "flip_x": false,
+      "reference_master": "art/illustrations/masters/hero_werewolf.png",
+      "provenance": "AI-generated in this Arena session with generate_image using the retained generated base master as the only input. No external/game image input.",
+      "prompt_file": "art/illustrations/quality-prompts.json",
+      "prompt_key": "hero_werewolf_beast",
+      "mechanical_intent": "Active BeastForm: larger hunched wolf silhouette, right-facing, unarmed clawed paws. Same runtime canvas/hit bounds as base form.",
+      "acceptance": "source-candidate; source/cutout/downsample review by agent; native-client/author and licensing acceptance pending",
+      "source_safe_crop_xyxy": [
+        8,
+        8,
+        888,
+        1192
+      ]
+    }
+  ]
+}

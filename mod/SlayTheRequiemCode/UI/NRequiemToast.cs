@@ -13,6 +13,7 @@ public partial class NRequiemToast : CanvasLayer
 {
     private const float Seconds = 4.5f;
     private const float Step = 96f;
+    private PanelContainer? _panel;
 
     // Живые сообщения: новое встаёт под предыдущими, а не поверх них (несколько отказов подряд читаются).
     private static readonly List<NRequiemToast> Live = new();
@@ -63,21 +64,31 @@ public partial class NRequiemToast : CanvasLayer
         panel.AddChild(label);
         AddChild(panel);
 
-        // Появление: выезжает сверху с лёгким перелётом, рамка вспыхивает золотом и остывает.
-        panel.Modulate = new Color(1, 1, 1, 0);
-        var top = panel.OffsetTop;
-        var bottom = panel.OffsetBottom;
-        panel.OffsetTop = top - 40;
-        panel.OffsetBottom = bottom - 40;
-        var slide = panel.CreateTween().SetParallel();
-        slide.TweenProperty(panel, "offset_top", top, 0.35f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
-        slide.TweenProperty(panel, "offset_bottom", bottom, 0.35f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
-        style.BorderColor = StsColors.gold.Lightened(0.5f);
-        slide.TweenProperty(style, "border_color", new Color("C9A45C"), 0.8f);
-        var tween = panel.CreateTween();
-        tween.TweenProperty(panel, "modulate:a", 1f, 0.2f);
-        tween.TweenInterval(Seconds);
-        tween.TweenProperty(panel, "modulate:a", 0f, 0.6f);
-        tween.TweenCallback(Callable.From(QueueFree));
+        _panel = panel;
+    }
+
+    public override void _Ready()
+    {
+        if (_panel is not { } panel) return;
+        // Build runs BEFORE AddChildSafely: creating tweens there was invalid when the node was not in a tree.
+        RequiemKit.PopIn(panel, dy: -24f);
+        Tween? fade = null;
+        RequiemMotion.Watch(this, () =>
+        {
+            if (RequiemMotion.Enabled) return;
+            RequiemMotion.Kill(fade); fade = null;
+            panel.Modulate = Colors.White;
+        });
+        // Lifetime is independent from optional motion, so disabling effects cannot leak or erase a refusal early.
+        var life = CreateTween();
+        life.TweenInterval(Seconds);
+        life.TweenCallback(Callable.From(() =>
+        {
+            if (!RequiemMotion.Enabled) return;
+            fade = panel.CreateTween();
+            fade.TweenProperty(panel, "modulate:a", 0f, 0.6);
+        }));
+        life.TweenInterval(0.6);
+        life.TweenCallback(Callable.From(QueueFree));
     }
 }

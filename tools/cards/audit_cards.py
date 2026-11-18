@@ -46,6 +46,7 @@ DOCS = {
     "Безмолвная": ["17-silent-cards.md"],
     "Регент": ["18-regent-and-shared-cards.md"],
     "Кличи": ["18-regent-and-shared-cards.md", "04-heroes-origins.md"],
+    "Контрмеры боёв": ["18-regent-and-shared-cards.md", "11-enemies.md"],
     "Заклинания": ["08-spells.md"],
     "Формы и Пути": ["06-paths-transformations.md", "18-regent-and-shared-cards.md"],
     "Зачарование карт": ["18-regent-and-shared-cards.md", "07-equipment-relics.md"],

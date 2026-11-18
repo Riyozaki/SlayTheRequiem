@@ -33,6 +33,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override async Task BeforeCardPlayed(CardPlay cardPlay)
     {
         var card = cardPlay.Card;
+        SpellInterception.Begin(card);
         // Заклинания и магические атаки платят только ✦ (08), Кличи — перезарядкой (04): ни ◆, ни множителя Устал/Изнурён.
         if (card.Type != CardType.Attack || StaminaCosts.IsStaminaExempt(card)) return;
         var player = card.Owner;
@@ -81,7 +82,14 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
 
     public override Task AfterCardPlayed(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        SpellInterception.End(cardPlay.Card);
         if (cardPlay.IsLastInSeries) PendingMultiplier.Remove(cardPlay.Card);
+        return Task.CompletedTask;
+    }
+
+    public override Task BeforeAttack(MegaCrit.Sts2.Core.Commands.Builders.AttackCommand command)
+    {
+        if (command.Attacker is { IsEnemy: true } enemy) EnemyActionBudget.Pay(enemy);
         return Task.CompletedTask;
     }
 
@@ -90,6 +98,7 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
     public override decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (!RunSettings.EnableRequiemSystems) return 1m;
+        if (target != null && SpellInterception.Predict(target, props, dealer, cardSource)) return 0m;
         return StaminaMultiplier(props, cardSource) * ResistanceMultiplier(target, props, dealer, cardSource)
             * LevelMultiplier(target, dealer);
     }
@@ -169,6 +178,19 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         }
     }
 
+    public override async Task BeforeDamageReceived(PlayerChoiceContext choiceContext, Creature target, decimal amount,
+        ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        await SpellInterception.Intercept(choiceContext, target, props, dealer, cardSource);
+
+    public override Task BeforePowerAmountChanged(PowerModel power, decimal amount, Creature target, Creature? applier, CardModel? cardSource) =>
+        SpellInterception.BeforePower(power, amount, target, applier, cardSource);
+
+    /// <summary>All mod HP shields have one fixed order, after native pre-Osty modifiers, not power insertion order.</summary>
+    public override decimal ModifyHpLostBeforeOstyLate(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) =>
+        RunSettings.EnableRequiemSystems ? HitDefensePipeline.Resolve(target, amount, props, dealer, cardSource) : amount;
+
+    public override Task AfterModifyingHpLostBeforeOsty() => HitDefensePipeline.Commit();
+
     // ───────────── стаки статусов против сопротивлений ─────────────
 
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)
@@ -182,6 +204,12 @@ public sealed class RequiemCombatRules() : CustomSingletonModel(CustomSingletonM
         {
             modifiedAmount = 0;
             return true;
+        }
+
+        if (canonicalPower is WordOfBindingPower)
+        {
+            modifiedAmount = BossCounterplayRules.BindingStacksToApply(target.GetPowerAmount<WordOfBindingPower>(), amount);
+            return modifiedAmount != amount;
         }
 
         DamageType? element = canonicalPower switch

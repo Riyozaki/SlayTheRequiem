@@ -69,3 +69,16 @@ public sealed class MoonStancePower : RequiemPower
             ? BossPowerRules.StanceMultiplier(true, DamageTyping.Resolve(props, dealer, cardSource))
             : 1m;
 }
+
+/// <summary>
+/// Чёрный Странник: единственная временная стойка +3 Лат и +I сопротивлений. Bonuses are queried, not added
+/// to permanent counters, so waiting/removal cannot steal another source or leave permanent hidden armor.
+/// Removed by the boss AFTER the party's first Attack resolves (all hits of that play use the stance).
+/// </summary>
+public sealed class WandererGuardPower : RequiemPower
+{
+    public const int PlatingBonus = BossTimingRules.WandererGuardPlating;
+    public const int ResistanceBonus = BossTimingRules.WandererGuardResistance;
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Single;
+}

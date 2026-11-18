@@ -32,6 +32,16 @@ public abstract class PathEssence : BoonRelic
 {
     public abstract HeroPath Path { get; }
 
+    private string _signGrant = "";
+    [SavedProperty(SerializationCondition.SaveIfNotTypeDefault)]
+    public string SignGrant { get => _signGrant; set { AssertMutable(); _signGrant = value ?? ""; } }
+
+    public override async Task AfterRoomEntered(MegaCrit.Sts2.Core.Rooms.AbstractRoom room)
+    {
+        await base.AfterRoomEntered(room);
+        if (SignGrant.Length > 0 && !CombatManager.Instance.IsInProgress) await PathGrants.CompleteSign(this);
+    }
+
     protected override Boon ComputeBoon() => Boon.None;
 
     protected Creature Hero => Owner.Creature;
@@ -107,12 +117,51 @@ public static class Paths
             n => n <= 0 ? 0 : player.PlayerRng.Rewards.NextInt(n), Forms.IsOrdinator(player));
 
     /// <summary>Принять Путь: Сущность и Знак.</summary>
-    public static async Task Grant(Player player, HeroPath path)
+    public static async Task Grant(Player player, HeroPath path, OperationGate.Lease? held = null)
     {
-        if (path == HeroPath.None || Of(player) != null) return;
-        await RelicCmd.Obtain(Forms.Create(EssenceType(path)), player);
-        if (SignType(path) is { } sign) await RelicCmd.Obtain(Forms.Create(sign), player);
+        if (!Enum.IsDefined(path)) throw new ArgumentOutOfRangeException(nameof(path));
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null || path == HeroPath.None || InventoryGate.For(player).Blocked) return;
+        if (Of(player) is { } current)
+        {
+            if (current.Path == path) await PathGrants.CompleteSign(current, lease); // never replay a one-shot essence
+            return;
+        }
+        if (!TransformationRules.PathAllowed(path, Forms.Worldview(player), Apostate(player), Unarmed(player), Forms.IsOrdinator(player))) return;
+        // Every Reborn/element decision happens BEFORE obtaining/consuming a Path. The modal can outlive
+        // a room; never apply a confirmed old choice to a different room/run after Continue or teardown.
+        var run = player.RunState;
+        var room = run.CurrentRoom;
+        if (path == HeroPath.Reborn && !await HeroCreation.PrepareRebirth(player)) return;
+        var element = path == HeroPath.ElementLord ? await ElementLordEssence.PickElement(player) : null;
+        if (path == HeroPath.ElementLord && element == null) return;
+        if (!ReferenceEquals(run, player.RunState) || !ReferenceEquals(room, run.CurrentRoom) || player.Creature.IsDead
+            || Of(player) != null || !TransformationRules.PathAllowed(path, Forms.Worldview(player), Apostate(player), Unarmed(player), Forms.IsOrdinator(player))) return;
+        {
+            using var mutation = InventoryGate.Track(player, lease, "path:" + path);
+            try
+            {
+                var essence = (PathEssence)Forms.Create(EssenceType(path));
+                if (essence is ElementLordEssence elemental) elemental.ChosenElement = (int)element!.Value;
+                PathGrants.Prepare(essence, player);
+                await RelicCmd.Obtain(essence, player);
+                if (!player.Relics.Contains(essence)) throw new InvalidOperationException("Path essence did not commit");
+                essence.SignGrant = RelicGrantState.Read(essence.SignGrant)!.IssuerCompleted().Encode();
+                await PathGrants.CompleteSign(essence, lease);
+                if (InventoryGate.For(player).Blocked) throw new InvalidOperationException("Path companion callback has an uncertain result");
+                if (HeroRecord.Of(player) is { } hero) hero.PathOfferData = "";
+                mutation.Complete();
+            }
+            catch (Exception e)
+            {
+                InventoryGate.Block(player, $"Path grant interrupted; restore its pre-transition checkpoint: {e}");
+                mutation.Complete(); throw;
+            }
+        }
+        if (path == HeroPath.Reborn && Mastery.GrimoireOf(player) is { } grimoire)
+            await HeroCreation.ResumeRebirth(grimoire, lease); // summary is resumable, not an uncertain effect
     }
+
 }
 
 // ═════════════ 13 Сущностей ═════════════
@@ -361,8 +410,14 @@ public sealed class ElementLordEssence : PathEssence
     }
 
     public Element Element => (Element)_element;
+    public Type SignatureType => Element switch
+    {
+        Element.Fire => typeof(Meteor),
+        Element.Frost => typeof(IceTomb),
+        _ => typeof(ChainLightning),
+    };
 
-    protected override async Task OnObtained()
+    internal static async Task<Element?> PickElement(Player owner)
     {
         var choices = Enum.GetValues<Element>()
             .Select(e => new CampMenu.Choice(e switch
@@ -372,16 +427,13 @@ public sealed class ElementLordEssence : PathEssence
                 _ => typeof(ChainLightning),
             }, 0, 0, e))
             .ToList();
-        var picked = await CampMenu.Pick(Owner, choices, "SLAYTHEREQUIEM_ELEMENT_PROMPT") as Element? ?? Element.Fire;
-        ChosenElement = (int)picked;
-        var spell = picked switch
-        {
-            Element.Fire => typeof(Meteor),
-            Element.Frost => typeof(IceTomb),
-            _ => typeof(ChainLightning),
-        };
-        var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(spell));
-        await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+        return await CampMenu.Pick(owner, choices, "SLAYTHEREQUIEM_ELEMENT_PROMPT") as Element?;
+    }
+
+    protected override async Task OnObtained()
+    {
+        var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(SignatureType));
+        await CardAcquisition.GrantOnceOrDefer(this, Owner.RunState.CreateCard(canonical, Owner), "element-signature");
     }
 
     public override bool TryModifyPowerAmountReceived(PowerModel canonicalPower, Creature target, decimal amount, Creature? applier, out decimal modifiedAmount)
@@ -475,33 +527,10 @@ public sealed class MediumEssence : PathEssence
     };
 }
 
-/// <summary>
-/// Перерождённый: без бонуса — единожды сменить предысторию (выбор среди предысторий происхождения и Бродяги)
-/// и перераспределить очки характеристик (все возвращаются в свободные — распределить в лагере).
-/// </summary>
+/// <summary>Reborn: confirmed origin/background change and source-accounted stat refund, no replay of starter gifts.</summary>
 [Pool(typeof(SharedRelicPool))]
 public sealed class RebornEssence : PathEssence
 {
     public override HeroPath Path => HeroPath.Reborn;
-
-    protected override async Task OnObtained()
-    {
-        if (HeroRecord.Of(Owner) is { } hero)
-        {
-            hero.StatHealth = hero.StatStamina = hero.StatMana = hero.StatBurden = hero.StatMastery = 0;
-            await hero.SyncMaxHp();
-        }
-        var current = Owner.Relics.OfType<BackgroundRelic>().FirstOrDefault();
-        var options = BackgroundRelic.Options(Owner.Relics.OfType<OriginRelic>().FirstOrDefault())
-            .Append(typeof(VagrantBackground))
-            .Where(t => t != null && t != current?.GetType())
-            .Distinct()
-            .Select(t => ModelDb.GetById<RelicModel>(ModelDb.GetId(t!)).ToMutable())
-            .ToList();
-        if (options.Count == 0) return;
-        var chosen = await RelicSelectCmd.FromChooseARelicScreen(Owner, options);
-        if (chosen == null) return;
-        if (current != null) await RelicCmd.Remove(current);
-        await RelicCmd.Obtain(chosen, Owner);
-    }
+    protected override Task OnObtained() => HeroCreation.ApplyRebirth(Owner);
 }

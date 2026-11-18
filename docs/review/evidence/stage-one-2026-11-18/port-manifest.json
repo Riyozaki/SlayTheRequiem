@@ -1,0 +1,462 @@
+{
+  "from_commit": "03d636049e2a48101389be7f5856c3976b7730e2",
+  "prior_commit": "8000886e9c52db78227972bdd4740ee71f7eca03",
+  "selection": "Reconstructed 63-file reviewed G0/G1 source scope; not a recovered execution log of the original file-copy operation",
+  "provenance": "The original ignored scratch manifest is unavailable. Pinned Git trees prove the listed prior/import hashes and the first landed content, but cannot prove the exact sequence or selection of uncommitted copy operations. The historical work record reports 63 selected files / 52 runtime C#; this reconstruction must not be presented as the original manifest.",
+  "files": [
+    {
+      "path": "global.json",
+      "prior_sha256": null,
+      "import_sha256": "2693f0081d22422714daa1d306742a5654d9d856ad0a84151b179adac6b789b0",
+      "first_implementation_sha256": "2693f0081d22422714daa1d306742a5654d9d856ad0a84151b179adac6b789b0",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/IntegrityTests.cs",
+      "prior_sha256": null,
+      "import_sha256": "5bd08d732555137928b5eba7c3a5b07ad8b862633db734a57a93ab7bb60e2944",
+      "first_implementation_sha256": "6e458e6276fa09a9ea5b374f4c8be7988fd4a4d4f74ede20b5fd7facd269dbe2",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiem.Tests/SavedPayloadTests.cs",
+      "prior_sha256": null,
+      "import_sha256": "b7fb46518371472e039b6b5c39f99453bcf8482b8cfaef61fb42b5eb5873d05d",
+      "first_implementation_sha256": "b7fb46518371472e039b6b5c39f99453bcf8482b8cfaef61fb42b5eb5873d05d",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiem.csproj",
+      "prior_sha256": "0dd67869f24fdce4d2f8e7e7fcba3bfca64ea45975b993ff7e6620be2a9fc44d",
+      "import_sha256": "9f06638ed14e3fc61ddd6b866c4185b1790b0c93329d09ef53edcfa1f3ccc59d",
+      "first_implementation_sha256": "9f06638ed14e3fc61ddd6b866c4185b1790b0c93329d09ef53edcfa1f3ccc59d",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiem.json",
+      "prior_sha256": "642319edcdbe72ade6492ab456ae914194be0691b5467172bc5ca969dcd143ae",
+      "import_sha256": "532f3778172c3f972abd627133b8ed7e5b745dee98eabf5dd02f75a9c1d92268",
+      "first_implementation_sha256": "642319edcdbe72ade6492ab456ae914194be0691b5467172bc5ca969dcd143ae",
+      "first_implementation_status": "retained-base"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/CampOptions.cs",
+      "prior_sha256": "7a262d381fddbc007348382074d97d989457738a9aa70976fa1689e6711b8c49",
+      "import_sha256": "d8223dafb4c09c9b0615279def802c0761ba5837299f93991703df6b815c2843",
+      "first_implementation_sha256": "09a5a137ae400d2eb7bff6ee39d640d5b3275c60fd1c9af025dee9e54be8bcf8",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/HerbalistPouch.cs",
+      "prior_sha256": "b6e8d06627da3c1505733ade19b9c68ac27352a755fb3509007f5fb0f8b537e8",
+      "import_sha256": "b3d41fe78f9a4dd7b13027a17a76656bfb5ed951ca350be7328b66bbb522b8eb",
+      "first_implementation_sha256": "92bab8f70a5bae2eb9a1aa4ba79c31e441e63ff4a7d583f050f87d0658b762e1",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Alchemy/TravelPack.cs",
+      "prior_sha256": "9286188a062492d572010310a075828477928e31c9ca4f8124f0809e8165105c",
+      "import_sha256": "34cc87aeea15c0a47369ba9c7a5c3fb5a602bf2fcc671673e2d855aa5010ee0f",
+      "first_implementation_sha256": "1e19daa1f6d388a3dda4cc3bf40f6a6e55d424a956d8c446136d3a514d8b647d",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Cards/Shouts.cs",
+      "prior_sha256": "0ba988e156048f99315f56a46625f2e5d5624f8b57834c3ae5649350f05f7055",
+      "import_sha256": "765a4fd3cd3607c771e0fcef65ba85f742cb6df5938eefb741d64026262a41e4",
+      "first_implementation_sha256": "10245275dec43b0f22d3d60a252c8787e50d9dfd36e526a421fe600e1abc7d64",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Config/RunSettings.cs",
+      "prior_sha256": "9ac707455e0939f60e1f6c82dfb00916841e0125757d779159760f3fe6589378",
+      "import_sha256": "55a16312b2e8cb26009b8ba2da684b9416ff0896373a307310930eca13e9f55c",
+      "first_implementation_sha256": "edc5148e12d6d22a7cb8ea383a3ad58ee5c143a077d0383f9df94a9c06b7f0c4",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/AlchemyRules.cs",
+      "prior_sha256": "eccf0724fe5e5aca24ef8dc4d9933c125e07147ee2a62806e4eece857c4e8a32",
+      "import_sha256": "b857e0abd6b4415052ff955f98b9e555ed9722ecc6a3748efd848d7b5388c42b",
+      "first_implementation_sha256": "b857e0abd6b4415052ff955f98b9e555ed9722ecc6a3748efd848d7b5388c42b",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationContracts.cs",
+      "prior_sha256": null,
+      "import_sha256": "b533a760d6d656303ebaa443c92d8dbf1017d1de86ac503841a582b7cd85bd34",
+      "first_implementation_sha256": "b533a760d6d656303ebaa443c92d8dbf1017d1de86ac503841a582b7cd85bd34",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationIdentity.cs",
+      "prior_sha256": null,
+      "import_sha256": "59876e7342f97a91a32583668a430011d8b483c540bd73feaa8518906afadf35",
+      "first_implementation_sha256": "59876e7342f97a91a32583668a430011d8b483c540bd73feaa8518906afadf35",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/OperationJournal.cs",
+      "prior_sha256": null,
+      "import_sha256": "33f7df1bc38af32c054e03aad8508e70babc0976a4cc09ddbb658a7fce0c8bbf",
+      "first_implementation_sha256": "33f7df1bc38af32c054e03aad8508e70babc0976a4cc09ddbb658a7fce0c8bbf",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/RunSettingsData.cs",
+      "prior_sha256": "5d102ad0005ded49035d7105c5aeab82386b5a03c2202a0ba92ea6a3ecc88d93",
+      "import_sha256": "fbc3afd3126a5c579524206f55fab41be224115d2f1da97ef1ef7e639993a5c3",
+      "first_implementation_sha256": "4395e131c31d6bf2ef2baeb88f8ade1cf96ea6aa4729a137400bf748843ca063",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Core/SavedPayload.cs",
+      "prior_sha256": null,
+      "import_sha256": "313fc29fe11452823ce1e2e8aa2a1c59201d2bbd7f9fa890b4fafe26115ba391",
+      "first_implementation_sha256": "313fc29fe11452823ce1e2e8aa2a1c59201d2bbd7f9fa890b4fafe26115ba391",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/CardFactoryRegression.cs",
+      "prior_sha256": null,
+      "import_sha256": "804d74855065747775f2313f1837b69991a320dd4d1e03a5f70b95c05570325d",
+      "first_implementation_sha256": "804d74855065747775f2313f1837b69991a320dd4d1e03a5f70b95c05570325d",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/CardRewardDiagnostics.cs",
+      "prior_sha256": "20f0e87599746ed6c111ae2e60c9d6d65e75487a68fbed37e8ce374a43c02717",
+      "import_sha256": "3c9308201e363c1f97f297114d4e3f901cdfd347449f6437622cf1738ef6d64d",
+      "first_implementation_sha256": "fa84917fb102f103add7f07bf5d2a572a6d36f277a30dfcb75e54a50da7a0a86",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs",
+      "prior_sha256": null,
+      "import_sha256": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4",
+      "first_implementation_sha256": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/RequiemConsoleCommands.cs",
+      "prior_sha256": "d84f9d5d2bd52ad5ffa0884ae09fb0fd7d3bb2ed7b93478ff88c03d26618505f",
+      "import_sha256": "08fa6f5222872ce5523930ee3327989f874c5dcf1a999f85b5e3ed96ef07c5b0",
+      "first_implementation_sha256": "75b69747acc0dced0c06693510549282e31cb706951c9fc6177a036fc2578883",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Debugging/RunDiagnostics.cs",
+      "prior_sha256": null,
+      "import_sha256": "b21b6e26030a8a9416c2f82c79edcd9f433cff2955badcc3937779d233e18fbe",
+      "first_implementation_sha256": "b21b6e26030a8a9416c2f82c79edcd9f433cff2955badcc3937779d233e18fbe",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/NodeEvents.cs",
+      "prior_sha256": "0c40af1081a553eee9ef5260e2d58bbd3ee41f43855a6bbb3a659032743fe9b1",
+      "import_sha256": "dfe4a41deb504a04252bae04253ccd3daca4b4559c5242c4c9f0a39339396486",
+      "first_implementation_sha256": "dfe4a41deb504a04252bae04253ccd3daca4b4559c5242c4c9f0a39339396486",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/RequiemEvent.cs",
+      "prior_sha256": "78b327e158371f088fe197ecab4bd7c2e4238dff3c2f9eaee5c86035e31d1a51",
+      "import_sha256": "dcc1d30cb2a8a2445334229e2505f877d83f7fd01a95c6de6afe707070988911",
+      "first_implementation_sha256": "dcc1d30cb2a8a2445334229e2505f877d83f7fd01a95c6de6afe707070988911",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Events/TowerEvents.cs",
+      "prior_sha256": "c0bd84c7ffe85ccc92ce2a6d28763e6861dce1f07a745b27607fed78134cfdde",
+      "import_sha256": "2da79f203f2757fd95ef16a606a8431db1588034eea4a3e9465ec17638404d63",
+      "first_implementation_sha256": "2da79f203f2757fd95ef16a606a8431db1588034eea4a3e9465ec17638404d63",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/MainFile.cs",
+      "prior_sha256": "f9cd255d5a88b903f2557605b7f2f877042aa3d7ff9ac716f27412ad047d3ff3",
+      "import_sha256": "9aa7faaa405e0e598ce9241ecd5d3fd14ae0459737b50cc993b9dc7ccf6f752d",
+      "first_implementation_sha256": "9aa7faaa405e0e598ce9241ecd5d3fd14ae0459737b50cc993b9dc7ccf6f752d",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/LobbyMessageBridge.cs",
+      "prior_sha256": null,
+      "import_sha256": "69699ddac63d9e699bf913e870d80882fae520a343a1b65dd025cea133f9e6c7",
+      "first_implementation_sha256": "69699ddac63d9e699bf913e870d80882fae520a343a1b65dd025cea133f9e6c7",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/RequiemMessages.cs",
+      "prior_sha256": "01e359df595e21ae7577fc55682a55838e677472bdcdcdf096c2ecf8072a1341",
+      "import_sha256": "287f40e2ffcba4db9af53b1db14b0a8133a2bfdbad41efd669ec19eb106229e2",
+      "first_implementation_sha256": "920b184e0b229a6184e2652e24acf29bf05cf5f8ff503ba681230aa217ce123f",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Net/RequiemNet.cs",
+      "prior_sha256": "854b1f454c83c00be91e2303117a480ae9d2c93ca4faad2d571dd12b3f2f087f",
+      "import_sha256": "7d2dab22eb1cd2a028b2723dd6800fa15f9c6f73551d6a6350bf5317db682285",
+      "first_implementation_sha256": "7d2dab22eb1cd2a028b2723dd6800fa15f9c6f73551d6a6350bf5317db682285",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Pantheon/Celestials.cs",
+      "prior_sha256": "dd4403f5c4f31bfc635d86204ebe707c9cfbace7dcbef033a7d504a726d3c082",
+      "import_sha256": "9950290d34051fea42299448ef8b13b7972960afc5d83054d49a2678fd046ce9",
+      "first_implementation_sha256": "9950290d34051fea42299448ef8b13b7972960afc5d83054d49a2678fd046ce9",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Pantheon/PantheonEvents.cs",
+      "prior_sha256": "edc719364729b318ba5c8045c1cde8314e41858005c71de238a6c0e89e782a0c",
+      "import_sha256": "7c705995af3ee736fc86d3198684a1e8098789d6438a5eb6a61980572f8c1684",
+      "first_implementation_sha256": "7c705995af3ee736fc86d3198684a1e8098789d6438a5eb6a61980572f8c1684",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Progression/CardEnchanting.cs",
+      "prior_sha256": "d0701a2269c1335680d04da42e3fe5f653283d5908141f22c395875e9a61607d",
+      "import_sha256": "b9d7b50ca5e314cf0ff62882b023102f4f00e2c5b1b1fd4ee58f577bdd066bc2",
+      "first_implementation_sha256": "b9d7b50ca5e314cf0ff62882b023102f4f00e2c5b1b1fd4ee58f577bdd066bc2",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Relics/Backgrounds.cs",
+      "prior_sha256": "b3343fad9127f0ba7f2d0e5aba55d1bc42beda9dd4c11352c70993b77b0ae44a",
+      "import_sha256": "5b0e9bc8b9d5424debadbe4c122a589addd69db65098dc835ad42e20ed3741d2",
+      "first_implementation_sha256": "5b0e9bc8b9d5424debadbe4c122a589addd69db65098dc835ad42e20ed3741d2",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rollback/MemoryStone.cs",
+      "prior_sha256": "c80479ebe8835043a579ab362d820d9898319a242fa8d537e0e148b6798be00c",
+      "import_sha256": "bc08d84a29a77f3206a71484bfc16c8222c2d309de981e676297169a068dd663",
+      "first_implementation_sha256": "668de46c69a1f64428de4545050698ea25523e4b047ba047f5de5c0e67bc7de8",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/CardAcquisition.cs",
+      "prior_sha256": null,
+      "import_sha256": "64f78e32be48bf1e1615f1d17dc5a6677669a72e00adabc65fa0c205b2969020",
+      "first_implementation_sha256": "c93b84f82a76b26f1173e6b145ba59e2fce2423c3927167908d2fde555e77c8d",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/DeferredRewardScope.cs",
+      "prior_sha256": null,
+      "import_sha256": "d19ae94769e53625634c4c7e4bb3d99afe9d858f6099daf36022104833f30bbf",
+      "first_implementation_sha256": "d19ae94769e53625634c4c7e4bb3d99afe9d858f6099daf36022104833f30bbf",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/HeroPoolRewardRules.cs",
+      "prior_sha256": "be71da16101035b0e40800e1d415aa6f9a1006d44d2d30c2293c0548a9f9e6c9",
+      "import_sha256": "1a060815903a05fcfaa48939917f3b28ff2a25c67aa8d0e87ebb9990b96f872a",
+      "first_implementation_sha256": "1a060815903a05fcfaa48939917f3b28ff2a25c67aa8d0e87ebb9990b96f872a",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/InventoryGate.cs",
+      "prior_sha256": null,
+      "import_sha256": "e78271e85f4a4c01c7ce18b5c3eafe318d5ae60564450b3d731e02543168994d",
+      "first_implementation_sha256": "6b540365d2683ba1ee2b2475a2f5746610a8e4cd6a065d2aeaf6d012e017dcd7",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/InventoryIdentity.cs",
+      "prior_sha256": null,
+      "import_sha256": "5d777f83691da1ba2cc115905824d2daea8da916ffb95ee767459cdbd9852ced",
+      "first_implementation_sha256": "5d777f83691da1ba2cc115905824d2daea8da916ffb95ee767459cdbd9852ced",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RewardPurchase.cs",
+      "prior_sha256": null,
+      "import_sha256": "7023e9e17e4c9e10db94d85f83cb265349f13700de735f58a3ab611f7e20c5bb",
+      "first_implementation_sha256": "7023e9e17e4c9e10db94d85f83cb265349f13700de735f58a3ab611f7e20c5bb",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RewardSwap.cs",
+      "prior_sha256": "20d05d2b1c3a521fdf4bf781b131382178be93a41041e18dba2fe1a9d1873eb6",
+      "import_sha256": "77f325e9b59bfdb695012fe3af96312305e8d3196ff697ed52444190397f7eab",
+      "first_implementation_sha256": "1fe7d263aca42f628b0a25136695853c9312ed09c880203b7a50b3d10013781f",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Rules/RunLifecycle.cs",
+      "prior_sha256": "f4d86808fee326822c90b0d6df777c72a83cdb1db4601137dc16974055e858bc",
+      "import_sha256": "81f13eeb8f7485df933b80cb7596b8de2b1292de76712b3ae55b17607530aa35",
+      "first_implementation_sha256": "3d4a81a2f70dca3f2422114b79e66a21088935d60c0c5191a0371c8f93b293f5",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/MerchantLedger.cs",
+      "prior_sha256": "2d66ff14a6680f42b9df5cbf7c014482fa875ba6c65afa95e65e8d3b5158c01a",
+      "import_sha256": "9bffe8fc1356087a6a2bbd0ae4ce79f0bbafe5c07ac8eebf856d72a98d27030f",
+      "first_implementation_sha256": "d99b0638fd371663c29658db68262b4eb9adf1812d2062839ed6ef2bfc3c8345",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/PurchaseReceipts.cs",
+      "prior_sha256": null,
+      "import_sha256": "a6bb1f9f1dc004081f55fd74f460066cad9339991edd89cc4ca0aa1d1c9842b7",
+      "first_implementation_sha256": "a6bb1f9f1dc004081f55fd74f460066cad9339991edd89cc4ca0aa1d1c9842b7",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/Scrolls.cs",
+      "prior_sha256": "d6292da14d14cbc346331c0cd56e2898cebb54d191eec27fb404d8bfc9cf4950",
+      "import_sha256": "5b24b88378b2bd2e65b99ebf9db9935fc783b14d6b1308b303709472327f841b",
+      "first_implementation_sha256": "5b24b88378b2bd2e65b99ebf9db9935fc783b14d6b1308b303709472327f841b",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/SellService.cs",
+      "prior_sha256": "413dc0f37a4c04a6ecf7c348b40916d7161c74af79b758a82473e748667a9731",
+      "import_sha256": "c225e92b16c920723f61f8b595828754f37b39785bbf16efe8834cfea5f98f26",
+      "first_implementation_sha256": "c225e92b16c920723f61f8b595828754f37b39785bbf16efe8834cfea5f98f26",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopActionPolicy.cs",
+      "prior_sha256": null,
+      "import_sha256": "cd331ae8bc3b6413d2d163a8b87fe022f2b016b5f744cc4a38564d7f437ca942",
+      "first_implementation_sha256": "cd331ae8bc3b6413d2d163a8b87fe022f2b016b5f744cc4a38564d7f437ca942",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopActions.cs",
+      "prior_sha256": "f2804d5a86e855c4af56a3ac1e6d9883fb762b5f0262ed7e09cc51f148bd4a36",
+      "import_sha256": "b3eb9f368ca2c2aec14aa8383a3ffd12c1bb793efe960658f66a2cd231e1b12c",
+      "first_implementation_sha256": "b3eb9f368ca2c2aec14aa8383a3ffd12c1bb793efe960658f66a2cd231e1b12c",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopOperations.cs",
+      "prior_sha256": null,
+      "import_sha256": "d68e088add805123419d0b842b07aa5674640fbdcafad659e00181efc9d85c64",
+      "first_implementation_sha256": "3c3d54d049c4c3676826121d056be6d4a362cb4574bdac6c07ca89058b08d962",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Shops/ShopServices.cs",
+      "prior_sha256": "29f4bd9bf6f62e083d291667af50ef869bf64fe3446c05b42a4b9b87c6df7300",
+      "import_sha256": "1b437dedad8bcb3d04c06cfc54ed392c536b99e07aeeb2e20fcb10d30e2bdd27",
+      "first_implementation_sha256": "1b437dedad8bcb3d04c06cfc54ed392c536b99e07aeeb2e20fcb10d30e2bdd27",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Spells/SpellRules.cs",
+      "prior_sha256": "be5f567303d7269caccac53cd9626b30164b856a6d53b2e4614dc406f7e92378",
+      "import_sha256": "3579edf04ffa7bac024570484d6b5a52f158511c602095f41f1dfa7e6774c4ab",
+      "first_implementation_sha256": "3579edf04ffa7bac024570484d6b5a52f158511c602095f41f1dfa7e6774c4ab",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/FormRelic.cs",
+      "prior_sha256": "8679aac38e5edba71ae429a619fb0f495f89aaf3b880a2948c2a0129f99e2f0d",
+      "import_sha256": "4c25bf7a555c6636a1fecd8a660ada953ff14e2c01f79fc061e398653c3d7174",
+      "first_implementation_sha256": "4c25bf7a555c6636a1fecd8a660ada953ff14e2c01f79fc061e398653c3d7174",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/PathCards.cs",
+      "prior_sha256": "07ba3c5bf35bca357486405f5a5dcefa14dcf99ca07755dc83b0d2a966094dfc",
+      "import_sha256": "1fdc06fffdaefbb385b75abb047a243ab2e1dc50fba583719c120865178a4c25",
+      "first_implementation_sha256": "1fdc06fffdaefbb385b75abb047a243ab2e1dc50fba583719c120865178a4c25",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/PathEssences.cs",
+      "prior_sha256": "6b23bbae835e96e60c83a3b30335c36abc6d5a5ba6e12503501436810e3def79",
+      "import_sha256": "569c5913d97f9e7820aa70e73b2e838884c088591557e7da193f6232979debaa",
+      "first_implementation_sha256": "569c5913d97f9e7820aa70e73b2e838884c088591557e7da193f6232979debaa",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/Transformations/VampireForm.cs",
+      "prior_sha256": "3dff74b8fcf6f88ff6a5c36ee9b1d7d2ba5d7c7254299ae82237e92a5a28993a",
+      "import_sha256": "508dd8e5d4df8f653be94fb13c85b996825a3a9a75f71e6f2399612dc57453c8",
+      "first_implementation_sha256": "508dd8e5d4df8f653be94fb13c85b996825a3a9a75f71e6f2399612dc57453c8",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/DeckDiscard.cs",
+      "prior_sha256": "27b3f2a8b714b353ea58cd1190fd5c0a74af24613fc15f31bb8f192441608b83",
+      "import_sha256": "6d2fce39545fe3c08448bb583f8a0dd7872f664262d2a924a5c7446230ebbef2",
+      "first_implementation_sha256": "6d2fce39545fe3c08448bb583f8a0dd7872f664262d2a924a5c7446230ebbef2",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/NRunStatusBadge.cs",
+      "prior_sha256": null,
+      "import_sha256": "c3faa37b369f9138971fcc66d58abe8e29fae6f741d5bc98a3648f575760bdee",
+      "first_implementation_sha256": "318a4d9d83a239434bc3a5cadf1c14e849e7c6dad02730efdb00f97376b0ba3f",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/SlayTheRequiemCode/UI/RewardAcquisitionPanel.cs",
+      "prior_sha256": null,
+      "import_sha256": "337237bec6cbb7cdf0b9c930ec94c65ff8d97c7601042f4d7520738499e0c244",
+      "first_implementation_sha256": "148b76b5d9725019153db2450fc322f9592e413a7da262d62aafd17b6cb3e561",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "mod/Sts2PathDiscovery.props",
+      "prior_sha256": "763ee005b7929fd165607c94f064747174c1ff347776129805d117c54e1e6f64",
+      "import_sha256": "67f426cd2683078fb015fa388e9eeb65266f4a53ec893942e420842ed489707a",
+      "first_implementation_sha256": "67f426cd2683078fb015fa388e9eeb65266f4a53ec893942e420842ed489707a",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "tools/g0/README.md",
+      "prior_sha256": null,
+      "import_sha256": "30ffce800130dd95bc830fafede88b2a4be16f0e026cd1a5ecb3cc0f2656103d",
+      "first_implementation_sha256": "5f8e74500000d4145069dbb318e81cba4b8e2642ccdbd571f04c34a11540b352",
+      "first_implementation_status": "adapted-content"
+    },
+    {
+      "path": "tools/g0/mod_build.py",
+      "prior_sha256": null,
+      "import_sha256": "79122d05d091162e47a4ae5397a41a1507c563f86ef4b41fdabbb1ba69ffd7a9",
+      "first_implementation_sha256": "79122d05d091162e47a4ae5397a41a1507c563f86ef4b41fdabbb1ba69ffd7a9",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "tools/g0/test_mod_build.py",
+      "prior_sha256": null,
+      "import_sha256": "ef32d9e3bfd2e2f2c0b8dfc8982e31e9ae0701960e6299260c4d0a33ce4f6e05",
+      "first_implementation_sha256": "ef32d9e3bfd2e2f2c0b8dfc8982e31e9ae0701960e6299260c4d0a33ce4f6e05",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "tools/g0/verify_pack.gd",
+      "prior_sha256": null,
+      "import_sha256": "99889d308c96e715f2da696fc59459c3101f197f804cc1b71b831fbd9967017c",
+      "first_implementation_sha256": "99889d308c96e715f2da696fc59459c3101f197f804cc1b71b831fbd9967017c",
+      "first_implementation_status": "exact-import-content"
+    },
+    {
+      "path": "tools/loc/loc_ui.py",
+      "prior_sha256": "2f87b2521e27d68cf58d42f322c4b085e8e3efd6e4f6a4d21c30f80cabc3447e",
+      "import_sha256": "49b018df8df6813234c453e66b5bd807bf2f37c388d98cb744af747e2b3463f5",
+      "first_implementation_sha256": "01bc0812db0e4948740fb79aa62bb6c960739b1b81b1dc54881dac960f11b3a1",
+      "first_implementation_status": "adapted-content"
+    }
+  ],
+  "reconstruction": {
+    "original_scratch_manifest_retained": false,
+    "exact_original_copy_list_independently_verified": false,
+    "historical_reported_selection_count": 63,
+    "scope_rule": "52 runtime C# files changed between prior/from commits, plus the 11 explicitly listed G0 project/test/tooling source paths. CI and generated localization were changed separately, not inferred to be an original import.",
+    "first_implementation_commit": "ab3d11baf915c15338c181dbf69881c01abbc1fd",
+    "limitation": "An adapted path proves resulting content, not that the entire foreign file was copied. The mod manifest is retained at base values in the first implementation (no persistent foreign manifest change). No history merge occurred."
+  },
+  "first_implementation_status_counts": {
+    "exact-import-content": 41,
+    "adapted-content": 21,
+    "retained-base": 1
+  }
+}

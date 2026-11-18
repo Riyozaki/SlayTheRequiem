@@ -169,7 +169,9 @@ public sealed class BeastFormPower : RequiemPower
         var player = Owner.Player;
         Form?.NoteTransformation();
         FormVisuals.Refresh(player, flash: new Color(0.55f, 0.6f, 0.95f));
-        var hand = PileType.Hand.GetPile(player).Cards.ToList();
+        // Phase answers must remain reachable when entering Beast form. They are not the ordinary deck,
+        // and the boss grants them without Draw, so suppressing Draw cannot softlock a cocoon/meteor answer.
+        var hand = PileType.Hand.GetPile(player).Cards.Where(c => c is not EncounterCounterCard).ToList();
         if (hand.Count > 0) await CardCmd.Discard(choiceContext, hand);
         await CreatureCmd.GainBlock(Owner, TransformationRules.BeastEntryBlock, ValueProp.Move, null);
         var wolfHp = TransformationRules.AlphaWolfHp(Form?.Alpha ?? 0);
@@ -199,9 +201,9 @@ public sealed class BeastFormPower : RequiemPower
     /// <summary>В форме обычная колода не добирается.</summary>
     public override bool ShouldDraw(Player player, bool fromHandDraw) => player.Creature != Owner;
 
-    /// <summary>В форме играются только звериные карты.</summary>
+    /// <summary>В форме играются звериные карты и узкое исключение для контрмер текущего боя.</summary>
     public override bool ShouldPlay(CardModel card, AutoPlayType autoPlayType) =>
-        card.Owner?.Creature != Owner || card is IBeastCard;
+        card.Owner?.Creature != Owner || card is IBeastCard or Cards.EncounterCounterCard;
 
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {

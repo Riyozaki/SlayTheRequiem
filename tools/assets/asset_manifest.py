@@ -25,6 +25,7 @@ import csv
 import glob
 import json
 import os
+from pathlib import Path
 import re
 import sys
 
@@ -95,8 +96,8 @@ PLACEHOLDERS = {
 
 # Общие ассеты интерфейса, которые нужны вне моделей (см. docs/plan/art-ui-animation-spec.md §4).
 UI_ASSETS = [
-    ("images/ui/stamina.png", "◆ иконка ресурса (есть заглушка шаблона)"),
-    ("images/ui/mana.png", "✦ иконка ресурса (есть заглушка шаблона)"),
+    ("images/ui/stamina.png", "◆ собственная ресурсная иконка (редактируемый SVG)"),
+    ("images/ui/mana.png", "✦ собственная ресурсная иконка (редактируемый SVG)"),
     ("images/ui/burden.png", "⚖ иконка груза"),
     ("images/ui/stamina_cost_orb.png", "кружок цены ◆ на карте"),
     ("images/ui/weight_badge.png", "плашка веса карты"),
@@ -157,6 +158,11 @@ UI_ASSETS = [
                         ("map_middle.png", "карта, середина"), ("map_bottom.png", "карта, низ"))]
 
 
+# NNormalMapPoint keeps the native outline/background/selection feedback for every own map icon.
+UI_ASSETS += [(path.removesuffix(".png") + "_outline.png", "alpha outline: " + note)
+              for path, note in tuple(UI_ASSETS) if path.startswith("images/map/icons/")]
+
+
 def snake(name: str) -> str:
     return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).lower()
 
@@ -164,7 +170,7 @@ def snake(name: str) -> str:
 def load_classes():
     classes = {}
     for path in glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True):
-        src = re.sub(r"//[^\n]*", "", open(path, encoding="utf-8").read())
+        src = re.sub(r"//[^\n]*", "", Path(path).read_text(encoding="utf-8"))
         matches = list(DECL.finditer(src))
         for i, m in enumerate(matches):
             body = src[m.end(): matches[i + 1].start() if i + 1 < len(matches) else len(src)]
@@ -184,12 +190,12 @@ def load_classes():
     return classes
 
 
-COURT_RULES = open(os.path.join(CODE, "Core", "SuperbossLookRules.cs"), encoding="utf-8").read().split("CourtOf(", 1)[1].split("TintFor(", 1)[0]
+COURT_RULES = Path(CODE, "Core", "SuperbossLookRules.cs").read_text(encoding="utf-8").split("CourtOf(", 1)[1].split("TintFor(", 1)[0]
 
 
 def superboss_art_key(body):
     """Супербоссы (M7 п. 1): ArtKey = SuperbossLookRules.ArtKey(Kind) — snake_case вида; Рыцарь-эхо — константа EchoKnightArt."""
-    rules = open(os.path.join(CODE, "Core", "SuperbossLookRules.cs"), encoding="utf-8").read()
+    rules = Path(CODE, "Core", "SuperbossLookRules.cs").read_text(encoding="utf-8")
     if "SuperbossLookRules.EchoKnightArt" in body:
         return re.search(r'EchoKnightArt\s*=\s*"(\w+)"', rules).group(1)
     kind = re.search(r'Superboss\s+Kind\s*=>\s*Superboss\.(\w+)', body)
@@ -227,7 +233,7 @@ def load_vanilla_table():
     if not os.path.exists(VANILLA_TABLE):
         return table
     kind = None
-    for line in open(VANILLA_TABLE, encoding="utf-8"):
+    for line in Path(VANILLA_TABLE).read_text(encoding="utf-8").splitlines():
         m = re.search(r"Dictionary<string, string> (\w+)", line)
         if m:
             kind = TABLE_KIND.get(m.group(1))
@@ -250,7 +256,7 @@ def load_loc():
     tables = {}
     for lang in ("rus", "eng"):
         for path in glob.glob(os.path.join(LOC, lang, "*.json")):
-            tables[(lang, os.path.basename(path))] = json.load(open(path, encoding="utf-8"))
+            tables[(lang, os.path.basename(path))] = json.loads(Path(path).read_text(encoding="utf-8"))
     return tables
 
 
@@ -271,7 +277,8 @@ def build_rows():
         for lang in ("rus", "eng"):
             table = loc.get((lang, loc_file), {}) if loc_file else {}
             titles[lang] = table.get(f"{PREFIX}{ident.upper()}.{field}", "")
-        option = (info["option"] or ident).lower().removeprefix("slaytherequiem_")
+        # RequiemRestSiteOption.IconPathOverride lowercases the COMPLETE OptionId, including its namespace.
+        option = (info["option"] or ident).lower()
         if kind == "monster":
             borrowed = inherited_look(name, classes)
         elif kind == "potion":
@@ -313,7 +320,7 @@ def build_rows():
         rows.append({"kind": "ui", "class": "", "id": os.path.splitext(os.path.basename(rel))[0], "group": "UI",
                      "title_rus": note, "title_eng": "", "asset": "ui", "path": rel,
                      "present": "own" if present else "no", "vanilla": "",
-                     "note": "заглушка шаблона — заменить" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
+                     "note": f"source: art/ui/{Path(rel).stem}.svg; native acceptance pending" if rel in ("images/ui/stamina.png", "images/ui/mana.png") else ""})
     order = {k: i for i, k in enumerate(list(ASSETS) + ["boss_icon", "ui"])}
     rows.sort(key=lambda r: (order[r["kind"]], r["group"], r["class"]))
     return rows
@@ -344,7 +351,7 @@ def main() -> int:
     for c in count.values():
         total.update(c)
     print(f"{'итого':<12}{sum(models.values()):>9}{total['all']:>9}{total['own']:>7}{total['vanilla']:>8}{total['no']:>7}")
-    uncovered = [r for r in rows if r["kind"] != "ui" and r["present"] == "no"]
+    uncovered = [r for r in rows if r["present"] == "no"]
     for r in uncovered[:20]:
         print(f"✗ нет ни своей, ни ванильной картинки: {r['kind']} {r['class']} ({r['asset']})")
 

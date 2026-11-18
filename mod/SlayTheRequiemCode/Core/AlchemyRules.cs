@@ -124,7 +124,7 @@ public static class AlchemyRules
     }
 
     public static bool CanAfford(IReadOnlyList<int> pouch, IReadOnlyList<Reagent> ingredients) =>
-        ingredients.GroupBy(r => r).All(g => (int)g.Key < pouch.Count && pouch[(int)g.Key] >= g.Count());
+        ingredients.GroupBy(r => r).All(g => (uint)(int)g.Key < (uint)pouch.Count && pouch[(int)g.Key] >= g.Count());
 
     public readonly record struct BrewOption(Recipe Recipe, int Tier, Reagent[] Ingredients);
 

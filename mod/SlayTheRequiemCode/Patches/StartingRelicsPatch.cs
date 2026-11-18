@@ -26,7 +26,9 @@ public static class StartingRelicsPatch
         }
         if (!__instance.Relics.OfType<Alchemy.TravelPack>().Any())
         {
-            var pack = ModelDb.Relic<Alchemy.TravelPack>().ToMutable();
+            var pack = (Alchemy.TravelPack)ModelDb.Relic<Alchemy.TravelPack>().ToMutable();
+            pack.DataSchema = Debugging.RunDiagnostics.SaveSchema;
+            pack.ShopProtocol = Shops.ShopOperations.Protocol;
             pack.FloorAddedToDeck = 1;
             __instance.AddRelicInternal(pack, silent: true);
         }
@@ -68,6 +70,7 @@ public static class StartingRelicsPatch
         }
         if (__instance.Relics.OfType<Grimoire>().Any()) return;
         var grimoire = (Grimoire)ModelDb.Relic<Grimoire>().ToMutable();
+        grimoire.StartProtocol = StartupState.Protocol;
         grimoire.InitFor(__instance.Character.GetType().Name);
         grimoire.RunSettingsCode = Config.RunSettings.CodeForNewRun();
         grimoire.FloorAddedToDeck = 1;

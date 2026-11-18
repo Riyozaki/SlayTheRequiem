@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Helpers;
@@ -48,6 +49,26 @@ public static class MapVisuals
     }
 
     public static string IconPath(NodeSubtype subtype) => $"{MainFile.ResPath}/images/map/icons/{NodeRules.IconName(subtype)}.png";
+    public static string OutlinePath(NodeSubtype subtype) => $"{MainFile.ResPath}/images/map/icons/{NodeRules.IconName(subtype)}_outline.png";
+
+    // Keep the native image underneath the overlay. Darkness, legend changes and Continue can restyle a
+    // point WITHOUT another UpdateIcon call; leaving our previous texture/hidden outline behind is stale UI.
+    private sealed record NativeIcon(Texture2D? Icon, Texture2D? Outline, bool OutlineVisible);
+    private static readonly ConditionalWeakTable<NNormalMapPoint, NativeIcon> NativeIcons = new();
+
+    internal static void RestoreNative(NNormalMapPoint node)
+    {
+        if (!NativeIcons.TryGetValue(node, out var original)) return;
+        if (Icon(node) is { } icon) icon.Texture = original.Icon;
+        if (Outline(node) is { } outline) { outline.Texture = original.Outline; outline.Visible = original.OutlineVisible; }
+    }
+
+    internal static void RememberNativeAndApply(NNormalMapPoint node)
+    {
+        if (Icon(node) is { } icon && Outline(node) is { } outline)
+            NativeIcons.AddOrUpdate(node, new NativeIcon(icon.Texture, outline.Texture, outline.Visible));
+        ApplyIcon(node);
+    }
 
     private static bool _queued;
 
@@ -131,8 +152,10 @@ public static class MapVisuals
     /// <summary>Значок узла: Тьма → силуэт; подтип → свой значок; фильтр легенды → приглушить чужие группы.</summary>
     public static void ApplyIcon(NNormalMapPoint node, IRunState? run = null)
     {
+        if (!GodotObject.IsInstanceValid(node)) return;
+        RestoreNative(node);
         run ??= RequiemNet.State;
-        if (run?.Map == null || !RunSettings.EnableRequiemSystems || !GodotObject.IsInstanceValid(node)) return;
+        if (run?.Map == null || !RunSettings.EnableRequiemSystems) return;
         var icon = Icon(node);
         var container = IconContainer(node);
         if (icon == null || container == null) return;
@@ -144,12 +167,16 @@ public static class MapVisuals
         if (dark)
         {
             icon.Texture = RequiemUi.Texture(ImageHelper.GetImagePath("atlases/ui_atlas.sprites/map/icons/map_unknown.tres")) ?? icon.Texture;
+            if (Outline(node) is { } hiddenOutline)
+                hiddenOutline.Texture = RequiemUi.Texture(ImageHelper.GetImagePath("atlases/compressed.sprites/map/map_unknown_outline.tres")) ?? hiddenOutline.Texture;
             node.TooltipText = RequiemUi.TipText("MAP_DARK.text");
         }
-        else if (subtype is { } sub && RequiemUi.Texture(IconPath(sub)) is { } tex)
+        else if (subtype is { } sub && RequiemUi.Texture(IconPath(sub)) is { } tex
+                 && RequiemUi.Texture(OutlinePath(sub)) is { } mask)
         {
             icon.Texture = tex;
-            if (Outline(node) is { } outline) outline.Visible = false;
+            // Native hover/press/selection still tint this alpha mask; do not remove the only outline feedback.
+            if (Outline(node) is { } outline) { outline.Texture = mask; outline.Visible = true; }
             node.TooltipText = RequiemUi.TipText($"MAP_NODE.{NodeRules.IconName(sub).ToUpperInvariant()}.name") + "\n"
                                + RequiemUi.TipText($"MAP_NODE.{NodeRules.IconName(sub).ToUpperInvariant()}.text");
         }
@@ -190,6 +217,9 @@ public static class MapScreenOpenPatch
 [HarmonyPatch(typeof(NNormalMapPoint), "UpdateIcon")]
 public static class MapPointIconPatch
 {
+    [HarmonyPrefix]
+    public static void Prefix(NNormalMapPoint __instance) => MapVisuals.RestoreNative(__instance);
+
     [HarmonyPostfix]
-    public static void Postfix(NNormalMapPoint __instance) => MapVisuals.ApplyIcon(__instance);
+    public static void Postfix(NNormalMapPoint __instance) => MapVisuals.RememberNativeAndApply(__instance);
 }

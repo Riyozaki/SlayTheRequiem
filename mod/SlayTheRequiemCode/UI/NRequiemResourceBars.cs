@@ -38,6 +38,13 @@ public partial class NRequiemResourceBars : NRequiemHoverWidget
     {
         _creature = creature;
         _anchor = anchor;
+        _shownStamina = _shownMana = -1;
+    }
+
+    public override void _EnterTree()
+    {
+        base._EnterTree();
+        RequiemUiEvents.Overstrained -= OnOverstrained;
         RequiemUiEvents.Overstrained += OnOverstrained;
     }
 
@@ -49,7 +56,7 @@ public partial class NRequiemResourceBars : NRequiemHoverWidget
 
     private void OnOverstrained(Player player)
     {
-        if (player == _creature?.Player) _flash = 1f;
+        if (RequiemMotion.Enabled && player == _creature?.Player) _flash = 1f;
     }
 
     private void Sample()
@@ -72,10 +79,10 @@ public partial class NRequiemResourceBars : NRequiemHoverWidget
         Visible = show;
         if (!show) return;
         Sample();
-        var t = 1f - MathF.Exp(-10f * (float)delta);
+        var t = RequiemMotion.Enabled ? 1f - MathF.Exp(-10f * (float)delta) : 1f;
         _shownStamina = _shownStamina < 0 ? _stamina : Mathf.Lerp(_shownStamina, _stamina, t);
         _shownMana = _shownMana < 0 ? _mana : Mathf.Lerp(_shownMana, _mana, t);
-        _flash = Math.Max(0f, _flash - (float)delta * 1.6f);
+        _flash = RequiemMotion.Enabled ? Math.Max(0f, _flash - (float)delta * 1.6f) : 0f;
         var size = new Vector2(_anchor!.Size.X, TotalHeight);
         if (Size != size) Size = size;
         var pos = new Vector2(0, _anchor.Size.Y + Gap);

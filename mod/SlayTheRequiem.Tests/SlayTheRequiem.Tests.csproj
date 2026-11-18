@@ -9,6 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="../SlayTheRequiemCode/Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+        <Compile Include="../../tools/balance/Trace/Scenario.cs" Link="Balance/Scenario.cs" />
         <None Include="../SlayTheRequiem/data/*.csv" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>

@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "scope": "Actual hosted CI attempt history; test-harness failures are not hidden and are not successful full-mod/game evidence",
+  "attempts": [
+    {
+      "run_id": 44281997257,
+      "source_commit": "f2eb02961cfeee9b99d6d418d24fb641eafc3ce8",
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44281997257",
+      "conclusion": "failure",
+      "detail": "Test harness compile: ambiguous Godot.Environment/System.Environment; fixed with an explicit System alias.",
+      "jobs": [
+        {
+          "name": "Build/export/install safety contracts · Python (not full mod build)",
+          "check_run_id": 134724825618,
+          "conclusion": "success"
+        },
+        {
+          "name": "Godot node/focus helpers · not game or full mod build",
+          "check_run_id": 134724825896,
+          "conclusion": "failure"
+        },
+        {
+          "name": "Core · xUnit (.NET 9)",
+          "check_run_id": 134724826094,
+          "conclusion": "success"
+        },
+        {
+          "name": "C# view-cache microbenchmark · not game FPS",
+          "check_run_id": 134724826158,
+          "conclusion": "success"
+        },
+        {
+          "name": "Localization, art, Harmony targets & C# syntax",
+          "check_run_id": 134724826179,
+          "conclusion": "success"
+        },
+        {
+          "name": "Rules sim · Python",
+          "check_run_id": 134724826451,
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "run_id": 44282271570,
+      "source_commit": "166564f01c7b39a03f75835e6b78332871da10d1",
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282271570",
+      "conclusion": "failure",
+      "detail": "Report validation: expected CLI version format instead of actual Engine.GetVersionInfo string; validator fixed in 3d9acfb.",
+      "jobs": [
+        {
+          "name": "Rules sim · Python",
+          "check_run_id": 134725786946,
+          "conclusion": "success"
+        },
+        {
+          "name": "Localization, art, Harmony targets & C# syntax",
+          "check_run_id": 134725787283,
+          "conclusion": "success"
+        },
+        {
+          "name": "C# view-cache microbenchmark · not game FPS",
+          "check_run_id": 134725787335,
+          "conclusion": "success"
+        },
+        {
+          "name": "Core · xUnit (.NET 9)",
+          "check_run_id": 134725787439,
+          "conclusion": "success"
+        },
+        {
+          "name": "Godot node/focus helpers · not game or full mod build",
+          "check_run_id": 134725787586,
+          "conclusion": "failure"
+        },
+        {
+          "name": "Build/export/install safety contracts · Python (not full mod build)",
+          "check_run_id": 134725787666,
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "run_id": 44282711349,
+      "source_commit": "3d9acfb7e4cca78831fad63837366b31edb05637",
+      "url": "https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349",
+      "conclusion": "success",
+      "detail": "All six jobs rerun and successful; current green checkpoint.",
+      "jobs": [
+        {
+          "name": "Build/export/install safety contracts · Python (not full mod build)",
+          "check_run_id": 134727331099,
+          "conclusion": "success"
+        },
+        {
+          "name": "Godot node/focus helpers · not game or full mod build",
+          "check_run_id": 134727331596,
+          "conclusion": "success"
+        },
+        {
+          "name": "Rules sim · Python",
+          "check_run_id": 134727331612,
+          "conclusion": "success"
+        },
+        {
+          "name": "Core · xUnit (.NET 9)",
+          "check_run_id": 134727331681,
+          "conclusion": "success"
+        },
+        {
+          "name": "C# view-cache microbenchmark · not game FPS",
+          "check_run_id": 134727331700,
+          "conclusion": "success"
+        },
+        {
+          "name": "Localization, art, Harmony targets & C# syntax",
+          "check_run_id": 134727331794,
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "actual_native_runs": 0
+}

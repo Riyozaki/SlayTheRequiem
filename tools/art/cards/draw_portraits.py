@@ -31,6 +31,11 @@ sys.path.insert(0, os.path.join(HERE, "..", "monsters"))
 sys.path.insert(0, os.path.join(HERE, "..", "relics"))
 from svgkit import INK, Svg, poly, smooth, star  # noqa: E402
 from relic_kit import BONE, ICE, LEATHER, METAL, STEEL, STONE, WOOD, emblem, line  # noqa: E402
+import illustrations  # noqa: E402
+
+# Promoted raster masters have their own explicit crop/export pipeline. Never overwrite them
+# with the older procedural SVG by running this generator. Legacy SVGs remain historical sources.
+PROMOTED = illustrations.promoted_keys()
 
 W, H = 1000, 760
 SW_, SH_ = 250, 190
@@ -647,7 +652,7 @@ def build(key: str) -> Svg:
 
 
 def outputs():
-    for key in sorted(PORTRAITS):
+    for key in sorted(PORTRAITS.keys() - PROMOTED):
         yield key, os.path.join(OUT_SVG, key + ".svg"), os.path.join(OUT_IMG, key + ".png"), os.path.join(OUT_IMG, "big", key + ".png")
 
 
@@ -678,8 +683,9 @@ def check() -> int:
                 bad.append(f"{os.path.relpath(path, ROOT)}: размер {png_size(path)}, нужно {size[0]}×{size[1]}")
     for line_ in bad:
         print("✗", line_)
-    print(f"свои портреты карт (M7 п. 6): {len(PORTRAITS)}, ошибок: {len(bad)}")
-    return 1 if bad else 0
+    promoted_errors = illustrations.check()
+    print(f"портреты карт: {len(PORTRAITS.keys() - PROMOTED)} SVG + {len(PROMOTED)} promoted scenes; SVG ошибок: {len(bad)}")
+    return 1 if bad or promoted_errors else 0
 
 
 def main(argv) -> int:

@@ -1,0 +1,227 @@
+.github/workflows/ci.yml                           |    2 +
+ CONTRIBUTING.md                                    |    9 +-
+ README.md                                          |   39 +-
+ docs/README.md                                     |   37 +-
+ docs/ROADMAP.md                                    |   15 +-
+ docs/design/02-core-stats.md                       |    6 +
+ docs/design/10-camp.md                             |    7 +
+ docs/design/14-shops.md                            |    7 +
+ docs/design/19-card-pools.md                       |    4 +
+ docs/plan/completion-plan.md                       |   11 +-
+ docs/plan/implementation-registry.md               |   71 +
+ docs/plan/stabilization-roadmap-2026-11-17.md      |  445 ++
+ docs/review/evidence/audit-2026-11-17/README.md    |   52 +
+ .../evidence/audit-2026-11-17/art-index.json       |  465 ++
+ .../evidence/audit-2026-11-17/art/act-doors.jpg    |  Bin 0 -> 80697 bytes
+ .../evidence/audit-2026-11-17/art/backgrounds.jpg  |  Bin 0 -> 141981 bytes
+ .../audit-2026-11-17/art/card-portraits.jpg        |  Bin 0 -> 232942 bytes
+ .../evidence/audit-2026-11-17/art/events.jpg       |  Bin 0 -> 555665 bytes
+ .../evidence/audit-2026-11-17/art/map-icons.jpg    |  Bin 0 -> 55810 bytes
+ .../evidence/audit-2026-11-17/art/monsters-1.jpg   |  Bin 0 -> 261848 bytes
+ .../evidence/audit-2026-11-17/art/monsters-2.jpg   |  Bin 0 -> 218901 bytes
+ .../evidence/audit-2026-11-17/art/paper-doll.jpg   |  Bin 0 -> 66688 bytes
+ .../evidence/audit-2026-11-17/art/relics-1.jpg     |  Bin 0 -> 212994 bytes
+ .../evidence/audit-2026-11-17/art/relics-2.jpg     |  Bin 0 -> 182652 bytes
+ .../evidence/audit-2026-11-17/art/relics-3.jpg     |  Bin 0 -> 178119 bytes
+ .../evidence/audit-2026-11-17/art/relics-4.jpg     |  Bin 0 -> 183681 bytes
+ .../evidence/audit-2026-11-17/art/relics-5.jpg     |  Bin 0 -> 124238 bytes
+ .../evidence/audit-2026-11-17/art/ui-assets.jpg    |  Bin 0 -> 105494 bytes
+ .../evidence/audit-2026-11-17/burden-proxy.log     |   16 +
+ .../audit-2026-11-17/card-balance-proxy.md         |   48 +
+ .../evidence/audit-2026-11-17/check-output.txt     |  130 +
+ docs/review/evidence/audit-2026-11-17/checks.json  |  122 +
+ docs/review/evidence/audit-2026-11-17/ci-jobs.json |    1 +
+ docs/review/evidence/audit-2026-11-17/ci-run.json  |    1 +
+ docs/review/evidence/audit-2026-11-17/harmony.log  |    1 +
+ .../evidence/audit-2026-11-17/image-census.json    |  172 +
+ .../audit-2026-11-17/source-inventory.json         |  218 +
+ docs/review/evidence/g0-g1-2026-11-17/README.md    |   69 +
+ .../evidence/g0-g1-2026-11-17/check-output.txt     | 2998 ++++++++++++
+ docs/review/evidence/g0-g1-2026-11-17/checks.json  |  286 ++
+ .../g0-g1-2026-11-17/follow-up-checks.json         |  169 +
+ .../evidence/g0-g1-2026-11-17/integrity-cases.json |  284 ++
+ .../evidence/g0-g1-2026-11-17/markdown-links.json  |    4 +
+ .../evidence/g0-g1-2026-11-17/source-files.json    | 5154 ++++++++++++++++++++
+ .../evidence/g0-g1-2026-11-17/source-snapshot.json |   34 +
+ docs/review/project-audit-2026-11-17.md            |  460 ++
+ global.json                                        |    7 +
+ mod/README.md                                      |   43 +-
+ mod/SlayTheRequiem.Tests/IntegrityTests.cs         |  449 ++
+ mod/SlayTheRequiem.Tests/SavedPayloadTests.cs      |  118 +
+ mod/SlayTheRequiem.csproj                          |   83 +-
+ mod/SlayTheRequiem.json                            |    2 +-
+ .../localization/eng/static_hover_tips.json        |   58 +-
+ .../localization/rus/static_hover_tips.json        |   58 +-
+ mod/SlayTheRequiemCode/Alchemy/CampOptions.cs      |  198 +-
+ mod/SlayTheRequiemCode/Alchemy/HerbalistPouch.cs   |  109 +-
+ mod/SlayTheRequiemCode/Alchemy/TravelPack.cs       |  606 ++-
+ mod/SlayTheRequiemCode/Cards/Shouts.cs             |   58 +-
+ mod/SlayTheRequiemCode/Config/RunSettings.cs       |  112 +-
+ mod/SlayTheRequiemCode/Core/AlchemyRules.cs        |    2 +-
+ mod/SlayTheRequiemCode/Core/OperationContracts.cs  |  192 +
+ mod/SlayTheRequiemCode/Core/OperationIdentity.cs   |   26 +
+ mod/SlayTheRequiemCode/Core/OperationJournal.cs    |   60 +
+ mod/SlayTheRequiemCode/Core/RunSettingsData.cs     |    9 +
+ mod/SlayTheRequiemCode/Core/SavedPayload.cs        |  114 +
+ .../Debugging/CardFactoryRegression.cs             |  141 +
+ .../Debugging/CardRewardDiagnostics.cs             |  190 +-
+ .../Debugging/IntegrityRegression.cs               | 1147 +++++
+ .../Debugging/RequiemConsoleCommands.cs            |   68 +
+ mod/SlayTheRequiemCode/Debugging/RunDiagnostics.cs |  141 +
+ mod/SlayTheRequiemCode/Events/NodeEvents.cs        |   34 +-
+ mod/SlayTheRequiemCode/Events/RequiemEvent.cs      |   68 +-
+ mod/SlayTheRequiemCode/Events/TowerEvents.cs       |    5 +-
+ mod/SlayTheRequiemCode/MainFile.cs                 |    3 +
+ mod/SlayTheRequiemCode/Net/LobbyMessageBridge.cs   |   31 +
+ mod/SlayTheRequiemCode/Net/RequiemMessages.cs      |   66 +-
+ mod/SlayTheRequiemCode/Net/RequiemNet.cs           |    6 +
+ mod/SlayTheRequiemCode/Pantheon/Celestials.cs      |   27 +-
+ mod/SlayTheRequiemCode/Pantheon/PantheonEvents.cs  |   18 +-
+ .../Progression/CardEnchanting.cs                  |   53 +-
+ mod/SlayTheRequiemCode/Relics/Backgrounds.cs       |    5 +-
+ mod/SlayTheRequiemCode/Rollback/MemoryStone.cs     |   18 +-
+ mod/SlayTheRequiemCode/Rules/CardAcquisition.cs    |  305 ++
+ .../Rules/DeferredRewardScope.cs                   |   65 +
+ .../Rules/HeroPoolRewardRules.cs                   |   14 +-
+ mod/SlayTheRequiemCode/Rules/InventoryGate.cs      |   84 +
+ mod/SlayTheRequiemCode/Rules/InventoryIdentity.cs  |  106 +
+ mod/SlayTheRequiemCode/Rules/RewardPurchase.cs     |  118 +
+ mod/SlayTheRequiemCode/Rules/RewardSwap.cs         |   48 +-
+ mod/SlayTheRequiemCode/Rules/RunLifecycle.cs       |    2 +
+ mod/SlayTheRequiemCode/Shops/MerchantLedger.cs     |   27 +-
+ mod/SlayTheRequiemCode/Shops/PurchaseReceipts.cs   |   80 +
+ mod/SlayTheRequiemCode/Shops/Scrolls.cs            |   71 +-
+ mod/SlayTheRequiemCode/Shops/SellService.cs        |    6 +-
+ mod/SlayTheRequiemCode/Shops/ShopActionPolicy.cs   |  189 +
+ mod/SlayTheRequiemCode/Shops/ShopActions.cs        |  484 +-
+ mod/SlayTheRequiemCode/Shops/ShopOperations.cs     |  315 ++
+ mod/SlayTheRequiemCode/Shops/ShopServices.cs       |   16 +-
+ mod/SlayTheRequiemCode/Spells/SpellRules.cs        |    9 +-
+ .../Transformations/FormRelic.cs                   |    2 +-
+ .../Transformations/PathCards.cs                   |    9 +-
+ .../Transformations/PathEssences.cs                |    2 +-
+ .../Transformations/VampireForm.cs                 |    2 +-
+ mod/SlayTheRequiemCode/UI/DeckDiscard.cs           |   13 +-
+ mod/SlayTheRequiemCode/UI/NRunStatusBadge.cs       |   65 +
+ .../UI/RewardAcquisitionPanel.cs                   |   90 +
+ mod/Sts2PathDiscovery.props                        |   16 +-
+ tools/g0/README.md                                 |  121 +
+ tools/g0/mod_build.py                              |  411 ++
+ tools/g0/test_mod_build.py                         |  283 ++
+ tools/g0/verify_pack.gd                            |   70 +
+ tools/loc/loc_ui.py                                |   70 +
+ 112 files changed, 18150 insertions(+), 605 deletions(-)
+
+--- numstat ---
+2	0	.github/workflows/ci.yml
+6	3	CONTRIBUTING.md
+24	15	README.md
+32	5	docs/README.md
+11	4	docs/ROADMAP.md
+6	0	docs/design/02-core-stats.md
+7	0	docs/design/10-camp.md
+7	0	docs/design/14-shops.md
+4	0	docs/design/19-card-pools.md
+9	2	docs/plan/completion-plan.md
+71	0	docs/plan/implementation-registry.md
+445	0	docs/plan/stabilization-roadmap-2026-11-17.md
+52	0	docs/review/evidence/audit-2026-11-17/README.md
+465	0	docs/review/evidence/audit-2026-11-17/art-index.json
+-	-	docs/review/evidence/audit-2026-11-17/art/act-doors.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/backgrounds.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/card-portraits.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/events.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/map-icons.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/monsters-1.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/monsters-2.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/paper-doll.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/relics-1.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/relics-2.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/relics-3.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/relics-4.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/relics-5.jpg
+-	-	docs/review/evidence/audit-2026-11-17/art/ui-assets.jpg
+16	0	docs/review/evidence/audit-2026-11-17/burden-proxy.log
+48	0	docs/review/evidence/audit-2026-11-17/card-balance-proxy.md
+130	0	docs/review/evidence/audit-2026-11-17/check-output.txt
+122	0	docs/review/evidence/audit-2026-11-17/checks.json
+1	0	docs/review/evidence/audit-2026-11-17/ci-jobs.json
+1	0	docs/review/evidence/audit-2026-11-17/ci-run.json
+1	0	docs/review/evidence/audit-2026-11-17/harmony.log
+172	0	docs/review/evidence/audit-2026-11-17/image-census.json
+218	0	docs/review/evidence/audit-2026-11-17/source-inventory.json
+69	0	docs/review/evidence/g0-g1-2026-11-17/README.md
+2998	0	docs/review/evidence/g0-g1-2026-11-17/check-output.txt
+286	0	docs/review/evidence/g0-g1-2026-11-17/checks.json
+169	0	docs/review/evidence/g0-g1-2026-11-17/follow-up-checks.json
+284	0	docs/review/evidence/g0-g1-2026-11-17/integrity-cases.json
+4	0	docs/review/evidence/g0-g1-2026-11-17/markdown-links.json
+5154	0	docs/review/evidence/g0-g1-2026-11-17/source-files.json
+34	0	docs/review/evidence/g0-g1-2026-11-17/source-snapshot.json
+460	0	docs/review/project-audit-2026-11-17.md
+7	0	global.json
+32	11	mod/README.md
+449	0	mod/SlayTheRequiem.Tests/IntegrityTests.cs
+118	0	mod/SlayTheRequiem.Tests/SavedPayloadTests.cs
+33	50	mod/SlayTheRequiem.csproj
+1	1	mod/SlayTheRequiem.json
+57	1	mod/SlayTheRequiem/localization/eng/static_hover_tips.json
+57	1	mod/SlayTheRequiem/localization/rus/static_hover_tips.json
+150	48	mod/SlayTheRequiemCode/Alchemy/CampOptions.cs
+97	12	mod/SlayTheRequiemCode/Alchemy/HerbalistPouch.cs
+540	66	mod/SlayTheRequiemCode/Alchemy/TravelPack.cs
+40	18	mod/SlayTheRequiemCode/Cards/Shouts.cs
+103	9	mod/SlayTheRequiemCode/Config/RunSettings.cs
+1	1	mod/SlayTheRequiemCode/Core/AlchemyRules.cs
+192	0	mod/SlayTheRequiemCode/Core/OperationContracts.cs
+26	0	mod/SlayTheRequiemCode/Core/OperationIdentity.cs
+60	0	mod/SlayTheRequiemCode/Core/OperationJournal.cs
+9	0	mod/SlayTheRequiemCode/Core/RunSettingsData.cs
+114	0	mod/SlayTheRequiemCode/Core/SavedPayload.cs
+141	0	mod/SlayTheRequiemCode/Debugging/CardFactoryRegression.cs
+166	24	mod/SlayTheRequiemCode/Debugging/CardRewardDiagnostics.cs
+1147	0	mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs
+68	0	mod/SlayTheRequiemCode/Debugging/RequiemConsoleCommands.cs
+141	0	mod/SlayTheRequiemCode/Debugging/RunDiagnostics.cs
+29	5	mod/SlayTheRequiemCode/Events/NodeEvents.cs
+47	21	mod/SlayTheRequiemCode/Events/RequiemEvent.cs
+2	3	mod/SlayTheRequiemCode/Events/TowerEvents.cs
+3	0	mod/SlayTheRequiemCode/MainFile.cs
+31	0	mod/SlayTheRequiemCode/Net/LobbyMessageBridge.cs
+44	22	mod/SlayTheRequiemCode/Net/RequiemMessages.cs
+6	0	mod/SlayTheRequiemCode/Net/RequiemNet.cs
+23	4	mod/SlayTheRequiemCode/Pantheon/Celestials.cs
+16	2	mod/SlayTheRequiemCode/Pantheon/PantheonEvents.cs
+41	12	mod/SlayTheRequiemCode/Progression/CardEnchanting.cs
+2	3	mod/SlayTheRequiemCode/Relics/Backgrounds.cs
+17	1	mod/SlayTheRequiemCode/Rollback/MemoryStone.cs
+305	0	mod/SlayTheRequiemCode/Rules/CardAcquisition.cs
+65	0	mod/SlayTheRequiemCode/Rules/DeferredRewardScope.cs
+12	2	mod/SlayTheRequiemCode/Rules/HeroPoolRewardRules.cs
+84	0	mod/SlayTheRequiemCode/Rules/InventoryGate.cs
+106	0	mod/SlayTheRequiemCode/Rules/InventoryIdentity.cs
+118	0	mod/SlayTheRequiemCode/Rules/RewardPurchase.cs
+34	14	mod/SlayTheRequiemCode/Rules/RewardSwap.cs
+2	0	mod/SlayTheRequiemCode/Rules/RunLifecycle.cs
+24	3	mod/SlayTheRequiemCode/Shops/MerchantLedger.cs
+80	0	mod/SlayTheRequiemCode/Shops/PurchaseReceipts.cs
+64	7	mod/SlayTheRequiemCode/Shops/Scrolls.cs
+4	2	mod/SlayTheRequiemCode/Shops/SellService.cs
+189	0	mod/SlayTheRequiemCode/Shops/ShopActionPolicy.cs
+285	199	mod/SlayTheRequiemCode/Shops/ShopActions.cs
+315	0	mod/SlayTheRequiemCode/Shops/ShopOperations.cs
+9	7	mod/SlayTheRequiemCode/Shops/ShopServices.cs
+3	6	mod/SlayTheRequiemCode/Spells/SpellRules.cs
+1	1	mod/SlayTheRequiemCode/Transformations/FormRelic.cs
+3	6	mod/SlayTheRequiemCode/Transformations/PathCards.cs
+1	1	mod/SlayTheRequiemCode/Transformations/PathEssences.cs
+1	1	mod/SlayTheRequiemCode/Transformations/VampireForm.cs
+9	4	mod/SlayTheRequiemCode/UI/DeckDiscard.cs
+65	0	mod/SlayTheRequiemCode/UI/NRunStatusBadge.cs
+90	0	mod/SlayTheRequiemCode/UI/RewardAcquisitionPanel.cs
+8	8	mod/Sts2PathDiscovery.props
+121	0	tools/g0/README.md
+411	0	tools/g0/mod_build.py
+283	0	tools/g0/test_mod_build.py
+70	0	tools/g0/verify_pack.gd
+70	0	tools/loc/loc_ui.py

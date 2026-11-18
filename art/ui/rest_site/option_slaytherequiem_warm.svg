@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>warm</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M31 5 Q47 18 39 28 Q49 25 50 20 Q66 47 44 56 Q14 65 10 42 Q8 31 19 20 Q17 34 26 32 Q18 20 31 5 Z" fill="#db9b60" stroke="#302922" stroke-width="4"/><path d="M29 53 Q21 44 33 34 Q44 45 37 53 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

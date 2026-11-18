@@ -1,0 +1,43 @@
+test_only_allowlisted_fields_leave_the_runner (test_legal_ci.PublicReportTests.test_only_allowlisted_fields_leave_the_runner) ... ok
+test_warning_summary_never_contains_source_paths_or_messages (test_legal_ci.PublicReportTests.test_warning_summary_never_contains_source_paths_or_messages) ... ok
+test_workflow_is_manual_read_only_and_uploads_no_private_directory (test_legal_ci.PublicReportTests.test_workflow_is_manual_read_only_and_uploads_no_private_directory) ... ok
+test_artifact_list_must_be_an_object (test_mod_build.BundleTests.test_artifact_list_must_be_an_object) ... ok
+test_clean_install_does_not_keep_stale_files (test_mod_build.BundleTests.test_clean_install_does_not_keep_stale_files) ... ok
+test_empty_or_failed_pack_check_fails (test_mod_build.BundleTests.test_empty_or_failed_pack_check_fails) ... ok
+test_failed_swap_restores_old_installation (test_mod_build.BundleTests.test_failed_swap_restores_old_installation) ... ok
+test_game_closed_ack_required (test_mod_build.BundleTests.test_game_closed_ack_required) ... ok
+test_loose_legacy_pair_is_never_left_as_a_duplicate_mod (test_mod_build.BundleTests.test_loose_legacy_pair_is_never_left_as_a_duplicate_mod) ... ok
+test_malformed_artifact_metadata_is_a_clean_failure (test_mod_build.BundleTests.test_malformed_artifact_metadata_is_a_clean_failure) ... ok
+test_malformed_passport_is_a_clean_failure (test_mod_build.BundleTests.test_malformed_passport_is_a_clean_failure) ... ok
+test_manifest_boolean_flags_are_not_strings (test_mod_build.BundleTests.test_manifest_boolean_flags_are_not_strings) ... ok
+test_manifest_path_injection_not_used (test_mod_build.BundleTests.test_manifest_path_injection_not_used) ... ok
+test_matching_pair_verifies (test_mod_build.BundleTests.test_matching_pair_verifies) ... ok
+test_missing_core_tests_fails (test_mod_build.BundleTests.test_missing_core_tests_fails) ... ok
+test_missing_export_proof_fails (test_mod_build.BundleTests.test_missing_export_proof_fails) ... ok
+test_non_object_existing_manifest_is_preserved (test_mod_build.BundleTests.test_non_object_existing_manifest_is_preserved) ... ok
+test_second_mod_id_in_another_directory_blocks_install (test_mod_build.BundleTests.test_second_mod_id_in_another_directory_blocks_install) ... ok
+test_source_backed_pack_check_is_not_isolated (test_mod_build.BundleTests.test_source_backed_pack_check_is_not_isolated) ... ok
+test_symlinked_target_is_not_followed (test_mod_build.BundleTests.test_symlinked_target_is_not_followed) ... ok
+test_tampering_or_stale_pck_fails (test_mod_build.BundleTests.test_tampering_or_stale_pck_fails) ... ok
+test_unrecognized_existing_directory_is_preserved (test_mod_build.BundleTests.test_unrecognized_existing_directory_is_preserved) ... ok
+test_wrong_dependency_fails (test_mod_build.BundleTests.test_wrong_dependency_fails) ... ok
+test_wrong_or_missing_save_schema_or_shop_protocol_fails (test_mod_build.BundleTests.test_wrong_or_missing_save_schema_or_shop_protocol_fails) ... ok
+test_engine_needs_exact_mono_version (test_mod_build.PreflightTests.test_engine_needs_exact_mono_version) ... ok
+test_exact_versions_are_required (test_mod_build.PreflightTests.test_exact_versions_are_required) ... ok
+test_installed_baselib_must_match (test_mod_build.PreflightTests.test_installed_baselib_must_match) ... ok
+test_missing_game_binary_blocks_build_preflight (test_mod_build.PreflightTests.test_missing_game_binary_blocks_build_preflight) ... ok
+test_non_object_installed_manifests_are_explicit_failures (test_mod_build.PreflightTests.test_non_object_installed_manifests_are_explicit_failures) ... ok
+test_sdk_cannot_be_replaced_with_a_runtime_or_next_major (test_mod_build.PreflightTests.test_sdk_cannot_be_replaced_with_a_runtime_or_next_major) ... ok
+test_pinned_dependencies_agree_with_preflight_and_manifest (test_mod_build.SourceContractTests.test_pinned_dependencies_agree_with_preflight_and_manifest) ... ok
+test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source (test_mod_build.SourceContractTests.test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source) ... ok
+test_empty_skipped_or_failed_core_report_cannot_be_a_successful_build (test_mod_build.StageResultTests.test_empty_skipped_or_failed_core_report_cannot_be_a_successful_build) ... ok
+test_real_trx_counter_shape_is_parsed (test_mod_build.StageResultTests.test_real_trx_counter_shape_is_parsed) ... ok
+test_zero_exit_code_cannot_hide_a_godot_script_or_resource_error (test_mod_build.StageResultTests.test_zero_exit_code_cannot_hide_a_godot_script_or_resource_error) ... ERROR: missing imported texture
+SCRIPT ERROR: bad parser
+import complete
+ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 0.091s
+
+OK

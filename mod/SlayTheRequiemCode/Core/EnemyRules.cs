@@ -68,6 +68,9 @@ public static class EnemyRules
     /// <summary>Минимальная ✦ для заклинания; меньше — враг «Сосредотачивается» (Оберег и полная ✦) вместо атаки.</summary>
     public const int MinSpellMana = 2;
 
+    /// <summary>Bosses never lose a phase/telegraph to Focus; without the full price their cast deals half damage.</summary>
+    public static decimal InsufficientManaMultiplier(int current, int cost) => current < Math.Max(0, cost) ? 0.5m : 1m;
+
     /// <summary>Оберег, который враг-маг получает при «Сосредоточиться».</summary>
     public const int FocusSpellShield = 5;
 

@@ -3,7 +3,7 @@
 > `python3 tools/cards/audit_cards.py --out docs/plan/card-audit.md`. Не править руками.
 > Правила — card spec §7 и шапка `tools/cards/audit_cards.py`. ✗ ломает CI, ⚠ — повод посмотреть.
 
-Карт: **340**. Ошибок: **0**. Предупреждений: **1**.
+Карт: **347**. Ошибок: **0**. Предупреждений: **1**.
 
 ## Ошибки (0)
 
@@ -19,5 +19,5 @@
 - · `Bite` (Укус): без ◆ — Кормление вампира: 0⚡ лёгкий укус (02: лёгкие атаки 0–1 ◆), цена — Жажда; 06, 18
 - · тёзки ванильных карт (разметка CSV к ним не применяется): `Backstab`, `BallLightning`, `Pounce`, `Rampage`, `Rebound`, `Seance`, `ShadowStep`, `Whirlwind`, `Wither`
 - · редкость — Латоносец: Common 46 %, Uncommon 36 %, Rare 18 % (39 карт)
-- · редкость — Безмолвная: Common 45 %, Uncommon 35 %, Rare 20 % (20 карт)
+- · редкость — Безмолвная: Common 45 %, Uncommon 36 %, Rare 18 % (22 карт)
 - · редкость — Регент: Common 42 %, Uncommon 33 %, Rare 25 % (12 карт)

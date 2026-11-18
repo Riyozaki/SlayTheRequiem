@@ -1,17 +1,35 @@
 # mod/ — код и ресурсы Slay the Requiem
 
-> ⚠️ **Pre-alpha (этапы 0–7 написаны).** Код написан по исходникам BaseLib и декомпилированной игре, но **ещё ни разу не компилировался и не
-> запускался в игре** (кроме `Core/` — он собирается и тестируется в CI): в среде, где он писался, нет .NET SDK и Slay the Spire 2. Ждите ошибок компиляции при первой сборке.
-> Чистая логика (`SlayTheRequiemCode/Core`) проверена Python-зеркалом (`tools/sim`) и покрыта xUnit-тестами.
+> ⚠️ **Pre-alpha после первого плейтеста.** Исторические build/PCK и запуск автором на `ec598de` действительны.
+> После аудита реализован [блок 1 «Надёжное ядро»](../docs/review/stage-one-implementation-2026-11-18.md).
+> Публичный CI: **560/560 Core**, Python/content. Ручной workflow полного build/PCK на доверенном runner с легальной игрой
+> добавлен, но здесь не запускался; новая игровая сборка ещё не принята. Ручные/двухклиентные прогоны — в самом конце.
+> Критерии: [план релиза](../docs/plan/next-playable-release-2026-11-18.md), [матрица](../docs/review/regression-checklist-2026-11-18.md).
 
-## Сборка (по шаблону Alchyr/ModTemplate-StS2)
+## Воспроизводимая сборка и чистая установка
 
-Нужно: Slay the Spire 2 (≥ 0.107), .NET 9 SDK, [MegaDot](https://megadot.megacrit.com/) (Godot 4.5.1 mono) для `.pck`, мод BaseLib ≥ 3.3.0.
+Контракт: легальная игра **0.107.1**, .NET SDK **9.0.x**, [MegaDot **4.5.1 mono**](https://megadot.megacrit.com/),
+установленный **BaseLib 3.4.8**; NuGet BaseLib `[3.4.8]` / ModAnalyzers `[0.2.1]` закреплены.
 
-1. Путь к игре находится автоматически (`Sts2PathDiscovery.props`). Если нет — скопируйте `Directory.Build.props.example`
-   в `Directory.Build.props` и пропишите `Sts2Path` / `GodotPath`.
-2. `dotnet build mod/SlayTheRequiem.csproj` — DLL и (если задан GodotPath) `.pck` копируются в `<игра>/mods/SlayTheRequiem/`.
-3. Тесты логики без игры: `dotnet test mod/SlayTheRequiem.Tests` и `python3 -m unittest discover -s tools/sim`.
+Полная инструкция — [tools/g0/README.md](../tools/g0/README.md): `probe → build → verify → install`.
+Pipeline выполняет полный Release build игрового проекта, отдельный Core/TRX, отдельный export и загрузку ресурсов
+из PCK в пустом проекте. Успех этих стадий не означает запуск игры. Installer проверяет hashes DLL/PCK/manifest,
+сохраняет прежний каталог вне `mods` и не удаляет неизвестные/дублирующие установки.
+
+Для разработки из корня репозитория:
+
+```bash
+dotnet build mod/SlayTheRequiem.csproj   # только DLL, БЕЗ export и БЕЗ установки в игру
+dotnet test mod/SlayTheRequiem.Tests    # отдельный Core-проект без игровых references
+python3 -m unittest discover -s tools/sim
+python3 -m unittest discover -s tools/g0 -v  # только контракты build tool, не полный mod build
+```
+
+`Sts2PathDiscovery.props` ищет игру автоматически. Если не нашёл, скопируйте `Directory.Build.props.example`
+в игнорируемый `Directory.Build.props` и укажите `Sts2Path` / `GodotPath` (либо передайте `-p:Sts2DataDir=...`).
+Старый convenience `-p:CopyModOnBuild=true` копирует **только** DLL/manifest и предупреждает об отсутствии согласованной
+PCK-пары; это не релизный installer. `dotnet publish`/явный target `ExportModPack` требуют MegaDot и не маскируют сбой.
+Ручной CI: [legal-game-build.yml](../.github/workflows/legal-game-build.yml), подготовка runner — в инструкции G0.
 
 ## Что где лежит
 
@@ -42,5 +60,6 @@
 скриптом `tools/art/render_ui_icons.mjs`). Остальной арт — ванильный, по таблице `tools/art/vanilla_art.csv`
 ([art spec §0](../docs/plan/art-ui-animation-spec.md)).
 
-Рискованные места первой сборки (предполагаемые имена API игры) перечислены в комментариях в начале файлов
-`Acts/ActFlowPatches.cs` и `Acts/ActRuntime.cs`. Дальше — [ROADMAP](../docs/ROADMAP.md), Этап 8.
+После обновления игры повторно проверяйте сигнатуры API, установку Harmony-патчей и полный DLL/PCK, а не только Core.
+Комментарии о «первой сборке» в старых файлах описывают историю разработки. Текущие риски и дальнейшая приёмка —
+в [аудите](../docs/review/main-audit-2026-11-18.md) и [плане](../docs/plan/stabilization-plan-2026-11-18.md).

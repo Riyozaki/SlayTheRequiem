@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "actual_native_runs": 0,
+  "bytes": 80463223,
+  "files": 1947,
+  "requirements_sha256": "7c7594fed8fee8f628cae61bdf6a8864833a7fc0db2f2dbb16e6015140b02033",
+  "scope": "Frozen Git source/digest/doc/requirements-byte check ONLY; no real bundle/DLL/PCK/archive/native execution",
+  "source_commit": "dc66b0c8398512ec608d7f6e4579af3d72ad984f",
+  "source_tree_sha256": "d7085986046213e2d690f981a78dcb642cb5949d0f358e51a149549b75640a3e"
+}

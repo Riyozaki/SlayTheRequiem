@@ -24,7 +24,12 @@ internal class RequiemConfig : SimpleModConfig
     /// Компактные статусы врагов (плейтест 2026-11): постоянные черты врага — Латы, Устойчивость, сопротивления, аффиксы —
     /// не в общем ряду статусов, а строкой мелких значков под полоской ♥ (подробности при наведении). Только оформление.
     /// </summary>
-    public static bool CompactEnemyStatuses { get; set; } = true;
+    private static bool _compactEnemyStatuses = true;
+    public static bool CompactEnemyStatuses
+    {
+        get => _compactEnemyStatuses;
+        set { if (_compactEnemyStatuses == value) return; _compactEnemyStatuses = value; UI.RequiemMotion.SettingsChanged(); }
+    }
 
     /// <summary>
     /// Происхождение Регента (docs/design/04): из настроек, «Случайно» — по сиду забега, «На выбор» — экран выбора
@@ -56,19 +61,42 @@ internal class RequiemConfig : SimpleModConfig
     public static bool ColorElementalTitles { get; set; } = true;
 
     /// <summary>Кукла героя (docs/design/07 §8): в бою оружие и щит в руках цвета материала, аура брони. Только оформление.</summary>
-    public static bool ShowPaperDoll { get; set; } = true;
+    private static bool _showPaperDoll = true;
+    public static bool ShowPaperDoll
+    {
+        get => _showPaperDoll;
+        set { if (_showPaperDoll == value) return; _showPaperDoll = value; UI.RequiemMotion.SettingsChanged(); }
+    }
 
     /// <summary>
     /// Боевые эффекты Реквиема (M7 п. 4, art spec §5): вспышки стихий при ударах, надрыв, Слом, Уворот, Кличи, призыв, откат
     /// Камня Памяти, Багровый портал — ванильные эффекты с перекраской. Выкл — как в ванили. Только оформление.
     /// </summary>
-    public static bool CombatVfx { get; set; } = true;
+    private static bool _combatVfx = true;
+    public static bool CombatVfx
+    {
+        get => _combatVfx;
+        set { if (_combatVfx == value) return; _combatVfx = value; UI.RequiemMotion.SettingsChanged(); }
+    }
+
+    /// <summary>Локально: без пружин/выпадов/тряски/мигания и декоративных циклов мода. Текст, фазы и интенты остаются.</summary>
+    private static bool _reducedMotion;
+    public static bool ReducedMotion
+    {
+        get => _reducedMotion;
+        set { if (_reducedMotion == value) return; _reducedMotion = value; UI.RequiemMotion.SettingsChanged(); }
+    }
 
     /// <summary>
     /// Звуки Реквиема (M7 п. 5, art spec §6): удары по типу урона, надрыв, Слом, Уворот, Кличи, призыв, откат, портал, Тайник —
     /// ванильные звуки игры и свои (data/sfx.csv). Отдельно от боевых эффектов. Громкость — ползунок «Звуки» игры.
     /// </summary>
-    public static bool RequiemSounds { get; set; } = true;
+    private static bool _requiemSounds = true;
+    public static bool RequiemSounds
+    {
+        get => _requiemSounds;
+        set { if (_requiemSounds == value) return; _requiemSounds = value; UI.RequiemMotion.SettingsChanged(); }
+    }
 
     /// <summary>
     /// Пять актов (docs/design/13 §2): 1 → 2а/2б → Улей → 4а/4б → Слава. Выкл — ванильные три акта (с оверлеями).

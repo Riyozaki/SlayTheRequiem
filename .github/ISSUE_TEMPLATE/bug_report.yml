@@ -1,16 +1,24 @@
 name: 🐞 Баг / ошибка сборки
-description: Ошибка компиляции, падение игры или неправильное поведение
+description: Воспроизводимая ошибка сборки, ресурсов, игры или кооператива
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Сначала прочитайте [инструкцию диагностики](https://github.com/Riyozaki/SlayTheRequiem/blob/main/docs/release/DIAGNOSTICS.md).
+        Не прикладывайте игру, игровые DLL, credentials, весь build bundle, binlogs или чужие saves.
+        Оригинальные паспорта/логи содержат пути и Net IDs: храните их приватно, здесь только очищенные выдержки.
   - type: dropdown
     id: kind
     attributes:
       label: Тип
       options:
-        - Сборка (ошибка компиляции)
+        - Сборка / импорт / экспорт / PCK-load
         - Падение / исключение в игре
-        - Неправильное поведение
-        - Текст / локализация
+        - Неправильное поведение / выдача / оплата
+        - Ресурсы / UI / звук / локализация
+        - Производительность
+        - Кооператив / Continue / rollback
     validations:
       required: true
   - type: dropdown
@@ -19,35 +27,51 @@ body:
       label: Система
       multiple: true
       options:
-        - Выносливость / мана
-        - Снаряжение / груз
-        - Магия
-        - Алхимия
-        - Пантеон
-        - Трансформации / Пути
-        - Лагерь / прогрессия
-        - Лавки
-        - Камень Памяти
+        - Выносливость / мана / урон
+        - Карты / награды / полка Кличей
+        - Снаряжение / сундук / груз
+        - Магия / алхимия
+        - Пантеон / трансформации / Пути
+        - Создание героя / лагерь / прогрессия
+        - Лавки / оплата
+        - Сейвы / Камень Памяти / recovery
         - Акты / карта
         - Враги / супербоссы
         - Кооператив
+        - UI / арт / VFX / звук
         - Другое
   - type: textarea
     id: what
     attributes:
-      label: Что случилось
-      description: Шаги, ожидаемое и фактическое поведение. Для сборки — вывод `dotnet build`.
+      label: Шаги, ожидание и результат
+      description: Минимальные шаги. Для сборки — стадия и первая ошибка, не весь private build log. Для nope — ID карты и фактический runtime portrait path, если есть.
       render: text
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: versions
     attributes:
-      label: Версии
-      placeholder: "StS2 0.107, BaseLib 3.3.0, коммит abc1234"
+      label: Точная идентичность сборки
+      description: Игра, BaseLib, ОС, другие моды. Source SHA и input/DLL/PCK/manifest hashes из паспорта; для кандидата также archive SHA. Одного v0.0.1 недостаточно.
+      placeholder: "StS2 0.107.1; BaseLib 3.4.8; source SHA …; DLL/PCK …; only BaseLib+mod / other mods …"
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Контекст воспроизведения
+      description: Герой/origin/background/форма/Путь, seed/сложность, акт/бой; new/Continue/rollback. Был ли debug/fixture? Для двух клиентов — роли и порядок событий, IDs замените alias.
+      render: text
   - type: textarea
     id: log
     attributes:
-      label: Лог
-      description: godot.log / стек исключения
+      label: Очищенная диагностика
+      description: Первая ошибка/стек, str_patches, относящиеся записи str_trace/str_recover status. Уберите пути, account/profile данные и Net IDs; не редактируйте private оригинал evidence.
+      render: text
+  - type: textarea
+    id: performance
+    attributes:
+      label: Для UI / производительности
+      description: Hardware/CPU/GPU/runtime, разрешение/scale/язык/input, vsync/frame cap и local flags. Для сравнения — одинаковые warm-up/setup и frozen str_metrics on → reset → действие → off; status не опрашивать покадрово. C# microbenchmark не является игровым FPS.
       render: text

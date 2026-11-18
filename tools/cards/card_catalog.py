@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 CODE = os.path.join(ROOT, "mod", "SlayTheRequiemCode")
@@ -38,6 +39,7 @@ GROUPS = [
     ("Безмолвная", "Cards/Silent/"),
     ("Регент", "Cards/Regent/"),
     ("Кличи", "Cards/Shouts.cs"),
+    ("Контрмеры боёв", "Cards/EncounterCounters.cs"),
     ("Заклинания", "Spells/"),
     ("Формы и Пути", "Transformations/"),
     ("Зачарование карт", "Progression/CardEnchanting.cs"),
@@ -65,7 +67,7 @@ def load_constants() -> dict:
     decl = re.compile(r"\bclass\s+(\w+)|const\s+(?:int|decimal)\s+(\w+)\s*=\s*(-?\d+)m?\s*;")
     for path in sorted(glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True)):
         cls = ""
-        for m in decl.finditer(open(path, encoding="utf-8").read()):
+        for m in decl.finditer(Path(path).read_text(encoding="utf-8")):
             if m.group(1):
                 cls = m.group(1)
             else:
@@ -88,7 +90,7 @@ def resolve(arg: str) -> str:
 
 def parse_file(path: str):
     """Карточные классы файла: имя, база, аргументы конструктора, пул, числа With*, ключевые слова, интерфейсы и флаги."""
-    src = re.sub(r"//[^\n]*", "", open(path, encoding="utf-8").read())
+    src = re.sub(r"//[^\n]*", "", Path(path).read_text(encoding="utf-8"))
     matches = list(CLASS.finditer(src))
     # Тело карты кончается на следующем объявлении любого типа (в т. ч. abstract/partial/record), а не только карты.
     bounds = sorted(x.start() for x in ANY_TYPE.finditer(src))
@@ -143,7 +145,7 @@ def no_upgrade_bases() -> set:
     """Абстрактные базы с `MaxUpgradeLevel => 0` (ищем в коде, чтобы не держать список руками)."""
     bases = set()
     for path in sorted(glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True)):
-        src = open(path, encoding="utf-8").read()
+        src = Path(path).read_text(encoding="utf-8")
         for m in re.finditer(r"abstract\s+class\s+(\w+)[^{]*\{", src):
             end = src.find("\n}", m.end())
             if re.search(r"MaxUpgradeLevel\s*=>\s*0\b", src[m.end(): end]):
@@ -152,7 +154,7 @@ def no_upgrade_bases() -> set:
 
 
 def collect(loc_path: str = LOC):
-    loc = json.load(open(loc_path, encoding="utf-8")) if os.path.exists(loc_path) else {}
+    loc = json.loads(Path(loc_path).read_text(encoding="utf-8")) if os.path.exists(loc_path) else {}
     frozen = no_upgrade_bases()
     rows = collections.defaultdict(list)
     for path in sorted(glob.glob(os.path.join(CODE, "**", "*.cs"), recursive=True)):
@@ -176,6 +178,8 @@ def collect(loc_path: str = LOC):
             elif base == "SpellCard" or (args and args[0].isdigit() and len(args) == 6):
                 energy, mana, school, tier, ctype, target = (args + [""] * 6)[:6]
                 rarity = f"{school}/{tier}"
+            elif base == "EncounterCounterCard":
+                energy, ctype, rarity, target, mana = (args + [""])[0], "Skill", "Token", "Self", ""
             elif base in FIXED_RARITY:
                 energy, ctype, target = (args + [""] * 3)[:3]
                 rarity, mana = FIXED_RARITY[base], ""
@@ -246,7 +250,7 @@ def main() -> int:
     text = render(collect())
     if args.check:
         path = os.path.join(ROOT, args.out or DEFAULT_OUT)
-        if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
+        if not os.path.exists(path) or Path(path).read_text(encoding="utf-8") != text:
             print(f"✗ {args.out or DEFAULT_OUT} устарел: python3 tools/cards/card_catalog.py --out {args.out or DEFAULT_OUT}")
             return 1
         print(f"{args.out or DEFAULT_OUT}: актуален")

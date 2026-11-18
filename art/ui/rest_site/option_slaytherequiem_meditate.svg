@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 64 64">
+  <title>meditate</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="32" cy="12" r="7" fill="#a9c9df" stroke="#302922" stroke-width="4"/><path d="M23 25 Q32 20 41 25 L45 40 L57 48 L48 57 L32 49 L16 57 L7 48 L19 40 Z" fill="#a9c9df" stroke="#302922" stroke-width="4"/><path d="M23 32 L26 43 H38 L41 32" fill="none" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

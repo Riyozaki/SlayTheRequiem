@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Godot;
 using MegaCrit.Sts2.Core.Helpers;
 
@@ -61,36 +62,87 @@ public static class RequiemKit
         return button;
     }
 
+    private sealed class MotionState
+    {
+        internal Tween? Hover, Entry, Denied;
+        internal Vector2 EntryTarget, DeniedOrigin;
+        internal bool EntryMoves;
+        internal Color EntryTint;
+        internal void FinishEntry(Control control)
+        {
+            if (Entry == null) return;
+            RequiemMotion.Kill(Entry); Entry = null;
+            if (EntryMoves) control.Position = EntryTarget;
+            control.Modulate = EntryTint;
+        }
+        internal void FinishDenied(Control control)
+        {
+            if (Denied == null) return;
+            RequiemMotion.Kill(Denied); Denied = null; control.Position = DeniedOrigin;
+        }
+    }
+    private static readonly ConditionalWeakTable<Control, MotionState> Motions = new();
+    private static MotionState Motion(Control control) => Motions.GetValue(control, owner =>
+    {
+        var state = new MotionState();
+        void Finish()
+        {
+            RequiemMotion.Kill(state.Hover); state.Hover = null;
+            if (!GodotObject.IsInstanceValid(owner)) return;
+            owner.Scale = Vector2.One;
+            state.FinishEntry(owner); state.FinishDenied(owner);
+        }
+        RequiemMotion.Watch(owner, () => { if (!RequiemMotion.Enabled) Finish(); });
+        // A detached/re-entered control must not resume a half-hidden entry or a displaced denial pose.
+        owner.TreeExiting += Finish;
+        return state;
+    });
+
     private static void Pulse(Control control, float scale)
     {
         if (!GodotObject.IsInstanceValid(control) || !control.IsInsideTree()) return;
-        control.CreateTween().TweenProperty(control, "scale", Vector2.One * scale, 0.12)
+        var state = Motion(control);
+        RequiemMotion.Kill(state.Hover); state.Hover = null;
+        if (!RequiemMotion.Enabled) { control.Scale = Vector2.One; return; }
+        state.Hover = control.CreateTween();
+        state.Hover.TweenProperty(control, "scale", Vector2.One * scale, 0.12)
             .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
     }
 
-    /// <summary>Появление снизу с прозрачности (окна, плашки).</summary>
+    /// <summary>Optional entry only. Reduced motion reveals the final state immediately, without a hidden delay.</summary>
     public static void PopIn(Control control, float delay = 0f, float dy = 24f)
     {
-        control.Modulate = new Color(1, 1, 1, 0);
-        var target = control.Position;
-        control.Position = target + new Vector2(0, dy);
-        var tween = control.CreateTween().SetParallel();
-        tween.TweenProperty(control, "modulate:a", 1f, 0.22).SetDelay(delay);
-        tween.TweenProperty(control, "position", target, 0.3).SetDelay(delay)
-            .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
+        if (!GodotObject.IsInstanceValid(control) || !control.IsInsideTree()) return;
+        var state = Motion(control);
+        state.FinishEntry(control); state.FinishDenied(control);
+        if (!RequiemMotion.Enabled) return;
+        state.EntryTint = control.Modulate; state.EntryTarget = control.Position;
+        state.EntryMoves = dy != 0 && control.GetParent() is not Container;
+        control.Modulate = state.EntryTint with { A = 0 };
+        if (state.EntryMoves) control.Position = state.EntryTarget + new Vector2(0, dy);
+        var tween = state.Entry = control.CreateTween().SetParallel();
+        tween.TweenProperty(control, "modulate:a", state.EntryTint.A, 0.22).SetDelay(delay);
+        if (state.EntryMoves)
+            tween.TweenProperty(control, "position", state.EntryTarget, 0.3).SetDelay(delay)
+                .SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
+        tween.Chain().TweenCallback(Callable.From(() => state.Entry = null));
     }
 
-    /// <summary>Тряска «нельзя» (кнопка недоступна, перегруз).</summary>
+    /// <summary>Optional denial motion; a repeated request returns to the ORIGINAL origin, never accumulates drift.</summary>
     public static void Shake(Control control, float strength = 8f)
     {
         if (!GodotObject.IsInstanceValid(control) || !control.IsInsideTree()) return;
-        var origin = control.Position;
-        var tween = control.CreateTween();
+        var state = Motion(control);
+        state.FinishEntry(control); state.FinishDenied(control);
+        if (!RequiemMotion.Enabled) return; // persistent text/disabled/focus styles remain; no gameplay veto lives here
+        var origin = state.DeniedOrigin = control.Position;
+        var tween = state.Denied = control.CreateTween();
         for (var i = 0; i < 4; i++)
         {
             var dx = (i % 2 == 0 ? 1 : -1) * strength * (1f - i / 4f);
             tween.TweenProperty(control, "position", origin + new Vector2(dx, 0), 0.04);
         }
         tween.TweenProperty(control, "position", origin, 0.04);
+        tween.TweenCallback(Callable.From(() => state.Denied = null));
     }
 }

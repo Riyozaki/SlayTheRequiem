@@ -393,3 +393,113 @@ public sealed class StrPatchesCmd : RequiemConsoleCmd
         return Ok(string.Join("\n", lines));
     }
 }
+
+/// <summary>Event-based diagnostic trace, without changing RNG or gameplay rules.</summary>
+public sealed class StrTraceCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_trace";
+    public override string Args => "[on|off|status]";
+    public override string Description => "Slay the Requiem: read-only reward and economic/hero/enemy snapshots for final-cycle comparison.";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var option = args.FirstOrDefault()?.ToLowerInvariant() ?? "status";
+        if (option is not ("on" or "off" or "status") || args.Length > 1) return Fail("str_trace [on|off|status]");
+        if (option != "status") CardRewardTrace.Enabled = option == "on";
+        if (CardRewardTrace.Enabled)
+        {
+            var run = RunManager.Instance.DebugOnlyGetState();
+            RunDiagnostics.Log(run, "trace-enabled");
+            if (run != null) foreach (var player in run.Players) BalanceTrace.Snapshot("trace:enabled", player);
+        }
+        return Ok($"[CardReward]/[RequiemBalance] trace={(CardRewardTrace.Enabled ? "ON" : "OFF")}; [ShopOperation] and forced failure diagnostics remain in the log.");
+    }
+}
+
+public sealed class StrPassportCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_passport";
+    public override string Args => "";
+    public override string Description => "Slay the Requiem: actual artifacts, rules, mods, seed and display context (not acceptance proof).";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var state = RunManager.Instance.DebugOnlyGetState();
+        RunDiagnostics.Log(state, "console");
+        return Ok(RunDiagnostics.Describe(state));
+    }
+}
+
+public sealed class StrFactoryCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_factory";
+    public override string Args => "[smoke|full] [seeds:1..8]";
+    public override string Description => "Slay the Requiem: REAL CardFactory isolated seed suite; disposable run, BaseLib + mod only. Not a UI/co-op test.";
+    public override bool IsNetworked => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        if (NeedRun(issuingPlayer) is { } fail) return fail;
+        if (MegaCrit.Sts2.Core.Combat.CombatManager.Instance.IsInProgress) return Fail("Run the factory suite outside combat.");
+        var mode = args.FirstOrDefault()?.ToLowerInvariant() ?? "smoke";
+        var seeds = 1;
+        if (args.Length > 2 || mode is not ("smoke" or "full")
+            || args.Length > 1 && (!int.TryParse(args[1], out seeds) || seeds is < 1 or > 8))
+            return Fail("str_factory [smoke|full] [1..8]");
+        return Ok(CardFactoryRegression.Run(mode == "full", seeds), "Factory suite started; summary/failures: [CardFactorySuite] in the log. No gameplay acceptance implied.");
+    }
+}
+
+
+/// <summary>Production game-adapter checks on isolated non-local players; never a substitute for UI/co-op acceptance.</summary>
+public sealed class StrIntegrityCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_integrity";
+    public override string Args => "";
+    public override string Description => "Slay the Requiem: isolated game-adapter integrity suite. Disposable singleplayer run, out of combat, BaseLib + mod only.";
+    public override bool IsNetworked => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        if (NeedRun(issuingPlayer) is { } fail) return fail;
+        if (args.Length != 0) return Fail("str_integrity (no arguments)");
+        return Ok(IntegrityRegression.Run(), "Integrity suite started; per-case results: [IntegritySuite]. NOT UI, disk Continue/rollback or two-client acceptance.");
+    }
+}
+
+
+public sealed class StrRecoverCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_recover";
+    public override string Args => "[status|retry|restore]";
+    public override string Description => "Slay the Requiem: inspect recovery, retry immutable receipts, or confirm host checkpoint restore. Never unlocks an unknown partial effect.";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        if (args.Length > 1) return Fail("str_recover [status|retry|restore]");
+        var action = args.FirstOrDefault()?.ToLowerInvariant() ?? "status";
+        if (action == "status") return Ok(OperationRecovery.Describe(Net.RequiemNet.State));
+        if (action == "restore") return Ok(OperationRecovery.OfferRestore(), "Checkpoint confirmation opened; no partial effect is silently unlocked.");
+        if (action == "retry" && Net.RequiemNet.State is { } state && MegaCrit.Sts2.Core.Context.LocalContext.GetMe(state) is { } me)
+            return Ok(ShopOperations.RetryReceipts(me), "Retrying immutable receipts; no purchase or payment is repeated.");
+        return Fail("str_recover [status|retry|restore]");
+    }
+}
+
+public sealed class StrMetricsCmd : RequiemConsoleCmd
+{
+    public override string CmdName => "str_metrics";
+    public override string Args => "[on|off|reset|status]";
+    public override string Description => "Slay the Requiem: opt-in bounded frame/reward refresh timings (milliseconds).";
+    public override bool IsNetworked => false;
+    public override bool DebugOnly => false;
+    public override CmdResult Process(Player? issuingPlayer, string[] args)
+    {
+        var action = args.FirstOrDefault()?.ToLowerInvariant() ?? "status";
+        if (args.Length > 1 || action is not ("on" or "off" or "reset" or "status")) return Fail("str_metrics [on|off|reset|status]");
+        if (action is "on" or "off") TechnicalMetrics.Enabled = action == "on";
+        if (action == "reset") TechnicalMetrics.Reset();
+        return Ok(TechnicalMetrics.Describe());
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "scope": "Actual hosted C# xUnit counters from the preserved Core annotation; not full mod compilation/native gameplay",
+  "source_commit": "49288c96ed171c01b7197777ace9c2892392261c",
+  "run_id": 44275682452,
+  "check_run_id": 134703074632,
+  "counters": {
+    "total": 877,
+    "executed": 877,
+    "passed": 877,
+    "failed": 0,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "actual_native_runs": 0
+}

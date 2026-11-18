@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M4 46 C12 40 20 52 28 46 C36 40 44 52 52 46 C56 43 58 44 60 46" fill="none" stroke="#4F8FD6" stroke-width="4"/><path d="M4 56 C12 50 20 62 28 56 C36 50 44 62 52 56 C56 53 58 54 60 56" fill="none" stroke="#4F8FD6" stroke-width="4"/><path d="M12 38 C12 26 18 20 24 20 C30 20 32 28 32 38 Z" fill="#8f8f88"/><path d="M34 38 C34 18 40 8 46 8 C52 8 54 20 54 38 Z" fill="#a3a39a"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>ebb_stones</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 38 L9 14 L21 9 L25 38 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/><path d="M27 34 L30 5 L42 7 L46 34 Z" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M47 38 L49 18 L57 21 L59 38 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/><path d="M5 46 Q14 39 23 46 Q32 53 41 46 Q50 39 59 46 M5 57 Q14 50 23 57 Q32 64 41 57 Q50 50 59 57" fill="none" stroke="#302922" stroke-width="5"/>
+  </g>
+</svg>

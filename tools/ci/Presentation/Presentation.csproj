@@ -1,0 +1,14 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <AssemblyName>RequiemPresentationSmoke</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Actual production helpers only. No game assemblies, mock game DLL or fake full-mod compilation. -->
+    <Compile Include="../../../mod/SlayTheRequiemCode/UI/RequiemNodes.cs" Link="Production/RequiemNodes.cs" />
+    <Compile Include="../../../mod/SlayTheRequiemCode/UI/RequiemFocus.cs" Link="Production/RequiemFocus.cs" />
+  </ItemGroup>
+</Project>

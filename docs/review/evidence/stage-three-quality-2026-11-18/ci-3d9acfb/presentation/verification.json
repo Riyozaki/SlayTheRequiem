@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "source_commit": "3d9acfb7e4cca78831fad63837366b31edb05637",
+  "run_id": 44282711349,
+  "check_run_id": 134727331596,
+  "cases": 12,
+  "source_hashes_match_identified_git_objects": true,
+  "workflow_and_scene_bound": true,
+  "pinned_mono_archive_sha256": "b61697dd6921da76e3d2358ab592263dfaae398d0ac1229e82eab7e4a7c36cbf",
+  "scope": "public-Godot-NOT-MegaDot-NOT-full-mod-build-NOT-native-game-NOT-FPS-NOT-art-acceptance",
+  "actual_native_runs": 0,
+  "note": "Actual successful hosted job + bounded annotation; executable hash reported by the job whose workflow verifies the pinned official mono archive. Engine was not redownloaded locally. Not signed provenance/full mod/native game/layout/FPS acceptance."
+}

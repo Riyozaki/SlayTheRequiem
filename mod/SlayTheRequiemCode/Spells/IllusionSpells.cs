@@ -17,7 +17,7 @@ internal static class IllusionRules
     public static bool CanControl(Creature target, SpellTier tier)
     {
         if (target.Monster == null || !target.IsAlive) return false;
-        if (EnemySetup.RankOf(target.CombatState) == EnemyRank.Boss || target.HasPower<UnshakeablePower>()) return false;
+        if (!EnemyRoleRules.CanControl(EnemySetup.RoleOf(target)) || target.HasPower<UnshakeablePower>()) return false;
         var cap = SpellAffinity.ControlHpCap(tier);
         return cap == null || target.CurrentHp <= cap;
     }

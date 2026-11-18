@@ -778,6 +778,18 @@ class Stage6(unittest.TestCase):
         self.assertEqual(r.reflected(9), 4)
         self.assertEqual(r.champion_unshakeable_stagger(3), 2)
 
+    def test_short_route_path_is_early_without_changing_vanilla_three_acts(self):
+        self.assertEqual(r.path_offer_act_index(3, short_run=True), 0)
+        self.assertTrue(r.path_offer_due(1, 0, 3, False, short_run=True))
+        self.assertTrue(r.path_offer_due(7, 1, 3, False, short_run=True))
+        self.assertFalse(r.path_offer_due(8, 0, 3, True, short_run=True))
+        self.assertFalse(r.path_offer_due(1, -1, 3, False, short_run=True))
+        self.assertEqual(r.path_offer_act_index(3), 1)
+        self.assertFalse(r.path_offer_due(7, 1, 3, False))
+        self.assertTrue(r.path_offer_due(8, 1, 3, False))
+        self.assertFalse(r.path_offer_due(7, 3, 5, False))
+        self.assertTrue(r.path_offer_due(8, 2, 5, False))
+
     def test_card_enchants(self):
         self.assertTrue(r.can_enchant_card("Lightened", False, False))
         self.assertFalse(r.can_enchant_card("Flaming", False, True))
@@ -857,7 +869,8 @@ class Stage7(unittest.TestCase):
         self.assertTrue(r.nameless_unlocked(mask, True))
         self.assertFalse(r.nameless_unlocked(mask, False))
         self.assertTrue(r.portal_mandatory(False, 10))
-        self.assertAlmostEqual(r.binding_multiplier(5), 1.45)
+        self.assertEqual(r.binding_tier_penalty(5), -3)
+        self.assertEqual(r.binding_tier_penalty(-1), 0)
         self.assertFalse(r.bypasses_ghostly(False, "physical", False))
 
 
@@ -1525,7 +1538,11 @@ class M7VfxLooks(unittest.TestCase):
         self.assertIn("RequiemVfx.Overstrain(player.Creature)", self.src("Rules", "RequiemCombatRules.cs"))
         self.assertIn("RequiemVfx.Quiet()", self.src("Rules", "RequiemCombatRules.cs"))
         self.assertIn("RequiemVfx.Broken(Owner)", self.src("Powers", "EnemyPowers.cs"))
-        self.assertIn("RequiemVfx.Dodge(Owner)", self.src("Powers", "ArmorPowers.cs"))
+        dodge = self.src("Powers", "ArmorPowers.cs")
+        # Deferred per-hit receipt captures the original owner before nested power callbacks.
+        self.assertIn("var owner = Owner;", dodge)
+        self.assertIn("HitDefensePipeline.Defer(async () =>", dodge)
+        self.assertIn("RequiemVfx.Dodge(owner)", dodge)
         self.assertIn("RequiemVfx.Summon(pet, Kind)", self.src("Powers", "SummonPowers.cs"))
         self.assertIn("RequiemVfx.Shout(", self.src("Progression", "HeroRecord.cs"))
         self.assertIn("RequiemVfx.Rewind(", self.src("Rollback", "MemoryStone.cs"))
@@ -1534,7 +1551,12 @@ class M7VfxLooks(unittest.TestCase):
         for target in ("CombatHistory), nameof(CombatHistory.DamageReceived)", "NDamageBlockedVfx), nameof(NDamageBlockedVfx._Ready)",
                        "NBossMapPoint), nameof(NBossMapPoint._Ready)", "NCombatRoom), nameof(NCombatRoom._Ready)"):
             self.assertIn(target, patches)
-        self.assertIn("public static bool CombatVfx { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        # A backed setting is intentional: changing it must stop live decorative effects, not only affect new nodes.
+        config = self.src("Config", "RequiemConfig.cs")
+        self.assertIn("private static bool _combatVfx = true;", config)
+        setting = config.split("public static bool CombatVfx", 1)[1].split("\n    }", 1)[0]
+        self.assertIn("get => _combatVfx;", setting)
+        self.assertIn("_combatVfx = value; UI.RequiemMotion.SettingsChanged();", setting)
         sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
         from loc_m7vfx import VFX_TIPS
         self.assertEqual(VFX_TIPS["rus"]["VFX.dodge"], "Уворот!")
@@ -1623,7 +1645,12 @@ class M7SfxRules(unittest.TestCase):
         self.assertIn("RequiemConfig.RequiemSounds", sfx)
         self.assertTrue(os.path.isfile(self.TABLE + ".import"))
         self.assertIn('importer="keep"', open(self.TABLE + ".import", encoding="utf-8").read())
-        self.assertIn("public static bool RequiemSounds { get; set; } = true;", self.src("Config", "RequiemConfig.cs"))
+        config = self.src("Config", "RequiemConfig.cs")
+        self.assertIn("private static bool _requiemSounds = true;", config)
+        setting = config.split("public static bool RequiemSounds", 1)[1].split("\n    }", 1)[0]
+        self.assertIn("get => _requiemSounds;", setting)
+        self.assertIn("_requiemSounds = value; UI.RequiemMotion.SettingsChanged();", setting)
+        self.assertIn("if (!Enabled) { player.Autoplay = false; player.Stop(); player.QueueFree(); }", sfx)
         sys.path.insert(0, os.path.join(self.ROOT, "tools", "loc"))
         import loc_ui
         self.assertEqual(loc_ui.UI_SETTINGS["rus"]["REQUIEM_SOUNDS.title"], "Звуки Реквиема")

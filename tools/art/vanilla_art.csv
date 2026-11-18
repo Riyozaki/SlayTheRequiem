@@ -506,8 +506,27 @@ relic,OrdinatorBackground,JeweledMask,маска Ординатора
 relic,AshNomadBackground,CharonsAshes,пепел кочевья
 relic,IronBattleaxe,SereTalon,
 relic,HeavyBow,FishingRod,
+power,WandererGuardPower,GuardedPower,Б2 временная стойка Странника — намеренный ванильный значок
 power,OathGuardPower,GuardedPower,M5 боссы: Клятва стражи
 power,PressurePower,SteamEruptionPower,M5 боссы: Давление Котлового змея
 power,SunStancePower,RadiancePower,M5 боссы: Солнечная стойка
 power,MoonStancePower,ShadowmeldPower,M5 боссы: Лунная стойка
 relic,Torch,Lantern,Факел — Ночное зрение (13 §3, M6)
+
+# Б2.4 — deliberate temporary attack portraits; own illustration acceptance belongs to block 3.
+card,HuntingShot,defect/Synthesis,Weapon hunter entry; temporary vanilla attack portrait
+card,CoveringShot,necrobinder/StrikeNecrobinder,Attack and Block; temporary vanilla attack portrait
+
+# Б2: temporary encounter counterplay; deliberate vanilla portraits/icons, not new original-art acceptance.
+card,EnvoySidestep,defect/Leap,encounter dodge Skill; no visible-vanilla duplicate
+card,CarrySolarStandard,defect/SignalBoost,encounter banner Skill
+card,CocoonSunbeam,defect/Rainbow,encounter light Skill; not a damage Attack
+card,TearTheWing,necrobinder/PullAggro,encounter grounding Skill
+card,ClearTheSkies,defect/Reboot,encounter clearing Skill
+power,ValveClosedPower,ArtifactPower,visible two-turn valve closure
+power,SolarStandardGuardPower,BufferPower,source-qualified protection
+power,BlackBookAuraPower,FocusPower,read-only resistance aura
+power,GroundedByShoutPower,WeakPower,two-turn grounding
+power,MeteorWarningPower,StrengthPower,visible meteor warning
+power,EncounterCounterPendingPower,ArtifactPower,full-hand entitlement
+power,ArmorPiercingPower,StrengthPower,visible enemy Pierce shared with the armor stage

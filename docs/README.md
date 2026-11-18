@@ -26,10 +26,40 @@
 | 13 | [design/13-acts-map.md](design/13-acts-map.md) | 5 актов с развилками, карта шириной 9, новые значки и события |
 | 14 | [design/14-shops.md](design/14-shops.md) | 8 видов лавок + Наставник: заклинания, снаряжение, продажа, доверие, заказы |
 | 15 | [design/15-death-rollback.md](design/15-death-rollback.md) | Камень Памяти: откат к началу акта после гибели, Свечи Реквиема, Шрамы |
+| 16 | [design/16-platebearer-cards.md](design/16-platebearer-cards.md) | Карты Латоносца и роли его архетипов |
+| 17 | [design/17-silent-cards.md](design/17-silent-cards.md) | Карты Безмолвной |
+| 18 | [design/18-regent-and-shared-cards.md](design/18-regent-and-shared-cards.md) | Карты Регента, общие карты и меню-жетоны |
+| 19 | [design/19-card-pools.md](design/19-card-pools.md) | Разрешённые пулы, изъятия, доля своих карт и карты Договора |
 | T | [tech/technical-plan.md](tech/technical-plan.md) | Архитектура мода, хуки, данные, риски |
 | R | [ROADMAP.md](ROADMAP.md) | Этапы, вертикальный срез, открытые вопросы |
 
-### Ревью и план доделки (ноябрь 2026)
+### Реализация Б1–Б3, аудит и выпуск — 18.11.2026
+
+База аудита: `main@8000886`. После неё в рабочую ветку внесены Б1, пакеты Б2 и исходники Б3; исторические находки
+не выдаются за текущие невнесённые правки. **Исходники/автоматика/полный build/игра — разные статусы.** Ручной плейтест — в конце.
+
+| Документ | Содержание |
+|---|---|
+| [Б3: качество и выпуск, исходники/измерения](review/stage-three-quality-implementation-2026-11-18.md) | Арт-мастера, движение/звук, production-кэш, реальные C# microbenchmarks и границы native-приёмки |
+| [Передача на сборку](release/BUILD_HANDOFF.md) | Последние исправления, текущий CI и PowerShell probe → build/export → verify → install |
+| [Установка](release/INSTALL.md) · [совместимость](release/COMPATIBILITY.md) | Состав matched кандидата, game/BaseLib, старые saves/config и recovery |
+| [Финальная приёмка](release/FINAL_ACCEPTANCE.md) · [план 257 требований](release/final-matrix.plan.json) | Все пока NOT_RUN: 12 full routes, short отдельно, 21 бой, формы/Пути, кооп, UI/performance и права |
+| [Release notes](release/RELEASE_NOTES.md) · [диагностика](release/DIAGNOSTICS.md) | Что изменено и что не принято; воспроизведение и privacy публичного отчёта |
+| [Происхождение арта](release/ART_PROVENANCE.md) · [инвентаризация](release/asset-coverage.csv) | Own/vanilla/runtime/source и ограничения прав; наличие файла не означает качество/PASS |
+| [Б2: контрмеры боссов](review/stage-two-counterplay-implementation-2026-11-18.md) | Полный согласованный корпус, actual Core output, native cases ещё открыты |
+| [Блок 1: внесённая реализация и границы проверки](review/stage-one-implementation-2026-11-18.md) | Карты/выдачи/сейвы/сеть/recovery/build; реальные CI-счётчики, ещё не исполненные game adapters |
+| [Evidence блока 1](review/evidence/stage-one-2026-11-18/README.md) | Команды/logs/SHA, публичный CI, manifest избирательного переноса; никаких игровых DLL/сейвов |
+| [Следующий игровой релиз: 3 блока](plan/next-playable-release-2026-11-18.md) | Надёжное ядро → цельный игровой цикл → качество и выпуск; порядок пакетов и критерии приёмки каждой вехи |
+| [Аудит `main@8000886`](review/main-audit-2026-11-18.md) | Исходная база: готовность, перепроверка фиксов, 18 находок, результаты проверок и границы выводов |
+| [Матрица реализации 01–19](review/implementation-matrix-2026-11-18.md) | Замысел → код → разрывы → необходимая приёмка |
+| [Визуальное ревью](review/art-audit-2026-11-18.md) | Оценка рисунков с 16 просмотренными контактными листами и тестом 32-px значков |
+| [Регрессионные сценарии](review/regression-checklist-2026-11-18.md) | Карты, сундук, награды, герои, бой, враги, сейвы/кооп, UI и производительность |
+| [План стабилизации и завершения](plan/stabilization-plan-2026-11-18.md) | S0–S8, зависимости, решения дизайна, измеримые критерии и первый ограниченный пакет |
+| [Ревью ветки другого агента](review/other-agent-branch-review-2026-11-18.md) | Что использовать из `03d6360`, что уже есть в main, оставшиеся блокеры и безопасный порядок переноса; слияния не было |
+
+### Предыдущие ревью и спецификации (ноябрь 2026)
+
+Исторические статусы исправлений требуют сверки с актуальным аудитом выше.
 
 | # | Документ | О чём |
 |---|----------|-------|
@@ -38,14 +68,27 @@
 | A | [plan/art-ui-animation-spec.md](plan/art-ui-animation-spec.md) | Арт-дирекция, размеры ассетов, UI-компоненты, анимации, VFX, звук, пайплайн |
 | C | [plan/card-rework-spec.md](plan/card-rework-spec.md) | Переработка карт: ванильные правила и их видимость, карты героев, жетоны, чек-лист карты |
 | — | [plan/card-catalog.md](plan/card-catalog.md) | Каталог всех карт мода (генерируется `tools/cards/card_catalog.py`) |
-| — | [plan/asset-manifest.csv](plan/asset-manifest.csv) | Все 1859 ожидаемых кодом ассетов и чем каждый закрыт (свой / ванильный) (генерируется `tools/assets/asset_manifest.py`) |
+| — | [plan/asset-manifest.csv](plan/asset-manifest.csv) | Ожидаемые кодом слоты ресурсов и чем каждый закрыт (свой / ванильный); генерируется `tools/assets/asset_manifest.py`, это не оценка художественного качества |
 
 ## Статус
 
-**Этапы 0–7 написаны** (код без сборки в игре): все системы из документов 01–15 — от выносливости и снаряжения
-до пяти актов и супербоссов — реализованы в [`mod/`](../mod/README.md). Чистые правила (`Core/`) собираются и проходят
-тесты в CI; остальной код **ещё ни разу не собирался с игрой** — это первая задача Этапа 8. Что сделано по каждому
-документу — в разделах «Статус реализации» в конце документов и в [ROADMAP.md](ROADMAP.md).
+**Большинство систем представлены в коде; мод уже собран и проходил плейтест пользователя.** Историческая сборка
+`ec598de` под игру 0.107.1 завершилась без ошибок с экспортом PCK. На последующем `main@8000886` найдены новые риски
+сборки, потери карт и состояния вещей; наличие кода ещё не означает готовность функции.
+
+После этого внесены исправления Б1, игровые пакеты Б2 и исходники Б3. Исторические **560/560 Core** относятся к
+`b82c909` ([evidence Б1](review/evidence/stage-one-2026-11-18/README.md)). Текущий **`3d9acfb`**, публичный
+[CI 44282711349](https://github.com/Riyozaki/SlayTheRequiem/actions/runs/44282711349): **879/879 Core**, шесть jobs PASS,
+28 реальных C# cache trials и 12 групп production node/focus helpers в official public Godot 4.5.1 mono.
+Предсборочная доделка убрала дублирующийся C# патч, исправила overlay/death/focus lifecycle и responsive passport/recovery.
+Локально 34 проверки / 322 Python PASS. Предыдущий dc66 отдельно подтверждает double-buffer cleanup и byte binding;
+ни Core, ни isolated helper smoke не являются full game-side build/MegaDot/layout/native game acceptance.
+[Evidence Б3](review/evidence/stage-three-quality-2026-11-18/README.md) сохраняет также `49288c9` (877/877) и `6c1234d` (869/869),
+не скрывая прежнюю allocation-регрессию. Microbenchmark не является engine/FPS-приёмкой.
+Full-build workflow с легальной игрой подготовлен, но не исполнен здесь; новый PCK/игра/кооп и measured **native** baseline
+не приняты. Актуальные исходники/границы — [отчёт Б3](review/stage-three-quality-implementation-2026-11-18.md). Аудит и
+[матрица реализации](review/implementation-matrix-2026-11-18.md) описывают исходную базу; старые разделы «Статус реализации»
+и [ROADMAP](ROADMAP.md) нужно читать как историю, а не как подтверждение отсутствия регрессий.
 
 Решённые вопросы (ноябрь 2026):
 1. Ванильные атаки — **ручная разметка** ◆ ([CSV](../mod/SlayTheRequiem/data/vanilla_attacks_stamina.csv), генератор `tools/markup`).

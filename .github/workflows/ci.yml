@@ -20,7 +20,99 @@ jobs:
         with:
           dotnet-version: 9.0.x
       - name: dotnet test
-        run: dotnet test mod/SlayTheRequiem.Tests --logger "console;verbosity=normal"
+        shell: bash
+        run: |
+          set +e
+          dotnet test mod/SlayTheRequiem.Tests --logger "console;verbosity=normal" --logger "trx;LogFileName=core.trx" --results-directory .arena-ci/test-results > core-tests.log 2>&1
+          result=$?
+          cat core-tests.log
+          if [ "$result" != 0 ]; then
+            python3 tools/ci/report_test_failures.py core-tests.log --trx .arena-ci/test-results/core.trx
+            exit "$result"
+          fi
+          python3 tools/ci/report_test_failures.py core-tests.log --trx .arena-ci/test-results/core.trx --success
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools/g0')
+          import mod_build
+          print(mod_build.core_results(Path('.arena-ci/test-results/core.trx')))
+          PY
+      - name: Paired five-act economic scenarios on actual Core rules (not native gameplay)
+        run: dotnet run --project tools/balance/Trace --configuration Release -- --annotate
+      - name: Preserve bounded Core economy traces (no game files or saves)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-economy-${{ github.sha }}
+          path: .arena-ci/balance/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve Core TRX (no game files)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-results-${{ github.sha }}
+          path: .arena-ci/test-results/core.trx
+          if-no-files-found: warn
+          retention-days: 30
+
+  view-cache:
+    name: C# view-cache microbenchmark · not game FPS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      # Separate job: Core's bounded economy notices already use its annotation budget.
+      - name: Actual C# view-cache microbenchmark (not engine/FPS/native-event acceptance)
+        run: dotnet run --project tools/perf/Views --configuration Release -- --annotate
+      - name: Preserve bounded view-cache measurements (no game files)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: view-cache-${{ github.sha }}
+          path: .arena-ci/perf-views/
+          if-no-files-found: warn
+          retention-days: 30
+
+  presentation-helpers:
+    name: Godot node/focus helpers · not game or full mod build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - name: Pinned public Godot mono (NOT the game's MegaDot)
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/str-godot-4.5.1-mono.zip"
+          curl --fail --location --retry 3 --output "$archive" https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_mono_linux_x86_64.zip
+          echo "b61697dd6921da76e3d2358ab592263dfaae398d0ac1229e82eab7e4a7c36cbf  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/str-godot"
+          unzip -q "$archive" -d "$RUNNER_TEMP/str-godot"
+      - name: Actual headless production helper smoke (no game DLLs/assets, no gameplay/FPS claim)
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine=$(find "$RUNNER_TEMP/str-godot" -type f -name 'Godot*_mono_linux.x86_64' -print -quit)
+          test -n "$engine"
+          chmod +x "$engine"
+          python3 tools/ci/presentation_smoke.py --godot "$engine" --out .arena-ci/presentation
+      - name: Preserve bounded helper result only (not the engine or mod binaries)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presentation-helpers-${{ github.sha }}
+          path: .arena-ci/presentation/summary.json
+          if-no-files-found: warn
+          retention-days: 30
 
   sim:
     name: Rules sim · Python
@@ -30,6 +122,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install numeric simulation dependency (no optional skipped suite)
+        run: pip install numpy==2.4.6
       - name: unittest
         run: python -m unittest discover -s tools/sim -v
 
@@ -41,23 +135,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install tree-sitter
-        run: pip install tree-sitter tree-sitter-c-sharp
+      - name: Install pinned content-check dependencies
+        run: pip install -r tools/ci/requirements.txt
       - name: Localization is up to date
         run: |
           python tools/loc/build_loc.py
           git diff --exit-code -- mod/SlayTheRequiem/localization || (echo "::error::Run python3 tools/loc/build_loc.py and commit the result" && exit 1)
       - name: Localization coverage (eng = rus, every model has a title, model ids are unique)
         run: python tools/ci/check_loc.py
-      - name: C# syntax (all mod files)
+      - name: Content checker regressions (including dynamic creation localization)
+        run: python -m unittest discover -s tools/ci -v
+      - name: Nine build directions have real source access (not gameplay acceptance)
+        run: python tools/balance/build_directions.py --check
+      - name: Combat move typing, individual roles and declared entourage (source contracts)
+        run: python tools/ci/check_combat.py
+      - name: Saved economy policy and opt-in observation wiring (source contracts, not native acceptance)
+        run: python tools/ci/check_economy.py
+      - name: C# syntax (all mod and tool files)
         run: python tools/ci/check_csharp_syntax.py
+      - name: C# type declarations across actual projects (not semantic game compilation)
+        run: python tools/ci/check_csharp_declarations.py
       - name: Vanilla art table is up to date (tools/art/vanilla_art.csv)
         run: |
           python tools/art/build_vanilla_art.py --check
           python tools/art/art_fit.py --check
       - name: Own art (M5, M7) — SVG sources match the generators, PNG present and sized (bosses, scenes, acts, relics, card portraits)
         run: |
-          pip install pillow numpy
           python tools/art/monsters/draw_monsters.py
           git diff --exit-code -- art/monsters || (echo "::error::Run python3 tools/art/monsters/draw_monsters.py and commit the result" && exit 1)
           python tools/art/monsters/build_boss_icons.py --check
@@ -67,6 +170,8 @@ jobs:
           python tools/art/relics/draw_origins.py --check
           python tools/art/relics/draw_relics.py --check
           python tools/art/cards/draw_portraits.py --check
+          python tools/art/monsters/illustrated_sprites.py --check
+          python tools/art/readable_icons.py --check
       - name: Requiem sounds (M7) — data/sfx.csv events and vanilla FMOD paths, own WAVs match the synth
         run: python tools/audio/build_sfx.py --check
       - name: Act events (M5) — pools, ≥6 per act, loc keys, numbers, pictures
@@ -96,3 +201,30 @@ jobs:
           python tools/art/snapshot_vanilla.py /tmp/rl/decompiled 0.107.1
           git diff --exit-code -- tools/art/vanilla_models.txt tools/art/vanilla_card_types.txt tools/relics/vanilla_relics_snapshot.txt || (echo "::error::Vanilla snapshot is stale: run tools/art/snapshot_vanilla.py" && exit 1)
           python tools/relics/build_relics.py --check
+
+  build-contracts:
+    name: Build/export/install safety contracts · Python (not full mod build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: G0 tool contract tests
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tools/g0 -v > build-contracts.log 2>&1
+          result=$?
+          cat build-contracts.log
+          if [ "$result" != 0 ]; then python tools/ci/report_test_failures.py build-contracts.log; fi
+          exit "$result"
+      - name: Release archive and final-acceptance record contracts (synthetic only, not accepted gameplay)
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tools/release -v > release-contracts.log 2>&1
+          result=$?
+          cat release-contracts.log
+          if [ "$result" != 0 ]; then python tools/ci/report_test_failures.py release-contracts.log; fi
+          exit "$result"

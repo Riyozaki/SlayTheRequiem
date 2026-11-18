@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "created_utc": "2026-11-18",
+  "pipeline": "tools/art/cards/illustrations.py",
+  "acceptance_policy": "source-candidate is not author approval, paint-over completion or in-game visual acceptance; these remain in the final release matrix",
+  "assets": [
+    {
+      "key": "whirlwind",
+      "model": "Whirlwind",
+      "master": "art/illustrations/masters/whirlwind.png",
+      "master_sha256": "c8e88e1d646b7a84ff143a69379b6f7fc00b5ca265ebe635d5223bacc9219b5f",
+      "crop_xyxy": [
+        59,
+        0,
+        1125,
+        810
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/whirlwind.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/whirlwind.png",
+      "mechanical_intent": "Barbarian Path Attack: powered physical area weapon sweep. Snow/wind describe motion, not Frost or Fire damage. Not a starting-deck illustration.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "A single standalone landscape fantasy card illustration, aspect ratio approximately 1000 by 760. A burly wandering warrior in battered cold steel and a ragged blue wool cloak commits their full weight to a broad two-handed iron battleaxe sweep across the foreground of a ruined mountain causeway. Strong off-center three-quarter pose, grounded bent legs, convincing two hands on one long axe haft, ONE axe. Cloak and loose snow describe the circular physical swing; two indistinct small hostile silhouettes recoil near the far edges, not a portrait lineup. The arc is wind and flying snow, not magic or fire. A tense slightly wry dark-fantasy adventure tone. Stylized hand-painted two-dimensional game illustration, broad tactile gouache shapes, confident dark drawn outlines, three clear value groups, simplified expressive anatomy, cool steel and muted indigo palette with a restrained warm leather accent. Purpose is physical area weapon damage, not a floating weapon emblem. One primary focal action within the central seventy percent, generous quiet dark margin near top and bottom for card cropping. Readable at 250 by 190 pixels. No text, no lettering, no border, no UI, no watermark, no recognizable existing franchise insignia, no photorealism, no three-dimensional render. One cohesive scene only."
+    },
+    {
+      "key": "focused_aim",
+      "model": "FocusedAim",
+      "master": "art/illustrations/masters/focused_aim.png",
+      "master_sha256": "85b0cea947addc585ea8c62b20396f4836ee0e42d9d5f6351a1f594d35d1020c",
+      "crop_xyxy": [
+        40,
+        28,
+        1145,
+        868
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/focused_aim.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/focused_aim.png",
+      "mechanical_intent": "Mystic Archer Path Skill: concentrate to gain Mana, Exhaust. No shot released, damage, poison, range bonus or guaranteed weapon is implied by the rules. The crossbow is an archetype illustration, not an equipment requirement. Not a starting-deck illustration.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "A single standalone landscape fantasy card illustration, aspect ratio approximately 1000 by 760. A quiet hooded huntress in a weathered deep-green cloak and dark leather crouches behind a broken stone parapet in a misty forest ruin, carefully preparing a single aimed shot with a compact hand-spanned crossbow. The crossbow is still steady, not firing; her gloved hands are visibly and plausibly holding the stock and grip. Her eye and the iron front sight form a clear diagonal toward a distant small target silhouette on the right. A pale diagonal shaft of dawn light catches the bolt tip and one cheek; the rest is calm blue-green woodland shadow. This is a concentration and ranged preparation SKILL, not an explosion, spray, melee attack, or poison bottle. Stylized hand-painted two-dimensional game illustration with broad tactile gouache masses, confident dark outlines, expressive but simplified anatomy, three clear value groups, moss green, charcoal and restrained muted violet. Atmospheric dark-fantasy adventure with an understated wary personality. Strong asymmetrical composition, foreground archer and weapon silhouette in the central seventy percent, quiet dark top and bottom crop margins; readable at 250 by 190. No text, no lettering, no border, no UI, no watermark, no recognizable franchise insignia, no photorealism, no 3D render. One coherent scene only."
+    },
+    {
+      "key": "firebolt",
+      "model": "Firebolt",
+      "master": "art/illustrations/masters/firebolt.png",
+      "master_sha256": "f7d6cf8b27ca9befdcb6285b400c5cf17181293bef574dffaf4f81b5678f83d7",
+      "crop_xyxy": [
+        116,
+        86,
+        1068,
+        810
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/firebolt.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/firebolt.png",
+      "mechanical_intent": "Novice Destruction Spell Attack: one Fire projectile and Burning on one enemy. This is not an area explosion or Physical weapon attack. Early/frequent spell reference, not a promise that every Regent origin starts with Firebolt.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "A single standalone landscape fantasy card illustration, aspect ratio approximately 1000 by 760. A young imperious star-robed sorcerer in a scuffed gold-trimmed indigo mantle casts ONE compact lance of orange fire from an open gloved hand toward a small hostile construct on the right in a ruined observatory. Clear three-quarter body pose with a convincing single outstretched arm, hand, wrist and sleeve; the other hand gathers the cloak. The fire is a short bright pointed projectile with a white-hot core and orange curling tail, not a huge area inferno or explosion. Its restrained warm light reveals chipped brass instruments and cold blue stone. There is a deliberate almost overconfident expression, dark-fantasy adventure with a little irony, not epic photorealism. Stylized hand-painted two-dimensional game illustration, broad tactile gouache color shapes, confident dark outlines, simplified expressive anatomy, three clear value groups. Indigo and old gold in the shadows, strong but localized orange fire focal point, no complicated tiny stars everywhere. Purpose is a basic single-target FIRE spell. Main action within central seventy percent, quiet dark margins at the top and bottom for cropping. Readable at 250 by 190 pixels. No text, no lettering, no card border, no UI, no watermark, no recognizable existing franchise insignia, no photorealism, no three-dimensional render. One cohesive scene only."
+    },
+    {
+      "key": "shield_bash",
+      "model": "ShieldBash",
+      "master": "art/illustrations/masters/shield_bash.png",
+      "master_sha256": "335f4c0f9a092f80b467f3d842c939a3c2b1a36e76b3bbaa4f2f59531a1cd0fc",
+      "crop_xyxy": [
+        90,
+        64,
+        1090,
+        824
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/shield_bash.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/shield_bash.png",
+      "mechanical_intent": "Platebearer common physical Attack: strike one target with a shield and Stagger. Common reward-pool candidate, not guaranteed in every starting deck; no new shield equipment requirement.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "One standalone landscape fantasy card illustration, approximately 1000 by 760 composition. A stocky wandering warrior in battered blue-gray plate and an indigo wool cloak drives a broad dented iron round shield forward with a bent left forearm into a taller hostile armored raider, staggering them backward. The warrior is on the left, opponent right; exactly two figures, one clear close-contact SHIELD strike, no extra hands or shields. The warrior holds a lowered plain sword in the other hand, not swinging it. Strong diagonal transfer of body weight, bent knees, small chips of dust at contact. Rough cold mountain stone underfoot and a dim timber gate behind, simplified into broad shadows. Purpose is a COMMON physical shield attack that staggers one enemy, NOT a spell, lightning, frost, or fire. Stylized hand-painted two-dimensional dark fantasy adventure game illustration, broad opaque gouache color shapes, confident dark ink outlines, expressive simplified anatomy, distinct scuffed metal and coarse cloth, three clear value groups. Restrained muted blue steel, brown leather, warm cream contact accent, no magical glow. Off-center active composition, main gesture and shield inside central seventy percent, calm dark top and bottom margins for cropping. Readable at 250 by 190 pixels. No text, lettering, UI, frame, watermark, franchise marks, photorealism or 3D render. One cohesive scene."
+    },
+    {
+      "key": "backstab",
+      "model": "Backstab",
+      "master": "art/illustrations/masters/backstab.png",
+      "master_sha256": "c1ac8f24ea8decf98677e7136a8c4973cee5a6c2957fb95c83b978560cf28295",
+      "crop_xyxy": [
+        120,
+        80,
+        1063,
+        797
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/backstab.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/backstab.png",
+      "mechanical_intent": "Silent common physical weapon Attack: exploit a target without an attacking intent or attack from Invisibility. Common reward-pool candidate, not a universal starting-card replacement. No automatic poison or execution.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "One standalone landscape fantasy card illustration, approximately 1000 by 760 composition. A wary hooded huntress in a weathered deep green cloak and charcoal leather steps silently out of a narrow blue-green alley behind an unaware bulky masked sentry whose attention is turned away to the right. Exactly two figures. Her one visible right hand holds a short dull steel dagger low behind the sentry's unarmored side, just before the precise physical strike; her left hand touches a rough wall for balance. Her face is partly in shadow and alert, not smiling. Clear asymmetrical sneaking silhouette and a visual opening in the target's stance, no gore or impalement. Worn stone arches and a small distant amber lantern establish depth without tiny detail. Purpose is a COMMON single-target sneak attack using an opening, NOT invisibility magic, poison, ranged fire, or a guaranteed kill. Stylized hand-painted two-dimensional dark fantasy adventure game illustration, broad opaque gouache masses, confident dark ink contours, expressive simplified convincing limbs and hands, tactile leather and stone, three clear value groups. Moss green and charcoal, one restrained amber edge light. Main action in central seventy percent, calm dark margins top and bottom for card cropping, readable at 250 by 190 pixels. No text, lettering, frame, UI, watermark, franchise insignia, photorealism or 3D render. One coherent scene."
+    },
+    {
+      "key": "arcane_focus",
+      "model": "ArcaneFocus",
+      "master": "art/illustrations/masters/arcane_focus.png",
+      "master_sha256": "086ae1b08adf855db2eb617f22daa8fc1e5757983701c4c5e430d47eb4221b67",
+      "crop_xyxy": [
+        90,
+        65,
+        1090,
+        825
+      ],
+      "runtime_small": "res://SlayTheRequiem/images/card_portraits/arcane_focus.png",
+      "runtime_big": "res://SlayTheRequiem/images/card_portraits/big/arcane_focus.png",
+      "mechanical_intent": "Regent common self Skill: gain Mana and SpellFocus, no damage. StarterReplacement selects one vanilla DefendRegent for this card; a background/bonus may subsequently alter that deck.",
+      "provenance": "AI-generated in this Arena session with generate_image, text-to-image, no reference image or game asset input. Original full-resolution output retained unchanged.",
+      "rights": "No third-party stock/game image was supplied. AI output is not a claim of exclusive copyright. Project-wide artwork licensing/attribution review is still a public-release gate; no new license is asserted here.",
+      "acceptance": "source-candidate; crop/downsample preview reviewed by agent; author and native-client acceptance pending",
+      "prompt": "One standalone landscape fantasy card illustration, approximately 1000 by 760 composition. A young imperious sorcerer in a worn gold-trimmed indigo mantle sits sideways on a broken observatory stair, taking a controlled quiet breath while concentrating a SMALL pale violet star-shaped mote between the thumb and forefinger of one raised hand. One person only. The other hand calmly closes a heavy grimoire resting on a knee. Clear thoughtful slightly proud expression, plausible hands, relaxed grounded pose. The small inward-curving traces of light return toward the sorcerer's palm, no projectiles, target, shield, summoned creature, explosion or attack. This is a BASIC self resource preparation Skill, gain mana and focus before a spell, NOT damage or a new elemental type. Chipped brass armillary fragments and cold blue stone in the background, a restrained warm candle nearby, large quiet value masses. Stylized hand-painted two-dimensional dark fantasy adventure illustration with broad tactile gouache shapes, confident dark outlines, expressive simplified anatomy, three clear value groups, indigo and tarnished gold palette with a localized muted lilac focal point. Main head and hands inside central seventy percent, quiet dark top and bottom crop margins. Readable at 250 by 190 pixels. No text, legible writing, lettering, card border, UI, watermark, recognizable existing franchise insignia, photorealism or 3D render. One coherent scene."
+    }
+  ]
+}

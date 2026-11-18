@@ -1,9 +1,7 @@
 using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Rooms;
 using SlayTheRequiem.SlayTheRequiemCode.Core;
-using VanillaMinion = MegaCrit.Sts2.Core.Models.Powers.MinionPower;
 
 namespace SlayTheRequiem.SlayTheRequiemCode.Rules;
 
@@ -23,8 +21,7 @@ public static class Graveyard
     public static void Note(ICombatState? state, Creature creature)
     {
         if (state == null || creature.Monster == null || creature.IsPet) return;
-        var isBoss = state.Encounter?.RoomType == RoomType.Boss && !creature.HasPower<VanillaMinion>();
-        if (!SummonRules.CanRaise(creature.IsEnemy, isBoss)) return;
+        if (!creature.IsEnemy || !EnemyRoleRules.CanRaise(EnemySetup.RoleOf(creature))) return;
         Last.AddOrUpdate(state, new Grave(creature.MaxHp));
     }
 

@@ -14,11 +14,12 @@ namespace SlayTheRequiem.SlayTheRequiemCode.Monsters;
 
 /// <summary>
 /// Алая Графиня: 420 ♥. Кровавая роза (Кровотечение), Бал масок (рабы крови, до 2), Алый поцелуй — лечится на весь снятый урон.
-/// Фаза 2 (50 %): истинный облик — Туман 1 (атаки мимо, кроме Света и заклинаний), Сила +3; рой мышей с вампиризмом 50 %,
+/// Фаза 2 (50 %): истинный облик — Туман 1 (атаки мимо, кроме Света и площадных заклинаний), Сила +3; рой мышей с вампиризмом 50 %,
 /// кровавый дождь, вечный поцелуй.
 /// </summary>
 public sealed class CrimsonCountess : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<BloodThrall>()];
     public const int BaseHp = 420;
     public const int RoseDamage = 9;
     public const int RoseHits = 2;
@@ -159,6 +160,7 @@ public sealed class EclipseWarden : ActBossMonster
 /// </summary>
 public sealed class ChaliceHierophant : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<ChaliceAcolyte>()];
     public const int BaseHp = 400;
     public const int BeamDamage = 18;
     public const int BeamBleed = 2;
@@ -214,6 +216,7 @@ public sealed class ChaliceHierophant : ActBossMonster
             return;
         }
         await CreatureCmd.Kill(victim);
+        if (victim.IsAlive || !Creature.IsAlive) return; // no completed sacrifice, no free heal/Strength
         await Heal(SacramentHeal);
         await Buff<V.StrengthPower>(SacramentStrength);
     }
@@ -249,7 +252,6 @@ public sealed class CrimsonCountessBoss() : ActBossEncounter
 {
     public override string IconKey => "crimson_countess";
     protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<CrimsonCountess>()];
-    public override IEnumerable<MonsterModel> AllPossibleMonsters => [ModelDb.Monster<CrimsonCountess>(), ModelDb.Monster<BloodThrall>()];
 }
 
 public sealed class EclipseWardenBoss() : ActBossEncounter

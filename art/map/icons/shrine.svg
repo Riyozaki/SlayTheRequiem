@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><g stroke="#2b2118" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M32 4 V14 M32 50 V60 M4 32 H14 M50 32 H60 M12 12 L19 19 M52 12 L45 19 M12 52 L19 45 M52 52 L45 45"/><circle cx="32" cy="32" r="13" fill="#F4EEDC"/><path d="M32 24 V40 M26 30 H38" stroke-width="3"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>shrine</title>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="32" cy="17" r="9" fill="#eee3c8" stroke="#302922" stroke-width="4"/><path d="M32 3 V7 M32 27 V33 M13 17 H18 M46 17 H51 M18 4 L22 8 M42 26 L46 30 M46 4 L42 8 M18 30 L22 26" fill="none" stroke="#302922" stroke-width="4"/><path d="M25 35 H39 V47 H47 V57 H17 V47 H25 Z" fill="#b8a886" stroke="#302922" stroke-width="4"/>
+  </g>
+</svg>

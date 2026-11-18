@@ -29,6 +29,7 @@ public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
 
     /// <summary>Особые карты формы, которые кладутся в колоду при получении.</summary>
     protected virtual IEnumerable<Type> FormCards => [];
+    protected virtual IEnumerable<Type> CardsToRemove => FormCards;
 
     /// <summary>Перекраска модели: оттенок (hsv-шейдер, доля круга) и множитель цвета. null — без изменений.</summary>
     public virtual float? Hue => null;
@@ -45,7 +46,7 @@ public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
         foreach (var type in FormCards)
         {
             var canonical = ModelDb.GetById<CardModel>(ModelDb.GetId(type));
-            await CardPileCmd.Add(Owner.RunState.CreateCard(canonical, Owner), PileType.Deck);
+            await CardAcquisition.GrantOnceOrDefer(this, Owner.RunState.CreateCard(canonical, Owner), "form:" + type.Name);
         }
         Faith.RefreshAll(Owner);
         FormVisuals.Refresh(Owner, flash: FlashColor);
@@ -55,16 +56,31 @@ public abstract class FormRelic : BoonRelic, IHealModifier, IStatusImmunity
     protected virtual Task OnFormGained() => Task.CompletedTask;
 
     /// <summary>Снять форму: забрать особые карты и выданные ♥, убрать реликвию.</summary>
-    public async Task Shed()
+    public async Task Shed(OperationGate.Lease? held = null)
     {
-        var types = FormCards.ToHashSet();
-        foreach (var card in Owner.Deck.Cards.Where(c => types.Contains(c.GetType())).ToList())
-            await CardPileCmd.RemoveFromDeck(card, showPreview: false);
-        await OnFormLost();
         var owner = Owner;
-        await RemoveSelf();
-        Faith.RefreshAll(owner);
-        FormVisuals.Refresh(owner);
+        using var lease = await InventoryGate.For(owner).Enter(held);
+        if (lease == null || !owner.Relics.Contains(this)) return;
+        using var mutation = InventoryGate.Track(owner, lease, "form:shed:" + Kind);
+        try
+        {
+            var types = CardsToRemove.ToHashSet();
+            foreach (var card in owner.Deck.Cards.Where(c => types.Contains(c.GetType())).ToList())
+                await CardPileCmd.RemoveFromDeck(card, showPreview: false);
+            Alchemy.TravelPack.Of(owner)?.CancelMandatorySources(InventoryIdentity.RelicKey(this) + "/");
+            await OnFormLost();
+            await RemoveSelf();
+            if (owner.Relics.Contains(this)) throw new InvalidOperationException("Form removal did not commit");
+            Faith.RefreshAll(owner);
+            FormVisuals.Refresh(owner);
+            mutation.Complete();
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(owner, $"Form removal interrupted; restore its pre-transition checkpoint: {e}");
+            mutation.Complete();
+            throw;
+        }
     }
 
     protected virtual Task OnFormLost() => Task.CompletedTask;
@@ -124,15 +140,30 @@ public static class Forms
     public static RelicModel Create(Type type) => ModelDb.GetById<RelicModel>(ModelDb.GetId(type)).ToMutable();
 
     /// <summary>Принять форму. Ступень Договора заменяет предыдущую. false — несовместимо.</summary>
-    public static async Task<bool> Grant(Player player, FormKind kind)
+    public static async Task<bool> Grant(Player player, FormKind kind, OperationGate.Lease? held = null)
     {
-        if (!CanTake(player, kind)) return false;
-        if (kind is FormKind.Herald or FormKind.Lich)
-            foreach (var previous in All(player).Where(f => f.Kind is FormKind.DarkPact or FormKind.Herald).ToList())
-                await previous.Shed();
-        await RelicCmd.Obtain(Create(TypeFor(kind)), player);
-        if (Progression.HeroRecord.Of(player) is { } hero) await hero.SyncMaxHp();
-        return true;
+        if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        using var lease = await InventoryGate.For(player).Enter(held);
+        if (lease == null || !CanTake(player, kind)) return false;
+        using var mutation = InventoryGate.Track(player, lease, "form:" + kind);
+        try
+        {
+            if (kind is FormKind.Herald or FormKind.Lich)
+                foreach (var previous in All(player).Where(f => f.Kind is FormKind.DarkPact or FormKind.Herald).ToList())
+                    await previous.Shed(lease);
+            var form = Create(TypeFor(kind));
+            await RelicCmd.Obtain(form, player);
+            if (!player.Relics.Contains(form)) throw new InvalidOperationException("Form grant did not commit");
+            if (Progression.HeroRecord.Of(player) is { } hero) await hero.SyncMaxHp();
+            mutation.Complete();
+            return true;
+        }
+        catch (Exception e)
+        {
+            InventoryGate.Block(player, $"Form transition interrupted; restore its pre-transition checkpoint: {e}");
+            mutation.Complete();
+            throw;
+        }
     }
 }
 
@@ -178,7 +209,7 @@ public static class FormVisuals
                 var baseScale = BaseScale.GetValue(visuals, v => new StrongBox<float>(v.DefaultScale)).Value;
                 visuals.SetScaleAndHue(baseScale * scale, hue);
                 visuals.Modulate = tint;
-                if (flash is { } color) visuals.TryApplyLiquidOverlay(color);
+                if (UI.RequiemMotion.Enabled && Config.RequiemConfig.CombatVfx && flash is { } color) visuals.TryApplyLiquidOverlay(color);
             }
             HeroOverlays.Refresh(player, node);
         }

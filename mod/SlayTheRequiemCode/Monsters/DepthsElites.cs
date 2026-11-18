@@ -28,12 +28,6 @@ public sealed class DeepCenturion : RequiemMonster
 
     private int _attacks;
 
-    public override async Task AfterAddedToRoom()
-    {
-        await base.AfterAddedToRoom();
-        await PowerCmd.Apply<PlatingPower>(Ctx, Creature, Plating, Creature, null);
-    }
-
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
         var hammer = new MoveState("PISTON_HAMMER", Hammer, Atk(HammerDamage));
@@ -79,6 +73,7 @@ public sealed class DeepCenturion : RequiemMonster
 /// <summary>Паучья Матка: 90 ♥ + рой; каждый ход — паучок-ремонтник (6 ♥), чинящий союзников на 6 ♥ и +1 Латы.</summary>
 public sealed class SpiderMatriarch : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<RepairSpider>()];
     public const int FangDamage = 10;
     public const int WebDamage = 5;
     public const int WebHits = 2;
@@ -133,6 +128,7 @@ public sealed class RepairSpider : RequiemMinion
 /// <summary>Механик-Отступник: 85 ♥, ставит Турели (12 ♥, 4 урона каждый ход); со смертью Механика турели глохнут.</summary>
 public sealed class RenegadeMechanic : RequiemMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<MechanicTurret>()];
     public const int WrenchDamage = 9;
     public const int MaxTurrets = 2;
 

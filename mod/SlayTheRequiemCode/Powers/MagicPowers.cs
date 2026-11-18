@@ -19,7 +19,7 @@ internal static class MagicDamage
     {
         if (cardSource is Spells.SpellCard) return true;
         // Тики статусов (Горение, Статика) — не заклинания; заклинание врага — его стихийная/магическая атака.
-        if (dealer?.Monster == null || !props.IsPoweredAttack()) return false;
+        if (dealer?.Monster == null || !props.IsCardOrMonsterMove()) return false;
         var type = DamageTyping.Resolve(props, dealer, cardSource);
         return type is not (DamageType.Physical or DamageType.True or DamageType.Poison or DamageType.Blight);
     }
@@ -34,28 +34,49 @@ public sealed class SpellShieldPower : RequiemPower
     public override PowerStackType StackType => PowerStackType.Counter;
 
     private int _pending;
+    private int _pendingStatus;
 
-    public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal decimal MitigateHit(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || !MagicDamage.IsSpell(props, dealer, cardSource)) return amount;
-        var absorbed = Math.Min((int)amount, Amount - _pending);
+        var absorbed = SpellDefenseRules.WardUsed(amount, Amount - _pending - _pendingStatus);
         if (absorbed <= 0) return amount;
+        if (!HitDefensePipeline.WillCommit) return amount - absorbed;
         _pending += absorbed;
+        var owner = Owner;
+        HitDefensePipeline.Defer(async () =>
+        {
+            _pending -= absorbed;
+            Flash();
+            if (absorbed >= Amount) await PowerCmd.Remove(this);
+            else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -absorbed, null, null, silent: true);
+            await Transformations.ReflectorEssence.OnWardAbsorbed(new ThrowingPlayerChoiceContext(), owner, dealer, absorbed);
+        }, () => _pending -= absorbed);
         return amount - absorbed;
     }
 
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal decimal ProtectStatus(PowerModel power, decimal amount, Creature? dealer)
     {
-        if (target != Owner || _pending <= 0) return;
-        var used = _pending;
-        _pending = 0;
-        Flash();
+        var used = SpellDefenseRules.WardUsed(amount, Amount - _pending - _pendingStatus);
+        if (used <= 0) return amount;
+        _pendingStatus += used;
         var owner = Owner;
-        if (used >= Amount) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(choiceContext, this, -used, null, null, silent: true);
-        // Путь Отражателя (этап 6): половина поглощённого — обратно в заклинателя.
-        await Transformations.ReflectorEssence.OnWardAbsorbed(choiceContext, owner, dealer, used);
+        try
+        {
+            PowerDefensePipeline.Defer(async () =>
+            {
+                _pendingStatus -= used;
+                Flash();
+                if (used >= Amount) await PowerCmd.Remove(this);
+                else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -used, null, null, silent: true);
+                await Transformations.ReflectorEssence.OnWardAbsorbed(new ThrowingPlayerChoiceContext(), owner, dealer, used);
+            }, () => _pendingStatus -= used);
+        }
+        catch { _pendingStatus -= used; throw; }
+        return amount - used;
     }
+
+    public override Task AfterModifyingPowerAmountReceived(PowerModel power) => PowerDefensePipeline.Commit();
 
     public override async Task AfterSideTurnStart(CombatSide side, IReadOnlyList<Creature> participants, ICombatState combatState)
     {
@@ -71,33 +92,19 @@ public abstract class AbsorptionPowerBase : RequiemPower
 
     protected abstract int ManaPerAbsorb(Creature? dealer);
 
-    private bool _pending;
-    private Creature? _pendingDealer;
-
-    public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal async Task Absorb(PlayerChoiceContext ctx, Creature? dealer)
     {
-        if (target != Owner || amount <= 0 || Amount <= 0 || dealer == Owner || !MagicDamage.IsSpell(props, dealer, cardSource)) return amount;
-        // Сияние: свет игнорирует Поглощение.
-        if (DamageTyping.Resolve(props, dealer, cardSource) == DamageType.Light) return amount;
-        _pending = true;
-        _pendingDealer = dealer;
-        return 0m;
-    }
-
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (target != Owner || !_pending) return;
-        var gain = ManaPerAbsorb(_pendingDealer);
-        _pending = false;
-        _pendingDealer = null;
+        if (Amount <= 0) return;
+        var gain = ManaPerAbsorb(dealer);
         Flash();
+        // Spend first: a nested mana-gain callback cannot reuse this charge.
+        await PowerCmd.Decrement(this);
         if (Owner.IsPlayer) await Mana.Gain(Owner.Player, gain);
         else if (Owner.GetPower<EnemyManaPower>() is { } mana) mana.Set(mana.DisplayAmount + gain);
-        await PowerCmd.Decrement(this);
     }
 }
 
-/// <summary>Поглощение заклинаний N: первые N магических ударов по носителю гасятся и дают 2 ✦. Сгорает в начале хода носителя.</summary>
+/// <summary>Первые N вражеских заклинаний по носителю гасятся (все удары и прямые статусы) и дают 2 ✦. Свет — исключение.</summary>
 public sealed class SpellAbsorptionPower : AbsorptionPowerBase
 {
     protected override int ManaPerAbsorb(Creature? dealer) => 2;
@@ -111,7 +118,7 @@ public sealed class SpellAbsorptionPower : AbsorptionPowerBase
 /// <summary>Туманная кровь (бретонцы): первое вражеское заклинание в бою поглощается; ✦ = цена заклинания врага.</summary>
 public sealed class MistbloodPower : AbsorptionPowerBase
 {
-    protected override int ManaPerAbsorb(Creature? dealer) => EnemyRules.MinSpellMana + 1;
+    protected override int ManaPerAbsorb(Creature? dealer) => dealer == null ? EnemyRules.MinSpellMana : EnemyActionBudget.CostOf(dealer);
 }
 
 /// <summary>
@@ -203,24 +210,15 @@ public sealed class TemporaryPlatingPower : RequiemPower
 
     private int _turnsLeft = Duration;
 
-    /// <summary>И первое наложение, и повторное: столько же Лат сверху, срок обновляется.</summary>
-    public override async Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
+    public override Task AfterPowerAmountChanged(PlayerChoiceContext choiceContext, PowerModel power, decimal amount, Creature? applier, CardModel? cardSource)
     {
-        if (power != this || amount <= 0) return;
-        _turnsLeft = Duration;
-        await PowerCmd.Apply<PlatingPower>(choiceContext, Owner, amount, Owner, null, silent: true);
+        if (power == this && amount > 0) _turnsLeft = Duration;
+        return Task.CompletedTask;
     }
 
     public override async Task AfterSideTurnEnd(PlayerChoiceContext choiceContext, CombatSide side, IEnumerable<Creature> participants)
     {
-        if (!participants.Contains(Owner) || --_turnsLeft > 0) return;
-        if (Owner.GetPower<PlatingPower>() is { } plating)
-        {
-            var left = plating.Amount - Amount;
-            if (left <= 0) await PowerCmd.Remove(plating);
-            else await PowerCmd.ModifyAmount(choiceContext, plating, -Amount, null, null, silent: true);
-        }
-        await PowerCmd.Remove(this);
+        if (participants.Contains(Owner) && --_turnsLeft <= 0) await PowerCmd.Remove(this);
     }
 }
 
@@ -292,26 +290,29 @@ public sealed class SpectralGuardPower : RequiemPower
 
     private int _pending;
 
-    public override decimal ModifyHpLostBeforeOsty(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    internal decimal MitigateHit(Creature target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
     {
         if (target != Owner || amount <= 0 || Amount <= 0) return amount;
         var half = (int)Math.Ceiling(amount / 2m);
         var type = DamageTyping.Resolve(props, dealer, cardSource);
         var toKnights = type is DamageType.Light or DamageType.Fire ? half * 2 : half;
-        _pending += Math.Min(Amount - _pending, toKnights);
-        return amount - half;
-    }
-
-    public override async Task AfterDamageReceived(PlayerChoiceContext choiceContext, Creature target, DamageResult result, ValueProp props, Creature? dealer, CardModel? cardSource)
-    {
-        if (target != Owner) return;
-        if (dealer is { IsPlayer: true } && props.IsPoweredAttack() && cardSource is not Spells.SpellCard)
-            await PowerCmd.Apply<StaggerPower>(choiceContext, dealer, MeleeStagger, Owner, null);
-        if (_pending <= 0) return;
-        var hit = _pending;
-        _pending = 0;
-        Flash();
-        if (hit >= Amount) await PowerCmd.Remove(this);
-        else await PowerCmd.ModifyAmount(choiceContext, this, -hit, null, null, silent: true);
+        var hit = Math.Min(Math.Max(0, Amount - _pending), toKnights);
+        if (hit <= 0) return amount;
+        var protection = type is DamageType.Light or DamageType.Fire ? (int)Math.Ceiling(hit / 2m) : hit;
+        var remaining = amount - Math.Min(half, protection);
+        if (!HitDefensePipeline.WillCommit) return remaining;
+        _pending += hit;
+        var owner = Owner;
+        HitDefensePipeline.Defer(async () =>
+        {
+            _pending -= hit;
+            Flash();
+            if (hit >= Amount) await PowerCmd.Remove(this);
+            else await PowerCmd.ModifyAmount(new ThrowingPlayerChoiceContext(), this, -hit, null, null, silent: true);
+            if (dealer is { IsPlayer: true, IsAlive: true } && props.IsPoweredAttack() && cardSource is not Spells.SpellCard)
+                await PowerCmd.Apply<StaggerPower>(new ThrowingPlayerChoiceContext(), dealer, MeleeStagger, owner, null);
+        }, () => _pending -= hit);
+        // A nearly destroyed guard cannot absorb an unbounded half-hit with its last HP.
+        return remaining;
     }
 }

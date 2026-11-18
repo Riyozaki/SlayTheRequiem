@@ -74,7 +74,7 @@ public partial class NBurdenMeter : NRequiemHoverWidget
         var tier = TierOf(_overload);
         if (_tier >= 0 && tier > _tier)
         {
-            _flash = 1f;
+            _flash = RequiemMotion.Enabled ? 1f : 0f;
             RequiemKit.Shake(this, 4f + 2f * tier);
         }
         _tier = tier;
@@ -85,6 +85,12 @@ public partial class NBurdenMeter : NRequiemHoverWidget
     private void Animate(float dt)
     {
         if (!Visible || _shownWeight < 0) return;
+        if (!RequiemMotion.Enabled)
+        {
+            if (_shownWeight != _weight || _flash != 0 || _pulse != 0) QueueRedraw();
+            _shownWeight = _weight; _flash = _pulse = 0;
+            return;
+        }
         var moving = Math.Abs(_shownWeight - _weight) > 0.01f;
         if (moving) _shownWeight = Mathf.Lerp(_shownWeight, _weight, 1f - Mathf.Exp(-dt * 8f));
         if (!moving) _shownWeight = _weight;
@@ -96,7 +102,7 @@ public partial class NBurdenMeter : NRequiemHoverWidget
     /// <summary>Цвет ступени с пульсом и вспышкой.</summary>
     private Color Glow(Color tint)
     {
-        var pulse = _overload.Excess > 0 ? 0.18f * (0.5f + 0.5f * Mathf.Sin(_pulse)) : 0f;
+        var pulse = RequiemMotion.Enabled && _overload.Excess > 0 ? 0.18f * (0.5f + 0.5f * Mathf.Sin(_pulse)) : 0f;
         return tint.Lerp(Colors.White, Math.Max(pulse, _flash * 0.7f));
     }
 

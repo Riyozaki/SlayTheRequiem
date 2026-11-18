@@ -36,6 +36,8 @@ public sealed class AstrolabeKeeper : ActBossMonster
 
     private static readonly DamageType[] Rotation = [DamageType.Fire, DamageType.Frost, DamageType.Shock];
     private int _ray;
+    public override DamageType CurrentAttackType => NextMove?.Id.StartsWith("CONSTELLATION_RAY", StringComparison.Ordinal) == true
+        ? Rotation[_ray % Rotation.Length] : base.CurrentAttackType;
 
     protected override IReadOnlyList<MoveState> PhaseOne() =>
     [
@@ -57,7 +59,8 @@ public sealed class AstrolabeKeeper : ActBossMonster
 
     private async Task Ray(IReadOnlyList<Creature> targets)
     {
-        var element = Rotation[_ray++ % Rotation.Length];
+        var element = EnemyActionBudget.TypeOf(Creature, CurrentAttackType);
+        _ray++;
         await Cast();
         await Hit(RayDamage, type: element, fx: null);
         await ElementStatus(element, 4, 3, 2);
@@ -126,6 +129,7 @@ public sealed class LeyWyrm : ActBossMonster
 /// </summary>
 public sealed class ArchmageSimulacrum : ActBossMonster
 {
+    public override IEnumerable<MonsterModel> SummonModels => [ModelDb.Monster<MirrorShard>()];
     public const int BaseHp = 400;
     public const int BarrageDamage = 7;
     public const int BarrageHits = 3;
@@ -205,5 +209,4 @@ public sealed class ArchmageSimulacrumBoss() : ActBossEncounter
 {
     public override string IconKey => "archmage_simulacrum";
     protected override IReadOnlyList<MonsterModel> Lineup => [ModelDb.Monster<ArchmageSimulacrum>()];
-    public override IEnumerable<MonsterModel> AllPossibleMonsters => [ModelDb.Monster<ArchmageSimulacrum>(), ModelDb.Monster<MirrorShard>()];
 }

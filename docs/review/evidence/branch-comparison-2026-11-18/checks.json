@@ -1,0 +1,590 @@
+{
+  "review_date_utc": "2026-11-18",
+  "working_branch": "arena/5906afa4-slaytherequiem",
+  "working_head": "8000886e9c52db78227972bdd4740ee71f7eca03",
+  "reviewed_branch": "arena/1d7c3746-slaytherequiem",
+  "reviewed_commit": "03d636049e2a48101389be7f5856c3976b7730e2",
+  "merge_base": "ec598de3375af1dd61e3c6c0a7b524018187f7e6",
+  "python": "3.11.2",
+  "tree_sitter": "0.26.1",
+  "tree_sitter_c_sharp": "0.23.5",
+  "checks": [
+    {
+      "name": "g0-contracts",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/g0",
+        "-v"
+      ],
+      "cwd": "git archive of reviewed_commit (not working HEAD)",
+      "started_at_utc": "2026-11-18T01:58:34.602363+00:00",
+      "seconds": 0.184,
+      "exit_code": 0,
+      "log": "logs/g0-contracts.log",
+      "tail": [
+        "test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source (test_mod_build.SourceContractTests.test_save_schema_and_protocol_agree_in_installer_project_and_runtime_source) ... ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 29 tests in 0.062s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "rules-sim-without-numpy",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/sim",
+        "-v"
+      ],
+      "cwd": "git archive of reviewed_commit (not working HEAD)",
+      "started_at_utc": "2026-11-18T01:58:34.786905+00:00",
+      "seconds": 1.0,
+      "exit_code": 0,
+      "log": "logs/rules-sim-without-numpy.log",
+      "tail": [
+        "ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 150 tests in 0.890s",
+        "",
+        "OK (skipped=1)"
+      ],
+      "note": "149 passed / 1 skipped: sound synthesis check needs numpy. Re-run below resolves the skip."
+    },
+    {
+      "name": "csharp-syntax",
+      "command": [
+        "python3",
+        "tools/ci/check_csharp_syntax.py"
+      ],
+      "cwd": "git archive of reviewed_commit (not working HEAD)",
+      "started_at_utc": "2026-11-18T01:58:35.788139+00:00",
+      "seconds": 0.639,
+      "exit_code": 0,
+      "log": "logs/csharp-syntax.log",
+      "tail": [
+        "250 files 0 errors"
+      ]
+    },
+    {
+      "name": "localization",
+      "command": [
+        "python3",
+        "tools/ci/check_loc.py"
+      ],
+      "cwd": "git archive of reviewed_commit (not working HEAD)",
+      "started_at_utc": "2026-11-18T01:58:36.426847+00:00",
+      "seconds": 0.185,
+      "exit_code": 0,
+      "log": "logs/localization.log",
+      "tail": [
+        "Моделей проверено: 1204; ошибок: 0"
+      ]
+    },
+    {
+      "name": "rules-sim",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/sim",
+        "-v"
+      ],
+      "cwd": "git archive of reviewed_commit (not working HEAD)",
+      "started_at_utc": "2026-11-18T01:59:31.841094+00:00",
+      "seconds": 0.926,
+      "exit_code": 0,
+      "log": "logs/rules-sim.log",
+      "tail": [
+        "ok",
+        "",
+        "----------------------------------------------------------------------",
+        "Ran 150 tests in 0.866s",
+        "",
+        "OK"
+      ],
+      "note": "numpy 2.4.6 installed; full rerun, no skips."
+    }
+  ],
+  "source_checks": {
+    "integrity_source_case_count": 55,
+    "integrity_source_unique_case_count": 55,
+    "harness_sha256": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4",
+    "integrity_case_manifest": {
+      "source_cases": 55,
+      "source_file": "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs",
+      "source_sha256": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4",
+      "compiled": false,
+      "executed": false,
+      "cases": [
+        {
+          "name": "empty-chest",
+          "method": "Empty",
+          "executed": false
+        },
+        {
+          "name": "card-properties-json-reload",
+          "method": "CardProperties",
+          "executed": false
+        },
+        {
+          "name": "batch-second-veto-boundary",
+          "method": "BatchVeto",
+          "executed": false
+        },
+        {
+          "name": "throw-after-store-detach",
+          "method": "ThrowAfterStore",
+          "executed": false
+        },
+        {
+          "name": "throw-after-chest-insert",
+          "method": "ThrowAfterTake",
+          "executed": false
+        },
+        {
+          "name": "duplicate-staves-no-equip",
+          "method": "DuplicateStaves",
+          "executed": false
+        },
+        {
+          "name": "legacy-and-opaque-relocation",
+          "method": "LegacyAndOpaque",
+          "executed": false
+        },
+        {
+          "name": "obtain-clone-and-reward-option",
+          "method": "ObtainClone",
+          "executed": false
+        },
+        {
+          "name": "saved-claim-reconciliation",
+          "method": "ClaimReconciliation",
+          "executed": false
+        },
+        {
+          "name": "scroll-clone-late-throw",
+          "method": "ScrollClone",
+          "executed": false
+        },
+        {
+          "name": "scroll-veto-no-payment",
+          "method": "ScrollVeto",
+          "executed": false
+        },
+        {
+          "name": "paid-offer-stale-gold-retry",
+          "method": "PaidOffer",
+          "executed": false
+        },
+        {
+          "name": "brew-fallback-exact-materials",
+          "method": "BrewFinalizer",
+          "executed": false
+        },
+        {
+          "name": "wire-request-receipt-roundtrip",
+          "method": "WireRoundTrip",
+          "executed": false
+        },
+        {
+          "name": "native-reward-veto-unload-retry",
+          "method": "NativeRewardRetry",
+          "executed": false
+        },
+        {
+          "name": "native-reward-clone-removal",
+          "method": "NativeRewardClone",
+          "executed": false
+        },
+        {
+          "name": "chest-restore-no-second-obtain",
+          "method": "RelocationNoObtain",
+          "executed": false
+        },
+        {
+          "name": "chest-interrupted-save-reconcile",
+          "method": "ChestInterruptedSave",
+          "executed": false
+        },
+        {
+          "name": "unknown-saved-property-keeps-source",
+          "method": "UnknownProperty",
+          "executed": false
+        },
+        {
+          "name": "pending-scope-no-duplicate",
+          "method": "PendingScope",
+          "executed": false
+        },
+        {
+          "name": "pending-replacement-debt-in-chest",
+          "method": "ReplacementInChest",
+          "executed": false
+        },
+        {
+          "name": "library-veto-affordability-retry",
+          "method": "LibraryRetry",
+          "executed": false
+        },
+        {
+          "name": "scroll-insertion-save-reconcile",
+          "method": "ScrollInterruptedSave",
+          "executed": false
+        },
+        {
+          "name": "brew-insertion-json-recovery",
+          "method": "BrewRecovery",
+          "executed": false
+        },
+        {
+          "name": "brew-late-notification-exact-once",
+          "method": "BrewLateThrow",
+          "executed": false
+        },
+        {
+          "name": "enchant-recheck-and-late-throw",
+          "method": "EnchantLateThrow",
+          "executed": false
+        },
+        {
+          "name": "camp-late-commit-consumes-action",
+          "method": "CampLateThrow",
+          "executed": false
+        },
+        {
+          "name": "saved-partial-block-survives-reload",
+          "method": "SavedBlock",
+          "executed": false
+        },
+        {
+          "name": "card-store-save-inside-detach",
+          "method": "CardStoreInterruptedSave",
+          "executed": false
+        },
+        {
+          "name": "relic-store-save-inside-detach",
+          "method": "RelicStoreInterruptedSave",
+          "executed": false
+        },
+        {
+          "name": "chest-live-identity-conflict",
+          "method": "ChestIdentityConflict",
+          "executed": false
+        },
+        {
+          "name": "interrupted-mutation-fails-closed",
+          "method": "InterruptedMutation",
+          "executed": false
+        },
+        {
+          "name": "shop-stone-late-commit-and-save",
+          "method": "ShopStoneLateThrow",
+          "executed": false
+        },
+        {
+          "name": "shop-kit-one-raw-commit",
+          "method": "ShopKitLateThrow",
+          "executed": false
+        },
+        {
+          "name": "shop-stale-price-no-effect",
+          "method": "ShopStalePrice",
+          "executed": false
+        },
+        {
+          "name": "shop-payment-late-throw",
+          "method": "ShopPaymentLateThrow",
+          "executed": false
+        },
+        {
+          "name": "legacy-card-take-insertion-save",
+          "method": "LegacyCardInterruptedTake",
+          "executed": false
+        },
+        {
+          "name": "legacy-relic-take-insertion-save",
+          "method": "LegacyRelicInterruptedTake",
+          "executed": false
+        },
+        {
+          "name": "abandoned-mutation-stays-blocked",
+          "method": "AbandonedMutation",
+          "executed": false
+        },
+        {
+          "name": "discard-rechecks-owner-and-overload",
+          "method": "DiscardStaleTarget",
+          "executed": false
+        },
+        {
+          "name": "blessing-obtain-before-revoke",
+          "method": "BlessingLateThrow",
+          "executed": false
+        },
+        {
+          "name": "chest-card-callback-unrelated-records",
+          "method": "CardChestCallbackUnrelated",
+          "executed": false
+        },
+        {
+          "name": "chest-card-callback-source-change",
+          "method": "CardChestCallbackSource",
+          "executed": false
+        },
+        {
+          "name": "chest-item-callback-unrelated-records",
+          "method": "ItemChestCallbackUnrelated",
+          "executed": false
+        },
+        {
+          "name": "chest-item-callback-source-change",
+          "method": "ItemChestCallbackSource",
+          "executed": false
+        },
+        {
+          "name": "chest-card-invalid-or-duplicate-identities",
+          "method": "InvalidChestIdentities",
+          "executed": false
+        },
+        {
+          "name": "chest-invalid-item-envelope-kept",
+          "method": "InvalidItemEnvelope",
+          "executed": false
+        },
+        {
+          "name": "shop-trade-late-source-removal",
+          "method": "ShopTradeLateThrow",
+          "executed": false
+        },
+        {
+          "name": "grant-veto-write-ahead-save",
+          "method": "GrantBeforeInsertSave",
+          "executed": false
+        },
+        {
+          "name": "grant-insertion-save-reconcile",
+          "method": "GrantInsertionSave",
+          "executed": false
+        },
+        {
+          "name": "pending-card-full-payload-restore",
+          "method": "PendingCardPayload",
+          "executed": false
+        },
+        {
+          "name": "pending-unknown-properties-kept",
+          "method": "PendingUnknownProperty",
+          "executed": false
+        },
+        {
+          "name": "pending-source-stale-choice",
+          "method": "PendingStaleChoice",
+          "executed": false
+        },
+        {
+          "name": "grant-source-change-keeps-claim",
+          "method": "GrantSourceChanged",
+          "executed": false
+        },
+        {
+          "name": "pending-claim-payload-collision",
+          "method": "PendingClaimCollision",
+          "executed": false
+        }
+      ]
+    },
+    "execution_note": "Source cases only. str_integrity, str_factory, new xUnit, full mod build/export, game, disk Continue and co-op were NOT executed.",
+    "defense_powers_unchanged": true,
+    "visual_assets": {
+      "paths": [
+        "art",
+        "mod/SlayTheRequiem/images",
+        "tools/art",
+        "tools/assets"
+      ],
+      "identical": true
+    },
+    "existing_ui": {
+      "paths": [
+        "mod/SlayTheRequiemCode/UI/NCampChoices.cs",
+        "mod/SlayTheRequiemCode/UI/NEnemyTraitChips.cs",
+        "mod/SlayTheRequiemCode/UI/MapVisuals.cs",
+        "mod/SlayTheRequiemCode/Equipment/PaperDoll.cs"
+      ],
+      "identical": true
+    },
+    "remaining_systems": {
+      "paths": [
+        "mod/SlayTheRequiemCode/Spells/Grimoire.cs",
+        "mod/SlayTheRequiemCode/Monsters/Superbosses.cs",
+        "mod/SlayTheRequiemCode/Rules/EnemySetup.cs",
+        "mod/SlayTheRequiemCode/Powers/DefensePowers.cs"
+      ],
+      "identical": true
+    },
+    "all_112_changed_snapshot_files_match_reviewed_commit": true,
+    "integrity_manifest_hash_matches_source": true,
+    "changed_files_sha256": {
+      ".github/workflows/ci.yml": "ef445c5998d5cb269b4214dfe4de0e379cdad5303bdae26f36cf4a0ab33b8ce5",
+      "CONTRIBUTING.md": "689f106cfdcd506f2fcd1f80f2a02c8a072c5f946429c1d8f62bec221a435865",
+      "README.md": "b488cc5a0d5d479d8717cb5471e3dbdbdb99af803b52134e86be36794ae1f148",
+      "docs/README.md": "54281cfcfd8d21c8975a2ae567879c9175a551af11d32890c32678ca2ace127a",
+      "docs/ROADMAP.md": "3141c20861e4b54bb76a062e55dba08e8ac7e1a67e287efa86293321dfa5b59b",
+      "docs/design/02-core-stats.md": "7940321199e16b67ce7195f4d618c03306d4281411c6793f4da746ce62824a99",
+      "docs/design/10-camp.md": "a70ea601bce38ad8fdacd32ac6ad43497ed2c8d2c1e223f77437999507ec600d",
+      "docs/design/14-shops.md": "67e20e1089cf6d02bb85a28d88ad9dbed0698a89c82bf2401c3656f228df7f53",
+      "docs/design/19-card-pools.md": "b34f3a52470bd532607185c8829d5275cebb1bc668fbbfac8a5fe924616cd6f3",
+      "docs/plan/completion-plan.md": "b659a021ef2ad04a790839ac592c49b7b8b87191b3073a1682dd5ec6a18b1d6b",
+      "docs/plan/implementation-registry.md": "520bebc4230164fc24fdcbd0cc2dcc94ef77cde027b92b4da846421b54af6965",
+      "docs/plan/stabilization-roadmap-2026-11-17.md": "725187b57c423df310c417ab80166fcdf7603e3c4706b42e4cc51d9c09bc76c4",
+      "docs/review/evidence/audit-2026-11-17/README.md": "e74a08499b26436123972911589a7d6411de4f23797acd8d7f62748641f2d271",
+      "docs/review/evidence/audit-2026-11-17/art-index.json": "14ef5c2c42c35fb7e0f61d8a0e72fae1a2195ee0bcf0081ac1db3e3a7b90fc99",
+      "docs/review/evidence/audit-2026-11-17/art/act-doors.jpg": "15db9dc4e135a41192dfff9f11840b6f29c0897506d3a963d7904c8c073e024d",
+      "docs/review/evidence/audit-2026-11-17/art/backgrounds.jpg": "e346652465d51b5674d686c2a97fe4a1c6f374e340b946880f04252fd07c6e60",
+      "docs/review/evidence/audit-2026-11-17/art/card-portraits.jpg": "43953f753c1fd555a03c8848b6978c1249838fe70db3cd77ebb7b278808bc26c",
+      "docs/review/evidence/audit-2026-11-17/art/events.jpg": "69c5669d0d264996fa69f3aaa27a17aefaa24cbc8f1586598bfa8933d1cec81d",
+      "docs/review/evidence/audit-2026-11-17/art/map-icons.jpg": "0e5a5a0d183fd60b7d17ffd97004aac440bd7db45ae80547f5b9aa7bdeaa907f",
+      "docs/review/evidence/audit-2026-11-17/art/monsters-1.jpg": "35a6c7a172e174c10564899907285a2779c850ae00f266558532b7b93418f7b3",
+      "docs/review/evidence/audit-2026-11-17/art/monsters-2.jpg": "cfb03e89bea026206993c801290ab60d22cc6224ce4d60a714496d914590859c",
+      "docs/review/evidence/audit-2026-11-17/art/paper-doll.jpg": "de4c928fd4d4e231fc5f31d2a2efb628bc9060612653e23c73087213075bdde0",
+      "docs/review/evidence/audit-2026-11-17/art/relics-1.jpg": "cc09fb74db99a76fc36d6097ac7513e71b593e859f764667eda41331b31dba3a",
+      "docs/review/evidence/audit-2026-11-17/art/relics-2.jpg": "ba511445d97224a666c3c03af615d8e10dd6b7d4f9a445e75ed6b61f693c567c",
+      "docs/review/evidence/audit-2026-11-17/art/relics-3.jpg": "3f6f7c9fd96d8a870d7c12ac6ec4697d08480230ba9f5dd1bee8df1872c4ccc8",
+      "docs/review/evidence/audit-2026-11-17/art/relics-4.jpg": "4788dfa218d38dd3c038c1252d497f9a73d17038c0618b45f9c67fbb940572d9",
+      "docs/review/evidence/audit-2026-11-17/art/relics-5.jpg": "504cb0a8c1f73b13df81c16307414cf0fa715c2768b0bde04cc388b8566865a2",
+      "docs/review/evidence/audit-2026-11-17/art/ui-assets.jpg": "130f40f1df822ba1ab9f6b5129cc964e749bbb13d44d87485a44bf4c764a2154",
+      "docs/review/evidence/audit-2026-11-17/burden-proxy.log": "08e2d910539589125d15e86f0777764bfe4e73ddc579c212ea6ebc093323c576",
+      "docs/review/evidence/audit-2026-11-17/card-balance-proxy.md": "45ae71721c09f14dc895821dd55acdb177a02ae7f3d4edaf1339ff1688673c19",
+      "docs/review/evidence/audit-2026-11-17/check-output.txt": "8cac1a19d1172a7900e0f5df8b75afa1060cc372b6615f4d33c6cf845488501c",
+      "docs/review/evidence/audit-2026-11-17/checks.json": "29563e7eadbfe6129a658076eb549474567aca590a1de0bb96d2ba1f3c1c1101",
+      "docs/review/evidence/audit-2026-11-17/ci-jobs.json": "ca4fff106c2c6b0d03e9ff190a321d2c242e3dad059c985021cfd15337c1fb2c",
+      "docs/review/evidence/audit-2026-11-17/ci-run.json": "1b9d3dd8e5afc8f3062edd3652597ae86d6d29bf07d8a35b3095d0009071b388",
+      "docs/review/evidence/audit-2026-11-17/harmony.log": "6edd5d27abfbf38324eb7d3e1917c72210f2c7e6805dbea7bdb3a9a7c315809a",
+      "docs/review/evidence/audit-2026-11-17/image-census.json": "4231cba218e529fefd84230f8eabddd8317518a59069bc7820f06363626914c9",
+      "docs/review/evidence/audit-2026-11-17/source-inventory.json": "19532eb7a0358297016bd28aa66ec410fb2749bab43ba6734bc7d2db85cec793",
+      "docs/review/evidence/g0-g1-2026-11-17/README.md": "c5a639f191518710dbe7cb3bcbd08fc1c9280a400ae280a69ba5d4aff53acd8e",
+      "docs/review/evidence/g0-g1-2026-11-17/check-output.txt": "6b4581573047c71f260d825aa0600c0c638108e80f17acd7fc2c2a3acaae0116",
+      "docs/review/evidence/g0-g1-2026-11-17/checks.json": "79f0d88be9f804dab06fae1549986bfc4c511662f09cfad9b990034cc6cde3df",
+      "docs/review/evidence/g0-g1-2026-11-17/follow-up-checks.json": "e6a16effa77bc3a821883c5dd77dde091afda01e12ee61df770b4a974e0b4d04",
+      "docs/review/evidence/g0-g1-2026-11-17/integrity-cases.json": "96ebfb13bff2aff25fea94f834a863ea6bfee4bd9726e2c093175bc01ee310cd",
+      "docs/review/evidence/g0-g1-2026-11-17/markdown-links.json": "13dc584e166068b27d4aebee076127374def8b11e407b03cbccd978656d8b188",
+      "docs/review/evidence/g0-g1-2026-11-17/source-files.json": "92074b47ab901d88a7a67befcf85848cc04d2f5b29ea47621f323a99dd6c55e2",
+      "docs/review/evidence/g0-g1-2026-11-17/source-snapshot.json": "093f9a2ab2eefb67d25522577f3749d5927dce5ec31680219b9d018d516c23e5",
+      "docs/review/project-audit-2026-11-17.md": "bd4e30d7674ad1c495b26d477df597052c56c6c376b1262ca887089b0d26a67a",
+      "global.json": "2693f0081d22422714daa1d306742a5654d9d856ad0a84151b179adac6b789b0",
+      "mod/README.md": "816d2114a5955af7e1bf605eec708a9ba82f8e37d7d6a899ecb26de71569272a",
+      "mod/SlayTheRequiem.Tests/IntegrityTests.cs": "5bd08d732555137928b5eba7c3a5b07ad8b862633db734a57a93ab7bb60e2944",
+      "mod/SlayTheRequiem.Tests/SavedPayloadTests.cs": "b7fb46518371472e039b6b5c39f99453bcf8482b8cfaef61fb42b5eb5873d05d",
+      "mod/SlayTheRequiem.csproj": "9f06638ed14e3fc61ddd6b866c4185b1790b0c93329d09ef53edcfa1f3ccc59d",
+      "mod/SlayTheRequiem.json": "532f3778172c3f972abd627133b8ed7e5b745dee98eabf5dd02f75a9c1d92268",
+      "mod/SlayTheRequiem/localization/eng/static_hover_tips.json": "00514ce21750a75a64e4fd88519935696c2f642486539f3e2b0bc2e7eb926bbb",
+      "mod/SlayTheRequiem/localization/rus/static_hover_tips.json": "82bb5e60acf0627f1df700c2bab40732b501bd3bf31a225452b11c42ed266c05",
+      "mod/SlayTheRequiemCode/Alchemy/CampOptions.cs": "d8223dafb4c09c9b0615279def802c0761ba5837299f93991703df6b815c2843",
+      "mod/SlayTheRequiemCode/Alchemy/HerbalistPouch.cs": "b3d41fe78f9a4dd7b13027a17a76656bfb5ed951ca350be7328b66bbb522b8eb",
+      "mod/SlayTheRequiemCode/Alchemy/TravelPack.cs": "34cc87aeea15c0a47369ba9c7a5c3fb5a602bf2fcc671673e2d855aa5010ee0f",
+      "mod/SlayTheRequiemCode/Cards/Shouts.cs": "765a4fd3cd3607c771e0fcef65ba85f742cb6df5938eefb741d64026262a41e4",
+      "mod/SlayTheRequiemCode/Config/RunSettings.cs": "55a16312b2e8cb26009b8ba2da684b9416ff0896373a307310930eca13e9f55c",
+      "mod/SlayTheRequiemCode/Core/AlchemyRules.cs": "b857e0abd6b4415052ff955f98b9e555ed9722ecc6a3748efd848d7b5388c42b",
+      "mod/SlayTheRequiemCode/Core/OperationContracts.cs": "b533a760d6d656303ebaa443c92d8dbf1017d1de86ac503841a582b7cd85bd34",
+      "mod/SlayTheRequiemCode/Core/OperationIdentity.cs": "59876e7342f97a91a32583668a430011d8b483c540bd73feaa8518906afadf35",
+      "mod/SlayTheRequiemCode/Core/OperationJournal.cs": "33f7df1bc38af32c054e03aad8508e70babc0976a4cc09ddbb658a7fce0c8bbf",
+      "mod/SlayTheRequiemCode/Core/RunSettingsData.cs": "fbc3afd3126a5c579524206f55fab41be224115d2f1da97ef1ef7e639993a5c3",
+      "mod/SlayTheRequiemCode/Core/SavedPayload.cs": "313fc29fe11452823ce1e2e8aa2a1c59201d2bbd7f9fa890b4fafe26115ba391",
+      "mod/SlayTheRequiemCode/Debugging/CardFactoryRegression.cs": "804d74855065747775f2313f1837b69991a320dd4d1e03a5f70b95c05570325d",
+      "mod/SlayTheRequiemCode/Debugging/CardRewardDiagnostics.cs": "3c9308201e363c1f97f297114d4e3f901cdfd347449f6437622cf1738ef6d64d",
+      "mod/SlayTheRequiemCode/Debugging/IntegrityRegression.cs": "b118f88cf96babca9b9b74c52b800b5514750636014a294e2144a9e62f4142e4",
+      "mod/SlayTheRequiemCode/Debugging/RequiemConsoleCommands.cs": "08fa6f5222872ce5523930ee3327989f874c5dcf1a999f85b5e3ed96ef07c5b0",
+      "mod/SlayTheRequiemCode/Debugging/RunDiagnostics.cs": "b21b6e26030a8a9416c2f82c79edcd9f433cff2955badcc3937779d233e18fbe",
+      "mod/SlayTheRequiemCode/Events/NodeEvents.cs": "dfe4a41deb504a04252bae04253ccd3daca4b4559c5242c4c9f0a39339396486",
+      "mod/SlayTheRequiemCode/Events/RequiemEvent.cs": "dcc1d30cb2a8a2445334229e2505f877d83f7fd01a95c6de6afe707070988911",
+      "mod/SlayTheRequiemCode/Events/TowerEvents.cs": "2da79f203f2757fd95ef16a606a8431db1588034eea4a3e9465ec17638404d63",
+      "mod/SlayTheRequiemCode/MainFile.cs": "9aa7faaa405e0e598ce9241ecd5d3fd14ae0459737b50cc993b9dc7ccf6f752d",
+      "mod/SlayTheRequiemCode/Net/LobbyMessageBridge.cs": "69699ddac63d9e699bf913e870d80882fae520a343a1b65dd025cea133f9e6c7",
+      "mod/SlayTheRequiemCode/Net/RequiemMessages.cs": "287f40e2ffcba4db9af53b1db14b0a8133a2bfdbad41efd669ec19eb106229e2",
+      "mod/SlayTheRequiemCode/Net/RequiemNet.cs": "7d2dab22eb1cd2a028b2723dd6800fa15f9c6f73551d6a6350bf5317db682285",
+      "mod/SlayTheRequiemCode/Pantheon/Celestials.cs": "9950290d34051fea42299448ef8b13b7972960afc5d83054d49a2678fd046ce9",
+      "mod/SlayTheRequiemCode/Pantheon/PantheonEvents.cs": "7c705995af3ee736fc86d3198684a1e8098789d6438a5eb6a61980572f8c1684",
+      "mod/SlayTheRequiemCode/Progression/CardEnchanting.cs": "b9d7b50ca5e314cf0ff62882b023102f4f00e2c5b1b1fd4ee58f577bdd066bc2",
+      "mod/SlayTheRequiemCode/Relics/Backgrounds.cs": "5b0e9bc8b9d5424debadbe4c122a589addd69db65098dc835ad42e20ed3741d2",
+      "mod/SlayTheRequiemCode/Rollback/MemoryStone.cs": "bc08d84a29a77f3206a71484bfc16c8222c2d309de981e676297169a068dd663",
+      "mod/SlayTheRequiemCode/Rules/CardAcquisition.cs": "64f78e32be48bf1e1615f1d17dc5a6677669a72e00adabc65fa0c205b2969020",
+      "mod/SlayTheRequiemCode/Rules/DeferredRewardScope.cs": "d19ae94769e53625634c4c7e4bb3d99afe9d858f6099daf36022104833f30bbf",
+      "mod/SlayTheRequiemCode/Rules/HeroPoolRewardRules.cs": "1a060815903a05fcfaa48939917f3b28ff2a25c67aa8d0e87ebb9990b96f872a",
+      "mod/SlayTheRequiemCode/Rules/InventoryGate.cs": "e78271e85f4a4c01c7ce18b5c3eafe318d5ae60564450b3d731e02543168994d",
+      "mod/SlayTheRequiemCode/Rules/InventoryIdentity.cs": "5d777f83691da1ba2cc115905824d2daea8da916ffb95ee767459cdbd9852ced",
+      "mod/SlayTheRequiemCode/Rules/RewardPurchase.cs": "7023e9e17e4c9e10db94d85f83cb265349f13700de735f58a3ab611f7e20c5bb",
+      "mod/SlayTheRequiemCode/Rules/RewardSwap.cs": "77f325e9b59bfdb695012fe3af96312305e8d3196ff697ed52444190397f7eab",
+      "mod/SlayTheRequiemCode/Rules/RunLifecycle.cs": "81f13eeb8f7485df933b80cb7596b8de2b1292de76712b3ae55b17607530aa35",
+      "mod/SlayTheRequiemCode/Shops/MerchantLedger.cs": "9bffe8fc1356087a6a2bbd0ae4ce79f0bbafe5c07ac8eebf856d72a98d27030f",
+      "mod/SlayTheRequiemCode/Shops/PurchaseReceipts.cs": "a6bb1f9f1dc004081f55fd74f460066cad9339991edd89cc4ca0aa1d1c9842b7",
+      "mod/SlayTheRequiemCode/Shops/Scrolls.cs": "5b24b88378b2bd2e65b99ebf9db9935fc783b14d6b1308b303709472327f841b",
+      "mod/SlayTheRequiemCode/Shops/SellService.cs": "c225e92b16c920723f61f8b595828754f37b39785bbf16efe8834cfea5f98f26",
+      "mod/SlayTheRequiemCode/Shops/ShopActionPolicy.cs": "cd331ae8bc3b6413d2d163a8b87fe022f2b016b5f744cc4a38564d7f437ca942",
+      "mod/SlayTheRequiemCode/Shops/ShopActions.cs": "b3eb9f368ca2c2aec14aa8383a3ffd12c1bb793efe960658f66a2cd231e1b12c",
+      "mod/SlayTheRequiemCode/Shops/ShopOperations.cs": "d68e088add805123419d0b842b07aa5674640fbdcafad659e00181efc9d85c64",
+      "mod/SlayTheRequiemCode/Shops/ShopServices.cs": "1b437dedad8bcb3d04c06cfc54ed392c536b99e07aeeb2e20fcb10d30e2bdd27",
+      "mod/SlayTheRequiemCode/Spells/SpellRules.cs": "3579edf04ffa7bac024570484d6b5a52f158511c602095f41f1dfa7e6774c4ab",
+      "mod/SlayTheRequiemCode/Transformations/FormRelic.cs": "4c25bf7a555c6636a1fecd8a660ada953ff14e2c01f79fc061e398653c3d7174",
+      "mod/SlayTheRequiemCode/Transformations/PathCards.cs": "1fdc06fffdaefbb385b75abb047a243ab2e1dc50fba583719c120865178a4c25",
+      "mod/SlayTheRequiemCode/Transformations/PathEssences.cs": "569c5913d97f9e7820aa70e73b2e838884c088591557e7da193f6232979debaa",
+      "mod/SlayTheRequiemCode/Transformations/VampireForm.cs": "508dd8e5d4df8f653be94fb13c85b996825a3a9a75f71e6f2399612dc57453c8",
+      "mod/SlayTheRequiemCode/UI/DeckDiscard.cs": "6d2fce39545fe3c08448bb583f8a0dd7872f664262d2a924a5c7446230ebbef2",
+      "mod/SlayTheRequiemCode/UI/NRunStatusBadge.cs": "c3faa37b369f9138971fcc66d58abe8e29fae6f741d5bc98a3648f575760bdee",
+      "mod/SlayTheRequiemCode/UI/RewardAcquisitionPanel.cs": "337237bec6cbb7cdf0b9c930ec94c65ff8d97c7601042f4d7520738499e0c244",
+      "mod/Sts2PathDiscovery.props": "67f426cd2683078fb015fa388e9eeb65266f4a53ec893942e420842ed489707a",
+      "tools/g0/README.md": "30ffce800130dd95bc830fafede88b2a4be16f0e026cd1a5ecb3cc0f2656103d",
+      "tools/g0/mod_build.py": "79122d05d091162e47a4ae5397a41a1507c563f86ef4b41fdabbb1ba69ffd7a9",
+      "tools/g0/test_mod_build.py": "ef32d9e3bfd2e2f2c0b8dfc8982e31e9ae0701960e6299260c4d0a33ce4f6e05",
+      "tools/g0/verify_pack.gd": "99889d308c96e715f2da696fc59459c3101f197f804cc1b71b831fbd9967017c",
+      "tools/loc/loc_ui.py": "49b018df8df6813234c453e66b5bd807bf2f37c388d98cb744af747e2b3463f5"
+    },
+    "memory_stone_lifecycle_and_map_unchanged": {
+      "path": "mod/SlayTheRequiemCode/Rollback/MemoryStoneRelic.cs",
+      "identical": true,
+      "git_blob": "d6cc2f1a79596bb0111c2ed32be7b4bdde46a892"
+    },
+    "shout_exit_to_none_unchanged": {
+      "path": "mod/SlayTheRequiemCode/Cards/RequiemCard.cs",
+      "identical": true,
+      "git_blob": "58deb766bf144cee4c84644610bd5ca0ea67319a"
+    }
+  },
+  "not_executed": [
+    "dotnet build full mod",
+    "dotnet test new Core code",
+    "Godot import/export/ResourceLoader",
+    "str_integrity",
+    "str_factory",
+    "gameplay / visual acceptance",
+    "disk save/Continue/rollback",
+    "two clients / actual message delivery"
+  ],
+  "numpy": "2.4.6",
+  "tree_comparison": {
+    "from": "8000886e9c52db78227972bdd4740ee71f7eca03",
+    "to": "03d636049e2a48101389be7f5856c3976b7730e2",
+    "files": 112,
+    "runtime_csharp_files": 52,
+    "runtime_added_lines": 5125,
+    "runtime_removed_lines": 504,
+    "shortstat": "112 files changed, 18150 insertions(+), 605 deletions(-)"
+  },
+  "github_queries": {
+    "observed_at_utc": "2026-11-18T01:59:33.113729+00:00",
+    "pr_command": "gh pr list --repo Riyozaki/SlayTheRequiem --state all --head arena/1d7c3746-slaytherequiem --json number,title,state,headRefOid,url",
+    "ci_command": "gh run list --repo Riyozaki/SlayTheRequiem --branch arena/1d7c3746-slaytherequiem --limit 5 --json databaseId,headSha,status,conclusion,url,createdAt",
+    "note": "Both arrays are empty at query time; this does not assert that nobody ever built or played the mod."
+  }
+}
